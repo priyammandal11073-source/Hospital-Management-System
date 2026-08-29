@@ -11,4 +11,20 @@ const api = axios.create({
   },
 });
 
+// Add the saved JWT to every request sent through this shared client.
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("hms_token");
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+export const loginUser = async (email, password) => {
+  const response = await api.post("/api/auth/login", { email, password });
+  return response.data;
+};
+
 export default api;
