@@ -116,4 +116,27 @@ export const deleteAppointment = async (id) => {
   return response.data;
 };
 
+export const getBillings = async (filters = {}) => {
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value)
+  );
+  const response = await api.get("/api/billing", { params });
+  return response.data;
+};
+
+export const getBillingById = async (id) => {
+  const response = await api.get(`/api/billing/${id}`);
+  return response.data;
+};
+
+export const createBilling = async (billingData) => {
+  const response = await api.post("/api/billing", billingData);
+  return response.data;
+};
+
+export const updatePaymentStatus = async (id, statusData) => {
+  const response = await api.patch(`/api/billing/${id}/payment`, statusData);
+  return response.data;
+};
+
 export default api;
