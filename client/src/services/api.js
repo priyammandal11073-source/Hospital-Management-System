@@ -58,4 +58,34 @@ export const deletePatient = async (id) => {
   return response.data;
 };
 
+export const getDoctors = async (specialization = "", department = "") => {
+  const params = {};
+
+  if (specialization) params.specialization = specialization;
+  if (department) params.department = department;
+
+  const response = await api.get("/api/doctors", { params });
+  return response.data;
+};
+
+export const getDoctorById = async (id) => {
+  const response = await api.get(`/api/doctors/${id}`);
+  return response.data;
+};
+
+export const createDoctor = async (doctorData) => {
+  const response = await api.post("/api/doctors", doctorData);
+  return response.data;
+};
+
+export const updateDoctor = async (id, doctorData) => {
+  const response = await api.put(`/api/doctors/${id}`, doctorData);
+  return response.data;
+};
+
+export const deleteDoctor = async (id) => {
+  const response = await api.delete(`/api/doctors/${id}`);
+  return response.data;
+};
+
 export default api;
