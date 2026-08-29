@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment files (never commit secrets)
+.env
+.env.*
+!.env.example
+client/.env
+server/.env
+
+# Production builds and coverage
+dist/
+build/
+client/dist/
+server/dist/
+coverage/
+
+# Logs and editor files
+*.log
+npm-debug.log*
+.vscode/
+.idea/
+.DS_Store
