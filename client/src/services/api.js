@@ -139,4 +139,9 @@ export const updatePaymentStatus = async (id, statusData) => {
   return response.data;
 };
 
+export const getRevenueSummary = async () => {
+  const response = await api.get("/api/billing/summary");
+  return response.data;
+};
+
 export default api;
