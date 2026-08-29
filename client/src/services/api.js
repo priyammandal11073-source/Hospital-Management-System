@@ -27,4 +27,35 @@ export const loginUser = async (email, password) => {
   return response.data;
 };
 
+export const getPatients = async (searchQuery = "", page = 1) => {
+  const params = { page };
+
+  if (searchQuery.trim()) {
+    params.search = searchQuery.trim();
+  }
+
+  const response = await api.get("/api/patients", { params });
+  return response.data;
+};
+
+export const getPatientById = async (id) => {
+  const response = await api.get(`/api/patients/${id}`);
+  return response.data;
+};
+
+export const createPatient = async (patientData) => {
+  const response = await api.post("/api/patients", patientData);
+  return response.data;
+};
+
+export const updatePatient = async (id, patientData) => {
+  const response = await api.put(`/api/patients/${id}`, patientData);
+  return response.data;
+};
+
+export const deletePatient = async (id) => {
+  const response = await api.delete(`/api/patients/${id}`);
+  return response.data;
+};
+
 export default api;
