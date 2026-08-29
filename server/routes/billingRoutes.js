@@ -1,0 +1,24 @@
+import express from "express";
+import {
+  createBilling,
+  getAllBillings,
+  getBillingById,
+  getRevenueSummary,
+  updatePaymentStatus,
+} from "../controllers/billingController.js";
+import { protect, restrictTo } from "../middleware/authMiddleware.js";
+
+const router = express.Router();
+
+router.route("/").post(protect, createBilling).get(protect, getAllBillings);
+
+// This route must be declared before /:id, otherwise "summary" is treated as an ID.
+router.get("/summary", protect, restrictTo("admin"), getRevenueSummary);
+
+router
+  .route("/:id")
+  .get(protect, getBillingById);
+
+router.patch("/:id/payment", protect, updatePaymentStatus);
+
+export default router;
