@@ -44,10 +44,16 @@ const appointmentSchema = new mongoose.Schema(
   }
 );
 
-// Enforces one appointment per doctor, date, and time slot.
+// Enforces one active appointment per doctor, date, and time slot.
+// Cancelled appointments do not occupy a slot and can be rebooked.
 appointmentSchema.index(
   { doctor: 1, appointmentDate: 1, timeSlot: 1 },
-  { unique: true }
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $in: ["pending", "confirmed"] },
+    },
+  }
 );
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);
