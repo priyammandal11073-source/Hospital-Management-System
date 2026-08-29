@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
+import patientRoutes from "./routes/patientRoutes.js";
 
 // Load variables from server/.env before reading process.env.
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/patients", patientRoutes);
 
 // Temporary route to confirm that the API is running.
 app.get("/api/health", (req, res) => {
