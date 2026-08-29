@@ -179,4 +179,4 @@ All role-based permissions are enforced independently at the **backend** (middle
 
 ## Author
 
-**Priya Mandal** — College sophomore project. Built as a full-stack web application using React, Node.js, Express, and MongoDB.
+**Priyam Mandal** — College sophomore project. Built as a full-stack web application using React, Node.js, Express, and MongoDB.
