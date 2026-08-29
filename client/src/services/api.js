@@ -27,8 +27,8 @@ export const loginUser = async (email, password) => {
   return response.data;
 };
 
-export const getPatients = async (searchQuery = "", page = 1) => {
-  const params = { page };
+export const getPatients = async (searchQuery = "", page = 1, limit = 10) => {
+  const params = { page, limit };
 
   if (searchQuery.trim()) {
     params.search = searchQuery.trim();
@@ -85,6 +85,34 @@ export const updateDoctor = async (id, doctorData) => {
 
 export const deleteDoctor = async (id) => {
   const response = await api.delete(`/api/doctors/${id}`);
+  return response.data;
+};
+
+export const getAppointments = async (filters = {}) => {
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value)
+  );
+  const response = await api.get("/api/appointments", { params });
+  return response.data;
+};
+
+export const getAppointmentById = async (id) => {
+  const response = await api.get(`/api/appointments/${id}`);
+  return response.data;
+};
+
+export const createAppointment = async (appointmentData) => {
+  const response = await api.post("/api/appointments", appointmentData);
+  return response.data;
+};
+
+export const updateAppointmentStatus = async (id, status) => {
+  const response = await api.patch(`/api/appointments/${id}/status`, { status });
+  return response.data;
+};
+
+export const deleteAppointment = async (id) => {
+  const response = await api.delete(`/api/appointments/${id}`);
   return response.data;
 };
 
