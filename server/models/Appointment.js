@@ -38,6 +38,14 @@ const appointmentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    bookedBy: {
+      type: String,
+      enum: {
+        values: ["staff", "patient"],
+        message: "bookedBy must be 'staff' or 'patient'",
+      },
+      default: "staff",
+    },
   },
   {
     timestamps: true,
