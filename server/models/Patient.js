@@ -55,9 +55,10 @@ const patientSchema = new mongoose.Schema(
       default: Date.now,
     },
     // Patient self-service authentication fields
+    // Not required:true to keep staff-created patients (via POST /api/patients) working.
+    // Patient self-registration (POST /api/patient-auth/register) validates password separately.
     password: {
       type: String,
-      required: [true, "Password is required"],
       select: false,
     },
   },

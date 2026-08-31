@@ -27,6 +27,7 @@ function Appointments() {
     doctor: "",
     startDate: "",
     endDate: "",
+    bookedBy: "",
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -134,7 +135,7 @@ function Appointments() {
         </button>
       </div>
 
-      <div className="mb-5 grid gap-3 lg:grid-cols-4">
+      <div className="mb-5 grid gap-3 lg:grid-cols-5">
         <label className="text-sm font-medium text-slate-700">
           Status
           <select
@@ -187,7 +188,23 @@ function Appointments() {
             value={filters.endDate}
           />
         </label>
+        <label className="text-sm font-medium text-slate-700">
+          Booked by
+          <select
+            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            name="bookedBy"
+            onChange={handleFilterChange}
+            value={filters.bookedBy}
+          >
+            <option value="">All bookings</option>
+            <option value="patient">Patient self-booked</option>
+            <option value="staff">Staff created</option>
+          </select>
+        </label>
       </div>
+      {filters.bookedBy === "patient" && filters.status === "pending" && (
+        <p className="mb-4 text-sm font-medium text-amber-700">Showing patient-booked pending appointments — staff review queue</p>
+      )}
 
       {error && (
         <p className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
@@ -214,9 +231,16 @@ function Appointments() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-              {appointments.map((appointment) => (
-                <tr key={appointment._id}>
-                  <td className="px-4 py-3 font-medium">{appointment.patient?.name || "Unknown patient"}</td>
+              {appointments
+                .filter((a) => !filters.bookedBy || a.bookedBy === filters.bookedBy)
+                .map((appointment) => (
+                <tr key={appointment._id} className={appointment.bookedBy === "patient" && appointment.status === "pending" ? "bg-amber-50" : ""}>
+                  <td className="px-4 py-3 font-medium">
+                    {appointment.patient?.name || "Unknown patient"}
+                    {appointment.bookedBy === "patient" && (
+                      <span className="ml-2 inline-flex rounded bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">Patient-booked</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{appointment.doctor?.name || "Unknown doctor"}</td>
                   <td className="whitespace-nowrap px-4 py-3">
                     {new Date(appointment.appointmentDate).toLocaleDateString()}

@@ -73,6 +73,7 @@ export const createAppointment = async (req, res) => {
       timeSlot: timeSlot.trim(),
       reasonForVisit: reasonForVisit.trim(),
       status: "pending",
+      bookedBy: "staff",
     });
 
     return res.status(201).json({
@@ -84,11 +85,18 @@ export const createAppointment = async (req, res) => {
   }
 };
 
-// GET /api/appointments?status=pending&doctor=<doctorId>&startDate=2026-08-01&endDate=2026-08-31
+// GET /api/appointments?status=pending&doctor=<doctorId>&startDate=2026-08-01&endDate=2026-08-31&bookedBy=patient
 export const getAllAppointments = async (req, res) => {
   try {
-    const { status, doctor, startDate, endDate } = req.query;
+    const { status, doctor, startDate, endDate, bookedBy } = req.query;
     const filter = {};
+
+    if (bookedBy) {
+      if (!["staff", "patient"].includes(bookedBy)) {
+        return res.status(400).json({ message: "Invalid bookedBy filter" });
+      }
+      filter.bookedBy = bookedBy;
+    }
 
     if (status) {
       if (!appointmentStatuses.includes(status)) {

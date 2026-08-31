@@ -12,8 +12,14 @@ const api = axios.create({
 });
 
 // Add the saved JWT to every request sent through this shared client.
+// Staff token (hms_token) and patient token (patient_token) are kept separate
+// so both sessions can coexist in the same browser.
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("hms_token");
+  const url = config.url || "";
+  const isPatientRoute = url.includes("/patient-auth") || url.includes("/patient-portal");
+  const token = isPatientRoute
+    ? localStorage.getItem("patient_token") || localStorage.getItem("hms_token")
+    : localStorage.getItem("hms_token") || localStorage.getItem("patient_token");
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -141,6 +147,44 @@ export const updatePaymentStatus = async (id, statusData) => {
 
 export const getRevenueSummary = async () => {
   const response = await api.get("/api/billing/summary");
+  return response.data;
+};
+
+// Patient self-service auth (separate from staff auth)
+export const registerPatient = async (patientData) => {
+  const response = await api.post("/api/patient-auth/register", patientData);
+  return response.data;
+};
+
+export const loginPatient = async (email, password) => {
+  const response = await api.post("/api/patient-auth/login", { email, password });
+  return response.data;
+};
+
+// Patient portal (scoped to logged-in patient, requires patient token)
+export const getMyProfile = async () => {
+  const response = await api.get("/api/patient-portal/me");
+  return response.data;
+};
+
+export const getMyAppointments = async (filters = {}) => {
+  const params = Object.fromEntries(Object.entries(filters).filter(([, v]) => v));
+  const response = await api.get("/api/patient-portal/appointments", { params });
+  return response.data;
+};
+
+export const bookMyAppointment = async (appointmentData) => {
+  const response = await api.post("/api/patient-portal/appointments", appointmentData);
+  return response.data;
+};
+
+export const cancelMyAppointment = async (id) => {
+  const response = await api.patch(`/api/patient-portal/appointments/${id}/cancel`);
+  return response.data;
+};
+
+export const getMyBillings = async () => {
+  const response = await api.get("/api/patient-portal/billings");
   return response.data;
 };
 

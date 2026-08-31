@@ -8,6 +8,7 @@ import billingRoutes from "./routes/billingRoutes.js";
 import doctorRoutes from "./routes/doctorRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import patientAuthRoutes from "./routes/patientAuthRoutes.js";
+import patientPortalRoutes from "./routes/patientPortalRoutes.js";
 
 // Load variables from server/.env before reading process.env.
 dotenv.config();
@@ -25,6 +26,7 @@ app.use("/api/billing", billingRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/patient-auth", patientAuthRoutes);
+app.use("/api/patient-portal", patientPortalRoutes);
 
 // Temporary route to confirm that the API is running.
 app.get("/api/health", (req, res) => {

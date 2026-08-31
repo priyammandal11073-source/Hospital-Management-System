@@ -43,6 +43,9 @@ function Dashboard() {
             totalDoctors: doctorData.doctors.length,
             appointments: appointmentData.appointments,
             pendingBills: pendingBillingData.billings.length,
+            pendingPatientBookings: appointmentData.appointments.filter(
+              (a) => a.status === "pending" && a.bookedBy === "patient"
+            ).length,
           });
         }
       } catch (requestError) {
@@ -90,11 +93,12 @@ function Dashboard() {
         <p className="mt-1 text-sm text-slate-600">A quick overview of today&apos;s hospital activity.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <SummaryCard label="Total Patients" value={dashboardData.totalPatients} />
         <SummaryCard label="Total Doctors" value={dashboardData.totalDoctors} />
         <SummaryCard label="Appointments Today" value={todayAppointments.length} />
         <SummaryCard label="Pending Bills" value={dashboardData.pendingBills} />
+        <SummaryCard label="Pending patient bookings" value={dashboardData.pendingPatientBookings} />
       </div>
 
       <div className="mt-8 grid gap-6 xl:grid-cols-2">
