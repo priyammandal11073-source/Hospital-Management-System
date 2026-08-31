@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const patientSchema = new mongoose.Schema(
   {
@@ -53,11 +54,32 @@ const patientSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    // Patient self-service authentication fields
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+      select: false,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Re-hash only when a patient's password is changed.
+patientSchema.pre("save", async function hashPassword() {
+  if (!this.isModified("password")) return;
+
+  const salt = await bcrypt.genSalt(12);
+  this.password = await bcrypt.hash(this.password, salt);
+});
+
+// Checks a login password against the stored bcrypt hash.
+patientSchema.methods.comparePassword = async function comparePassword(
+  candidatePassword
+) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 // This supports quick email searches and prevents duplicate supplied emails.
 // `sparse` allows multiple patients to leave the optional email field empty.
