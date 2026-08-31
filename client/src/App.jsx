@@ -46,7 +46,22 @@ function App() {
           <Route path="/reports" element={<Reports />} />
         </Route>
       </Route>
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      {/* Fallback — render 404 instead of blindly redirecting to /dashboard (which then bounces to /login for unauthed users) */}
+      <Route
+        path="*"
+        element={
+          <div className="p-8 text-center text-slate-600">
+            <p>404 — Page not found.</p>
+            <a href="/patient/login" className="mr-3 text-blue-600 hover:underline">
+              Patient Login
+            </a>
+            |
+            <a href="/login" className="ml-3 text-blue-600 hover:underline">
+              Staff Login
+            </a>
+          </div>
+        }
+      />
     </Routes>
   );
 }
