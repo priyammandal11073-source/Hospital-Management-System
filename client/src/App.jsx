@@ -14,6 +14,18 @@ import Reports from "./pages/Reports.jsx";
 import Prescriptions from "./pages/Prescriptions.jsx";
 import Beds from "./pages/Beds.jsx";
 import LabReports from "./pages/LabReports.jsx";
+import MyPatients from "./pages/nurse/MyPatients.jsx";
+import PatientMonitoring from "./pages/nurse/PatientMonitoring.jsx";
+import VitalSignsPage from "./pages/nurse/VitalSignsPage.jsx";
+import NursingNotesPage from "./pages/nurse/NursingNotesPage.jsx";
+import NursingTasksPage from "./pages/nurse/NursingTasksPage.jsx";
+import MedicationsPage from "./pages/nurse/MedicationsPage.jsx";
+import IntakeOutputPage from "./pages/nurse/IntakeOutputPage.jsx";
+import DoctorOrdersPage from "./pages/nurse/DoctorOrdersPage.jsx";
+import PatientTransfersPage from "./pages/nurse/PatientTransfersPage.jsx";
+import AdmissionDischargePage from "./pages/nurse/AdmissionDischargePage.jsx";
+import MyShiftPage from "./pages/nurse/MyShiftPage.jsx";
+import NurseHandoverPage from "./pages/nurse/NurseHandoverPage.jsx";
 import BookAppointment from "./pages/patient/BookAppointment.jsx";
 import MyAppointments from "./pages/patient/MyAppointments.jsx";
 import MyBillings from "./pages/patient/MyBillings.jsx";
@@ -59,6 +71,20 @@ function App() {
           <Route path="/beds" element={<Beds />} />
           <Route path="/lab-reports" element={<LabReports />} />
           <Route path="/reports" element={<Reports />} />
+
+          {/* Clinical Nursing Station Routes */}
+          <Route path="/nurse/patients" element={<MyPatients />} />
+          <Route path="/nurse/monitoring" element={<PatientMonitoring />} />
+          <Route path="/nurse/vitals" element={<VitalSignsPage />} />
+          <Route path="/nurse/notes" element={<NursingNotesPage />} />
+          <Route path="/nurse/tasks" element={<NursingTasksPage />} />
+          <Route path="/nurse/medications" element={<MedicationsPage />} />
+          <Route path="/nurse/intake-output" element={<IntakeOutputPage />} />
+          <Route path="/nurse/doctor-orders" element={<DoctorOrdersPage />} />
+          <Route path="/nurse/transfers" element={<PatientTransfersPage />} />
+          <Route path="/nurse/admission-discharge" element={<AdmissionDischargePage />} />
+          <Route path="/nurse/shift" element={<MyShiftPage />} />
+          <Route path="/nurse/handover" element={<NurseHandoverPage />} />
         </Route>
       </Route>
       {/* Fallback — render 404 instead of blindly redirecting to /dashboard (which then bounces to /login for unauthed users) */}

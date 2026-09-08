@@ -5,6 +5,7 @@ import DoctorScheduleModal from "../components/DoctorScheduleModal.jsx";
 import PrescriptionForm from "../components/PrescriptionForm.jsx";
 import VitalsTracker from "../components/VitalsTracker.jsx";
 import NursingChecklistModal from "../components/NursingChecklistModal.jsx";
+import PatientClinicalProfileModal from "../components/nurse/PatientClinicalProfileModal.jsx";
 import {
   cancelMyAppointment,
   getAppointments,
@@ -21,6 +22,10 @@ import {
   getBeds,
   dischargeBed,
   getRecentVitalsAlerts,
+  getNurseDashboardMetrics,
+  administerMedication,
+  updateNursingTaskStatus,
+  updateDoctorOrderStatus,
 } from "../services/api.js";
 
 const formatDate = (date) =>
@@ -1127,530 +1132,447 @@ function PatientPortalDashboard({ user, refreshKey, onTriggerRefresh }) {
    5. NURSE & INPATIENT CLINICAL STATION DASHBOARD
    ========================================================================= */
 function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
-  const [patients, setPatients] = useState([]);
-  const [appointments, setAppointments] = useState([]);
-  const [beds, setBeds] = useState([]);
-  const [vitalsAlerts, setVitalsAlerts] = useState([]);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
+  const [selectedPatientIdForModal, setSelectedPatientIdForModal] = useState(null);
 
-  const [activeTab, setActiveTab] = useState("rounds"); // "rounds" | "triage" | "alerts"
-  const [vitalsPatient, setVitalsPatient] = useState(null);
-  const [patientVitalsList, setPatientVitalsList] = useState([]);
-  const [checklistAppointment, setChecklistAppointment] = useState(null);
-  const [dischargingBedId, setDischargingBedId] = useState(null);
-  const [actionSuccess, setActionSuccess] = useState("");
+  // Quick Medication Administration Modal State
+  const [medModal, setMedModal] = useState({
+    isOpen: false,
+    med: null,
+    status: "given",
+    reason: "",
+    notes: "",
+    submitting: false,
+  });
 
   useEffect(() => {
     let active = true;
-    const loadNurseData = async () => {
+    const fetchDashboardData = async () => {
       setLoading(true);
+      setError("");
       try {
-        const [pData, aData, bData, vAlerts] = await Promise.all([
-          getPatients("", 1, 50),
-          getAppointments(),
-          getBeds(),
-          getRecentVitalsAlerts().catch(() => ({ alerts: [] })),
-        ]);
+        const metricsRes = await getNurseDashboardMetrics();
         if (active) {
-          setPatients(pData.patients || []);
-          setAppointments(aData.appointments || []);
-          setBeds(bData.beds || []);
-          setVitalsAlerts(vAlerts.alerts || []);
+          setData(metricsRes);
         }
       } catch (err) {
-        if (active) setError(err.response?.data?.message || "Failed to load nursing station data.");
+        if (active) setError(err.response?.data?.message || "Failed to load clinical nursing station data.");
       } finally {
         if (active) setLoading(false);
       }
     };
-    loadNurseData();
+
+    fetchDashboardData();
     return () => { active = false; };
   }, [refreshKey]);
 
-  const occupiedBeds = useMemo(() => {
-    return beds.filter((b) => b.status === "occupied" && b.currentPatient);
-  }, [beds]);
+  const showToast = (msg) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(""), 4000);
+  };
 
-  const availableBeds = useMemo(() => {
-    return beds.filter((b) => b.status === "available");
-  }, [beds]);
+  const handleOpenMedModal = (med, status) => {
+    setMedModal({
+      isOpen: true,
+      med,
+      status,
+      reason: "",
+      notes: "",
+      submitting: false,
+    });
+  };
 
-  const triageQueue = useMemo(() => {
-    return appointments.filter(
-      (a) => a.status === "pending" || a.status === "confirmed" || a.status === "checked_in" || a.status === "in_consultation"
-    );
-  }, [appointments]);
+  const handleConfirmMedAdministration = async (e) => {
+    e.preventDefault();
+    const { med, status, reason, notes } = medModal;
+    if (!med) return;
 
-  const handleQuickCheckIn = async (appId) => {
+    if ((status === "held" || status === "refused") && !reason.trim()) {
+      alert("A clinical justification is required when withholding or recording patient refusal.");
+      return;
+    }
+
+    setMedModal((prev) => ({ ...prev, submitting: true }));
     try {
-      await updateAppointmentStatus(appId, "checked_in");
-      setActionSuccess("Patient marked as checked in (waiting in lobby).");
+      await administerMedication(med.prescriptionId, {
+        medicationIndex: med.medicationIndex,
+        status,
+        notes: reason ? `${reason}${notes ? ` | ${notes}` : ""}` : notes,
+      });
+
+      setMedModal({ isOpen: false, med: null, status: "given", reason: "", notes: "", submitting: false });
+      showToast(`Medication ${med.medication} marked as ${status.toUpperCase()} for ${med.patientName}.`);
       onTriggerRefresh();
-      setTimeout(() => setActionSuccess(""), 3000);
     } catch (err) {
-      alert("Failed to check in: " + (err.response?.data?.message || err.message));
+      alert(err.response?.data?.message || "Failed to update medication administration record.");
+      setMedModal((prev) => ({ ...prev, submitting: false }));
     }
   };
 
-  const handleQuickCallIn = async (appId) => {
+  const handleQuickCompleteTask = async (taskId, taskTitle) => {
     try {
-      await updateAppointmentStatus(appId, "in_consultation");
-      setActionSuccess("Patient called into doctor's consultation room.");
+      await updateNursingTaskStatus(taskId, { status: "Completed" });
+      showToast(`Task "${taskTitle}" marked as Completed.`);
       onTriggerRefresh();
-      setTimeout(() => setActionSuccess(""), 3000);
     } catch (err) {
-      alert("Failed to update status: " + (err.response?.data?.message || err.message));
+      alert("Failed to complete task: " + (err.response?.data?.message || err.message));
     }
   };
 
-  const handleDischargeBed = async (bedId) => {
-    if (!window.confirm("Confirm patient discharge and mark bed for sanitary turnover?")) return;
-    setDischargingBedId(bedId);
+  const handleQuickAcknowledgeOrder = async (orderId) => {
     try {
-      await dischargeBed(bedId, { dischargeNotes: "Discharged by Floor Nurse upon physician approval" });
-      setActionSuccess("Patient discharged & bed released successfully.");
+      await updateDoctorOrderStatus(orderId, { status: "Acknowledged" });
+      showToast("Doctor order acknowledged and noted in station queue.");
       onTriggerRefresh();
-      setTimeout(() => setActionSuccess(""), 3000);
     } catch (err) {
-      alert("Discharge failed: " + (err.response?.data?.message || err.message));
-    } finally {
-      setDischargingBedId(null);
+      alert("Failed to acknowledge doctor order: " + (err.response?.data?.message || err.message));
     }
   };
 
-  const handleOpenVitals = async (patient) => {
-    setVitalsPatient(patient);
-    try {
-      const res = await getPatientVitals(patient._id);
-      setPatientVitalsList(res.vitals || []);
-    } catch (err) {
-      setPatientVitalsList([]);
-    }
+  if (loading) {
+    return <LoadingSpinner label="Opening Clinical Nursing Station & telemetry data..." />;
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} />;
+  }
+
+  const metrics = data?.metrics || {
+    myPatients: 0,
+    criticalPatients: 0,
+    medicationsDue: 0,
+    pendingTasks: 0,
+    doctorOrders: 0,
+    dischargePending: 0,
   };
 
-  if (loading) return <LoadingSpinner label="Opening nursing station, ward beds & clinical records..." />;
-  if (error) return <ErrorMessage message={error} />;
+  const criticalPatients = data?.criticalPatients || [];
+  const medicationsDue = data?.medicationsDue || [];
+  const pendingTasks = data?.pendingTasks || [];
+  const recentDoctorOrders = data?.recentDoctorOrders || [];
 
   return (
     <div className="space-y-6">
-      {/* Nurse Clinical Station Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-800 via-cyan-900 to-slate-950 p-6 sm:p-8 text-white shadow-lg">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
-            <span className="h-2 w-2 rounded-full bg-teal-400 animate-pulse"></span>
-            <span>Clinical Inpatient & Floor Care Desk</span>
-            <span className="opacity-60">•</span>
-            <span>On-Duty Shift</span>
-          </div>
-          <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Nursing Station & Inpatient Floor Care
-          </h1>
-          <p className="mt-2 text-sm text-teal-100/90 leading-relaxed">
-            Welcome, {user?.name}. Monitor inpatient beds, review critical vital alerts, manage waiting room triage, and verify medication schedules.
-          </p>
-        </div>
-      </div>
-
-      {actionSuccess && (
-        <div className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-800 flex items-center justify-between shadow-2xs">
-          <span>✅ {actionSuccess}</span>
-          <button onClick={() => setActionSuccess("")} className="text-emerald-600 hover:text-emerald-900">✕</button>
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-50 rounded-xl bg-slate-900 text-white px-4 py-3 text-sm font-semibold shadow-2xl flex items-center gap-3 border border-slate-700 animate-slide-in">
+          <span>✅</span>
+          <span>{toastMessage}</span>
+          <button onClick={() => setToastMessage("")} className="text-slate-400 hover:text-white font-bold ml-2">×</button>
         </div>
       )}
 
-      {/* KPI Metric Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {/* Station Header Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white shadow-md border border-slate-800">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 border border-indigo-400/30 px-3 py-1 text-xs font-semibold text-indigo-300">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Clinical Nursing Station</span>
+              <span className="opacity-40">•</span>
+              <span>24/7 Ward Telemetry Active</span>
+            </div>
+            <h1 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+              Inpatient Floor Care & Clinical Station
+            </h1>
+            <p className="mt-1 text-sm text-slate-300 leading-relaxed">
+              Nurse Station Duty: <strong className="text-white">{user?.name}</strong>. Real-time telemetry, acute severity alerts, eMAR medication rounds, and doctor directives.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              to="/nurse/vitals"
+              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-sm transition-colors flex items-center gap-1.5"
+            >
+              <span>📊</span> Record Vitals
+            </Link>
+            <Link
+              to="/nurse/handover"
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 border border-slate-700 transition-colors flex items-center gap-1.5"
+            >
+              <span>🔄</span> Shift Handover
+            </Link>
+            <Link
+              to="/nurse/admission-discharge"
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 border border-slate-700 transition-colors flex items-center gap-1.5"
+            >
+              <span>📋</span> Admit / Discharge
+            </Link>
+            <button
+              onClick={onTriggerRefresh}
+              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 border border-slate-700 transition-colors"
+              title="Refresh telemetry"
+            >
+              ↻ Refresh
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 6 Core Metric Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <MetricCard
-          label="Admitted Inpatients"
-          value={occupiedBeds.length}
-          gradient="from-teal-600 to-cyan-600"
-          badge="Bedside care"
-          badgeColor="bg-teal-50 text-teal-700"
-          icon={<span className="text-2xl">🛏️</span>}
-        />
-        <MetricCard
-          label="Available Ward Beds"
-          value={`${availableBeds.length}/${beds.length}`}
-          gradient="from-emerald-600 to-teal-600"
-          badge="Ready for admit"
-          badgeColor="bg-emerald-50 text-emerald-700"
-          icon={<span className="text-2xl">🏥</span>}
-        />
-        <MetricCard
-          label="OPD Triage Queue"
-          value={triageQueue.length}
+          label="My Patients"
+          value={metrics.myPatients}
           gradient="from-blue-600 to-indigo-600"
-          badge="Scheduled today"
+          badge="Admitted Inpatients"
           badgeColor="bg-blue-50 text-blue-700"
-          icon={<span className="text-2xl">📋</span>}
+          icon={<span className="text-xl">🛏️</span>}
         />
         <MetricCard
-          label="Critical Vitals Alerts"
-          value={vitalsAlerts.length}
-          gradient={vitalsAlerts.length > 0 ? "from-rose-500 to-red-600" : "from-slate-600 to-slate-700"}
-          badge={vitalsAlerts.length > 0 ? "Attention needed" : "All stable"}
-          badgeColor={vitalsAlerts.length > 0 ? "bg-rose-50 text-rose-700" : "bg-slate-100 text-slate-700"}
-          icon={<span className="text-2xl">🚨</span>}
+          label="Critical Patients"
+          value={metrics.criticalPatients}
+          gradient={metrics.criticalPatients > 0 ? "from-rose-600 to-red-600" : "from-emerald-600 to-teal-600"}
+          badge={metrics.criticalPatients > 0 ? "Immediate Attention" : "All Stable"}
+          badgeColor={metrics.criticalPatients > 0 ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"}
+          icon={<span className="text-xl">🚨</span>}
+        />
+        <MetricCard
+          label="Medications Due"
+          value={metrics.medicationsDue}
+          gradient="from-amber-500 to-orange-600"
+          badge="eMAR Scheduled"
+          badgeColor="bg-amber-50 text-amber-700"
+          icon={<span className="text-xl">💊</span>}
+        />
+        <MetricCard
+          label="Pending Tasks"
+          value={metrics.pendingTasks}
+          gradient="from-violet-600 to-purple-600"
+          badge="Care Routines"
+          badgeColor="bg-violet-50 text-violet-700"
+          icon={<span className="text-xl">📋</span>}
+        />
+        <MetricCard
+          label="Doctor Orders"
+          value={metrics.doctorOrders}
+          gradient="from-cyan-600 to-blue-600"
+          badge="Physician Directives"
+          badgeColor="bg-cyan-50 text-cyan-700"
+          icon={<span className="text-xl">🩺</span>}
+        />
+        <MetricCard
+          label="Discharge Pending"
+          value={metrics.dischargePending}
+          gradient="from-teal-600 to-emerald-600"
+          badge="Ready for Clearance"
+          badgeColor="bg-teal-50 text-teal-700"
+          icon={<span className="text-xl">📤</span>}
         />
       </div>
 
-      {/* Tabs Navigation */}
-      <div className="flex border-b border-slate-200 gap-4 text-xs font-bold">
-        <button
-          type="button"
-          onClick={() => setActiveTab("rounds")}
-          className={`pb-3 px-1 border-b-2 transition flex items-center gap-2 ${
-            activeTab === "rounds"
-              ? "border-teal-600 text-teal-700 font-extrabold"
-              : "border-transparent text-slate-500 hover:text-slate-800"
-          }`}
-        >
-          <span>🛏️ Inpatient Bedside Rounds</span>
-          <span className="rounded-full bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 text-[10px]">
-            {occupiedBeds.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("triage")}
-          className={`pb-3 px-1 border-b-2 transition flex items-center gap-2 ${
-            activeTab === "triage"
-              ? "border-blue-600 text-blue-700 font-extrabold"
-              : "border-transparent text-slate-500 hover:text-slate-800"
-          }`}
-        >
-          <span>📋 OPD Triage & Waiting Queue</span>
-          <span className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[10px]">
-            {triageQueue.length}
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("alerts")}
-          className={`pb-3 px-1 border-b-2 transition flex items-center gap-2 ${
-            activeTab === "alerts"
-              ? "border-rose-600 text-rose-700 font-extrabold"
-              : "border-transparent text-slate-500 hover:text-slate-800"
-          }`}
-        >
-          <span>🚨 Critical Vitals Deterioration Monitor</span>
-          <span className="rounded-full bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 text-[10px]">
-            {vitalsAlerts.length}
-          </span>
-        </button>
-      </div>
-
-      {/* TAB 1: INPATIENT BEDSIDE ROUNDS */}
-      {activeTab === "rounds" && (
-        <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <span className="flex h-2 w-2 rounded-full bg-teal-500"></span>
-                Floor Rounds & Inpatient Care Tracker
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Check bedside vitals, track patient comfort, and process discharge releases.
-              </p>
-            </div>
-            <Link
-              to="/beds"
-              className="text-xs font-bold text-teal-700 hover:text-teal-900 border border-teal-200 bg-teal-50 px-3 py-1.5 rounded-xl hover:bg-teal-100 transition shadow-2xs"
-            >
-              Manage All Beds & Wards →
-            </Link>
+      {/* SECTION 1: CRITICAL PATIENT MONITORING */}
+      <section className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+              Critical & High-Risk Inpatient Telemetry
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Patients exhibiting acute physiological deterioration, desaturation, hypertension, or high-dependency ward assignment.
+            </p>
           </div>
+          <Link
+            to="/nurse/monitoring"
+            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-200 transition-colors self-start sm:self-auto"
+          >
+            Full Telemetry Monitor →
+          </Link>
+        </div>
 
-          {occupiedBeds.length === 0 ? (
-            <div className="text-center py-12 text-slate-400 text-xs">
-              <span className="text-3xl block mb-2">🛏️</span>
-              No inpatients currently admitted to ward beds.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
-                  <tr>
-                    <th className="py-3 px-3">Bed & Ward</th>
-                    <th className="py-3 px-3">Admitted Patient</th>
-                    <th className="py-3 px-3">Age / Gender</th>
-                    <th className="py-3 px-3">Admit Date</th>
-                    <th className="py-3 px-3 text-right">Floor Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {occupiedBeds.map((bed) => {
-                    const patient = bed.currentPatient || {};
-                    return (
-                      <tr key={bed._id} className="hover:bg-slate-50/80 transition">
-                        <td className="py-3.5 px-3">
-                          <span className="font-mono font-bold text-teal-800 text-xs bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">
-                            {bed.bedNumber}
-                          </span>
-                          <span className="ml-2 text-slate-700 font-semibold">{bed.ward}</span>
-                          <span className="block text-[11px] text-slate-400 capitalize">{bed.roomType}</span>
-                        </td>
-
-                        <td className="py-3.5 px-3">
-                          <div className="font-bold text-slate-900 text-sm">{patient.name || "Patient"}</div>
-                          <div className="text-[11px] text-slate-500">Ph: {patient.contactNumber || "—"}</div>
-                        </td>
-
-                        <td className="py-3.5 px-3 font-medium text-slate-700">
-                          {patient.age ? `${patient.age}y` : "—"} / {patient.gender || "—"}
-                        </td>
-
-                        <td className="py-3.5 px-3 text-slate-600 font-mono text-[11px]">
-                          {bed.admissionDate ? new Date(bed.admissionDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
-                        </td>
-
-                        <td className="py-3.5 px-3 text-right space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenVitals(patient)}
-                            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100 transition shadow-2xs"
-                            title="Record fresh bedside vitals"
-                          >
-                            📊 Bedside Vitals
-                          </button>
-
-                          <button
-                            type="button"
-                            disabled={dischargingBedId === bed._id}
-                            onClick={() => handleDischargeBed(bed._id)}
-                            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 transition shadow-2xs disabled:opacity-50"
-                            title="Discharge patient upon physician approval"
-                          >
-                            {dischargingBedId === bed._id ? "Releasing..." : "Discharge"}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* TAB 2: OPD TRIAGE & WAITING QUEUE */}
-      {activeTab === "triage" && (
-        <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-            <div>
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
-                OPD Waiting Room Triage & Dispatcher
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Check in patients, verify preparation checklists, and call patients into physician chambers.
-              </p>
-            </div>
-            <Link
-              to="/appointments"
-              className="text-xs font-bold text-blue-700 hover:text-blue-900 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition shadow-2xs"
-            >
-              View Full OPD Calendar →
-            </Link>
+        {criticalPatients.length === 0 ? (
+          <div className="p-8 text-center bg-emerald-50/60 rounded-xl border border-emerald-200 text-xs text-emerald-800">
+            <span className="text-2xl block mb-1">💚</span>
+            <strong>All admitted inpatients are clinically stable.</strong>
+            <p className="text-emerald-600 mt-0.5">No critical or high-risk vital deteriorations detected at this station.</p>
           </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+                <tr>
+                  <th className="py-3 px-3">Patient & Location</th>
+                  <th className="py-3 px-3">Risk Severity</th>
+                  <th className="py-3 px-3">Admitting Reason</th>
+                  <th className="py-3 px-3">Latest Recorded Vitals</th>
+                  <th className="py-3 px-3">Attending Physician</th>
+                  <th className="py-3 px-3 text-right">Clinical Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {criticalPatients.map((p) => {
+                  const v = p.latestVital;
+                  return (
+                    <tr key={p.patientId} className="hover:bg-slate-50/80 transition">
+                      <td className="py-3 px-3">
+                        <button
+                          onClick={() => setSelectedPatientIdForModal(p.patientId)}
+                          className="font-bold text-indigo-700 hover:underline text-left text-sm block"
+                        >
+                          {p.name}
+                        </button>
+                        <div className="text-[11px] text-slate-500">
+                          {p.gender}, {p.age} yrs • <span className="font-semibold text-slate-700">Bed {p.roomBed}</span> ({p.ward})
+                        </div>
+                      </td>
 
-          {triageQueue.length === 0 ? (
-            <div className="text-center py-12 text-slate-400 text-xs">
-              <span className="text-3xl block mb-2">📋</span>
-              No appointments waiting in queue.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
-                  <tr>
-                    <th className="py-3 px-3">Time & Date</th>
-                    <th className="py-3 px-3">Patient</th>
-                    <th className="py-3 px-3">Consulting Doctor</th>
-                    <th className="py-3 px-3">Queue Status</th>
-                    <th className="py-3 px-3 text-right">Triage Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {triageQueue.map((apt) => {
-                    const patient = apt.patient || {};
-                    const doctor = apt.doctor || {};
-                    return (
-                      <tr key={apt._id} className="hover:bg-slate-50/80 transition">
-                        <td className="py-3.5 px-3">
-                          <span className="font-mono font-bold text-blue-800 text-xs bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">
-                            {apt.timeSlot}
-                          </span>
-                          <span className="block text-[11px] text-slate-500 mt-0.5">
-                            {apt.appointmentDate ? new Date(apt.appointmentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }) : "—"}
-                          </span>
-                        </td>
+                      <td className="py-3 px-3">
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            p.severity === "Critical"
+                              ? "bg-rose-100 text-rose-800 border border-rose-300"
+                              : "bg-amber-100 text-amber-800 border border-amber-300"
+                          }`}
+                        >
+                          <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current animate-ping"></span>
+                          {p.severity} Risk
+                        </span>
+                        <div className="text-[10px] text-slate-500 mt-1">{p.riskReason}</div>
+                      </td>
 
-                        <td className="py-3.5 px-3">
-                          <div className="font-bold text-slate-900 text-sm">{patient.name || "Patient"}</div>
-                          <div className="text-[11px] text-slate-500">
-                            {patient.age ? `${patient.age}y` : "—"} / {patient.gender || "—"} • {apt.reasonForVisit}
+                      <td className="py-3 px-3 font-medium text-slate-800 max-w-xs">
+                        <div className="truncate">{p.diagnosis}</div>
+                      </td>
+
+                      <td className="py-3 px-3">
+                        {v ? (
+                          <div className="flex flex-wrap gap-1.5">
+                            {v.bloodPressureSys && (
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
+                                v.bloodPressureSys >= 150 ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-700"
+                              }`}>
+                                BP: {v.bloodPressureSys}/{v.bloodPressureDia || "—"}
+                              </span>
+                            )}
+                            {v.spo2 && (
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
+                                v.spo2 <= 92 ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-700"
+                              }`}>
+                                SpO2: {v.spo2}%
+                              </span>
+                            )}
+                            {v.heartRate && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-100 text-slate-700">
+                                HR: {v.heartRate} bpm
+                              </span>
+                            )}
+                            {v.painScore !== undefined && v.painScore > 0 && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-amber-100 text-amber-800 font-bold">
+                                Pain: {v.painScore}/10
+                              </span>
+                            )}
                           </div>
-                        </td>
+                        ) : (
+                          <span className="text-slate-400 italic">No vitals logged today</span>
+                        )}
+                      </td>
 
-                        <td className="py-3.5 px-3">
-                          <div className="font-semibold text-slate-800">Dr. {doctor.name || "Doctor"}</div>
-                          <div className="text-[11px] text-slate-500">{doctor.specialization || "Consultant"}</div>
-                        </td>
+                      <td className="py-3 px-3 text-slate-700 font-medium">
+                        {p.attendingDoctor}
+                      </td>
 
-                        <td className="py-3.5 px-3">
-                          <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ring-1 ${
-                              apt.status === "in_consultation"
-                                ? "bg-purple-50 text-purple-700 ring-purple-500/20"
-                                : apt.status === "checked_in"
-                                ? "bg-teal-50 text-teal-700 ring-teal-500/20"
-                                : apt.status === "confirmed"
-                                ? "bg-blue-50 text-blue-700 ring-blue-500/20"
-                                : "bg-amber-50 text-amber-700 ring-amber-500/20"
-                            }`}
-                          >
-                            <span className="h-1.5 w-1.5 rounded-full mr-1 bg-current"></span>
-                            {apt.status === "checked_in" ? "Checked In (Waiting)" : apt.status === "in_consultation" ? "In Consultation" : apt.status}
-                          </span>
-                        </td>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedPatientIdForModal(p.patientId)}
+                          className="px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs transition"
+                        >
+                          View Patient
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
-                        <td className="py-3.5 px-3 text-right space-x-2">
-                          <button
-                            type="button"
-                            onClick={() => setChecklistAppointment(apt)}
-                            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 transition shadow-2xs"
-                            title="Pre-procedure clinical checklist"
-                          >
-                            📋 Checklist
-                          </button>
-
-                          {apt.status !== "checked_in" && apt.status !== "in_consultation" && (
-                            <button
-                              type="button"
-                              onClick={() => handleQuickCheckIn(apt._id)}
-                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition shadow-2xs"
-                            >
-                              ✓ Check In
-                            </button>
-                          )}
-
-                          {apt.status === "checked_in" && (
-                            <button
-                              type="button"
-                              onClick={() => handleQuickCallIn(apt._id)}
-                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition shadow-2xs"
-                            >
-                              Call In →
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* TAB 3: CRITICAL VITALS ALERT MONITOR */}
-      {activeTab === "alerts" && (
-        <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+      {/* SECTION 2: MEDICATIONS DUE (eMAR) & SECTION 3: PENDING TASKS */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* MEDICATIONS DUE QUEUE */}
+        <section className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
-              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
-                Critical Vitals Deterioration Monitor
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span>💊</span> Medications Due Today (eMAR)
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Automated clinical detection for high blood pressure, desaturation (SpO2 &lt; 92%), fever, and acute hyper/hypoglycemia.
-              </p>
+              <p className="text-xs text-slate-500">Scheduled doses requiring bedside administration verification</p>
             </div>
-            <span className="rounded-full bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 text-xs font-bold">
-              {vitalsAlerts.length} Active Triggers
-            </span>
+            <Link to="/nurse/medications" className="text-xs font-bold text-indigo-600 hover:underline">
+              View All →
+            </Link>
           </div>
 
-          {vitalsAlerts.length === 0 ? (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-8 text-center text-xs text-emerald-800">
-              <span className="text-3xl block mb-2">💚</span>
-              <strong>All patient vitals are within normal clinical thresholds.</strong>
-              <p className="mt-1 text-emerald-600">No acute vital deterioration triggers detected across hospital wards.</p>
+          {medicationsDue.length === 0 ? (
+            <div className="p-8 text-center text-slate-400 text-xs">
+              No pending medication doses due for administration at this hour.
             </div>
           ) : (
             <div className="space-y-3">
-              {vitalsAlerts.map((alertItem) => {
-                const patient = alertItem.patient || {};
+              {medicationsDue.slice(0, 6).map((med, idx) => {
+                const isDue = med.status === "Due";
                 return (
                   <div
-                    key={alertItem._id}
-                    className="p-4 rounded-xl border border-rose-200 bg-rose-50/40 hover:bg-rose-50/80 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    key={idx}
+                    className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
                   >
-                    <div className="space-y-1">
+                    <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 text-sm">{patient.name || "Patient"}</span>
-                        <span className="text-xs text-slate-500">
-                          ({patient.age ? `${patient.age}y` : "—"} / {patient.gender || "—"})
+                        <button
+                          onClick={() => setSelectedPatientIdForModal(med.patientId)}
+                          className="font-bold text-slate-900 text-xs hover:text-indigo-600"
+                        >
+                          {med.patientName}
+                        </button>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-semibold">
+                          {med.scheduledTime}
                         </span>
-                        {patient.isAdmitted && (
-                          <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-[10px] font-bold">
-                            Inpatient Ward
-                          </span>
-                        )}
                       </div>
-
-                      <div className="flex flex-wrap gap-2 pt-1 text-xs font-semibold">
-                        {alertItem.spo2 && alertItem.spo2 <= 92 && (
-                          <span className="rounded-md bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5">
-                            Low SpO2: {alertItem.spo2}%
-                          </span>
-                        )}
-                        {alertItem.bloodPressureSys && alertItem.bloodPressureSys >= 150 && (
-                          <span className="rounded-md bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5">
-                            High BP: {alertItem.bloodPressureSys}/{alertItem.bloodPressureDia || "—"} mmHg
-                          </span>
-                        )}
-                        {alertItem.bloodSugar && alertItem.bloodSugar >= 220 && (
-                          <span className="rounded-md bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5">
-                            Elevated Sugar: {alertItem.bloodSugar} mg/dL
-                          </span>
-                        )}
-                        {alertItem.temperature && alertItem.temperature >= 102 && (
-                          <span className="rounded-md bg-orange-100 text-orange-800 border border-orange-300 px-2 py-0.5">
-                            High Fever: {alertItem.temperature} °F
-                          </span>
-                        )}
+                      <div className="text-xs font-bold text-indigo-700 mt-1">
+                        {med.medication} • <span className="font-normal text-slate-600">{med.dosage} ({med.route})</span>
                       </div>
-
-                      <div className="text-[11px] text-slate-500 pt-0.5">
-                        Recorded at {new Date(alertItem.recordedAt || alertItem.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
-                        {alertItem.recorderName && ` by ${alertItem.recorderName}`}
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        {med.frequency} • Prescribed by {med.prescribingDoctor}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleOpenVitals(patient)}
-                        className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-xs font-bold text-slate-700 transition"
-                      >
-                        📊 View History
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          alert(`🚨 Physician notification dispatched for patient ${patient.name}. On-call doctor notified.`);
-                        }}
-                        className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-xs font-bold text-white transition shadow-2xs"
-                      >
-                        🚨 Alert Attending Doctor
-                      </button>
+                    <div className="flex items-center gap-2 self-end sm:self-auto">
+                      {isDue ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenMedModal(med, "given")}
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition"
+                          >
+                            ✓ Administer
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenMedModal(med, "held")}
+                            className="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-lg transition"
+                          >
+                            Hold
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenMedModal(med, "refused")}
+                            className="px-2 py-1 bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 text-xs font-semibold rounded-lg transition"
+                          >
+                            Refuse
+                          </button>
+                        </>
+                      ) : (
+                        <span className="px-2 py-1 rounded-md text-xs font-bold uppercase bg-emerald-100 text-emerald-800">
+                          {med.status}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );
@@ -1658,53 +1580,297 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
             </div>
           )}
         </section>
-      )}
 
-      {/* Bedside Vitals Logger Modal */}
-      {vitalsPatient && (
+        {/* PENDING NURSING TASKS */}
+        <section className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 space-y-4">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div>
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <span>📋</span> Pending Nursing Tasks
+              </h2>
+              <p className="text-xs text-slate-500">Scheduled clinical duties, line maintenance, and rounds</p>
+            </div>
+            <Link to="/nurse/tasks" className="text-xs font-bold text-indigo-600 hover:underline">
+              Task Board →
+            </Link>
+          </div>
+
+          {pendingTasks.length === 0 ? (
+            <div className="p-8 text-center text-slate-400 text-xs">
+              No pending nursing tasks scheduled.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pendingTasks.slice(0, 6).map((task) => (
+                <div
+                  key={task._id}
+                  className={`p-3.5 rounded-xl border transition flex items-center justify-between gap-3 ${
+                    task.isOverdue
+                      ? "border-rose-300 bg-rose-50/40"
+                      : "border-slate-200 bg-white hover:bg-slate-50"
+                  }`}
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-slate-900 text-xs">{task.title}</span>
+                      <span
+                        className={`text-[9px] uppercase font-extrabold px-1.5 py-0.5 rounded ${
+                          task.priority === "Stat"
+                            ? "bg-rose-600 text-white"
+                            : task.priority === "Urgent"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {task.priority}
+                      </span>
+                      {task.isOverdue && (
+                        <span className="text-[9px] uppercase font-bold text-rose-600 bg-rose-100 px-1.5 py-0.5 rounded">
+                          OVERDUE
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-slate-500">
+                      Patient: <strong className="text-slate-700">{task.patient?.name || "Assigned"}</strong> • Due:{" "}
+                      {new Date(task.dueTime).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleQuickCompleteTask(task._id, task.title)}
+                    className="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold rounded-lg transition"
+                  >
+                    ✓ Complete
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+
+      {/* SECTION 4: RECENT DOCTOR ORDERS */}
+      <section className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <span>🩺</span> Recent Doctor Orders & Clinical Directives
+            </h2>
+            <p className="text-xs text-slate-500">Directives from physicians requiring station review and nursing acknowledgment</p>
+          </div>
+          <Link to="/nurse/doctor-orders" className="text-xs font-bold text-indigo-600 hover:underline">
+            All Doctor Orders →
+          </Link>
+        </div>
+
+        {recentDoctorOrders.length === 0 ? (
+          <div className="p-8 text-center text-slate-400 text-xs">
+            No recent doctor directives entered into the station.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+                <tr>
+                  <th className="py-2.5 px-3">Type</th>
+                  <th className="py-2.5 px-3">Patient</th>
+                  <th className="py-2.5 px-3">Order Instruction</th>
+                  <th className="py-2.5 px-3">Prescribing Physician</th>
+                  <th className="py-2.5 px-3">Priority</th>
+                  <th className="py-2.5 px-3">Status</th>
+                  <th className="py-2.5 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {recentDoctorOrders.slice(0, 5).map((ord) => {
+                  const isNew = ord.status === "New";
+                  return (
+                    <tr key={ord._id} className="hover:bg-slate-50 transition">
+                      <td className="py-2.5 px-3">
+                        <span className="font-semibold text-slate-800 bg-slate-100 px-2 py-0.5 rounded text-[10px]">
+                          {ord.orderType}
+                        </span>
+                      </td>
+
+                      <td className="py-2.5 px-3 font-bold text-slate-900">
+                        {ord.patient?.name || "Patient"}
+                      </td>
+
+                      <td className="py-2.5 px-3 text-slate-700 max-w-sm">
+                        <div className="truncate">{ord.description}</div>
+                      </td>
+
+                      <td className="py-2.5 px-3 text-slate-600">
+                        {ord.orderedByName || "Physician"} ({ord.doctorDepartment || "Clinical"})
+                      </td>
+
+                      <td className="py-2.5 px-3">
+                        <span className={`text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                          ord.priority === "Stat" ? "bg-rose-100 text-rose-800 font-extrabold" : "bg-slate-100 text-slate-700"
+                        }`}>
+                          {ord.priority}
+                        </span>
+                      </td>
+
+                      <td className="py-2.5 px-3">
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          ord.status === "Completed"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : ord.status === "Acknowledged"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-amber-100 text-amber-800"
+                        }`}>
+                          {ord.status}
+                        </span>
+                      </td>
+
+                      <td className="py-2.5 px-3 text-right">
+                        {isNew ? (
+                          <button
+                            type="button"
+                            onClick={() => handleQuickAcknowledgeOrder(ord._id)}
+                            className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg transition"
+                          >
+                            Acknowledge
+                          </button>
+                        ) : (
+                          <span className="text-[11px] text-slate-400">✓ Accepted</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* QUICK MEDICATION ADMINISTRATION MODAL */}
+      {medModal.isOpen && medModal.med && (
         <div
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
           role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4"
         >
-          <div className="relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
                 <h3 className="text-base font-bold text-slate-900">
-                  Record Bedside Vitals: {vitalsPatient.name}
+                  eMAR: Record Administration
                 </h3>
-                <p className="text-xs text-slate-500">Record BP, Pulse, SpO2, Temperature & Blood Glucose</p>
+                <p className="text-xs text-slate-500">
+                  {medModal.med.medication} ({medModal.med.dosage}) for {medModal.med.patientName}
+                </p>
               </div>
               <button
                 type="button"
-                onClick={() => setVitalsPatient(null)}
-                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+                onClick={() => setMedModal({ isOpen: false, med: null, status: "given", reason: "", notes: "", submitting: false })}
+                className="text-slate-400 hover:text-slate-700 text-xl font-bold"
               >
-                ✕
+                ×
               </button>
             </div>
-            <VitalsTracker
-              vitals={patientVitalsList}
-              patientId={vitalsPatient._id}
-              onVitalsUpdated={async () => {
-                const res = await getPatientVitals(vitalsPatient._id);
-                setPatientVitalsList(res.vitals || []);
-                onTriggerRefresh();
-              }}
-            />
+
+            <form onSubmit={handleConfirmMedAdministration} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold uppercase text-slate-500 mb-1">
+                  Action Status
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMedModal((prev) => ({ ...prev, status: "given" }))}
+                    className={`py-2 text-xs font-bold rounded-xl border transition ${
+                      medModal.status === "given"
+                        ? "bg-emerald-600 text-white border-emerald-600"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    Given / Administered
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMedModal((prev) => ({ ...prev, status: "held" }))}
+                    className={`py-2 text-xs font-bold rounded-xl border transition ${
+                      medModal.status === "held"
+                        ? "bg-amber-600 text-white border-amber-600"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    Held (Withheld)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMedModal((prev) => ({ ...prev, status: "refused" }))}
+                    className={`py-2 text-xs font-bold rounded-xl border transition ${
+                      medModal.status === "refused"
+                        ? "bg-rose-600 text-white border-rose-600"
+                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    Patient Refused
+                  </button>
+                </div>
+              </div>
+
+              {(medModal.status === "held" || medModal.status === "refused") && (
+                <div>
+                  <label className="block text-xs font-semibold uppercase text-rose-600 mb-1">
+                    Mandatory Clinical Reason / Rationale *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={medModal.reason}
+                    onChange={(e) => setMedModal((prev) => ({ ...prev, reason: e.target.value }))}
+                    placeholder="e.g. Hypotension < 90/60, patient nauseous, patient refused morning dose..."
+                    className="w-full bg-rose-50/50 border border-rose-300 rounded-xl p-2.5 text-xs text-slate-800"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-semibold uppercase text-slate-500 mb-1">
+                  Bedside Observations & Notes (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={medModal.notes}
+                  onChange={(e) => setMedModal((prev) => ({ ...prev, notes: e.target.value }))}
+                  placeholder="e.g. Given with water, vitals monitored post dose..."
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-xs text-slate-800"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setMedModal({ isOpen: false, med: null, status: "given", reason: "", notes: "", submitting: false })}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={medModal.submitting}
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-sm transition disabled:opacity-50"
+                >
+                  {medModal.submitting ? "Confirming..." : "Confirm Administration"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
 
-      {/* Triage / Pre-Procedure Checklist Modal */}
-      {checklistAppointment && (
-        <NursingChecklistModal
-          appointment={checklistAppointment}
-          onClose={() => setChecklistAppointment(null)}
-          onUpdated={() => {
-            onTriggerRefresh();
-          }}
-          onOpenVitals={handleOpenVitals}
+      {/* 9-TAB CLINICAL PATIENT PROFILE MODAL */}
+      {selectedPatientIdForModal && (
+        <PatientClinicalProfileModal
+          patientId={selectedPatientIdForModal}
+          onClose={() => setSelectedPatientIdForModal(null)}
+          onRefresh={onTriggerRefresh}
         />
       )}
     </div>

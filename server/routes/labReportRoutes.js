@@ -5,6 +5,7 @@ import {
   createLabReport,
   updateLabReport,
   deleteLabReport,
+  updateSampleStatus,
 } from "../controllers/labReportController.js";
 import { protect, restrictTo } from "../middleware/authMiddleware.js";
 
@@ -16,6 +17,8 @@ router
   .route("/")
   .get(getAllLabReports)
   .post(restrictTo("admin", "doctor", "nurse", "receptionist"), createLabReport);
+
+router.patch("/:id/sample-status", restrictTo("nurse", "doctor", "admin"), updateSampleStatus);
 
 router
   .route("/:id")

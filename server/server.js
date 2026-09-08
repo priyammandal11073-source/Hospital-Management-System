@@ -15,6 +15,7 @@ import razorpayRoutes from "./routes/razorpayRoutes.js";
 import vitalsRoutes from "./routes/vitalsRoutes.js";
 import labReportRoutes from "./routes/labReportRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import nurseRoutes from "./routes/nurseRoutes.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -42,6 +43,7 @@ app.use("/api/razorpay", razorpayRoutes);
 app.use("/api/vitals", vitalsRoutes);
 app.use("/api/lab-reports", labReportRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/nurse", nurseRoutes);
 
 // Temporary route to confirm that the API is running.
 app.get("/api/health", (req, res) => {

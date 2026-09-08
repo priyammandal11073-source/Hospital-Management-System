@@ -63,6 +63,16 @@ const vitalsSchema = new mongoose.Schema(
       min: [50, "SpO2 is too low"],
       max: [100, "SpO2 cannot exceed 100%"],
     },
+    respiratoryRate: {
+      type: Number, // Breaths per minute (e.g. 16)
+      min: [5, "Respiratory rate is too low"],
+      max: [60, "Respiratory rate is too high"],
+    },
+    painScore: {
+      type: Number, // 0 - 10 Numeric Rating Scale
+      min: [0, "Pain score cannot be negative"],
+      max: [10, "Pain score cannot exceed 10"],
+    },
     recordedAt: {
       type: Date,
       default: Date.now,

@@ -7,6 +7,14 @@ import Doctor from "./models/Doctor.js";
 import Patient from "./models/Patient.js";
 import Prescription from "./models/Prescription.js";
 import User from "./models/User.js";
+import Vitals from "./models/Vitals.js";
+import LabReport from "./models/LabReport.js";
+import NursingNote from "./models/NursingNote.js";
+import NursingTask from "./models/NursingTask.js";
+import DoctorOrder from "./models/DoctorOrder.js";
+import IntakeOutput from "./models/IntakeOutput.js";
+import PatientTransfer from "./models/PatientTransfer.js";
+import NurseHandover from "./models/NurseHandover.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -32,6 +40,14 @@ const seedDatabase = async () => {
       Billing.deleteMany({}),
       Prescription.deleteMany({}),
       Bed.deleteMany({}),
+      Vitals.deleteMany({}),
+      LabReport.deleteMany({}),
+      NursingNote.deleteMany({}),
+      NursingTask.deleteMany({}),
+      DoctorOrder.deleteMany({}),
+      IntakeOutput.deleteMany({}),
+      PatientTransfer.deleteMany({}),
+      NurseHandover.deleteMany({}),
     ]);
 
     // 1. Create Staff Users
@@ -405,7 +421,15 @@ const seedDatabase = async () => {
         floor: "2nd floor (West wing)",
         dailyRate: 4500,
         features: { hasOxygen: true, hasVentilator: true, isIsolation: false, hasMonitor: true },
-        status: "available",
+        status: "occupied",
+        currentAdmission: {
+          patient: patient3._id,
+          attendingDoctor: doctor1._id,
+          admittedAt: oneDayAgo,
+          admissionReason: "Uncontrolled hyperglycemia with severe ketoacidotic tendency and peripheral neuropathy",
+          emergencyContact: "Neha Kumar (+91 98765 43217)",
+          notes: "Frequent glucose monitoring required. On subcutaneous insulin protocol.",
+        },
       },
       {
         bedNumber: "CCU-02",
@@ -546,6 +570,365 @@ const seedDatabase = async () => {
     ];
 
     await Bed.insertMany(bedsData);
+
+    // 8. Create Clinical Vitals
+    console.log("Creating clinical vitals records...");
+    await Vitals.create([
+      {
+        patient: patient1._id,
+        recordedBy: "nurse",
+        recorderName: "Sister Mary Clinical Nurse",
+        bloodPressureSys: 155,
+        bloodPressureDia: 98,
+        heartRate: 94,
+        spo2: 91,
+        temperature: 99.8,
+        bloodSugar: 180,
+        respiratoryRate: 22,
+        painScore: 6,
+        recordedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        notes: "Complains of mild retrosternal chest tightness. 2L O2 started via nasal cannula.",
+      },
+      {
+        patient: patient1._id,
+        recordedBy: "doctor",
+        recorderName: "Dr. Rajesh Sharma",
+        bloodPressureSys: 145,
+        bloodPressureDia: 92,
+        heartRate: 88,
+        spo2: 94,
+        temperature: 98.6,
+        bloodSugar: 160,
+        respiratoryRate: 18,
+        painScore: 4,
+        recordedAt: oneDayAgo,
+        notes: "Inpatient admission baseline vitals.",
+      },
+      {
+        patient: patient2._id,
+        recordedBy: "nurse",
+        recorderName: "Sister Mary Clinical Nurse",
+        bloodPressureSys: 118,
+        bloodPressureDia: 76,
+        heartRate: 76,
+        spo2: 98,
+        temperature: 98.6,
+        bloodSugar: 105,
+        respiratoryRate: 16,
+        painScore: 1,
+        recordedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+        notes: "Post-nebulization stable. SpO2 98% on room air.",
+      },
+      {
+        patient: patient3._id,
+        recordedBy: "nurse",
+        recorderName: "Sister Mary Clinical Nurse",
+        bloodPressureSys: 142,
+        bloodPressureDia: 90,
+        heartRate: 88,
+        spo2: 96,
+        temperature: 100.2,
+        bloodSugar: 285,
+        respiratoryRate: 20,
+        painScore: 4,
+        recordedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+        notes: "Pre-lunch capillary hyperglycemia. High fever spike noted.",
+      },
+    ]);
+
+    // 9. Create Clinical Nursing Tasks
+    console.log("Creating bedside nursing tasks...");
+    await NursingTask.create([
+      {
+        patient: patient1._id,
+        assignedNurse: nurseUser._id,
+        assignedNurseName: "Sister Mary Clinical Nurse",
+        taskType: "Record Vitals",
+        title: "Titrate O2 & Arterial Line BP Check",
+        description: "Check SpO2 and record invasive BP every hour. Alert doctor if systolic > 160",
+        priority: "Critical",
+        dueTime: new Date(Date.now() + 30 * 60 * 1000),
+        status: "Pending",
+        notes: "Cardiac telemetry active",
+      },
+      {
+        patient: patient1._id,
+        assignedNurse: nurseUser._id,
+        assignedNurseName: "Sister Mary Clinical Nurse",
+        taskType: "IV Monitoring",
+        title: "IV Labetalol Infusion Rate Verification",
+        description: "Check IV site patency and verify infusion pump delivering 0.5 mg/min",
+        priority: "High",
+        dueTime: new Date(Date.now() + 60 * 60 * 1000),
+        status: "In Progress",
+      },
+      {
+        patient: patient2._id,
+        assignedNurse: nurseUser._id,
+        assignedNurseName: "Sister Mary Clinical Nurse",
+        taskType: "Medication Due",
+        title: "Salbutamol 2.5mg Nebulization",
+        description: "Administer 4-hourly nebulization with oxygen support",
+        priority: "Routine",
+        dueTime: new Date(Date.now() + 120 * 60 * 1000),
+        status: "Pending",
+      },
+      {
+        patient: patient3._id,
+        assignedNurse: nurseUser._id,
+        assignedNurseName: "Sister Mary Clinical Nurse",
+        taskType: "Record Vitals",
+        title: "Sliding Scale Regular Insulin Glucose Check",
+        description: "Check capillary blood glucose pre-meal and administer insulin per scale",
+        priority: "High",
+        dueTime: new Date(Date.now() - 25 * 60 * 1000), // Overdue
+        status: "Pending",
+      },
+      {
+        patient: patient3._id,
+        assignedNurse: nurseUser._id,
+        assignedNurseName: "Sister Mary Clinical Nurse",
+        taskType: "Dressing Change",
+        title: "Right Diabetic Foot Ulcer Sterile Dressing",
+        description: "Clean with normal saline, apply betadine gauze dressing and inspect granulation",
+        priority: "Moderate",
+        dueTime: new Date(Date.now() + 180 * 60 * 1000),
+        status: "Pending",
+      },
+    ]);
+
+    // 10. Create Doctor Orders
+    console.log("Creating doctor clinical orders...");
+    await DoctorOrder.create([
+      {
+        patient: patient1._id,
+        doctor: doctor1._id,
+        doctorName: "Dr. Rajesh Sharma",
+        orderType: "Monitoring",
+        description: "Continuous arterial line BP and cardiac telemetry monitoring. Maintain MAP > 65 mmHg.",
+        priority: "STAT",
+        status: "Acknowledged",
+        acknowledgedBy: nurseUser._id,
+        acknowledgedByName: "Sister Mary Clinical Nurse",
+        acknowledgedAt: new Date(Date.now() - 45 * 60 * 1000),
+      },
+      {
+        patient: patient1._id,
+        doctor: doctor1._id,
+        doctorName: "Dr. Rajesh Sharma",
+        orderType: "Lab Test",
+        description: "Repeat Serum Troponin I and 12-Lead ECG at 14:00 hrs. Send stat report to desk.",
+        priority: "Urgent",
+        status: "New",
+      },
+      {
+        patient: patient2._id,
+        doctor: doctor2._id,
+        doctorName: "Dr. Priya Nair",
+        orderType: "Medication",
+        description: "Salbutamol 2.5mg + Budesonide 0.5mg nebulization TDS. Steam inhalation BD.",
+        priority: "Routine",
+        status: "In Progress",
+      },
+      {
+        patient: patient3._id,
+        doctor: doctor1._id,
+        doctorName: "Dr. Rajesh Sharma",
+        orderType: "Diet",
+        description: "Diabetic Renal Diet (1800 kcal). Restrict simple carbohydrates, low sodium.",
+        priority: "Routine",
+        status: "New",
+      },
+    ]);
+
+    // 11. Create Clinical Nursing Notes
+    console.log("Creating nursing notes...");
+    await NursingNote.create([
+      {
+        patient: patient1._id,
+        nurse: nurseUser._id,
+        nurseName: "Sister Mary Clinical Nurse",
+        shift: "Morning",
+        category: "Critical Alert",
+        note: "Patient reported retrosternal pressure at 08:30 AM. Desaturating to 91% SpO2 on room air. 2L O2 administered via nasal cannula. Attending cardiologist Dr. Sharma notified and bedside telemetry observed.",
+        symptomsObserved: "Chest discomfort, mild diaphoresis",
+        patientComplaints: "Pressure over mid-sternum",
+        patientResponse: "Relieved partially after O2 and sublingual nitrate",
+        isCritical: true,
+      },
+      {
+        patient: patient2._id,
+        nurse: nurseUser._id,
+        nurseName: "Sister Mary Clinical Nurse",
+        shift: "Morning",
+        category: "Clinical Intervention",
+        note: "Patient resting comfortably in semi-fowler position. Nebulization completed. Bilateral rhonchi reduced. Chest auscultation clearer than admission.",
+        symptomsObserved: "Mild wheezing, stable cough",
+        patientResponse: "Breathing easier, no dyspnea at rest",
+        isCritical: false,
+      },
+      {
+        patient: patient3._id,
+        nurse: nurseUser._id,
+        nurseName: "Sister Mary Clinical Nurse",
+        shift: "Morning",
+        category: "General Condition",
+        note: "Morning capillary glucose 285 mg/dL. 6 units Regular Insulin administered per sliding scale chart. Peripheral pulse palpable. Dietary compliance explained.",
+        isCritical: false,
+      },
+    ]);
+
+    // 12. Create Intake / Output Records
+    console.log("Creating fluid intake/output records...");
+    const todayYmd = new Date().toISOString().split("T")[0];
+    await IntakeOutput.create([
+      {
+        patient: patient1._id,
+        recordedBy: nurseUser._id,
+        recorderName: "Sister Mary Clinical Nurse",
+        date: todayYmd,
+        time: "08:00 AM",
+        intakeType: "IV Fluids",
+        intakeAmountMl: 500,
+        intakeNotes: "Normal Saline maintenance",
+        outputType: "Urine",
+        outputAmountMl: 450,
+        outputNotes: "Clear amber urine via Foley catheter",
+      },
+      {
+        patient: patient1._id,
+        recordedBy: nurseUser._id,
+        recorderName: "Sister Mary Clinical Nurse",
+        date: todayYmd,
+        time: "11:30 AM",
+        intakeType: "Oral Fluids",
+        intakeAmountMl: 250,
+        intakeNotes: "Sips of water and oral electrolyte solution",
+        outputType: "Urine",
+        outputAmountMl: 300,
+        outputNotes: "Foley drainage",
+      },
+      {
+        patient: patient2._id,
+        recordedBy: nurseUser._id,
+        recorderName: "Sister Mary Clinical Nurse",
+        date: todayYmd,
+        time: "09:00 AM",
+        intakeType: "Oral Fluids",
+        intakeAmountMl: 400,
+        intakeNotes: "Warm clear vegetable soup and tea",
+        outputType: "Urine",
+        outputAmountMl: 350,
+        outputNotes: "Voided without dysuria",
+      },
+      {
+        patient: patient3._id,
+        recordedBy: nurseUser._id,
+        recorderName: "Sister Mary Clinical Nurse",
+        date: todayYmd,
+        time: "08:30 AM",
+        intakeType: "IV Fluids",
+        intakeAmountMl: 500,
+        intakeNotes: "Normal Saline rehydration",
+        outputType: "Urine",
+        outputAmountMl: 650,
+        outputNotes: "Polyuria present",
+      },
+    ]);
+
+    // 13. Create Diagnostic Lab Reports
+    console.log("Creating diagnostic lab reports...");
+    await LabReport.create([
+      {
+        reportNumber: "LAB-2026-00101",
+        patient: patient1._id,
+        doctor: doctor1._id,
+        testName: "Serum Electrolytes & Cardiac Enzymes",
+        category: "Biochemistry",
+        testDate: new Date(),
+        status: "sample_collected",
+        technicianName: "Central Pathology Desk",
+        notes: "Blood sample drawn by Floor Nurse at 08:30 AM",
+      },
+      {
+        reportNumber: "LAB-2026-00102",
+        patient: patient3._id,
+        doctor: doctor1._id,
+        testName: "HbA1c & Fasting Lipid Profile",
+        category: "Biochemistry",
+        testDate: new Date(),
+        status: "ordered",
+        technicianName: "Central Pathology Desk",
+        notes: "Fasting sample pending morning collection",
+      },
+    ]);
+
+    // 14. Create Patient Transfer Request
+    const genBed = await Bed.findOne({ bedNumber: "GEN-102" });
+    const pvtBed = await Bed.findOne({ bedNumber: "PVT-201" });
+    if (genBed && pvtBed) {
+      await PatientTransfer.create({
+        patient: patient2._id,
+        fromBed: genBed._id,
+        fromWard: genBed.ward,
+        fromBedNumber: genBed.bedNumber,
+        toBed: pvtBed._id,
+        toWard: pvtBed.ward,
+        toBedNumber: pvtBed.bedNumber,
+        reason: "Patient family requested room upgrade to Private Deluxe for post-acute care",
+        requestedBy: nurseUser._id,
+        requestedByName: "Sister Mary Clinical Nurse",
+        status: "Requested",
+        notes: "Awaiting administrative and bed turnover clearance",
+      });
+    }
+
+    // 15. Create Shift Handover Record
+    console.log("Creating shift handover log...");
+    await NurseHandover.create({
+      shiftType: "Morning",
+      shiftDate: todayYmd,
+      ward: "ICU & General Inpatient Floors",
+      outgoingNurse: nurseUser._id,
+      outgoingNurseName: "Sister Mary Clinical Nurse",
+      status: "Submitted",
+      generalNotes: "All beds rounded. Oxygen cylinders in reserve verified. 1 critical cardiac patient under telemetry monitoring.",
+      patientsSummary: [
+        {
+          patient: patient1._id,
+          patientName: "Rahul Sharma",
+          ward: "ICU (Intensive Care Unit)",
+          bedNumber: "ICU-01",
+          condition: "Critical",
+          recentVitalsSummary: "BP 155/98 mmHg, SpO2 91% on room air -> 95% on 2L O2",
+          pendingMeds: "Labetalol infusion continuous",
+          pendingTasks: "Repeat Troponin I blood draw at 14:00 hrs",
+          pendingInvestigations: "Cardiac enzyme panel sent to lab",
+          doctorInstructions: "Dr. Sharma ordered strict bed rest & arterial monitoring",
+          specialCareRequirements: "Cardiac monitor lead checks Q2H",
+        },
+        {
+          patient: patient2._id,
+          patientName: "Priya Patel",
+          ward: "General Ward",
+          bedNumber: "GEN-102",
+          condition: "Stable",
+          recentVitalsSummary: "BP 118/76 mmHg, SpO2 98%",
+          pendingMeds: "Nebulization due at 14:00 hrs",
+          doctorInstructions: "Evaluate for discharge tomorrow morning",
+        },
+        {
+          patient: patient3._id,
+          patientName: "Amit Kumar",
+          ward: "CCU (Critical Care Unit)",
+          bedNumber: "CCU-01",
+          condition: "High Risk",
+          recentVitalsSummary: "Sugar 285 mg/dL, Temp 100.2 °F",
+          pendingMeds: "Post-lunch insulin sliding scale check",
+          pendingTasks: "Right foot ulcer sterile dressing change",
+        },
+      ],
+    });
 
     console.log("\n========================================================");
     console.log("Database seeded successfully with Indian healthcare data!");

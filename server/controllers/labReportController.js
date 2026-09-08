@@ -220,3 +220,31 @@ export const deleteLabReport = async (req, res) => {
     return res.status(500).json({ message: "Unable to delete lab report" });
   }
 };
+
+// PATCH /api/lab-reports/:id/sample-status
+export const updateSampleStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, notes } = req.body;
+
+    if (!["ordered", "sample_collected", "in_progress", "completed", "cancelled"].includes(status)) {
+      return res.status(400).json({ message: "Invalid sample status" });
+    }
+
+    const report = await LabReport.findById(id);
+    if (!report) {
+      return res.status(404).json({ message: "Lab report not found" });
+    }
+
+    report.status = status;
+    if (notes) {
+      report.notes = (report.notes ? report.notes + " | " : "") + notes;
+    }
+    await report.save();
+
+    return res.status(200).json({ message: `Sample collection status updated to ${status}`, report });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Unable to update sample status" });
+  }
+};
+
