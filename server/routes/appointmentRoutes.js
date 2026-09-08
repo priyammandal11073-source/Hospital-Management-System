@@ -11,7 +11,10 @@ import { protect, restrictTo } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.route("/").post(protect, createAppointment).get(protect, getAllAppointments);
+router
+  .route("/")
+  .post(protect, restrictTo("admin", "receptionist", "doctor"), createAppointment)
+  .get(protect, getAllAppointments);
 
 router.patch("/:id/status", protect, updateAppointmentStatus);
 router.patch("/:id/checklist", protect, updateAppointmentChecklist);

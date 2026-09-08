@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { updateDoctorSchedule, addDoctorLeave, removeDoctorLeave } from "../services/api.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const DAYS_OF_WEEK = [
   "Monday",
@@ -12,6 +13,9 @@ const DAYS_OF_WEEK = [
 ];
 
 export default function DoctorScheduleModal({ doctor, onClose, onUpdated }) {
+  const { user } = useAuth();
+  if (user?.role === "nurse") return null;
+
   const [activeTab, setActiveTab] = useState("weekly"); // 'weekly' | 'leaves'
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");

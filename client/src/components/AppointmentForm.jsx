@@ -4,10 +4,28 @@ import {
   getDoctors,
   getPatients,
 } from "../services/api.js";
+import { useAuth } from "../context/AuthContext.jsx";
 import PaymentMethodSelect from "./PaymentMethodSelect.jsx";
 import UpiPaymentBox from "./UpiPaymentBox.jsx";
 
 function AppointmentForm({ onCancel, onSuccess }) {
+  const { user } = useAuth();
+  if (user?.role === "nurse") {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-800">
+        <p className="font-bold">⚠️ Access Restricted</p>
+        <p className="mt-1">Nurses do not have permission to book new patient appointments. Please contact front desk reception.</p>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="mt-4 rounded-lg bg-amber-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+        >
+          Close
+        </button>
+      </div>
+    );
+  }
+
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [patientSearch, setPatientSearch] = useState("");

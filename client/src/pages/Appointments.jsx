@@ -36,6 +36,8 @@ const statusClasses = {
 function Appointments() {
   const { user } = useAuth();
   const isDoctor = user?.role === "doctor";
+  const isNurse = user?.role === "nurse";
+  const canBook = !isNurse;
   const canDelete = ["admin", "receptionist", "nurse"].includes(user?.role);
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -146,21 +148,25 @@ function Appointments() {
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
-            {isDoctor ? "My Clinical Consultations" : "Appointments"}
+            {isDoctor ? "My Clinical Consultations" : isNurse ? "Clinical Appointments & Triage" : "Appointments"}
           </h1>
           <p className="mt-1 text-sm text-slate-600">
             {isDoctor
               ? "Review and manage consultations assigned to your clinical schedule."
+              : isNurse
+              ? "Review outpatient triage queue, conduct safety checklists, and monitor patient vitals."
               : "Book and manage hospital-wide patient appointments."}
           </p>
         </div>
-        <button
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          onClick={() => setIsFormOpen(true)}
-          type="button"
-        >
-          + Book appointment
-        </button>
+        {canBook && (
+          <button
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            onClick={() => setIsFormOpen(true)}
+            type="button"
+          >
+            + Book appointment
+          </button>
+        )}
       </div>
 
       <div className={`mb-5 grid gap-3 ${isDoctor ? "lg:grid-cols-4" : "lg:grid-cols-5"}`}>
@@ -373,7 +379,7 @@ function Appointments() {
         )}
       </div>
 
-      {isFormOpen && (
+      {canBook && isFormOpen && (
         <div
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"

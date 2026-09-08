@@ -10,6 +10,9 @@ const departments = ["Cardiology", "Medicine", "Neurology", "Orthopedics", "Pedi
 function Doctors() {
   const { user } = useAuth();
   const isAdmin = user?.role === "admin";
+  const isDoctor = user?.role === "doctor";
+  const isNurse = user?.role === "nurse";
+  const canManageDoctorSchedule = !isNurse && (isAdmin || isDoctor);
   const [doctors, setDoctors] = useState([]);
   const [specialization, setSpecialization] = useState("");
   const [department, setDepartment] = useState("");
@@ -68,8 +71,6 @@ function Doctors() {
       setError(requestError.response?.data?.message || "Unable to delete doctor.");
     }
   };
-
-  const isDoctor = user?.role === "doctor";
 
   return (
     <section>
@@ -191,14 +192,16 @@ function Doctors() {
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
-                    <button
-                      className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
-                      onClick={() => setScheduleDoctor(doctor)}
-                      title="Manage availability schedule and leaves"
-                      type="button"
-                    >
-                      📅 Schedule
-                    </button>
+                    {canManageDoctorSchedule && (
+                      <button
+                        className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
+                        onClick={() => setScheduleDoctor(doctor)}
+                        title="Manage availability schedule and leaves"
+                        type="button"
+                      >
+                        📅 Schedule
+                      </button>
+                    )}
                     {isAdmin && (
                       <>
                         <button
@@ -261,7 +264,7 @@ function Doctors() {
           </div>
         </div>
       )}
-      {scheduleDoctor && (
+      {canManageDoctorSchedule && scheduleDoctor && (
         <DoctorScheduleModal
           doctor={scheduleDoctor}
           onClose={() => setScheduleDoctor(null)}
