@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { sendBillingEmail } from "../services/api.js";
 
-const formatDate = (date) => (date ? new Date(date).toLocaleDateString() : "—");
+const formatDate = (date) =>
+  date
+    ? new Date(date).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "—";
 
 function InvoiceModal({ billing, onClose }) {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -24,10 +31,11 @@ function InvoiceModal({ billing, onClose }) {
     .map((c, i) => `${i + 1}. ${c.description}: ₹${Number(c.cost || 0).toFixed(2)}`)
     .join("\n");
 
-  const whatsappMessage = `🏥 *CITY GENERAL HOSPITAL - INVOICE*
+  const whatsappMessage = `🏥 *NIVORA CARE HOSPITAL - TAX INVOICE*
+*Care • Trust • Healing*
 *Invoice No:* ${invoiceNumber}
 *Date:* ${formatDate(billing.createdAt)}
-*Patient:* ${patient.name || "Patient"}
+*Patient:* ${patient.name || "Patient"} ${patient.abhaId ? `(ABHA: ${patient.abhaId})` : ""}
 *Status:* ${billing.paymentStatus?.toUpperCase()}${billing.paymentMethod ? ` (${billing.paymentMethod.toUpperCase()})` : ""}
 
 *Itemized Charges:*
@@ -35,8 +43,9 @@ ${chargesListText}
 
 *Total Amount:* ₹${totalAmount}
 ------------------------------------
-Thank you for choosing City General Hospital.
-For queries, contact billing at +91 98765 43210.`;
+*NABH Accredited | GSTIN: 07AAAAA0000A1Z5*
+Outer Ring Road, Near AIIMS Metro, New Delhi - 110029
+Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
 
   const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 
@@ -57,7 +66,7 @@ For queries, contact billing at +91 98765 43210.`;
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Invoice - ${invoiceNumber}</title>
+          <title>Tax Invoice - ${invoiceNumber}</title>
           <meta charset="utf-8" />
           <style>
             * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -70,11 +79,12 @@ For queries, contact billing at +91 98765 43210.`;
               line-height: 1.5;
             }
             .header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1e293b; padding-bottom: 16px; margin-bottom: 20px; }
-            .hosp-title { font-size: 22px; font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 6px; }
-            .hosp-title span { color: #2563eb; }
-            .hosp-subtitle { font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; margin-top: 2px; }
-            .hosp-contact { font-size: 11px; color: #475569; margin-top: 4px; }
-            .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+            .hosp-title { font-size: 20px; font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+            .hosp-subtitle { font-size: 11px; font-weight: 600; color: #0d9488; margin-top: 2px; }
+            .hosp-contact { font-size: 11px; color: #475569; margin-top: 2px; }
+            .hosp-badges { display: flex; gap: 8px; margin-top: 6px; }
+            .tag { display: inline-block; padding: 2px 6px; background: #e0f2fe; color: #0369a1; border-radius: 3px; font-size: 10px; font-weight: 700; }
+            .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.2px; }
             .badge-paid { background-color: #dcfce7; color: #166534; }
             .badge-pending { background-color: #fee2e2; color: #991b1b; }
             .badge-partially_paid { background-color: #fef3c7; color: #92400e; }
@@ -83,18 +93,18 @@ For queries, contact billing at +91 98765 43210.`;
             .inv-date { font-size: 11px; color: #64748b; }
             .details-grid { display: flex; gap: 20px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; }
             .details-col { flex: 1; }
-            .col-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px; }
+            .col-title { font-size: 10px; font-weight: 700; color: #64748b; margin-bottom: 4px; text-transform: uppercase; }
             .name-highlight { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
             .info-line { font-size: 12px; color: #334155; margin-bottom: 2px; }
             .info-label { font-weight: 600; color: #475569; }
             table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
-            th { background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1; padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; font-weight: 700; color: #475569; }
+            th { background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1; padding: 8px 10px; text-align: left; font-size: 11px; font-weight: 600; color: #475569; }
             td { padding: 9px 10px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
             .text-right { text-align: right; }
             .text-center { text-align: center; }
             .total-row td { font-weight: 900; font-size: 16px; border-top: 2px solid #0f172a; padding: 12px 10px; color: #2563eb; }
             .footer-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 36px; padding-top: 16px; border-top: 1px solid #cbd5e1; }
-            .terms { font-size: 11px; color: #64748b; max-width: 340px; }
+            .terms { font-size: 11px; color: #64748b; max-width: 380px; }
             .sign-box { text-align: center; }
             .sign-line { width: 180px; border-bottom: 1px solid #475569; height: 35px; margin-bottom: 4px; }
             @page { size: A4 portrait; margin: 12mm 15mm; }
@@ -102,28 +112,37 @@ For queries, contact billing at +91 98765 43210.`;
         </head>
         <body>
           <div class="header-flex">
-            <div>
-              <div class="hosp-title"><span>✚</span> CITY GENERAL HOSPITAL</div>
-              <div class="hosp-subtitle">Multi-Specialty Healthcare & Research Institute</div>
-              <div class="hosp-contact">123 Healthcare Boulevard, Medical District • New Delhi - 110001</div>
-              <div class="hosp-contact">Phone: +91 98765 43210 • Email: billing@hospital.com</div>
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <img src="/nivora-logo.png" alt="Nivora Care Hospital" style="height: 56px; width: 56px; object-fit: contain; border-radius: 8px;" />
+              <div>
+                <div class="hosp-title">NIVORA CARE HOSPITAL</div>
+                <div class="hosp-subtitle">Care • Trust • Healing | Multi-Specialty Healthcare</div>
+                <div class="hosp-contact">Outer Ring Road, Near AIIMS Metro, New Delhi - 110029, India</div>
+                <div class="hosp-contact">Phone: +91 98765 43210 • Emergency: 108 / 112 • Email: billing@nivoracare.com</div>
+                <div class="hosp-badges">
+                  <span class="tag">NABH ACCREDITED (NABH-2023-0412)</span>
+                  <span class="tag">GSTIN: 07AAAAA0000A1Z5</span>
+                  <span class="tag">REG: DL-HOSP-2024-8891</span>
+                </div>
+              </div>
             </div>
             <div class="inv-meta">
               <span class="badge ${billing.paymentStatus === 'paid' ? 'badge-paid' : billing.paymentStatus === 'partially_paid' ? 'badge-partially_paid' : 'badge-pending'}">
                 ${billing.paymentStatus === 'paid' ? 'PAID INVOICE' : 'PAYMENT PENDING'}
               </span>
-              <div class="inv-num">Invoice #${invoiceNumber}</div>
+              <div class="inv-num">Tax Invoice #${invoiceNumber}</div>
               <div class="inv-date">Date: ${formatDate(billing.createdAt)}</div>
-              ${billing.paymentDate ? `<div class="inv-date">Paid On: ${formatDate(billing.paymentDate)} (${billing.paymentMethod?.toUpperCase() || 'CASH'})</div>` : ''}
+              ${billing.paymentDate ? `<div class="inv-date">Paid on: ${formatDate(billing.paymentDate)} (${billing.paymentMethod?.toUpperCase() || 'CASH'})</div>` : ''}
             </div>
           </div>
 
           <div class="details-grid">
             <div class="details-col">
-              <div class="col-title">Billed To (Patient Details)</div>
+              <div class="col-title">Billed to (Patient Details)</div>
               <div class="name-highlight">${patient.name || '—'}</div>
+              ${patient.abhaId ? `<div class="info-line"><span class="info-label">ABHA ID:</span> <strong style="color:#0284c7;">${patient.abhaId}</strong></div>` : ''}
               <div class="info-line"><span class="info-label">Age / Gender:</span> ${patient.age ? `${patient.age} yrs` : '—'} / ${patient.gender || '—'}</div>
-              <div class="info-line"><span class="info-label">Phone:</span> ${patient.contactNumber || '—'}</div>
+              <div class="info-line"><span class="info-label">Phone:</span> +91 ${patient.contactNumber ? String(patient.contactNumber).replace(/^(\+91|91)/, '') : '—'}</div>
               <div class="info-line"><span class="info-label">Email:</span> ${patient.email || '—'}</div>
               ${patient.address ? `<div class="info-line"><span class="info-label">Address:</span> ${patient.address}</div>` : ''}
             </div>
@@ -132,7 +151,7 @@ For queries, contact billing at +91 98765 43210.`;
               <div class="name-highlight">Dr. ${doctor.name || 'Assigned Physician'}</div>
               <div class="info-line"><span class="info-label">Specialization:</span> ${doctor.specialization || 'General'} (${doctor.department || 'Medicine'})</div>
               <div class="info-line"><span class="info-label">Appointment Date:</span> ${formatDate(appointment.appointmentDate)} ${appointment.timeSlot ? `at ${appointment.timeSlot}` : ''}</div>
-              ${appointment.reasonForVisit ? `<div class="info-line"><span class="info-label">Reason for Visit:</span> ${appointment.reasonForVisit}</div>` : ''}
+              ${appointment.reasonForVisit ? `<div class="info-line"><span class="info-label">Reason for visit:</span> ${appointment.reasonForVisit}</div>` : ''}
             </div>
           </div>
 
@@ -140,7 +159,7 @@ For queries, contact billing at +91 98765 43210.`;
             <thead>
               <tr>
                 <th style="width: 40px;" class="text-center">#</th>
-                <th>Description / Procedure</th>
+                <th>Description / Procedure (SAC / HSN Code: 999312)</th>
                 <th style="width: 140px;" class="text-right">Amount (₹)</th>
               </tr>
             </thead>
@@ -155,7 +174,7 @@ For queries, contact billing at +91 98765 43210.`;
             </tbody>
             <tfoot>
               <tr class="total-row">
-                <td colspan="2" class="text-right" style="color: #0f172a;">Total Amount Due:</td>
+                <td colspan="2" class="text-right" style="color: #0f172a;">Total Amount Payable:</td>
                 <td class="text-right" style="font-family: monospace;">₹${totalAmount}</td>
               </tr>
             </tfoot>
@@ -163,14 +182,15 @@ For queries, contact billing at +91 98765 43210.`;
 
           <div class="footer-flex">
             <div class="terms">
-              <strong>Payment Terms & Notes:</strong><br />
-              This is an official computer-generated medical bill issued by City General Hospital.
-              All consultations and diagnostic test fees are non-refundable.
+              <strong>Statutory Compliance & Payment Notes:</strong><br />
+              • GST Exemption on Healthcare Services under Notification No. 12/2017-Central Tax (Rate).<br />
+              • Accepted payment modes: UPI (BHIM, PhonePe, GPay, Paytm), RuPay / Cards, Net Banking, PM-JAY / CGHS / TPA Insurance, and Cash.<br />
+              • This is an official computer-generated tax invoice issued by Nivora Care Hospital.
             </div>
             <div class="sign-box">
               <div class="sign-line"></div>
               <div style="font-size: 11px; font-weight: bold; color: #334155;">Authorized Signatory</div>
-              <div style="font-size: 10px; color: #64748b;">Billing & Accounts Department</div>
+              <div style="font-size: 10px; color: #64748b;">Accounts & Billing Department</div>
             </div>
           </div>
         </body>
@@ -325,27 +345,42 @@ For queries, contact billing at +91 98765 43210.`;
         <div id="printable-invoice" className="p-8 text-slate-800">
           {/* Hospital Letterhead Header */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between border-b-2 border-slate-800 pb-6">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl text-blue-600 font-bold">✚</span>
+            <div className="flex items-start gap-4">
+              <img
+                src="/nivora-logo.png"
+                alt="Nivora Care Hospital"
+                className="h-14 w-14 rounded-xl border border-slate-200 bg-white p-1 object-contain shadow-xs flex-shrink-0"
+              />
+              <div>
                 <h1 className="text-2xl font-black tracking-tight text-slate-900">
-                  CITY GENERAL HOSPITAL
+                  Nivora Care Hospital
                 </h1>
+                <p className="mt-0.5 text-xs font-semibold text-teal-700 uppercase tracking-wide">
+                  Care • trust • healing
+                </p>
+                <p className="mt-1 text-xs text-slate-600">
+                  Outer Ring Road, Near AIIMS Metro, New Delhi - 110029, India
+                </p>
+                <p className="text-xs text-slate-600">
+                  Phone: +91 98765 43210 • Emergency: 108 / 112 • Email: billing@nivoracare.com
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="rounded bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-800">
+                    NABH ACCREDITED (NABH-2023-0412)
+                  </span>
+                  <span className="rounded bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700">
+                    GSTIN: 07AAAAA0000A1Z5
+                  </span>
+                  <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                    ABDM CONNECTED
+                  </span>
+                </div>
               </div>
-              <p className="mt-1 text-xs uppercase tracking-wider font-semibold text-slate-500">
-                Multi-Specialty Healthcare & Research Institute
-              </p>
-              <p className="mt-2 text-xs text-slate-600">
-                123 Healthcare Boulevard, Medical District • Pin: 110001
-              </p>
-              <p className="text-xs text-slate-600">
-                Phone: +91 98765 43210 • Email: contact@hospital.com
-              </p>
             </div>
 
             <div className="mt-4 sm:mt-0 sm:text-right">
               <span
-                className={`inline-block rounded-md px-3 py-1 text-xs font-bold uppercase tracking-wider ${
+                className={`inline-block rounded-md px-3 py-1 text-xs font-bold ${
                   billing.paymentStatus === "paid"
                     ? "bg-emerald-100 text-emerald-800"
                     : billing.paymentStatus === "partially_paid"
@@ -353,13 +388,13 @@ For queries, contact billing at +91 98765 43210.`;
                     : "bg-red-100 text-red-800"
                 }`}
               >
-                {billing.paymentStatus === "paid" ? "PAID INVOICE" : "PAYMENT PENDING"}
+                {billing.paymentStatus === "paid" ? "Paid invoice" : "Payment pending"}
               </span>
-              <p className="mt-3 text-sm font-bold text-slate-800">Invoice: #{invoiceNumber}</p>
+              <p className="mt-3 text-sm font-bold text-slate-800">Tax invoice: #{invoiceNumber}</p>
               <p className="text-xs text-slate-500">Date: {formatDate(billing.createdAt)}</p>
               {billing.paymentDate && (
                 <p className="text-xs text-slate-500">
-                  Paid On: {formatDate(billing.paymentDate)} ({billing.paymentMethod?.toUpperCase() || "CASH"})
+                  Paid on: {formatDate(billing.paymentDate)} ({billing.paymentMethod?.toUpperCase() || "CASH"})
                 </p>
               )}
             </div>
@@ -368,18 +403,24 @@ For queries, contact billing at +91 98765 43210.`;
           {/* Patient & Doctor Two-Column Information */}
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-6 rounded-lg bg-slate-50 p-4 border border-slate-200">
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Billed To (Patient Details)
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Billed to (patient details)
               </h3>
               <p className="mt-1 text-base font-bold text-slate-900">{patient.name || "—"}</p>
               <div className="mt-1 text-xs space-y-0.5 text-slate-600">
+                {patient.abhaId && (
+                  <p>
+                    <span className="font-semibold text-slate-700">ABHA ID:</span>{" "}
+                    <span className="font-bold text-blue-700">{patient.abhaId}</span>
+                  </p>
+                )}
                 <p>
-                  <span className="font-semibold text-slate-700">Age / Gender:</span>{" "}
+                  <span className="font-semibold text-slate-700">Age / gender:</span>{" "}
                   {patient.age ? `${patient.age} yrs` : "—"} / {patient.gender || "—"}
                 </p>
                 <p>
-                  <span className="font-semibold text-slate-700">Phone:</span>{" "}
-                  {patient.contactNumber || "—"}
+                  <span className="font-semibold text-slate-700">Contact:</span>{" "}
+                  +91 {patient.contactNumber ? String(patient.contactNumber).replace(/^(\+91|91)/, '') : "—"}
                 </p>
                 <p>
                   <span className="font-semibold text-slate-700">Email:</span>{" "}
@@ -394,8 +435,8 @@ For queries, contact billing at +91 98765 43210.`;
             </div>
 
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Consultation Details
+              <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Consultation details
               </h3>
               <p className="mt-1 text-base font-bold text-slate-900">
                 {doctor.name ? `Dr. ${doctor.name}` : "General Physician"}
@@ -406,12 +447,12 @@ For queries, contact billing at +91 98765 43210.`;
                   {doctor.specialization || "General Medicine"} ({doctor.department || "OPD"})
                 </p>
                 <p>
-                  <span className="font-semibold text-slate-700">Appointment Date:</span>{" "}
+                  <span className="font-semibold text-slate-700">Appointment date:</span>{" "}
                   {formatDate(appointment.appointmentDate)} {appointment.timeSlot ? `at ${appointment.timeSlot}` : ""}
                 </p>
                 {appointment.reasonForVisit && (
                   <p>
-                    <span className="font-semibold text-slate-700">Reason for Visit:</span>{" "}
+                    <span className="font-semibold text-slate-700">Reason for visit:</span>{" "}
                     {appointment.reasonForVisit}
                   </p>
                 )}
@@ -423,9 +464,9 @@ For queries, contact billing at +91 98765 43210.`;
           <div className="mt-6">
             <table className="w-full border-collapse text-left text-sm">
               <thead>
-                <tr className="border-b-2 border-slate-300 bg-slate-100 text-xs uppercase font-bold text-slate-600">
+                <tr className="border-b-2 border-slate-300 bg-slate-100 text-xs font-semibold text-slate-600">
                   <th className="py-2.5 px-3 w-12 text-center">#</th>
-                  <th className="py-2.5 px-4">Description / Procedure</th>
+                  <th className="py-2.5 px-4">Description / procedure (SAC: 999312)</th>
                   <th className="py-2.5 px-4 text-right w-36">Amount (₹)</th>
                 </tr>
               </thead>
@@ -443,7 +484,7 @@ For queries, contact billing at +91 98765 43210.`;
               <tfoot>
                 <tr className="border-t-2 border-slate-800 font-bold">
                   <td colSpan="2" className="py-3 px-4 text-right text-base text-slate-900">
-                    Total Amount Due:
+                    Total amount payable:
                   </td>
                   <td className="py-3 px-4 text-right text-lg font-black text-blue-600 font-mono">
                     ₹{totalAmount}
@@ -456,15 +497,16 @@ For queries, contact billing at +91 98765 43210.`;
           {/* Payment Terms & Signatures */}
           <div className="mt-10 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="text-xs text-slate-500 max-w-sm">
-              <p className="font-semibold text-slate-700">Payment Terms & Notes:</p>
+              <p className="font-semibold text-slate-700">Statutory compliance & payment notes:</p>
               <p className="mt-1">
-                This is a computer-generated medical bill issued by City General Hospital. All medical consultations, diagnostics, and procedures are non-refundable.
+                • GST exemption on clinical healthcare services under Notification No. 12/2017-Central Tax (Rate).<br />
+                • Accepted payment modes: UPI (BHIM, PhonePe, GPay, Paytm), RuPay / Cards, Net Banking, PM-JAY / CGHS / TPA Insurance, and Cash.
               </p>
             </div>
 
             <div className="text-center">
               <div className="h-12 w-44 border-b border-slate-400"></div>
-              <p className="mt-1 text-xs font-semibold text-slate-600">Authorized Signatory</p>
+              <p className="mt-1 text-xs font-semibold text-slate-600">Authorized signatory</p>
               <p className="text-[10px] text-slate-400">Accounts & Billing Department</p>
             </div>
           </div>

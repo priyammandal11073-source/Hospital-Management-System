@@ -41,11 +41,11 @@ function MyAppointments() {
 
   return (
     <section>
-      <h1 className="text-2xl font-semibold text-slate-800">My Appointments</h1>
+      <h1 className="text-2xl font-semibold text-slate-800">My appointments</h1>
       <div className="mt-4 max-w-xs">
         <label className="text-sm font-medium text-slate-700">Filter by status
           <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
-            <option value="">All</option>
+            <option value="">All statuses</option>
             <option value="pending">Pending</option>
             <option value="confirmed">Confirmed</option>
             <option value="completed">Completed</option>
@@ -92,7 +92,7 @@ function MyAppointments() {
                 {/* Right side: Date + Time Slot + Status Badge + Cancel Action */}
                 <div className="flex flex-wrap items-center gap-2.5 self-end sm:self-auto">
                   <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-600">
-                    {new Date(a.appointmentDate).toLocaleDateString()}
+                    {new Date(a.appointmentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                   </span>
                   <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
                     {a.timeSlot}

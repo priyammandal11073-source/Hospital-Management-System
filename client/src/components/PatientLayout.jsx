@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { usePatientAuth } from "../context/PatientAuthContext.jsx";
 import HospitalLogo from "./HospitalLogo.jsx";
 
@@ -18,10 +18,10 @@ function PatientLayout() {
     navigate("/patient/login");
   };
 
-  const todayStr = new Date().toLocaleDateString("en-US", {
+  const todayStr = new Date().toLocaleDateString("en-IN", {
     weekday: "short",
+    day: "2-digit",
     month: "short",
-    day: "numeric",
     year: "numeric",
   });
 
@@ -32,11 +32,13 @@ function PatientLayout() {
         <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
           {/* Hospital Logo & Brand Title */}
           <div className="flex items-center gap-4">
-            <HospitalLogo variant="full" />
+            <Link to="/patient/dashboard" className="transition hover:opacity-95 cursor-pointer" title="Home page">
+              <HospitalLogo variant="full" />
+            </Link>
             <span className="hidden h-7 w-px bg-slate-200 md:inline-block" />
             <span className="hidden rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-500/30 md:inline-flex items-center gap-1.5">
               <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
-              Patient Care Portal
+              Patient care portal
             </span>
           </div>
 
@@ -49,7 +51,7 @@ function PatientLayout() {
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
               </span>
               <span className="font-bold">24/7 Emergency:</span>
-              <span className="font-mono text-rose-800">108</span>
+              <span className="font-mono text-rose-800 font-bold">108 / 112</span>
               <span className="text-rose-300">|</span>
               <span className="font-mono text-rose-800">+91 98765 43210</span>
             </div>
@@ -71,7 +73,7 @@ function PatientLayout() {
                 <p className="text-xs font-bold text-slate-800 leading-tight">{patient?.name || "Patient"}</p>
                 <div className="flex items-center gap-1">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-blue-600">
+                  <span className="text-[10px] font-semibold text-blue-600">
                     Patient
                   </span>
                 </div>
@@ -101,8 +103,8 @@ function PatientLayout() {
           <div>
             {/* Sidebar Section Title */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                Patient Services
+              <span className="text-[11px] font-semibold text-slate-400">
+                Patient services
               </span>
               <span className="rounded bg-blue-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-blue-400">
                 Active
@@ -116,7 +118,7 @@ function PatientLayout() {
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
-                <span>My Dashboard</span>
+                <span>My dashboard</span>
               </NavLink>
 
               {/* My Appointments */}
@@ -124,7 +126,7 @@ function PatientLayout() {
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <span>My Appointments</span>
+                <span>My appointments</span>
               </NavLink>
 
               {/* Book Appointment */}
@@ -132,7 +134,7 @@ function PatientLayout() {
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <span>Book Appointment</span>
+                <span>Book appointment</span>
               </NavLink>
 
               {/* My Bills */}
@@ -140,7 +142,7 @@ function PatientLayout() {
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                 </svg>
-                <span>My Bills & Receipts</span>
+                <span>My bills & receipts</span>
               </NavLink>
             </nav>
           </div>
@@ -151,11 +153,17 @@ function PatientLayout() {
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
-              <span>Need Immediate Help?</span>
+              <span>Emergency & helplines</span>
             </div>
-            <p className="mt-1 text-[11px] text-slate-400 leading-snug">
-              For medical emergencies, dial <strong className="text-rose-400">108</strong> or visit our 24/7 Trauma Care Center.
+            <p className="mt-1.5 text-[11px] text-slate-400 leading-snug">
+              Ambulance: <strong className="text-rose-400">108 / 102</strong><br />
+              National helpline: <strong className="text-rose-400">112</strong><br />
+              Health helpline: <strong className="text-sky-400">1075</strong> (MoHFW)
             </p>
+            <div className="mt-3 border-t border-slate-800 pt-2 flex items-center justify-between text-[10px] text-slate-500">
+              <span>NABH accredited</span>
+              <span className="text-emerald-400 font-medium">ABDM compliant</span>
+            </div>
           </div>
         </aside>
 

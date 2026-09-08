@@ -47,7 +47,12 @@ export const getAllPatients = async (req, res) => {
     const filter = {};
 
     if (search?.trim()) {
-      filter.name = { $regex: escapeRegex(search.trim()), $options: "i" };
+      const escaped = escapeRegex(search.trim());
+      filter.$or = [
+        { name: { $regex: escaped, $options: "i" } },
+        { contactNumber: { $regex: escaped, $options: "i" } },
+        { abhaId: { $regex: escaped, $options: "i" } },
+      ];
     }
 
     const [patients, totalPatients] = await Promise.all([

@@ -50,17 +50,19 @@ function PatientLogin() {
       <section className="relative z-10 w-full max-w-md rounded-2xl border border-slate-800/80 bg-slate-900/90 p-8 shadow-2xl backdrop-blur-xl ring-1 ring-white/10">
         {/* Animated Hospital Branding Top Header */}
         <div className="mb-6 flex flex-col items-center text-center">
-          <HospitalLogo variant="full" isDark={true} className="justify-center" />
+          <Link to="/" className="transition hover:opacity-95 cursor-pointer" title="Home page">
+            <HospitalLogo variant="full" isDark={true} className="justify-center" />
+          </Link>
           <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-400 ring-1 ring-cyan-500/20">
             <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-            Patient Care Portal
+            Patient care portal
           </div>
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-300" htmlFor="p-email">
-              Patient Email Address
+            <label className="mb-1 block text-xs font-semibold text-slate-300" htmlFor="p-email">
+              Patient email address
             </label>
             <input
               id="p-email"
@@ -75,7 +77,7 @@ function PatientLogin() {
           </div>
 
           <div>
-            <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-slate-300" htmlFor="p-password">
+            <label className="mb-1 block text-xs font-semibold text-slate-300" htmlFor="p-password">
               Password
             </label>
             <input
@@ -110,14 +112,14 @@ function PatientLogin() {
                 Signing in...
               </span>
             ) : (
-              "Sign In to Patient Portal"
+              "Sign in to patient portal"
             )}
           </button>
         </form>
 
         <div className="mt-6 border-t border-slate-800 pt-4">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-            Quick Fill Demo Patient:
+          <p className="text-[11px] font-semibold text-slate-400">
+            Quick fill demo patient:
           </p>
           <div className="mt-2.5">
             <button

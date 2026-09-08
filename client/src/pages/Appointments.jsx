@@ -10,6 +10,13 @@ import {
 
 const statuses = ["pending", "confirmed", "completed", "cancelled"];
 
+const statusLabels = {
+  pending: "Pending",
+  confirmed: "Confirmed",
+  completed: "Completed",
+  cancelled: "Cancelled",
+};
+
 const statusClasses = {
   pending: "bg-yellow-100 text-yellow-800",
   confirmed: "bg-blue-100 text-blue-800",
@@ -131,7 +138,7 @@ function Appointments() {
           onClick={() => setIsFormOpen(true)}
           type="button"
         >
-          + Book Appointment
+          + Book appointment
         </button>
       </div>
 
@@ -147,7 +154,7 @@ function Appointments() {
             <option value="">All statuses</option>
             {statuses.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {statusLabels[status] || status}
               </option>
             ))}
           </select>
@@ -219,7 +226,7 @@ function Appointments() {
           <p className="p-6 text-center text-slate-600">No appointments found.</p>
         ) : (
           <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <thead className="bg-slate-50 text-left text-xs font-semibold text-slate-500">
               <tr>
                 <th className="px-4 py-3">Patient</th>
                 <th className="px-4 py-3">Doctor</th>
@@ -251,7 +258,7 @@ function Appointments() {
                           <span>{appointment.patient?.contactNumber || "No phone"}</span>
                           {appointment.bookedBy === "patient" && (
                             <span className="inline-flex rounded-full bg-purple-50 px-2 py-0.2 text-[10px] font-semibold text-purple-700 ring-1 ring-purple-500/20">
-                              Portal Booked
+                              Portal booked
                             </span>
                           )}
                         </div>
@@ -271,7 +278,7 @@ function Appointments() {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5">
                     <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
-                      {new Date(appointment.appointmentDate).toLocaleDateString()}
+                      {new Date(appointment.appointmentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5">
@@ -281,12 +288,12 @@ function Appointments() {
                   </td>
                   <td className="px-4 py-3.5">
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ring-1 ${
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
                         statusClasses[appointment.status]
                       }`}
                     >
                       <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
-                      {appointment.status}
+                      {statusLabels[appointment.status] || appointment.status}
                     </span>
                   </td>
                   <td className="max-w-48 truncate px-4 py-3.5 text-xs text-slate-600" title={appointment.reasonForVisit}>
@@ -302,7 +309,7 @@ function Appointments() {
                     >
                       {statuses.map((status) => (
                         <option key={status} value={status}>
-                          {status}
+                          {statusLabels[status] || status}
                         </option>
                       ))}
                     </select>
@@ -333,7 +340,7 @@ function Appointments() {
         >
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-800">Book Appointment</h2>
+              <h2 className="text-xl font-semibold text-slate-800">Book appointment</h2>
               <button
                 aria-label="Close form"
                 className="rounded p-1 text-xl text-slate-500 hover:bg-slate-100"

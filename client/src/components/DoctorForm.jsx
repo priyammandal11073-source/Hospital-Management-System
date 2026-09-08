@@ -107,6 +107,7 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
             name="name"
             onChange={handleChange}
+            placeholder="e.g. Rajesh Sharma"
             required
             value={formData.name}
           />
@@ -117,6 +118,7 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
             name="specialization"
             onChange={handleChange}
+            placeholder="e.g. Cardiology"
             required
             value={formData.specialization}
           />
@@ -127,20 +129,27 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
             name="department"
             onChange={handleChange}
+            placeholder="e.g. OPD & Cardiac Sciences"
             required
             value={formData.department}
           />
         </label>
         <label className="text-sm font-medium text-slate-700">
           Contact number *
-          <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            name="contactNumber"
-            onChange={handleChange}
-            required
-            type="tel"
-            value={formData.contactNumber}
-          />
+          <div className="relative mt-1 flex rounded-md shadow-sm">
+            <span className="inline-flex items-center rounded-l-md border border-r-0 border-slate-300 bg-slate-50 px-3 text-sm text-slate-500">
+              +91
+            </span>
+            <input
+              className="w-full rounded-r-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              name="contactNumber"
+              onChange={handleChange}
+              placeholder="98765 43210"
+              required
+              type="tel"
+              value={formData.contactNumber}
+            />
+          </div>
         </label>
         <label className="text-sm font-medium text-slate-700">
           Email *
@@ -148,6 +157,7 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
             name="email"
             onChange={handleChange}
+            placeholder="dr.rajesh@hospital.com"
             required
             type="email"
             value={formData.email}
@@ -160,6 +170,7 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
             min="0"
             name="yearsOfExperience"
             onChange={handleChange}
+            placeholder="e.g. 15"
             type="number"
             value={formData.yearsOfExperience}
           />

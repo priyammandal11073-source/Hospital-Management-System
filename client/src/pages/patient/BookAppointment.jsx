@@ -35,7 +35,7 @@ function BookAppointment() {
 
   return (
     <section className="max-w-xl">
-      <h1 className="text-2xl font-semibold text-slate-800">Book Appointment</h1>
+      <h1 className="text-2xl font-semibold text-slate-800">Book appointment</h1>
       <p className="mt-1 text-sm text-slate-600">Choose a doctor and time — you&apos;ll be booked as pending until staff confirm.</p>
       <form onSubmit={handleSubmit} className="mt-6 space-y-4 rounded-lg bg-white p-6 shadow-sm">
         <label className="block text-sm font-medium text-slate-700">Doctor
@@ -48,7 +48,7 @@ function BookAppointment() {
         <label className="block text-sm font-medium text-slate-700">Time slot <input name="timeSlot" placeholder="e.g. 10:00 AM" required value={form.timeSlot} onChange={handleChange} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" /></label>
         <label className="block text-sm font-medium text-slate-700">Reason for visit <textarea name="reasonForVisit" required rows={3} value={form.reasonForVisit} onChange={handleChange} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2" /></label>
         {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-        <button disabled={submitting} type="submit" className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:bg-blue-400">{submitting ? "Booking..." : "Book Appointment"}</button>
+        <button disabled={submitting} type="submit" className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:bg-blue-400">{submitting ? "Booking..." : "Book appointment"}</button>
       </form>
     </section>
   );

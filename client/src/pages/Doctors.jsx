@@ -83,7 +83,7 @@ function Doctors() {
             }}
             type="button"
           >
-            + Add Doctor
+            + Add doctor
           </button>
         )}
       </div>
@@ -134,7 +134,7 @@ function Doctors() {
           <p className="p-6 text-center text-slate-600">No doctors found.</p>
         ) : (
           <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <thead className="bg-slate-50 text-left text-xs font-semibold text-slate-500">
               <tr>
                 <th className="px-4 py-3">Name</th>
                 <th className="px-4 py-3">Specialization</th>
@@ -154,7 +154,7 @@ function Doctors() {
                       </div>
                       <div>
                         <p className="font-bold text-slate-800">Dr. {doctor.name}</p>
-                        <p className="text-xs text-slate-500">{doctor.email || "Hospital Specialist"}</p>
+                        <p className="text-xs text-slate-500">{doctor.email || "Hospital specialist"}</p>
                       </div>
                     </div>
                   </td>
@@ -170,7 +170,7 @@ function Doctors() {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5">
                     <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
-                      {doctor.contactNumber || "—"}
+                      {doctor.contactNumber ? (doctor.contactNumber.startsWith("+91") ? doctor.contactNumber : `+91 ${doctor.contactNumber}`) : "—"}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5">
@@ -219,7 +219,7 @@ function Doctors() {
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-slate-800">
-                {selectedDoctor ? "Edit Doctor" : "Add Doctor"}
+                {selectedDoctor ? "Edit doctor" : "Add doctor"}
               </h2>
               <button
                 aria-label="Close form"

@@ -54,6 +54,10 @@ const patientSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    abhaId: {
+      type: String,
+      trim: true,
+    },
     // Patient self-service authentication fields
     // Not required:true to keep staff-created patients (via POST /api/patients) working.
     // Patient self-registration (POST /api/patient-auth/register) validates password separately.

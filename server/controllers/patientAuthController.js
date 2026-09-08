@@ -14,7 +14,7 @@ const createToken = (patient) => {
 // POST /api/patient-auth/register
 export const registerPatient = async (req, res) => {
   try {
-    const { name, email, password, age, gender, contactNumber } = req.body;
+    const { name, email, password, age, gender, contactNumber, abhaId } = req.body;
 
     if (!name || !email || !password || !age || !gender || !contactNumber) {
       return res.status(400).json({
@@ -36,6 +36,7 @@ export const registerPatient = async (req, res) => {
       age,
       gender,
       contactNumber,
+      abhaId: abhaId?.trim() || undefined,
     });
 
     return res.status(201).json({

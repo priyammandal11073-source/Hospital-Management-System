@@ -21,7 +21,7 @@ function MyBillings() {
 
   return (
     <section>
-      <h1 className="text-2xl font-semibold text-slate-800">My Bills</h1>
+      <h1 className="text-2xl font-semibold text-slate-800">My bills</h1>
       <p className="mt-1 text-sm text-slate-600">View and print your medical invoices.</p>
       <div className="mt-6 rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80">
         {billings.length === 0 ? (
@@ -48,7 +48,7 @@ function MyBillings() {
                       Invoice #{b._id.toString().slice(-6).toUpperCase()}
                     </p>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      {new Date(b.createdAt).toLocaleDateString()} • {b.appointment ? `Consultation (${b.appointment.timeSlot})` : "Hospital Services"}
+                      {new Date(b.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} • {b.appointment ? `Consultation (${b.appointment.timeSlot})` : "Hospital services"}
                     </p>
                   </div>
                 </div>
@@ -71,7 +71,7 @@ function MyBillings() {
                     type="button"
                     className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
                   >
-                    📄 View / Print
+                    📄 View / print
                   </button>
                 </div>
               </li>

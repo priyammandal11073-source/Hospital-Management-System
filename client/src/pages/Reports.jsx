@@ -120,19 +120,19 @@ function Reports() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <SummaryCard label="Total Revenue Collected" value={reportData.revenue.totalRevenue} />
-        <SummaryCard label="Total Pending Amount" value={reportData.revenue.totalPendingAmount} />
+        <SummaryCard label="Total revenue collected" value={reportData.revenue.totalRevenue} />
+        <SummaryCard label="Total pending amount" value={reportData.revenue.totalPendingAmount} />
       </div>
 
       <section className="mt-8 rounded-lg bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">Appointments by Status</h2>
+        <h2 className="text-lg font-semibold text-slate-800">Appointments by status</h2>
         <div className="mt-4 h-72">
           <ResponsiveContainer height="100%" width="100%">
             <BarChart data={appointmentStatusData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="status" />
+              <XAxis dataKey="status" tickFormatter={(v) => v ? v.charAt(0).toUpperCase() + v.slice(1) : ""} />
               <YAxis allowDecimals={false} />
-              <Tooltip />
+              <Tooltip formatter={(value) => [value, "Appointments"]} labelFormatter={(label) => label ? label.charAt(0).toUpperCase() + label.slice(1) : ""} />
               <Bar dataKey="count" fill="#2563eb" name="Appointments" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -147,10 +147,10 @@ function Reports() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
-            <h2 className="text-base font-bold text-slate-800">Appointments per Doctor</h2>
+            <h2 className="text-base font-bold text-slate-800">Appointments per doctor</h2>
           </div>
           <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
-            {doctorsByAppointmentCount.length} Specialists
+            {doctorsByAppointmentCount.length} specialists
           </span>
         </div>
 
@@ -173,7 +173,7 @@ function Reports() {
                   </div>
                 </div>
                 <span className="rounded-lg bg-blue-50 text-blue-700 ring-1 ring-blue-500/20 px-3 py-1 text-xs font-mono font-bold">
-                  {doctor.appointments} Consultations
+                  {doctor.appointments} consultations
                 </span>
               </li>
             ))}

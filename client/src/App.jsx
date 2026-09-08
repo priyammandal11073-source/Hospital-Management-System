@@ -53,11 +53,11 @@ function App() {
           <div className="p-8 text-center text-slate-600">
             <p>404 — Page not found.</p>
             <a href="/patient/login" className="mr-3 text-blue-600 hover:underline">
-              Patient Login
+              Patient login
             </a>
             |
             <a href="/login" className="ml-3 text-blue-600 hover:underline">
-              Staff Login
+              Staff login
             </a>
           </div>
         }

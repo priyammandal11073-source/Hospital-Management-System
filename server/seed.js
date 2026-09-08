@@ -33,21 +33,21 @@ const seedDatabase = async () => {
     // 1. Create Staff Users
     console.log("Creating staff users...");
     const adminUser = await User.create({
-      name: "Admin User",
+      name: "Nivora Care Admin",
       email: "admin@hospital.com",
       password: "admin123",
       role: "admin",
     });
 
     const doctorUser = await User.create({
-      name: "Dr. Sarah Smith",
+      name: "Dr. Rajesh Sharma",
       email: "doctor@hospital.com",
       password: "doctor123",
       role: "doctor",
     });
 
     const receptionistUser = await User.create({
-      name: "Jane Receptionist",
+      name: "Sunita Desk Officer",
       email: "receptionist@hospital.com",
       password: "receptionist123",
       role: "receptionist",
@@ -56,30 +56,30 @@ const seedDatabase = async () => {
     // 2. Create Doctors
     console.log("Creating doctor profiles...");
     const doctor1 = await Doctor.create({
-      name: "Sarah Smith",
+      name: "Rajesh Sharma",
       email: "doctor@hospital.com",
       specialization: "Cardiology",
       department: "Cardiology",
       contactNumber: "9876543210",
       availableDays: ["Monday", "Wednesday", "Friday"],
       availableTimeSlots: ["09:00 AM", "11:00 AM", "02:00 PM", "04:00 PM"],
-      yearsOfExperience: 10,
+      yearsOfExperience: 15,
     });
 
     const doctor2 = await Doctor.create({
-      name: "James Wilson",
-      email: "dr.wilson@hospital.com",
+      name: "Priya Nair",
+      email: "dr.nair@hospital.com",
       specialization: "Pediatrics",
       department: "Pediatrics",
       contactNumber: "9876543211",
       availableDays: ["Tuesday", "Thursday", "Saturday"],
       availableTimeSlots: ["10:00 AM", "12:00 PM", "03:00 PM"],
-      yearsOfExperience: 8,
+      yearsOfExperience: 10,
     });
 
     const doctor3 = await Doctor.create({
-      name: "Emily Brown",
-      email: "dr.brown@hospital.com",
+      name: "Vikram Patel",
+      email: "dr.patel@hospital.com",
       specialization: "Neurology",
       department: "Neurology",
       contactNumber: "9876543212",
@@ -88,32 +88,58 @@ const seedDatabase = async () => {
       yearsOfExperience: 12,
     });
 
-    // 3. Create Patients (one with portal login, one general)
+    const doctor4 = await Doctor.create({
+      name: "Arvind Verma",
+      email: "dr.verma@hospital.com",
+      specialization: "General Medicine",
+      department: "Medicine",
+      contactNumber: "9876543213",
+      availableDays: ["Monday", "Wednesday", "Friday", "Saturday"],
+      availableTimeSlots: ["10:00 AM", "01:00 PM", "05:00 PM"],
+      yearsOfExperience: 14,
+    });
+
+    // 3. Create Patients (with ABHA numbers and Indian addresses)
     console.log("Creating patients...");
     const patient1 = await Patient.create({
-      name: "John Doe",
+      name: "Rahul Sharma",
       email: "john@example.com",
       password: "patient123",
       age: 35,
       gender: "Male",
-      contactNumber: "9123456780",
-      address: "123 Elm Street, Cityville",
+      contactNumber: "9876543210",
+      address: "123 M.G. Road, Indiranagar, Bengaluru, Karnataka - 560038",
       bloodGroup: "O+",
+      abhaId: "14-8891-2345-6789",
       allergies: ["Penicillin"],
       medicalHistory: ["Hypertension"],
     });
 
     const patient2 = await Patient.create({
-      name: "Alice Johnson",
+      name: "Priya Patel",
       email: "alice@example.com",
       password: "patient123",
       age: 28,
       gender: "Female",
-      contactNumber: "9123456781",
-      address: "456 Oak Avenue, Metropolis",
+      contactNumber: "9876543211",
+      address: "Flat 402, Shanti Kunj, Sector 14, Rohini, New Delhi - 110085",
       bloodGroup: "A+",
+      abhaId: "14-1234-5678-9012",
       allergies: ["Dust"],
       medicalHistory: ["Asthma"],
+    });
+
+    const patient3 = await Patient.create({
+      name: "Amit Kumar",
+      email: "amit.kumar@example.com",
+      age: 42,
+      gender: "Male",
+      contactNumber: "9876543212",
+      address: "78, Park Street, Salt Lake Sector V, Kolkata, West Bengal - 700091",
+      bloodGroup: "B+",
+      abhaId: "14-4321-8765-1098",
+      allergies: ["Sulfa drugs"],
+      medicalHistory: ["Type 2 Diabetes"],
     });
 
     // 4. Create Appointments
@@ -133,7 +159,7 @@ const seedDatabase = async () => {
       appointmentDate: today,
       timeSlot: "09:00 AM",
       status: "confirmed",
-      reasonForVisit: "Routine heart checkup",
+      reasonForVisit: "Routine cardiology consultation",
       bookedBy: "staff",
     });
 
@@ -143,7 +169,7 @@ const seedDatabase = async () => {
       appointmentDate: tomorrow,
       timeSlot: "10:00 AM",
       status: "pending",
-      reasonForVisit: "Persistent cough and seasonal allergy",
+      reasonForVisit: "Pediatric consultation & seasonal allergy check",
       bookedBy: "patient",
     });
 
@@ -153,7 +179,7 @@ const seedDatabase = async () => {
       appointmentDate: pastDate,
       timeSlot: "11:00 AM",
       status: "completed",
-      reasonForVisit: "Cardiology follow-up",
+      reasonForVisit: "Cardiology follow-up & ECG review",
       bookedBy: "staff",
     });
 
@@ -163,12 +189,12 @@ const seedDatabase = async () => {
       patient: patient1._id,
       appointment: appt3._id,
       itemizedCharges: [
-        { description: "Doctor Consultation Fee", cost: 1200 },
-        { description: "ECG Test", cost: 800 },
-        { description: "Blood Pressure Monitoring", cost: 200 },
+        { description: "Specialist OPD Consultation", cost: 800 },
+        { description: "12-Lead ECG Test", cost: 600 },
+        { description: "Blood Pressure & Vitals Monitoring", cost: 100 },
       ],
       paymentStatus: "paid",
-      paymentMethod: "card",
+      paymentMethod: "upi",
       paymentDate: pastDate,
     });
 
@@ -176,22 +202,22 @@ const seedDatabase = async () => {
       patient: patient2._id,
       appointment: appt2._id,
       itemizedCharges: [
-        { description: "Pediatric Consultation", cost: 1000 },
-        { description: "Allergy Test Kit", cost: 500 },
+        { description: "Pediatric OPD Consultation", cost: 700 },
+        { description: "Allergy Screening Test", cost: 800 },
       ],
       paymentStatus: "pending",
     });
 
     console.log("\n========================================================");
-    console.log("Database seeded successfully with initial test accounts!");
+    console.log("Database seeded successfully with Indian healthcare data!");
     console.log("========================================================");
     console.log("\nStaff Portal Logins (http://localhost:5173/login):");
     console.log("  1. Admin:        admin@hospital.com       / admin123");
     console.log("  2. Doctor:       doctor@hospital.com      / doctor123");
     console.log("  3. Receptionist: receptionist@hospital.com / receptionist123");
     console.log("\nPatient Portal Login (http://localhost:5173/patient/login):");
-    console.log("  1. Patient:      john@example.com         / patient123");
-    console.log("  2. Patient:      alice@example.com        / patient123");
+    console.log("  1. Patient:      john@example.com         / patient123 (Rahul Sharma)");
+    console.log("  2. Patient:      alice@example.com        / patient123 (Priya Patel)");
     console.log("========================================================\n");
 
     await mongoose.connection.close();

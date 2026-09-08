@@ -11,40 +11,40 @@ const navLinkClass = ({ isActive }) =>
 
 const PORTAL_CONFIG = {
   admin: {
-    label: "Admin Portal",
-    title: "Executive Hospital Administration",
-    badge: "👑 Administrator Portal",
+    label: "Admin portal",
+    title: "Executive hospital administration",
+    badge: "👑 Administrator portal",
     badgeClass: "bg-purple-50 text-purple-700 ring-purple-500/30",
     avatarGrad: "from-purple-600 to-indigo-600",
     tagColor: "text-purple-600",
-    roleDesc: "Level 3 Executive Access",
+    roleDesc: "Level 3 executive access",
   },
   doctor: {
-    label: "Doctor Portal",
-    title: "Doctor Clinical Workspace",
-    badge: "🩺 Doctor Consultation Desk",
+    label: "Doctor portal",
+    title: "Doctor clinical workspace",
+    badge: "🩺 Doctor consultation desk",
     badgeClass: "bg-emerald-50 text-emerald-700 ring-emerald-500/30",
     avatarGrad: "from-emerald-600 to-teal-600",
     tagColor: "text-emerald-600",
-    roleDesc: "Medical Specialist",
+    roleDesc: "Medical specialist",
   },
   receptionist: {
-    label: "Front Desk Portal",
-    title: "Front Desk Admissions & Cashier",
-    badge: "📋 Front Office & Check-in",
+    label: "Front desk portal",
+    title: "Front desk admissions & cashier",
+    badge: "📋 Front office & check-in",
     badgeClass: "bg-amber-50 text-amber-700 ring-amber-500/30",
     avatarGrad: "from-amber-600 to-orange-600",
     tagColor: "text-amber-600",
-    roleDesc: "Admissions Executive",
+    roleDesc: "Admissions executive",
   },
   patient: {
-    label: "Patient Care Portal",
-    title: "Personal Patient Health Portal",
-    badge: "🏥 Patient Care Portal",
+    label: "Patient care portal",
+    title: "Personal patient health portal",
+    badge: "🏥 Patient care portal",
     badgeClass: "bg-cyan-50 text-cyan-700 ring-cyan-500/30",
     avatarGrad: "from-cyan-600 to-blue-600",
     tagColor: "text-cyan-600",
-    roleDesc: "Self-Service Health Hub",
+    roleDesc: "Self-service health hub",
   },
 };
 
@@ -59,56 +59,48 @@ function DashboardLayout() {
     navigate("/login");
   };
 
-  const handleSwitchPortal = () => {
-    logout();
-    navigate("/login");
-  };
-
-  const todayStr = new Date().toLocaleDateString("en-US", {
+  const todayStr = new Date().toLocaleDateString("en-IN", {
     weekday: "short",
+    day: "2-digit",
     month: "short",
-    day: "numeric",
     year: "numeric",
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* ================= TOP HOSPITAL BRANDING HEADER ================= */}
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          {/* Hospital Logo & Portal Specific Badge */}
+    <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
+      {/* ================= MODERN TOP HEADER BAR ================= */}
+      <header className="sticky top-0 z-40 border-b border-slate-200/90 bg-white/95 px-4 sm:px-6 lg:px-8 py-3 backdrop-blur-md shadow-2xs">
+        <div className="flex items-center justify-between gap-4">
+          {/* Brand Logo & Active Workspace Badge */}
           <div className="flex items-center gap-4">
-            <HospitalLogo variant="full" />
-            <span className="hidden h-7 w-px bg-slate-200 md:inline-block" />
-            <span className={`hidden md:inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ring-1 ${config.badgeClass}`}>
-              <span className="h-2 w-2 rounded-full bg-current animate-pulse"></span>
-              {config.badge}
-            </span>
+            <Link to="/dashboard" className="transition hover:opacity-95 cursor-pointer" title="Home page">
+              <HospitalLogo variant="full" />
+            </Link>
+
+            <div className="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4">
+              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${config.badgeClass}`}>
+                {config.badge}
+              </span>
+            </div>
           </div>
 
-          {/* Right Section: Switch Portal, Hotline, Profile, Logout */}
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-            {/* Switch Portal Button */}
-            <button
-              onClick={handleSwitchPortal}
-              title="Switch to another portal type"
-              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100/90 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition shadow-2xs"
-              type="button"
+          {/* Center/Right Status & User Profile */}
+          <div className="flex items-center gap-3">
+            {/* Quick Switch Portal Button */}
+            <Link
+              to="/login"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-2xs"
+              title="Switch to another portal"
             >
-              <svg className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
-              <span>Switch Portal</span>
-            </button>
+              <span>⇄</span>
+              <span>Switch portal</span>
+            </Link>
 
             {/* Emergency Hotline Pill */}
-            <div className="hidden lg:flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-300/60 shadow-xs">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-              </span>
+            <div className="hidden lg:flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200/80 px-3 py-1 text-xs font-semibold text-rose-700">
+              <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
               <span className="font-bold">24/7 Emergency:</span>
-              <span className="font-mono text-rose-800">108</span>
+              <span className="font-mono text-rose-800 font-bold">108 / 112</span>
             </div>
 
             {/* Current Date Badge */}
@@ -128,7 +120,7 @@ function DashboardLayout() {
                 <p className="text-xs font-bold text-slate-800 leading-tight">{user?.name || "User"}</p>
                 <div className="flex items-center gap-1">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                  <span className={`text-[10px] font-bold uppercase tracking-wider ${config.tagColor}`}>
+                  <span className={`text-[10px] font-semibold ${config.tagColor}`}>
                     {config.roleDesc}
                   </span>
                 </div>
@@ -158,10 +150,10 @@ function DashboardLayout() {
           <div>
             {/* Sidebar Section Title */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              <span className="text-[11px] font-semibold text-slate-400">
                 {config.label}
               </span>
-              <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[9px] font-mono text-slate-400 uppercase">
+              <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[9px] font-mono text-slate-400 capitalize">
                 {role}
               </span>
             </div>
@@ -175,12 +167,12 @@ function DashboardLayout() {
                 </svg>
                 <span>
                   {role === "doctor"
-                    ? "Clinical Dashboard"
+                    ? "Clinical dashboard"
                     : role === "receptionist"
-                    ? "Reception Desk"
+                    ? "Reception desk"
                     : role === "patient"
-                    ? "My Health Hub"
-                    : "Executive Dashboard"}
+                    ? "My health hub"
+                    : "Executive dashboard"}
                 </span>
               </NavLink>
 
@@ -191,21 +183,21 @@ function DashboardLayout() {
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>Book Specialist Visit</span>
+                    <span>Book specialist visit</span>
                   </NavLink>
 
                   <NavLink className={navLinkClass} to="/patient/appointments">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span>My Scheduled Visits</span>
+                    <span>My scheduled visits</span>
                   </NavLink>
 
                   <NavLink className={navLinkClass} to="/patient/billings">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                     </svg>
-                    <span>My Invoices & Receipts</span>
+                    <span>My invoices & receipts</span>
                   </NavLink>
                 </>
               ) : (
@@ -216,7 +208,7 @@ function DashboardLayout() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span>
-                      {role === "receptionist" ? "Patient Admissions" : "Patients Directory"}
+                      {role === "receptionist" ? "Patient admissions" : "Patients directory"}
                     </span>
                   </NavLink>
 
@@ -226,7 +218,7 @@ function DashboardLayout() {
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                       </svg>
-                      <span>Specialist Doctors</span>
+                      <span>Specialist doctors</span>
                     </NavLink>
                   )}
 
@@ -237,9 +229,9 @@ function DashboardLayout() {
                     </svg>
                     <span>
                       {role === "doctor"
-                        ? "Clinical Consultations"
+                        ? "Clinical consultations"
                         : role === "receptionist"
-                        ? "OPD Scheduling"
+                        ? "OPD scheduling"
                         : "Appointments"}
                     </span>
                   </NavLink>
@@ -251,7 +243,7 @@ function DashboardLayout() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                       </svg>
                       <span>
-                        {role === "receptionist" ? "Cashier & Billing" : "Billing & Invoices"}
+                        {role === "receptionist" ? "Cashier & billing" : "Billing & invoices"}
                       </span>
                     </NavLink>
                   )}
@@ -262,7 +254,7 @@ function DashboardLayout() {
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                       </svg>
-                      <span>Reports & Analytics</span>
+                      <span>Reports & analytics</span>
                     </NavLink>
                   )}
                 </>
@@ -276,10 +268,10 @@ function DashboardLayout() {
               <svg className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>NABH Accredited</span>
+              <span>NABH accredited</span>
             </div>
             <p className="mt-1 text-[11px] text-slate-400 leading-tight">
-              ISO 9001:2015 Certified Hospital
+              Ayushman Bharat (ABDM) connected
             </p>
           </div>
         </aside>

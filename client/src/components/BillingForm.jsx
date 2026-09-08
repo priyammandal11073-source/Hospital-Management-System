@@ -116,7 +116,7 @@ function BillingForm({ onCancel, onSuccess }) {
           <option value="">Select appointment</option>
           {appointments.map((appointment) => (
             <option key={appointment._id} value={appointment._id}>
-              {appointment.patient?.name || "Unknown patient"} — {new Date(appointment.appointmentDate).toLocaleDateString()} ({appointment.timeSlot})
+              {appointment.patient?.name || "Unknown patient"} — {new Date(appointment.appointmentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} ({appointment.timeSlot})
             </option>
           ))}
         </select>

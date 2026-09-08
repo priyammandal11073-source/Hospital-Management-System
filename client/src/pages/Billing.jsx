@@ -10,13 +10,33 @@ import {
 const paymentStatuses = ["pending", "paid", "partially_paid"];
 const paymentMethods = ["cash", "card", "insurance", "upi"];
 
-const paymentStatusClasses = {
-  pending: "bg-yellow-100 text-yellow-800",
-  paid: "bg-green-100 text-green-800",
-  partially_paid: "bg-orange-100 text-orange-800",
+const paymentMethodLabels = {
+  cash: "Cash",
+  card: "Card",
+  insurance: "Insurance",
+  upi: "UPI",
 };
 
-const formatDate = (date) => (date ? new Date(date).toLocaleDateString() : "—");
+const paymentStatusLabels = {
+  pending: "Pending",
+  paid: "Paid",
+  partially_paid: "Partially paid",
+};
+
+const paymentStatusClasses = {
+  pending: "bg-yellow-100 text-yellow-800 ring-yellow-400/40",
+  paid: "bg-green-100 text-green-800 ring-green-400/40",
+  partially_paid: "bg-orange-100 text-orange-800 ring-orange-400/40",
+};
+
+const formatDate = (date) =>
+  date
+    ? new Date(date).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "—";
 
 function Billing() {
   const [billings, setBillings] = useState([]);
@@ -113,7 +133,7 @@ function Billing() {
           onClick={() => setIsFormOpen(true)}
           type="button"
         >
-          + Create Bill
+          + Create bill
         </button>
       </div>
 
@@ -129,7 +149,7 @@ function Billing() {
             <option value="">All payment statuses</option>
             {paymentStatuses.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {paymentStatusLabels[status] || status}
               </option>
             ))}
           </select>
@@ -169,7 +189,7 @@ function Billing() {
           <p className="p-6 text-center text-slate-600">No billing records found.</p>
         ) : (
           <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <thead className="bg-slate-50 text-left text-xs font-semibold text-slate-500">
               <tr>
                 <th className="px-4 py-3">Patient</th>
                 <th className="px-4 py-3">Appointment date</th>
@@ -207,12 +227,12 @@ function Billing() {
                   </td>
                   <td className="px-4 py-3.5">
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ring-1 ${
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
                         paymentStatusClasses[billing.paymentStatus]
                       }`}
                     >
                       <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
-                      {billing.paymentStatus.replace("_", " ")}
+                      {paymentStatusLabels[billing.paymentStatus] || billing.paymentStatus}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5 text-xs text-slate-500 font-mono">
@@ -235,7 +255,7 @@ function Billing() {
                         }}
                         type="button"
                       >
-                        Mark as Paid
+                        Mark as paid
                       </button>
                     )}
                   </td>
@@ -254,7 +274,7 @@ function Billing() {
         >
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-800">Create Bill</h2>
+              <h2 className="text-xl font-semibold text-slate-800">Create bill</h2>
               <button
                 aria-label="Close form"
                 className="rounded p-1 text-xl text-slate-500 hover:bg-slate-100"
@@ -276,7 +296,7 @@ function Billing() {
           role="dialog"
         >
           <form className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" onSubmit={handlePaymentSubmit}>
-            <h2 className="text-xl font-semibold text-slate-800">Mark Bill as Paid</h2>
+            <h2 className="text-xl font-semibold text-slate-800">Mark bill as paid</h2>
             <p className="mt-2 text-sm text-slate-600">
               Confirm payment of ₹{paymentBilling.totalAmount.toFixed(2)} for {paymentBilling.patient?.name || "this patient"}.
             </p>
@@ -289,7 +309,7 @@ function Billing() {
               >
                 {paymentMethods.map((method) => (
                   <option key={method} value={method}>
-                    {method}
+                    {paymentMethodLabels[method] || method}
                   </option>
                 ))}
               </select>
@@ -307,7 +327,7 @@ function Billing() {
                 disabled={isUpdatingPayment}
                 type="submit"
               >
-                {isUpdatingPayment ? "Updating..." : "Confirm Payment"}
+                {isUpdatingPayment ? "Updating..." : "Confirm payment"}
               </button>
             </div>
           </form>

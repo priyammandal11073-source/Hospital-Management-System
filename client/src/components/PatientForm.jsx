@@ -20,6 +20,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
     email: patient?.email || "",
     address: patient?.address || "",
     bloodGroup: patient?.bloodGroup || "",
+    abhaId: patient?.abhaId || "",
     allergies: toCommaSeparatedText(patient?.allergies),
     medicalHistory: toCommaSeparatedText(patient?.medicalHistory),
   });
@@ -59,6 +60,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
     if (formData.email.trim()) patientData.email = formData.email.trim();
     if (formData.address.trim()) patientData.address = formData.address.trim();
     if (formData.bloodGroup) patientData.bloodGroup = formData.bloodGroup;
+    if (formData.abhaId.trim()) patientData.abhaId = formData.abhaId.trim();
 
     setIsSubmitting(true);
 
@@ -86,6 +88,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
             name="name"
             onChange={handleChange}
+            placeholder="e.g. Rahul Sharma"
             required
             value={formData.name}
           />
@@ -119,14 +122,20 @@ function PatientForm({ patient, onCancel, onSuccess }) {
         </label>
         <label className="text-sm font-medium text-slate-700">
           Contact number *
-          <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            name="contactNumber"
-            onChange={handleChange}
-            required
-            type="tel"
-            value={formData.contactNumber}
-          />
+          <div className="relative mt-1 flex rounded-md shadow-sm">
+            <span className="inline-flex items-center rounded-l-md border border-r-0 border-slate-300 bg-slate-50 px-3 text-sm text-slate-500">
+              +91
+            </span>
+            <input
+              className="w-full rounded-r-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              name="contactNumber"
+              onChange={handleChange}
+              placeholder="98765 43210"
+              required
+              type="tel"
+              value={formData.contactNumber}
+            />
+          </div>
         </label>
         <label className="text-sm font-medium text-slate-700">
           Email
@@ -134,6 +143,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
             className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
             name="email"
             onChange={handleChange}
+            placeholder="rahul.sharma@example.com"
             type="email"
             value={formData.email}
           />
@@ -154,6 +164,16 @@ function PatientForm({ patient, onCancel, onSuccess }) {
             ))}
           </select>
         </label>
+        <label className="text-sm font-medium text-slate-700 sm:col-span-2">
+          ABHA number (Ayushman Bharat, optional)
+          <input
+            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            name="abhaId"
+            onChange={handleChange}
+            placeholder="e.g. 14-8891-2345-6789 or username@abdm"
+            value={formData.abhaId}
+          />
+        </label>
       </div>
 
       <label className="block text-sm font-medium text-slate-700">
@@ -162,6 +182,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
           className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
           name="address"
           onChange={handleChange}
+          placeholder="e.g. 123 M.G. Road, Indiranagar, Bengaluru, Karnataka - 560038"
           rows="2"
           value={formData.address}
         />

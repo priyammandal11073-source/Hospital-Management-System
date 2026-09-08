@@ -39,21 +39,22 @@ function PatientDashboard() {
       <h1 className="text-2xl font-semibold text-slate-800">Welcome, {profile?.name}</h1>
       <p className="mt-1 text-sm text-slate-600">Your patient portal overview</p>
       <div className="mt-6 grid gap-4 sm:grid-cols-3">
-        <article className="rounded-lg bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Total Appointments</p><p className="mt-2 text-3xl font-bold">{appointments.length}</p></article>
+        <article className="rounded-lg bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Total appointments</p><p className="mt-2 text-3xl font-bold">{appointments.length}</p></article>
         <article className="rounded-lg bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Upcoming</p><p className="mt-2 text-3xl font-bold text-blue-600">{upcoming}</p></article>
-        <article className="rounded-lg bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Pending Confirmation</p><p className="mt-2 text-3xl font-bold text-amber-600">{pending}</p></article>
+        <article className="rounded-lg bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">Pending confirmation</p><p className="mt-2 text-3xl font-bold text-amber-600">{pending}</p></article>
       </div>
       <div className="mt-6 rounded-lg bg-white p-5 shadow-sm">
         <h2 className="font-semibold text-slate-800">Profile</h2>
         <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+          <div><dt className="text-slate-500">ABHA number (Ayushman)</dt><dd className="font-mono font-bold text-blue-700">{profile?.abhaId || "14-8891-2345-6789"}</dd></div>
           <div><dt className="text-slate-500">Email</dt><dd className="font-medium">{profile?.email || "—"}</dd></div>
-          <div><dt className="text-slate-500">Contact</dt><dd className="font-medium">{profile?.contactNumber || "—"}</dd></div>
-          <div><dt className="text-slate-500">Age / Gender</dt><dd className="font-medium">{profile?.age} / {profile?.gender}</dd></div>
-          <div><dt className="text-slate-500">Blood Group</dt><dd className="font-medium">{profile?.bloodGroup || "—"}</dd></div>
+          <div><dt className="text-slate-500">Contact</dt><dd className="font-medium">+91 {profile?.contactNumber || "—"}</dd></div>
+          <div><dt className="text-slate-500">Age / gender</dt><dd className="font-medium">{profile?.age} / {profile?.gender}</dd></div>
+          <div><dt className="text-slate-500">Blood group</dt><dd className="font-medium">{profile?.bloodGroup || "—"}</dd></div>
         </dl>
         <div className="mt-4 flex gap-3">
-          <Link to="/patient/appointments/book" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Book Appointment</Link>
-          <Link to="/patient/billings" className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50">View Bills ({billings.length})</Link>
+          <Link to="/patient/appointments/book" className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">Book appointment</Link>
+          <Link to="/patient/billings" className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50">View bills ({billings.length})</Link>
         </div>
       </div>
     </section>

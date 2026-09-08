@@ -312,13 +312,14 @@ export const sendBillingEmail = async (req, res) => {
 
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;">
-        <div style="border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px;">
-          <h2 style="color: #1e293b; margin: 0 0 5px 0;">City General Hospital</h2>
-          <p style="color: #64748b; font-size: 13px; margin: 0;">123 Healthcare Boulevard, Medical District • Tel: +91 9876543210</p>
+        <div style="border-bottom: 2px solid #0d9488; padding-bottom: 15px; margin-bottom: 20px;">
+          <h2 style="color: #0f172a; margin: 0 0 5px 0;">Nivora Care Hospital</h2>
+          <p style="color: #0d9488; font-size: 11px; font-weight: bold; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 1px;">Care • Trust • Healing</p>
+          <p style="color: #64748b; font-size: 13px; margin: 0;">Outer Ring Road, Near AIIMS Metro, New Delhi - 110029 • Tel: +91 9876543210</p>
         </div>
         
         <div style="margin-bottom: 20px;">
-          <h3 style="color: #2563eb; margin: 0 0 10px 0;">Medical Invoice — ${invoiceNumber}</h3>
+          <h3 style="color: #0d9488; margin: 0 0 10px 0;">Medical Tax Invoice — ${invoiceNumber}</h3>
           <p style="margin: 3px 0; font-size: 14px; color: #334155;"><strong>Patient Name:</strong> ${patientName}</p>
           <p style="margin: 3px 0; font-size: 14px; color: #334155;"><strong>Date:</strong> ${invoiceDate}</p>
           <p style="margin: 3px 0; font-size: 14px; color: #334155;"><strong>Payment Status:</strong> <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: bold; background-color: ${billing.paymentStatus === "paid" ? "#dcfce7; color: #166534" : "#fef9c3; color: #854d0e"};">${paymentStatus}</span></p>
@@ -339,22 +340,22 @@ export const sendBillingEmail = async (req, res) => {
           <tfoot>
             <tr style="font-weight: bold; background-color: #f1f5f9;">
               <td colspan="2" style="padding: 12px; font-size: 15px; color: #0f172a; text-align: right;">Total Amount:</td>
-              <td style="padding: 12px; font-size: 15px; color: #2563eb; text-align: right;">₹${totalAmount}</td>
+              <td style="padding: 12px; font-size: 15px; color: #0d9488; text-align: right;">₹${totalAmount}</td>
             </tr>
           </tfoot>
         </table>
 
         <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 12px; color: #64748b; text-align: center;">
-          <p style="margin: 0 0 5px 0;">Thank you for choosing City General Hospital. We wish you good health!</p>
+          <p style="margin: 0 0 5px 0;">Thank you for choosing Nivora Care Hospital. We wish you good health!</p>
           <p style="margin: 0;">This is a computer-generated invoice and requires no physical signature.</p>
         </div>
       </div>
     `;
 
     const info = await transporter.sendMail({
-      from: `"City General Hospital" <${process.env.SMTP_FROM || "billing@hospital.com"}>`,
+      from: `"Nivora Care Hospital" <${process.env.SMTP_FROM || "billing@nivoracare.com"}>`,
       to: billing.patient.email,
-      subject: `Hospital Invoice ${invoiceNumber} - City General Hospital`,
+      subject: `Hospital Invoice ${invoiceNumber} - Nivora Care Hospital`,
       html: htmlContent,
     });
 

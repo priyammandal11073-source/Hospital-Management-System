@@ -104,15 +104,15 @@ function Patients() {
           onClick={openAddForm}
           type="button"
         >
-          + Add Patient
+          + Add patient
         </button>
       </div>
 
       <input
-        aria-label="Search patients by name"
-        className="mb-5 w-full max-w-md rounded-md border border-slate-300 px-3 py-2"
+        aria-label="Search patients by name, mobile, or ABHA ID"
+        className="mb-5 w-full max-w-md rounded-md border border-slate-300 px-3 py-2 text-sm shadow-2xs"
         onChange={handleSearchChange}
-        placeholder="Search patients by name..."
+        placeholder="Search patients by name, mobile (+91), or ABHA ID..."
         type="search"
         value={searchInput}
       />
@@ -130,11 +130,10 @@ function Patients() {
           <p className="p-6 text-center text-slate-600">No patients found.</p>
         ) : (
           <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <thead className="bg-slate-50 text-left text-xs font-semibold text-slate-500">
               <tr>
-                <th className="px-4 py-3">Name</th>
-                <th className="px-4 py-3">Age</th>
-                <th className="px-4 py-3">Gender</th>
+                <th className="px-4 py-3">Name & ABHA ID</th>
+                <th className="px-4 py-3">Age / gender</th>
                 <th className="px-4 py-3">Contact</th>
                 <th className="px-4 py-3">Blood group</th>
                 <th className="px-4 py-3 text-right">Actions</th>
@@ -149,7 +148,14 @@ function Patients() {
                         {patient.name ? patient.name.charAt(0).toUpperCase() : "P"}
                       </div>
                       <div>
-                        <p className="font-bold text-slate-800">{patient.name}</p>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <p className="font-bold text-slate-800">{patient.name}</p>
+                          {patient.abhaId && (
+                            <span className="rounded bg-sky-50 px-1.5 py-0.2 text-[10px] font-semibold text-sky-700 ring-1 ring-sky-300">
+                              ABHA: {patient.abhaId}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-500">{patient.email || "No email registered"}</p>
                       </div>
                     </div>
@@ -161,7 +167,7 @@ function Patients() {
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5">
                     <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
-                      {patient.contactNumber || "—"}
+                      {patient.contactNumber ? (patient.contactNumber.startsWith("+91") ? patient.contactNumber : `+91 ${patient.contactNumber}`) : "—"}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5">
@@ -229,7 +235,7 @@ function Patients() {
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-xl font-semibold text-slate-800">
-                {selectedPatient ? "Edit Patient" : "Add Patient"}
+                {selectedPatient ? "Edit patient" : "Add patient"}
               </h2>
               <button
                 aria-label="Close form"
