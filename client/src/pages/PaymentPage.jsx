@@ -3,17 +3,19 @@
  * Route: /pay/:billingId
  *
  * Patients can view their invoice and pay online directly via:
- * 1. Instant UPI QR (GPay / PhonePe / Paytm / BHIM)
- * 2. Online Credit/Debit Card Gateway (Visa / Mastercard / RuPay / Amex)
- * 3. Health Insurance & TPA Cashless Desk
- * 4. Net Banking & NEFT/RTGS Wire Transfer
- * 5. Hospital Patient Advance Deposit Wallet
- * 6. Demand Draft (DD) & CTS Bank Cheque Clearing
- * 7. Counter Cash Payment
+ * 1. Razorpay Payment Gateway (Cards, UPI, NetBanking, Wallet)
+ * 2. Instant UPI QR (GPay / PhonePe / Paytm / BHIM)
+ * 3. Online Credit/Debit Card Gateway (Visa / Mastercard / RuPay / Amex)
+ * 4. Health Insurance & TPA Cashless Desk
+ * 5. Net Banking & NEFT/RTGS Wire Transfer
+ * 6. Hospital Patient Advance Deposit Wallet
+ * 7. Demand Draft (DD) & CTS Bank Cheque Clearing
+ * 8. Counter Cash Payment
  */
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import RazorpayPaymentBox from "../components/RazorpayPaymentBox.jsx";
 import UpiPaymentBox from "../components/UpiPaymentBox.jsx";
 import CardPaymentBox from "../components/CardPaymentBox.jsx";
 import InsurancePaymentBox from "../components/InsurancePaymentBox.jsx";
@@ -36,7 +38,7 @@ function PaymentPage() {
   const [billing, setBilling] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [paymentMethod, setPaymentMethod] = useState("razorpay");
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -267,6 +269,15 @@ function PaymentPage() {
               onChange={setPaymentMethod}
             />
 
+            {/* 0. Razorpay Gateway Checkout */}
+            {paymentMethod === "razorpay" && (
+              <RazorpayPaymentBox
+                billing={billing}
+                onPaymentSuccess={handlePaymentSuccess}
+                isPatient={isPatient}
+              />
+            )}
+
             {/* 1. UPI Payment Flow */}
             {paymentMethod === "upi" && (
               <UpiPaymentBox
@@ -356,6 +367,11 @@ function PaymentPage() {
             <p className="text-sm text-slate-600">
               This invoice has been settled. Thank you for choosing Nivora Care Hospital.
             </p>
+            {billing.razorpayPaymentId && (
+              <p className="text-xs text-slate-500">
+                Razorpay Payment ID: <code className="font-mono font-bold text-blue-700">{billing.razorpayPaymentId}</code>
+              </p>
+            )}
             {billing.upiTransactionId && (
               <p className="text-xs text-slate-500">
                 UPI Reference UTR: <code className="font-mono font-bold text-emerald-700">{billing.upiTransactionId}</code>

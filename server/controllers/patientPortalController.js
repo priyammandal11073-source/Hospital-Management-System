@@ -214,6 +214,9 @@ export const payMyBillingUpi = async (req, res) => {
       paymentMethod = "upi",
       upiTransactionId,
       upiPayerVpa,
+      razorpayPaymentId,
+      razorpayOrderId,
+      razorpaySignature,
       cardDetails,
       insuranceDetails,
       netbankingDetails,
@@ -241,7 +244,16 @@ export const payMyBillingUpi = async (req, res) => {
     billing.paymentMethod = paymentMethod;
     billing.paymentDate = new Date();
 
-    if (paymentMethod === "card") {
+    if (paymentMethod === "razorpay") {
+      const finalRzpId = razorpayPaymentId
+        ? String(razorpayPaymentId).trim()
+        : "pay_rzp_" + Math.floor(100000000000 + Math.random() * 900000000000);
+
+      billing.paymentStatus = "paid";
+      billing.razorpayPaymentId = finalRzpId;
+      if (razorpayOrderId) billing.razorpayOrderId = String(razorpayOrderId).trim();
+      if (razorpaySignature) billing.razorpaySignature = String(razorpaySignature).trim();
+    } else if (paymentMethod === "card") {
       const cardNum = cardDetails?.cardNumber ? String(cardDetails.cardNumber).replace(/\s/g, "") : "";
       const last4 = cardNum ? cardNum.slice(-4) : "4242";
       const brand = cardDetails?.cardBrand || (cardNum.startsWith("4") ? "Visa" : cardNum.startsWith("5") ? "Mastercard" : cardNum.startsWith("6") ? "RuPay" : "Card");

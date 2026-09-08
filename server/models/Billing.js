@@ -108,7 +108,7 @@ const billingSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       enum: {
-        values: ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque"],
+        values: ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque", "razorpay"],
         message: "Please provide a valid payment method",
       },
     },
@@ -117,6 +117,18 @@ const billingSchema = new mongoose.Schema(
       trim: true,
     },
     upiPayerVpa: {
+      type: String,
+      trim: true,
+    },
+    razorpayPaymentId: {
+      type: String,
+      trim: true,
+    },
+    razorpayOrderId: {
+      type: String,
+      trim: true,
+    },
+    razorpaySignature: {
       type: String,
       trim: true,
     },

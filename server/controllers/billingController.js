@@ -6,7 +6,7 @@ import Patient from "../models/Patient.js";
 import { sendPaymentLinkSms } from "../services/smsService.js";
 
 const paymentStatuses = ["pending", "paid", "partially_paid"];
-const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque"];
+const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque", "razorpay"];
 
 const sendDatabaseError = (error, res) => {
   if (error.name === "ValidationError") {
@@ -162,6 +162,9 @@ export const updatePaymentStatus = async (req, res) => {
       paymentMethod,
       upiTransactionId,
       upiPayerVpa,
+      razorpayPaymentId,
+      razorpayOrderId,
+      razorpaySignature,
       cardDetails,
       insuranceDetails,
       netbankingDetails,
@@ -209,6 +212,10 @@ export const updatePaymentStatus = async (req, res) => {
     if (upiPayerVpa) {
       updates.upiPayerVpa = String(upiPayerVpa).trim();
     }
+
+    if (razorpayPaymentId) updates.razorpayPaymentId = String(razorpayPaymentId).trim();
+    if (razorpayOrderId) updates.razorpayOrderId = String(razorpayOrderId).trim();
+    if (razorpaySignature) updates.razorpaySignature = String(razorpaySignature).trim();
 
     if (cardDetails) updates.cardDetails = cardDetails;
     if (insuranceDetails) updates.insuranceDetails = insuranceDetails;
