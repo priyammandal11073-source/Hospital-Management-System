@@ -44,6 +44,20 @@ function PatientLogin() {
           {error && <p className="rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">{error}</p>}
           <button className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 disabled:bg-blue-400" disabled={isSubmitting} type="submit">{isSubmitting ? "Signing in..." : "Sign in"}</button>
         </form>
+        <div className="mt-4 border-t border-slate-200 pt-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Demo Patient:
+          </p>
+          <div className="mt-2 flex gap-2">
+            <button
+              type="button"
+              onClick={() => { setEmail("john@example.com"); setPassword("patient123"); }}
+              className="rounded bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
+            >
+              John Doe (john@example.com)
+            </button>
+          </div>
+        </div>
         <p className="mt-4 text-center text-sm text-slate-600">
           No account? <Link to="/patient/register" className="font-medium text-blue-600 hover:underline">Register</Link>
         </p>

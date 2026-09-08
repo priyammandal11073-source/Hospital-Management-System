@@ -84,6 +84,41 @@ function Login() {
             {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
+
+        <div className="mt-6 border-t border-slate-200 pt-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+            Quick Fill Demo Accounts:
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => { setEmail("admin@hospital.com"); setPassword("admin123"); }}
+              className="rounded bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
+            >
+              Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail("doctor@hospital.com"); setPassword("doctor123"); }}
+              className="rounded bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
+            >
+              Doctor
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEmail("receptionist@hospital.com"); setPassword("receptionist123"); }}
+              className="rounded bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition"
+            >
+              Receptionist
+            </button>
+          </div>
+          <p className="mt-4 text-center text-xs text-slate-500">
+            Are you a patient?{" "}
+            <a href="/patient/login" className="font-medium text-blue-600 hover:underline">
+              Go to Patient Portal
+            </a>
+          </p>
+        </div>
       </section>
     </main>
   );
