@@ -6,52 +6,22 @@
 const METHODS = [
   {
     value: "razorpay",
-    label: "Razorpay Gateway",
+    label: "Razorpay Online Gateway",
     icon: "💳",
-    description: "Instant Cards · UPI · NetBank",
+    description: "UPI · Cards · NetBanking · Wallets",
     featured: true,
-  },
-  {
-    value: "upi",
-    label: "Instant UPI",
-    icon: "📲",
-    description: "PhonePe · GPay · Paytm",
-  },
-  {
-    value: "card",
-    label: "Direct Card",
-    icon: "💳",
-    description: "Debit / Credit card gateway",
   },
   {
     value: "insurance",
     label: "Health Insurance",
     icon: "🏥",
-    description: "Cashless TPA & Ayushman",
-  },
-  {
-    value: "netbanking",
-    label: "Net Banking",
-    icon: "🏦",
-    description: "SBI · HDFC · ICICI · NEFT",
-  },
-  {
-    value: "wallet",
-    label: "Hospital Wallet",
-    icon: "👛",
-    description: "Prepaid patient deposit",
-  },
-  {
-    value: "cheque",
-    label: "Cheque / DD",
-    icon: "📜",
-    description: "Bank draft & CTS cheque",
+    description: "Cashless TPA & Ayushman Desk",
   },
   {
     value: "cash",
     label: "Cash",
     icon: "💵",
-    description: "Counter cash payment",
+    description: "Counter cash payment at desk",
   },
 ];
 
@@ -69,7 +39,7 @@ function PaymentMethodSelect({ value, onChange, label = "Payment Method", disabl
       {label && (
         <p className="text-sm font-semibold text-slate-700">{label}</p>
       )}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {METHODS.map((method) => {
           const isSelected = value === method.value;
           return (

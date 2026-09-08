@@ -269,8 +269,8 @@ function PaymentPage() {
               onChange={setPaymentMethod}
             />
 
-            {/* 0. Razorpay Gateway Checkout */}
-            {paymentMethod === "razorpay" && (
+            {/* 1. All Online/Digital Payments -> Razorpay Payment Gateway */}
+            {paymentMethod !== "insurance" && paymentMethod !== "cash" && (
               <RazorpayPaymentBox
                 billing={billing}
                 onPaymentSuccess={handlePaymentSuccess}
@@ -278,25 +278,7 @@ function PaymentPage() {
               />
             )}
 
-            {/* 1. UPI Payment Flow */}
-            {paymentMethod === "upi" && (
-              <UpiPaymentBox
-                billing={billing}
-                onPaymentSuccess={handlePaymentSuccess}
-                isPatient={isPatient}
-              />
-            )}
-
-            {/* 2. Online Card Payment Gateway */}
-            {paymentMethod === "card" && (
-              <CardPaymentBox
-                billing={billing}
-                onPaymentSuccess={handlePaymentSuccess}
-                isPatient={isPatient}
-              />
-            )}
-
-            {/* 3. Health Insurance & TPA Desk */}
+            {/* 2. Health Insurance & TPA Desk */}
             {paymentMethod === "insurance" && (
               <InsurancePaymentBox
                 billing={billing}
@@ -305,34 +287,7 @@ function PaymentPage() {
               />
             )}
 
-            {/* 4. Net Banking & NEFT/RTGS */}
-            {paymentMethod === "netbanking" && (
-              <NetBankingPaymentBox
-                billing={billing}
-                onPaymentSuccess={handlePaymentSuccess}
-                isPatient={isPatient}
-              />
-            )}
-
-            {/* 5. Hospital Patient Wallet */}
-            {paymentMethod === "wallet" && (
-              <WalletPaymentBox
-                billing={billing}
-                onPaymentSuccess={handlePaymentSuccess}
-                isPatient={isPatient}
-              />
-            )}
-
-            {/* 6. Cheque / DD Clearing */}
-            {paymentMethod === "cheque" && (
-              <ChequePaymentBox
-                billing={billing}
-                onPaymentSuccess={handlePaymentSuccess}
-                isPatient={isPatient}
-              />
-            )}
-
-            {/* 7. Cash Payment Instructions */}
+            {/* 3. Cash Payment Instructions */}
             {paymentMethod === "cash" && (
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-3">
                 <p className="text-sm text-slate-700">
