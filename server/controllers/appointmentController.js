@@ -3,8 +3,18 @@ import Appointment from "../models/Appointment.js";
 import Billing from "../models/Billing.js";
 import { resolveDoctorForUser } from "../utils/doctorHelper.js";
 
-const appointmentStatuses = ["pending", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"];
-const activeStatuses = ["pending", "confirmed", "checked_in", "in_consultation"];
+const appointmentStatuses = [
+  "pending",
+  "confirmed",
+  "waiting",
+  "checked_in",
+  "in_consultation",
+  "in_progress",
+  "completed",
+  "cancelled",
+  "no_show",
+];
+const activeStatuses = ["pending", "confirmed", "waiting", "checked_in", "in_consultation", "in_progress"];
 const OPD_FEE = Number(process.env.OPD_FEE || 500);
 
 const sendDatabaseError = (error, res) => {

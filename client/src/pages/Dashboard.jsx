@@ -30,6 +30,9 @@ import {
   getDoctorDashboardData,
   getAdminTelemetry,
   getGlobalAdminSearch,
+  getReceptionistTelemetry,
+  getFrontDeskWorkQueue,
+  confirmOnlineBooking,
 } from "../services/api.js";
 
 const formatDate = (date) =>
@@ -1385,38 +1388,38 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
    3. RECEPTIONIST & FRONT DESK ADMISSIONS PORTAL DASHBOARD
    ========================================================================= */
 function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
-  const isNurse = user?.role === "nurse";
-  const [patients, setPatients] = useState([]);
-  const [appointments, setAppointments] = useState([]);
-  const [billings, setBillings] = useState([]);
+  const [telemetry, setTelemetry] = useState(null);
+  const [workQueue, setWorkQueue] = useState([]);
+  const [activeCategory, setActiveCategory] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [queueLoading, setQueueLoading] = useState(false);
   const [error, setError] = useState("");
   const [settlingId, setSettlingId] = useState(null);
+  const [actioningId, setActioningId] = useState(null);
 
   useEffect(() => {
     let active = true;
-    const loadFrontDeskData = async () => {
+    const loadData = async () => {
       setLoading(true);
+      setError("");
       try {
-        const [pData, aData, bData] = await Promise.all([
-          getPatients("", 1, 20),
-          getAppointments(),
-          getBillings({ paymentStatus: "pending" }),
+        const [telData, qData] = await Promise.all([
+          getReceptionistTelemetry(),
+          getFrontDeskWorkQueue(activeCategory),
         ]);
         if (active) {
-          setPatients(pData.patients || []);
-          setAppointments(aData.appointments || []);
-          setBillings(bData.billings || []);
+          setTelemetry(telData);
+          setWorkQueue(qData.queue || []);
         }
       } catch (err) {
-        if (active) setError(err.response?.data?.message || "Failed to load front desk data.");
+        if (active) setError(err.response?.data?.message || "Failed to load front desk telemetry.");
       } finally {
         if (active) setLoading(false);
       }
     };
-    loadFrontDeskData();
+    loadData();
     return () => { active = false; };
-  }, [refreshKey]);
+  }, [refreshKey, activeCategory]);
 
   const handleQuickCashSettlement = async (billingId) => {
     setSettlingId(billingId);
@@ -1431,153 +1434,388 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
   };
 
   const handleConfirmAppointment = async (appId) => {
+    setActioningId(appId);
     try {
-      await updateAppointmentStatus(appId, "confirmed");
+      await confirmOnlineBooking(appId, { action: "confirm" });
       onTriggerRefresh();
     } catch (err) {
       alert("Failed to confirm: " + (err.response?.data?.message || err.message));
+    } finally {
+      setActioningId(null);
     }
   };
 
-  if (loading) return <LoadingSpinner label={isNurse ? "Opening nursing station & inpatient care records..." : "Opening front desk & admissions counter..."} />;
+  if (loading) return <LoadingSpinner label="Opening hospital admissions & front desk command center..." />;
   if (error) return <ErrorMessage message={error} />;
+
+  const m = telemetry?.metrics || {};
+  const recentAppointments = telemetry?.recentAppointments || [];
+  const todayQueue = telemetry?.todayQueue || [];
 
   return (
     <div className="space-y-6">
-      {/* Reception / Nurse Hero */}
-      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${isNurse ? "from-teal-800 via-cyan-900 to-slate-950" : "from-amber-700 via-orange-700 to-slate-950"} p-6 sm:p-8 text-white shadow-lg`}>
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
-            <span className={`h-2 w-2 rounded-full ${isNurse ? "bg-teal-400" : "bg-amber-400"} animate-pulse`}></span>
-            <span>{isNurse ? "Clinical care & inpatient nursing station" : "Hospital admissions & cashier counter"}</span>
-            <span className="opacity-60">•</span>
-            <span>{isNurse ? "Ward care desk" : "Front office desk"}</span>
+      {/* 1. FRONT OFFICE HERO BANNER */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-700 via-orange-700 to-slate-950 p-6 sm:p-8 text-white shadow-xl">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
+              <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+              <span>Hospital admissions & cashier counter</span>
+              <span className="opacity-60">•</span>
+              <span>Front office desk</span>
+            </div>
+            <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
+              Hospital Front Desk & Admissions
+            </h1>
+            <p className="mt-2 text-sm text-amber-100/90 leading-relaxed">
+              Welcome, {user?.name}. Process walk-in admissions, register patient check-ins, manage appointment schedules, and collect counter payments.
+            </p>
           </div>
-          <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
-            {isNurse ? "Nursing station & inpatient care" : "Hospital front desk & admissions"}
-          </h1>
-          <p className="mt-2 text-sm text-teal-100/90 leading-relaxed">
-            {isNurse
-              ? `Welcome, ${user?.name}. Monitor admitted inpatients, record vital signs, coordinate ward bed allocations, and review diagnostic lab results.`
-              : `Welcome, ${user?.name}. Process walk-in admissions, register patient check-ins, manage appointment schedules, and collect counter payments.`}
-          </p>
+
+          {/* Quick Shortcuts */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link
+              to="/reception/waiting-room"
+              className="flex items-center gap-1.5 rounded-xl bg-white/15 border border-white/20 px-3.5 py-2.5 text-xs font-bold text-white backdrop-blur-md hover:bg-white/25 transition shadow-sm"
+            >
+              <span>📋</span>
+              <span>Waiting Room</span>
+            </Link>
+            <Link
+              to="/reception/calendar"
+              className="flex items-center gap-1.5 rounded-xl bg-white/15 border border-white/20 px-3.5 py-2.5 text-xs font-bold text-white backdrop-blur-md hover:bg-white/25 transition shadow-sm"
+            >
+              <span>📅</span>
+              <span>OPD Calendar</span>
+            </Link>
+            <Link
+              to="/patients"
+              className="flex items-center gap-1.5 rounded-xl bg-amber-500/40 border border-amber-400/50 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-amber-500/50 transition shadow-sm"
+            >
+              <span>➕</span>
+              <span>New Patient</span>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Front Desk / Nurse Metrics */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {/* 2. 12-METRIC FRONT DESK KPI GRID */}
+      <div className="grid gap-3.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         <MetricCard
-          label={isNurse ? "Inpatients & records" : "Admitted patients"}
-          value={patients.length}
-          gradient="from-blue-600 to-cyan-600"
-          badge="In system"
+          label="Admitted Patients"
+          value={m.admittedPatients || 0}
+          gradient="from-blue-600 to-indigo-600"
+          badge="Inpatient Wards"
           badgeColor="bg-blue-50 text-blue-700"
           icon={<span className="text-2xl">👥</span>}
+          to="/beds"
         />
         <MetricCard
-          label="Scheduled consultations"
-          value={appointments.length}
+          label="Today's Appointments"
+          value={m.todayAppointments || 0}
           gradient="from-emerald-600 to-teal-600"
-          badge="OPD calendar"
+          badge="Scheduled OPD"
           badgeColor="bg-emerald-50 text-emerald-700"
           icon={<span className="text-2xl">📅</span>}
+          to="/appointments"
         />
         <MetricCard
-          label={isNurse ? "Unpaid hospital invoices" : "Pending cashier bills"}
-          value={billings.length}
-          gradient={isNurse ? "from-slate-600 to-slate-700" : "from-amber-500 to-orange-600"}
-          badge={isNurse ? "View-only" : "Unsettled invoices"}
-          badgeColor={isNurse ? "bg-slate-100 text-slate-700" : "bg-amber-50 text-amber-700"}
-          icon={<span className="text-2xl">💳</span>}
+          label="Waiting Patients"
+          value={m.waitingPatients || 0}
+          gradient="from-amber-500 to-orange-600"
+          badge="In Waiting Hall"
+          badgeColor="bg-amber-50 text-amber-700"
+          icon={<span className="text-2xl">⏳</span>}
+          to="/reception/waiting-room"
         />
         <MetricCard
-          label="Online portal bookings"
-          value={appointments.filter((a) => a.bookedBy === "patient" && a.status === "pending").length}
-          gradient="from-rose-500 to-red-600"
-          badge="Need desk confirmation"
+          label="Pending Admissions"
+          value={m.pendingAdmissions || 0}
+          gradient="from-cyan-600 to-blue-600"
+          badge="Bed Requisitions"
+          badgeColor="bg-cyan-50 text-cyan-700"
+          icon={<span className="text-2xl">🛏️</span>}
+          to="/beds"
+        />
+        <MetricCard
+          label="Pending Cashier Bills"
+          value={m.pendingCashierBills || 0}
+          gradient="from-rose-600 to-red-600"
+          badge="Unsettled Dues"
           badgeColor="bg-rose-50 text-rose-700"
-          icon={<span className="text-2xl">🔔</span>}
+          icon={<span className="text-2xl">💳</span>}
+          to="/billing"
+        />
+        <MetricCard
+          label="Online Bookings"
+          value={m.onlineBookings || 0}
+          gradient="from-purple-600 to-violet-600"
+          badge="Patient Portal"
+          badgeColor="bg-purple-50 text-purple-700"
+          icon={<span className="text-2xl">🌐</span>}
+          to="/reception/online-bookings"
+        />
+        <MetricCard
+          label="Available Beds"
+          value={m.availableBeds || 0}
+          gradient="from-teal-600 to-emerald-600"
+          badge="Ready for Triage"
+          badgeColor="bg-teal-50 text-teal-700"
+          icon={<span className="text-2xl">✅</span>}
+          to="/beds"
+        />
+        <MetricCard
+          label="Cancelled Appointments"
+          value={m.cancelledAppointments || 0}
+          gradient="from-slate-600 to-slate-700"
+          badge="Slot Freed"
+          badgeColor="bg-slate-100 text-slate-700"
+          icon={<span className="text-2xl">❌</span>}
+          to="/appointments"
+        />
+        <MetricCard
+          label="Patients Checked In"
+          value={m.checkedInPatients || 0}
+          gradient="from-blue-500 to-cyan-600"
+          badge="Arrived Today"
+          badgeColor="bg-blue-50 text-blue-700"
+          icon={<span className="text-2xl">🚪</span>}
+          to="/reception/waiting-room"
+        />
+        <MetricCard
+          label="Patients Waiting for Doctor"
+          value={m.patientsWaitingForDoctor || 0}
+          gradient="from-amber-600 to-yellow-600"
+          badge="Queue Active"
+          badgeColor="bg-amber-50 text-amber-700"
+          icon={<span className="text-2xl">🩺</span>}
+          to="/reception/waiting-room"
+        />
+        <MetricCard
+          label="Discharges Today"
+          value={m.dischargesToday || 0}
+          gradient="from-emerald-600 to-teal-700"
+          badge="Completed Stays"
+          badgeColor="bg-emerald-50 text-emerald-700"
+          icon={<span className="text-2xl">🏠</span>}
+          to="/reception/discharges"
+        />
+        <MetricCard
+          label="Emergency Cases"
+          value={m.emergencyCases || 0}
+          gradient="from-red-600 to-rose-700"
+          badge="Priority Red"
+          badgeColor="bg-red-50 text-red-700"
+          icon={<span className="text-2xl">🚨</span>}
+          to="/reception/emergency"
         />
       </div>
 
-      {/* Operations Quick Action Hub */}
+      {/* 3. CENTRAL FRONT DESK WORK QUEUE */}
+      <section className="rounded-2xl bg-white p-5 sm:p-6 shadow-xs ring-1 ring-slate-200/80">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-4">
+          <div>
+            <h2 className="text-base font-bold text-slate-800 flex items-center gap-2">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+              <span>Front Desk Work Queue</span>
+              <span className="ml-2 rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+                {workQueue.length} actionable items
+              </span>
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Actionable tasks requiring receptionist coordination: check-ins, online confirmations, billing, and queue management.
+            </p>
+          </div>
+
+          {/* Category Filter Pills */}
+          <div className="flex flex-wrap gap-1.5 text-xs">
+            {[
+              { id: "all", label: "All Tasks" },
+              { id: "online_booking", label: "Online Bookings" },
+              { id: "waiting_checkin", label: "Waiting Check-in" },
+              { id: "awaiting_doctor", label: "Awaiting Doctor" },
+              { id: "payment", label: "Pending Cashier" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveCategory(tab.id)}
+                className={`rounded-lg px-3 py-1.5 font-medium transition ${
+                  activeCategory === tab.id
+                    ? "bg-amber-600 text-white font-semibold shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {workQueue.length === 0 ? (
+          <div className="py-12 text-center">
+            <span className="text-3xl">✨</span>
+            <p className="mt-2 text-sm font-semibold text-slate-700">All front desk tasks cleared!</p>
+            <p className="text-xs text-slate-400 mt-1">No pending arrivals or unconfirmed bookings in this category.</p>
+          </div>
+        ) : (
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100">
+                <tr>
+                  <th className="py-3 px-3">Patient</th>
+                  <th className="py-3 px-3">Task Details</th>
+                  <th className="py-3 px-3">Time / Slot</th>
+                  <th className="py-3 px-3">Priority</th>
+                  <th className="py-3 px-3">Status</th>
+                  <th className="py-3 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {workQueue.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3.5 px-3 font-semibold text-slate-800">
+                      <div>
+                        <span>{item.patient}</span>
+                        {item.contactNumber && (
+                          <p className="text-[11px] font-normal text-slate-400">{item.contactNumber}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-3 font-medium text-slate-700">
+                      {item.task}
+                    </td>
+                    <td className="py-3.5 px-3 text-slate-500">
+                      {item.timeSlot || formatDate(item.dateTime)}
+                    </td>
+                    <td className="py-3.5 px-3">
+                      <span
+                        className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-bold ${
+                          item.priority === "Emergency"
+                            ? "bg-red-100 text-red-800 ring-1 ring-red-300"
+                            : item.priority === "Urgent"
+                            ? "bg-amber-100 text-amber-800 ring-1 ring-amber-300"
+                            : "bg-blue-50 text-blue-700 ring-1 ring-blue-200"
+                        }`}
+                      >
+                        {item.priority}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-3">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600">
+                        <span className={`h-1.5 w-1.5 rounded-full ${item.status === "In Progress" ? "bg-amber-500 animate-pulse" : "bg-blue-500"}`}></span>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-3 text-right">
+                      {item.actionType === "confirm_booking" ? (
+                        <button
+                          disabled={actioningId === item.originalId}
+                          onClick={() => handleConfirmAppointment(item.originalId)}
+                          className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition disabled:opacity-50"
+                        >
+                          {actioningId === item.originalId ? "Saving..." : "Confirm Slot"}
+                        </button>
+                      ) : item.actionType === "collect_payment" ? (
+                        <button
+                          disabled={settlingId === item.originalId}
+                          onClick={() => handleQuickCashSettlement(item.originalId)}
+                          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition disabled:opacity-50"
+                        >
+                          {settlingId === item.originalId ? "Settling..." : "Collect Cash"}
+                        </button>
+                      ) : (
+                        <Link
+                          to={item.actionLink || "/reception/waiting-room"}
+                          className="rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 transition"
+                        >
+                          Open Desk →
+                        </Link>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* 4. OPERATIONS QUICK ACTION HUB */}
       <section className="rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h2 className="text-sm font-bold text-slate-700 flex items-center gap-2">
-              <span className={`flex h-2 w-2 rounded-full ${isNurse ? "bg-teal-500" : "bg-amber-500"}`}></span>
-              {isNurse ? "Nursing care quick actions" : "Front office quick operations"}
+              <span className="flex h-2 w-2 rounded-full bg-amber-500"></span>
+              <span>Front Office Quick Operations</span>
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">{isNurse ? "Ward admissions, appointments & bed management" : "Admissions, OPD booking, and cashier desks"}</p>
+            <p className="text-xs text-slate-500 mt-0.5">Walk-in triage, bed lookup, appointments, and cashier desks</p>
           </div>
         </div>
-        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <Link to="/patients" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-blue-400 hover:shadow-md transition">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <Link to="/patients" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-amber-400 hover:shadow-md transition">
             <span className="text-2xl">➕</span>
             <div>
-              <p className="text-xs font-bold text-slate-800">{isNurse ? "Patient care directory" : "New patient admission"}</p>
-              <p className="text-[11px] text-slate-500">{isNurse ? "View patients & record vitals" : "Register new hospital walk-in"}</p>
+              <p className="text-xs font-bold text-slate-800">New Patient Admission</p>
+              <p className="text-[11px] text-slate-500">Register new hospital walk-in</p>
             </div>
           </Link>
           <Link to="/appointments" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-emerald-400 hover:shadow-md transition">
             <span className="text-2xl">📅</span>
             <div>
-              <p className="text-xs font-bold text-slate-800">OPD appointments</p>
-              <p className="text-[11px] text-slate-500">View & coordinate visits</p>
+              <p className="text-xs font-bold text-slate-800">OPD Appointments</p>
+              <p className="text-[11px] text-slate-500">Book, reschedule & manage visits</p>
             </div>
           </Link>
-          {isNurse ? (
-            <Link to="/beds" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-teal-400 hover:shadow-md transition">
-              <span className="text-2xl">🛏️</span>
-              <div>
-                <p className="text-xs font-bold text-slate-800">Beds & wards</p>
-                <p className="text-[11px] text-slate-500">Allocate beds & manage occupancy</p>
-              </div>
-            </Link>
-          ) : (
-            <Link to="/billing" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-amber-400 hover:shadow-md transition">
-              <span className="text-2xl">🧾</span>
-              <div>
-                <p className="text-xs font-bold text-slate-800">Cashier & invoicing</p>
-                <p className="text-[11px] text-slate-500">Generate bill & collect payment</p>
-              </div>
-            </Link>
-          )}
+          <Link to="/beds" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-teal-400 hover:shadow-md transition">
+            <span className="text-2xl">🛏️</span>
+            <div>
+              <p className="text-xs font-bold text-slate-800">Beds & Ward Allocation</p>
+              <p className="text-[11px] text-slate-500">Live ward census & bed admit</p>
+            </div>
+          </Link>
+          <Link to="/billing" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-orange-400 hover:shadow-md transition">
+            <span className="text-2xl">🧾</span>
+            <div>
+              <p className="text-xs font-bold text-slate-800">Cashier & Invoicing</p>
+              <p className="text-[11px] text-slate-500">Generate bill & collect payment</p>
+            </div>
+          </Link>
         </div>
       </section>
 
-      {/* Pending Cashier Queue / Billing Monitor */}
+      {/* 5. DUAL OPERATIONAL PANELS: WAITING ROOM & BILLING SETTLEMENT */}
       <div className="grid gap-6 xl:grid-cols-2">
+        {/* Waiting Room Live Stream */}
         <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <h2 className="text-base font-bold text-slate-800">
-              {isNurse ? "Unpaid billing records (view-only)" : "Pending billing settlements"}
-            </h2>
-            <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-500/20">{billings.length} unpaid</span>
+            <div>
+              <h2 className="text-base font-bold text-slate-800">OPD Token Queue</h2>
+              <p className="text-xs text-slate-500">Patients currently in waiting hall</p>
+            </div>
+            <Link to="/reception/waiting-room" className="text-xs font-semibold text-amber-600 hover:underline">
+              View All Tokens →
+            </Link>
           </div>
-          {billings.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">All bills are settled!</p>
+          {todayQueue.length === 0 ? (
+            <p className="py-8 text-center text-sm text-slate-500">No patients currently in the waiting hall.</p>
           ) : (
             <ul className="mt-4 divide-y divide-slate-100">
-              {billings.slice(0, 5).map((b) => (
-                <li key={b._id} className="flex items-center justify-between py-3 hover:bg-slate-50/60 rounded-xl px-2 transition-colors">
-                  <div>
-                    <p className="font-bold text-slate-800">{b.patient?.name || "Patient"}</p>
-                    <p className="text-xs text-slate-500">Inv #{b._id.slice(-6).toUpperCase()} • ₹{b.totalAmount.toFixed(2)}</p>
-                  </div>
-                  {isNurse ? (
-                    <span className="rounded-lg bg-slate-100 border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600">
-                      Unsettled
+              {todayQueue.map((q) => (
+                <li key={q._id} className="flex items-center justify-between py-3 hover:bg-slate-50/60 rounded-xl px-2 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-lg bg-amber-100 border border-amber-300 px-2.5 py-1 font-mono text-xs font-extrabold text-amber-800">
+                      {q.tokenNumber || `TOKEN-${q.queueNumber || 1}`}
                     </span>
-                  ) : (
-                    <button
-                      disabled={settlingId === b._id}
-                      onClick={() => handleQuickCashSettlement(b._id)}
-                      className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition disabled:opacity-50"
-                    >
-                      {settlingId === b._id ? "Saving..." : "Collect cash"}
-                    </button>
-                  )}
+                    <div>
+                      <p className="font-bold text-slate-800 text-xs">{q.patient?.name || "Patient"}</p>
+                      <p className="text-[11px] text-slate-500">
+                        Dr. {q.doctor?.name} • {q.doctor?.department} • Slot: {q.timeSlot}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-bold text-blue-700 ring-1 ring-blue-300">
+                    {q.status}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -1587,25 +1825,40 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
         {/* Online Bookings Review Queue */}
         <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <h2 className="text-base font-bold text-slate-800">Online patient booking queue</h2>
-            <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700 ring-1 ring-rose-500/20">Needs confirmation</span>
+            <div>
+              <h2 className="text-base font-bold text-slate-800">Online Patient Booking Queue</h2>
+              <p className="text-xs text-slate-500">Self-service portal booking requests</p>
+            </div>
+            <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-semibold text-rose-700 ring-1 ring-rose-500/20">
+              {m.onlineBookings || 0} Pending
+            </span>
           </div>
-          <ul className="mt-4 divide-y divide-slate-100">
-            {appointments.filter((a) => a.status === "pending").slice(0, 5).map((a) => (
-              <li key={a._id} className="flex items-center justify-between py-3 hover:bg-slate-50/60 rounded-xl px-2 transition-colors">
-                <div>
-                  <p className="font-bold text-slate-800">{a.patient?.name}</p>
-                  <p className="text-xs text-slate-500">Dr. {a.doctor?.name} • {a.timeSlot}</p>
-                </div>
-                <button
-                  onClick={() => handleConfirmAppointment(a._id)}
-                  className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition"
-                >
-                  ✓ Confirm slot
-                </button>
-              </li>
-            ))}
-          </ul>
+          {recentAppointments.filter((a) => a.bookedBy === "patient" && a.status === "pending").length === 0 ? (
+            <p className="py-8 text-center text-sm text-slate-500">No online bookings require desk confirmation.</p>
+          ) : (
+            <ul className="mt-4 divide-y divide-slate-100">
+              {recentAppointments
+                .filter((a) => a.bookedBy === "patient" && a.status === "pending")
+                .slice(0, 5)
+                .map((a) => (
+                  <li key={a._id} className="flex items-center justify-between py-3 hover:bg-slate-50/60 rounded-xl px-2 transition-colors">
+                    <div>
+                      <p className="font-bold text-slate-800 text-xs">{a.patient?.name}</p>
+                      <p className="text-[11px] text-slate-500">
+                        Dr. {a.doctor?.name} ({a.doctor?.department}) • {a.timeSlot}
+                      </p>
+                    </div>
+                    <button
+                      disabled={actioningId === a._id}
+                      onClick={() => handleConfirmAppointment(a._id)}
+                      className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-blue-700 transition disabled:opacity-50"
+                    >
+                      {actioningId === a._id ? "Saving..." : "✓ Confirm Slot"}
+                    </button>
+                  </li>
+                ))}
+            </ul>
+          )}
         </section>
       </div>
     </div>

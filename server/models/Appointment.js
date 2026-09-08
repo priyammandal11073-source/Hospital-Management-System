@@ -65,6 +65,30 @@ const appointmentSchema = new mongoose.Schema(
     queueNumber: {
       type: Number,
     },
+    tokenNumber: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    checkedInAt: {
+      type: Date,
+    },
+    appointmentType: {
+      type: String,
+      enum: {
+        values: ["opd", "walk_in", "follow_up", "emergency", "teleconsultation"],
+        message: "Invalid appointment type",
+      },
+      default: "opd",
+    },
+    priority: {
+      type: String,
+      enum: {
+        values: ["normal", "urgent", "emergency"],
+        message: "Invalid priority level",
+      },
+      default: "normal",
+    },
     notes: {
       type: String,
       trim: true,

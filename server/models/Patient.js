@@ -58,6 +58,14 @@ const patientSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    patientId: {
+      type: String,
+      trim: true,
+      index: true,
+    },
+    dateOfBirth: {
+      type: Date,
+    },
     emergencyContact: {
       name: { type: String, trim: true },
       phone: { type: String, trim: true },

@@ -68,6 +68,18 @@ import OperatingTheatrePage from "./pages/admin/OperatingTheatrePage.jsx";
 import AuditLogPage from "./pages/admin/AuditLogPage.jsx";
 import HospitalSettingsPage from "./pages/admin/HospitalSettingsPage.jsx";
 
+// Receptionist & Front Desk Pages
+import WaitingRoomPage from "./pages/reception/WaitingRoomPage.jsx";
+import OPDCalendarPage from "./pages/reception/OPDCalendarPage.jsx";
+import OnlineBookingsPage from "./pages/reception/OnlineBookingsPage.jsx";
+import DischargeCoordinationPage from "./pages/reception/DischargeCoordinationPage.jsx";
+import EmergencyDeskPage from "./pages/reception/EmergencyDeskPage.jsx";
+import AppointmentRemindersPage from "./pages/reception/AppointmentRemindersPage.jsx";
+import DeskHandoverPage from "./pages/reception/DeskHandoverPage.jsx";
+import ReceptionReportsPage from "./pages/reception/ReceptionReportsPage.jsx";
+import FrontDeskWorkQueuePage from "./pages/reception/FrontDeskWorkQueuePage.jsx";
+import RefundsManagementPage from "./pages/reception/RefundsManagementPage.jsx";
+
 function App() {
   return (
     <Routes>
@@ -153,6 +165,18 @@ function App() {
           <Route path="/admin/operating-theatre" element={<OperatingTheatrePage />} />
           <Route path="/admin/audit-logs" element={<AuditLogPage />} />
           <Route path="/admin/settings" element={<HospitalSettingsPage />} />
+
+          {/* Receptionist & Front Desk Operations Routes */}
+          <Route path="/reception/waiting-room" element={<WaitingRoomPage />} />
+          <Route path="/reception/calendar" element={<OPDCalendarPage />} />
+          <Route path="/reception/online-bookings" element={<OnlineBookingsPage />} />
+          <Route path="/reception/discharges" element={<DischargeCoordinationPage />} />
+          <Route path="/reception/emergency" element={<EmergencyDeskPage />} />
+          <Route path="/reception/reminders" element={<AppointmentRemindersPage />} />
+          <Route path="/reception/handover" element={<DeskHandoverPage />} />
+          <Route path="/reception/reports" element={<ReceptionReportsPage />} />
+          <Route path="/reception/work-queue" element={<FrontDeskWorkQueuePage />} />
+          <Route path="/reception/refunds" element={<RefundsManagementPage />} />
         </Route>
       </Route>
       {/* Fallback — render 404 instead of blindly redirecting to /dashboard (which then bounces to /login for unauthed users) */}

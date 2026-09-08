@@ -97,7 +97,7 @@ const billingSchema = new mongoose.Schema(
     paymentStatus: {
       type: String,
       enum: {
-        values: ["pending", "paid", "partially_paid"],
+        values: ["pending", "paid", "partially_paid", "cancelled", "refunded"],
         message: "Please provide a valid payment status",
       },
       default: "pending",
@@ -110,6 +110,22 @@ const billingSchema = new mongoose.Schema(
       enum: {
         values: ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque", "razorpay"],
         message: "Please provide a valid payment method",
+      },
+    },
+    receiptNumber: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    refundDetails: {
+      reason: { type: String, trim: true, default: "" },
+      amount: { type: Number, default: 0 },
+      refundedAt: { type: Date },
+      refundedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+      status: {
+        type: String,
+        enum: ["Requested", "Approved", "Completed", "Rejected"],
+        default: "Completed",
       },
     },
     upiTransactionId: {

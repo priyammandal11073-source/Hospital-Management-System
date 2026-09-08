@@ -18,6 +18,7 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 import nurseRoutes from "./routes/nurseRoutes.js";
 import doctorClinicalRoutes from "./routes/doctorClinicalRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import receptionistRoutes from "./routes/receptionistRoutes.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -48,6 +49,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/nurse", nurseRoutes);
 app.use("/api/doctor-workspace", doctorClinicalRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/receptionist", receptionistRoutes);
 
 // Temporary route to confirm that the API is running.
 app.get("/api/health", (req, res) => {

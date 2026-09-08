@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { createPatient, updatePatient } from "../services/api.js";
+import { useState, useEffect } from "react";
+import { createPatient, updatePatient, checkDuplicatePatient } from "../services/api.js";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -26,6 +26,35 @@ function PatientForm({ patient, onCancel, onSuccess }) {
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [duplicates, setDuplicates] = useState([]);
+  const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
+
+  // Duplicate patient search (only when registering new patient)
+  useEffect(() => {
+    if (patient) return;
+    const phone = formData.contactNumber.trim();
+    const email = formData.email.trim();
+    const name = formData.name.trim();
+
+    if (phone.length < 5 && email.length < 5 && name.length < 3) {
+      setDuplicates([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsCheckingDuplicates(true);
+      try {
+        const res = await checkDuplicatePatient({ phone, email, name });
+        setDuplicates(res.matches || []);
+      } catch (err) {
+        console.error("Duplicate check error:", err);
+      } finally {
+        setIsCheckingDuplicates(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [formData.contactNumber, formData.email, formData.name, patient]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -81,6 +110,34 @@ function PatientForm({ patient, onCancel, onSuccess }) {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
+      {/* Duplicate Patient Alert */}
+      {duplicates.length > 0 && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 shadow-xs">
+          <div className="flex items-center gap-2 font-bold text-amber-900">
+            <span className="text-base">⚠️</span>
+            <span>Potential Duplicate Patient Record Found</span>
+          </div>
+          <p className="mt-1 text-[11px] text-amber-800">
+            One or more existing patients match the entered contact, email, or name. Avoid creating duplicate records.
+          </p>
+          <ul className="mt-2 divide-y divide-amber-200/60 rounded-lg bg-white/70 p-2 text-xs">
+            {duplicates.map((d) => (
+              <li key={d._id} className="py-1.5 flex items-center justify-between">
+                <div>
+                  <span className="font-bold text-slate-800">{d.name}</span>
+                  <span className="text-slate-500 text-[11px] ml-2">
+                    {d.age}y • {d.gender} • 📞 {d.contactNumber}
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono font-bold bg-amber-200/80 text-amber-900 px-1.5 py-0.5 rounded">
+                  {d.patientId || d.abhaId || "Existing File"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Name *
