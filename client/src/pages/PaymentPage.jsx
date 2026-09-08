@@ -94,7 +94,8 @@ function PaymentPage() {
       }
 
       if (window.Razorpay && scriptOK) {
-        const invoiceNumber = `INV-${billing._id?.toString().slice(-6).toUpperCase()}`;
+        const rzpIdStr = String(billing._id || billing.id || "");
+        const invoiceNumber = `INV-${rzpIdStr ? rzpIdStr.slice(-6).toUpperCase() : "NIVORA"}`;
         const options = {
           key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TZavagxglGTRZp",
           amount: orderData.amount,
@@ -256,7 +257,8 @@ function PaymentPage() {
     );
   }
 
-  const invoiceNumber = `INV-${billing._id?.toString().slice(-6).toUpperCase()}`;
+  const idStr = String(billing?._id || billing?.id || "");
+  const invoiceNumber = `INV-${idStr ? idStr.slice(-6).toUpperCase() : "NIVORA"}`;
   const isPaid = billing.paymentStatus === "paid";
   const docName = billing.appointment?.doctor?.name
     ? `Dr. ${billing.appointment.doctor.name}`

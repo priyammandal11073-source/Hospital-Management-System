@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
 
-// Generates NPCI-compliant UPI deep link
+// Generates NPCI-compliant UPI deep link safely
 export const getUpiPaymentUrl = (billing) => {
-  const invoiceNumber = `INV-${billing._id?.toString().slice(-6).toUpperCase()}`;
+  if (!billing) return "";
+  const idStr = String(billing._id || billing.id || "");
+  const invoiceNumber = `INV-${idStr ? idStr.slice(-6).toUpperCase() : "NIVORA"}`;
   const amount = Number(billing.totalAmount || 0).toFixed(2);
   const payeeVpa = "nivoracare@icici";
   const payeeName = "Nivora Care Hospital";
@@ -16,6 +18,7 @@ export const getUpiPaymentUrl = (billing) => {
 export const generateUpiQrDataUrl = async (billing) => {
   try {
     const url = getUpiPaymentUrl(billing);
+    if (!url) return "";
     return await QRCode.toDataURL(url, {
       width: 220,
       margin: 2,
@@ -49,7 +52,8 @@ function UpiPaymentBox({ billing, onPaymentSuccess, isPatient = false }) {
   const [actionSuccess, setActionSuccess] = useState("");
 
   const isPaid = billing?.paymentStatus === "paid";
-  const invoiceNumber = `INV-${billing?._id?.toString().slice(-6).toUpperCase()}`;
+  const idStr = String(billing?._id || billing?.id || "");
+  const invoiceNumber = `INV-${idStr ? idStr.slice(-6).toUpperCase() : "NIVORA"}`;
   const totalAmount = Number(billing?.totalAmount || 0).toFixed(2);
   const upiUrl = billing ? getUpiPaymentUrl(billing) : "";
 
