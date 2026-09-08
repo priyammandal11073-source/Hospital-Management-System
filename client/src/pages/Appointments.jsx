@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import AppointmentForm from "../components/AppointmentForm.jsx";
 import PrescriptionForm from "../components/PrescriptionForm.jsx";
 import PrescriptionModal from "../components/PrescriptionModal.jsx";
@@ -13,10 +14,11 @@ import {
   getPatientVitals,
 } from "../services/api.js";
 
-const statuses = ["pending", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"];
+const statuses = ["pending", "waiting", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"];
 
 const statusLabels = {
   pending: "Pending",
+  waiting: "Waiting Queue",
   confirmed: "Confirmed",
   checked_in: "Checked In (Waiting)",
   in_consultation: "In Consultation",
@@ -26,6 +28,7 @@ const statusLabels = {
 
 const statusClasses = {
   pending: "bg-yellow-100 text-yellow-800",
+  waiting: "bg-amber-100 text-amber-800",
   confirmed: "bg-blue-100 text-blue-800",
   checked_in: "bg-teal-100 text-teal-800",
   in_consultation: "bg-purple-100 text-purple-800",
@@ -35,6 +38,7 @@ const statusClasses = {
 
 function Appointments() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const isDoctor = user?.role === "doctor";
   const isNurse = user?.role === "nurse";
   const canBook = !isNurse;
@@ -42,12 +46,19 @@ function Appointments() {
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [filters, setFilters] = useState({
-    status: "",
+    status: searchParams.get("status") || "",
     doctor: "",
     startDate: "",
     endDate: "",
     bookedBy: "",
   });
+
+  useEffect(() => {
+    const statusFromUrl = searchParams.get("status");
+    if (statusFromUrl !== null) {
+      setFilters((prev) => ({ ...prev, status: statusFromUrl }));
+    }
+  }, [searchParams]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [rxAppointment, setRxAppointment] = useState(null);

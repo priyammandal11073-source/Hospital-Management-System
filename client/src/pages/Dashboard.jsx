@@ -37,9 +37,13 @@ const formatDate = (date) =>
     year: "numeric",
   });
 
-function MetricCard({ label, value, icon, gradient, badge, badgeColor }) {
-  return (
-    <div className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+function MetricCard({ label, value, icon, gradient, badge, badgeColor, to, onClick }) {
+  const cardContent = (
+    <div
+      className={`group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
+        to || onClick ? "cursor-pointer hover:ring-2 hover:ring-slate-300" : ""
+      }`}
+    >
       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
       <div className="flex items-center justify-between">
         <div>
@@ -51,14 +55,37 @@ function MetricCard({ label, value, icon, gradient, badge, badgeColor }) {
         </div>
       </div>
       {badge && (
-        <div className="mt-3 flex items-center gap-1.5 pt-2 border-t border-slate-100">
+        <div className="mt-3 flex items-center justify-between gap-1.5 pt-2 border-t border-slate-100">
           <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${badgeColor}`}>
             {badge}
           </span>
+          {to && (
+            <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-800 transition flex items-center gap-0.5">
+              Open →
+            </span>
+          )}
         </div>
       )}
     </div>
   );
+
+  if (to) {
+    return (
+      <Link to={to} className="block no-underline">
+        {cardContent}
+      </Link>
+    );
+  }
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className="w-full text-left p-0 border-0 bg-transparent block no-underline">
+        {cardContent}
+      </button>
+    );
+  }
+
+  return cardContent;
 }
 
 /* =========================================================================
@@ -496,6 +523,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Scheduled for today"
           badgeColor="bg-emerald-50 text-emerald-700"
           icon={<span className="text-xl">🩺</span>}
+          to="/appointments"
         />
         <MetricCard
           label="Waiting Queue"
@@ -504,6 +532,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Waiting at station"
           badgeColor="bg-amber-50 text-amber-700"
           icon={<span className="text-xl">⏳</span>}
+          to="/appointments?status=waiting"
         />
         <MetricCard
           label="In Progress"
@@ -512,6 +541,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Active consultation"
           badgeColor="bg-blue-50 text-blue-700"
           icon={<span className="text-xl">🔄</span>}
+          to="/appointments?status=in_consultation"
         />
         <MetricCard
           label="Completed Today"
@@ -520,6 +550,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Concluded visits"
           badgeColor="bg-teal-50 text-teal-700"
           icon={<span className="text-xl">✓</span>}
+          to="/appointments?status=completed"
         />
         <MetricCard
           label="Assigned Patients"
@@ -528,6 +559,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Total patient cohort"
           badgeColor="bg-purple-50 text-purple-700"
           icon={<span className="text-xl">👥</span>}
+          to="/patients"
         />
         <MetricCard
           label="Pending Lab Reviews"
@@ -536,6 +568,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Awaiting doctor sign-off"
           badgeColor="bg-cyan-50 text-cyan-700"
           icon={<span className="text-xl">🧪</span>}
+          to="/lab-reports"
         />
         <MetricCard
           label="Critical Lab Results"
@@ -544,6 +577,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge={metrics.criticalLabReports > 0 ? "URGENT ATTENTION" : "None pending"}
           badgeColor={metrics.criticalLabReports > 0 ? "bg-rose-100 text-rose-800 font-bold" : "bg-slate-100 text-slate-600"}
           icon={<span className="text-xl">⚠️</span>}
+          to="/doctor/critical-labs"
         />
         <MetricCard
           label="Active Doctor Orders"
@@ -552,6 +586,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Ward instructions"
           badgeColor="bg-indigo-50 text-indigo-700"
           icon={<span className="text-xl">📋</span>}
+          to="/doctor/orders"
         />
         <MetricCard
           label="Inbound Referrals"
@@ -560,6 +595,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Cross-department opinions"
           badgeColor="bg-violet-50 text-violet-700"
           icon={<span className="text-xl">⇄</span>}
+          to="/doctor/referrals"
         />
         <MetricCard
           label="Follow-ups Due"
@@ -568,6 +604,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Next 7 days"
           badgeColor="bg-emerald-50 text-emerald-700"
           icon={<span className="text-xl">📅</span>}
+          to="/doctor/follow-ups"
         />
       </div>
 
