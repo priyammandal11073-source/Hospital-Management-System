@@ -207,11 +207,19 @@ export const getMyBedStay = async (req, res) => {
 };
 
 // PATCH /api/patient-portal/billings/:id/pay-upi
-// PATCH /api/patient-portal/billings/:id/pay-upi
 export const payMyBillingUpi = async (req, res) => {
   try {
     const { id: billingId } = req.params;
-    const { paymentMethod = "upi", upiTransactionId, upiPayerVpa, cardDetails, insuranceDetails } = req.body;
+    const {
+      paymentMethod = "upi",
+      upiTransactionId,
+      upiPayerVpa,
+      cardDetails,
+      insuranceDetails,
+      netbankingDetails,
+      walletDetails,
+      chequeDetails,
+    } = req.body;
 
     if (!mongoose.isValidObjectId(billingId)) {
       return res.status(400).json({ message: "Invalid billing ID" });
@@ -256,6 +264,26 @@ export const payMyBillingUpi = async (req, res) => {
         notes: insuranceDetails?.notes || "",
         status: "pending_verification",
       };
+    } else if (paymentMethod === "netbanking") {
+      billing.paymentStatus = "paid";
+      billing.netbankingDetails = {
+        bankName: netbankingDetails?.bankName || "State Bank of India",
+        transactionRef: netbankingDetails?.transactionRef || "NINB" + Math.floor(1000000000 + Math.random() * 9000000000),
+      };
+    } else if (paymentMethod === "wallet") {
+      billing.paymentStatus = "paid";
+      billing.walletDetails = {
+        walletAccountId: walletDetails?.walletAccountId || "NVR-WLT-" + req.patient.id.slice(-6).toUpperCase(),
+        transactionRef: walletDetails?.transactionRef || "WLT_" + Math.floor(100000000 + Math.random() * 900000000),
+      };
+    } else if (paymentMethod === "cheque") {
+      billing.paymentStatus = "partially_paid";
+      billing.chequeDetails = {
+        chequeNumber: chequeDetails?.chequeNumber || "000123",
+        bankName: chequeDetails?.bankName || "HDFC Bank",
+        micrCode: chequeDetails?.micrCode || "110240001",
+        transactionRef: chequeDetails?.transactionRef || "CHQ_CLR_" + Math.floor(100000 + Math.random() * 900000),
+      };
     } else {
       // UPI
       const finalUpiTrxId = upiTransactionId
@@ -286,6 +314,12 @@ export const payMyBillingUpi = async (req, res) => {
           ? "Online Card payment processed successfully!"
           : paymentMethod === "insurance"
           ? "Insurance claim details submitted successfully. Desk verification in progress."
+          : paymentMethod === "netbanking"
+          ? "Net Banking payment processed successfully!"
+          : paymentMethod === "wallet"
+          ? "Paid using Hospital Advance Deposit Wallet!"
+          : paymentMethod === "cheque"
+          ? "Cheque / DD details recorded. Pending bank clearing."
           : "UPI payment received and invoice marked as paid!",
       billing: populatedBilling,
     });

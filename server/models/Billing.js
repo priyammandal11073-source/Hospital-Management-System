@@ -44,6 +44,32 @@ const insuranceDetailsSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const netbankingDetailsSchema = new mongoose.Schema(
+  {
+    bankName: { type: String, trim: true, default: "" },
+    transactionRef: { type: String, trim: true, default: "" },
+  },
+  { _id: false }
+);
+
+const walletDetailsSchema = new mongoose.Schema(
+  {
+    walletAccountId: { type: String, trim: true, default: "" },
+    transactionRef: { type: String, trim: true, default: "" },
+  },
+  { _id: false }
+);
+
+const chequeDetailsSchema = new mongoose.Schema(
+  {
+    chequeNumber: { type: String, trim: true, default: "" },
+    bankName: { type: String, trim: true, default: "" },
+    micrCode: { type: String, trim: true, default: "" },
+    transactionRef: { type: String, trim: true, default: "" },
+  },
+  { _id: false }
+);
+
 const billingSchema = new mongoose.Schema(
   {
     patient: {
@@ -82,7 +108,7 @@ const billingSchema = new mongoose.Schema(
     paymentMethod: {
       type: String,
       enum: {
-        values: ["cash", "card", "insurance", "upi"],
+        values: ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque"],
         message: "Please provide a valid payment method",
       },
     },
@@ -100,6 +126,18 @@ const billingSchema = new mongoose.Schema(
     },
     insuranceDetails: {
       type: insuranceDetailsSchema,
+      default: null,
+    },
+    netbankingDetails: {
+      type: netbankingDetailsSchema,
+      default: null,
+    },
+    walletDetails: {
+      type: walletDetailsSchema,
+      default: null,
+    },
+    chequeDetails: {
+      type: chequeDetailsSchema,
       default: null,
     },
   },

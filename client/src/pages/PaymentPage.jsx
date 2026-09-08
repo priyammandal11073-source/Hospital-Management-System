@@ -2,8 +2,14 @@
  * PaymentPage – public page accessible via SMS payment link & patient portal.
  * Route: /pay/:billingId
  *
- * Patients can view their invoice and pay online directly via UPI, Card Gateway,
- * or submit Insurance TPA details without hassle.
+ * Patients can view their invoice and pay online directly via:
+ * 1. Instant UPI QR (GPay / PhonePe / Paytm / BHIM)
+ * 2. Online Credit/Debit Card Gateway (Visa / Mastercard / RuPay / Amex)
+ * 3. Health Insurance & TPA Cashless Desk
+ * 4. Net Banking & NEFT/RTGS Wire Transfer
+ * 5. Hospital Patient Advance Deposit Wallet
+ * 6. Demand Draft (DD) & CTS Bank Cheque Clearing
+ * 7. Counter Cash Payment
  */
 
 import { useEffect, useState } from "react";
@@ -11,6 +17,9 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import UpiPaymentBox from "../components/UpiPaymentBox.jsx";
 import CardPaymentBox from "../components/CardPaymentBox.jsx";
 import InsurancePaymentBox from "../components/InsurancePaymentBox.jsx";
+import NetBankingPaymentBox from "../components/NetBankingPaymentBox.jsx";
+import WalletPaymentBox from "../components/WalletPaymentBox.jsx";
+import ChequePaymentBox from "../components/ChequePaymentBox.jsx";
 import PaymentMethodSelect from "../components/PaymentMethodSelect.jsx";
 import { getBillingById, payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
 
@@ -87,7 +96,7 @@ function PaymentPage() {
 
   const handlePaymentSuccess = (updatedBilling) => {
     setBilling(updatedBilling);
-    setSuccessMsg("Payment / Claim update recorded successfully!");
+    setSuccessMsg("Payment / Transaction update recorded successfully!");
   };
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -167,12 +176,12 @@ function PaymentPage() {
     <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-100">
       {/* ── Header ── */}
       <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div>
             <h1 className="text-lg font-extrabold text-teal-700 tracking-tight">
               Nivora Care Hospital
             </h1>
-            <p className="text-xs text-slate-500">Secure Online Payment Gateway</p>
+            <p className="text-xs text-slate-500">Secure Payment Portal & Gateway</p>
           </div>
           <span
             className={`text-xs font-bold border px-2.5 py-0.5 rounded-full ${STATUS_COLORS[billing.paymentStatus] || STATUS_COLORS.pending}`}
@@ -182,7 +191,7 @@ function PaymentPage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         {/* ── Invoice Summary ── */}
         <section className="rounded-2xl bg-white shadow-md p-6 space-y-4">
           <div className="flex items-start justify-between">
@@ -198,21 +207,21 @@ function PaymentPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm pt-2 border-t border-slate-100">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm pt-2 border-t border-slate-100">
             <div>
-              <span className="text-slate-500">Patient</span>
+              <span className="text-slate-500 text-xs block">Patient</span>
               <p className="font-semibold text-slate-900">{billing.patient?.name || "—"}</p>
             </div>
             <div>
-              <span className="text-slate-500">Doctor</span>
+              <span className="text-slate-500 text-xs block">Doctor</span>
               <p className="font-semibold text-slate-900">{docName}</p>
             </div>
             <div>
-              <span className="text-slate-500">Appointment</span>
+              <span className="text-slate-500 text-xs block">Appointment</span>
               <p className="font-semibold text-slate-900">{apptDate}</p>
             </div>
             <div>
-              <span className="text-slate-500">Time Slot</span>
+              <span className="text-slate-500 text-xs block">Time Slot</span>
               <p className="font-semibold text-slate-900">{billing.appointment?.timeSlot || "—"}</p>
             </div>
           </div>
@@ -251,14 +260,14 @@ function PaymentPage() {
         {/* ── Payment Section ── */}
         {!isPaid ? (
           <section className="rounded-2xl bg-white shadow-md p-6 space-y-5">
-            <h2 className="text-base font-bold text-slate-900">Select Payment Method</h2>
+            <h2 className="text-base font-bold text-slate-900">Select Hospital Payment Method</h2>
 
             <PaymentMethodSelect
               value={paymentMethod}
               onChange={setPaymentMethod}
             />
 
-            {/* UPI Payment Flow */}
+            {/* 1. UPI Payment Flow */}
             {paymentMethod === "upi" && (
               <UpiPaymentBox
                 billing={billing}
@@ -267,7 +276,7 @@ function PaymentPage() {
               />
             )}
 
-            {/* Online Card Payment Gateway */}
+            {/* 2. Online Card Payment Gateway */}
             {paymentMethod === "card" && (
               <CardPaymentBox
                 billing={billing}
@@ -276,7 +285,7 @@ function PaymentPage() {
               />
             )}
 
-            {/* Health Insurance & TPA Desk */}
+            {/* 3. Health Insurance & TPA Desk */}
             {paymentMethod === "insurance" && (
               <InsurancePaymentBox
                 billing={billing}
@@ -285,11 +294,38 @@ function PaymentPage() {
               />
             )}
 
-            {/* Cash Payment Instructions */}
+            {/* 4. Net Banking & NEFT/RTGS */}
+            {paymentMethod === "netbanking" && (
+              <NetBankingPaymentBox
+                billing={billing}
+                onPaymentSuccess={handlePaymentSuccess}
+                isPatient={isPatient}
+              />
+            )}
+
+            {/* 5. Hospital Patient Wallet */}
+            {paymentMethod === "wallet" && (
+              <WalletPaymentBox
+                billing={billing}
+                onPaymentSuccess={handlePaymentSuccess}
+                isPatient={isPatient}
+              />
+            )}
+
+            {/* 6. Cheque / DD Clearing */}
+            {paymentMethod === "cheque" && (
+              <ChequePaymentBox
+                billing={billing}
+                onPaymentSuccess={handlePaymentSuccess}
+                isPatient={isPatient}
+              />
+            )}
+
+            {/* 7. Cash Payment Instructions */}
             {paymentMethod === "cash" && (
               <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-3">
                 <p className="text-sm text-slate-700">
-                  💵 Please visit the hospital billing counter to pay in cash. Your invoice will be marked as paid once payment is received at the reception desk.
+                  💵 Please visit the hospital billing counter to pay in cash. Your invoice will be marked as paid once cash is received at the reception desk.
                 </p>
 
                 {/* Staff-only instant mark paid */}
@@ -330,10 +366,20 @@ function PaymentPage() {
                 Card Transaction Ref: <code className="font-mono font-bold text-emerald-700">{billing.cardDetails.transactionRef}</code> ({billing.cardDetails.cardBrand} ending in •••• {billing.cardDetails.cardLast4})
               </p>
             )}
+            {billing.netbankingDetails?.transactionRef && (
+              <p className="text-xs text-slate-500">
+                Net Banking UTR: <code className="font-mono font-bold text-emerald-700">{billing.netbankingDetails.transactionRef}</code> ({billing.netbankingDetails.bankName})
+              </p>
+            )}
+            {billing.walletDetails?.transactionRef && (
+              <p className="text-xs text-slate-500">
+                Wallet Txn ID: <code className="font-mono font-bold text-emerald-700">{billing.walletDetails.transactionRef}</code> (Prepaid Deposit Account {billing.walletDetails.walletAccountId})
+              </p>
+            )}
           </section>
         )}
 
-        {/* Display Insurance TPA submission status if partially paid via insurance */}
+        {/* Display Insurance TPA or Cheque submission status if partially paid */}
         {billing.paymentStatus === "partially_paid" && billing.insuranceDetails && (
           <section className="rounded-2xl bg-blue-50 border border-blue-200 shadow-md p-6 space-y-2 text-xs text-blue-950">
             <div className="flex items-center justify-between font-bold text-sm">
@@ -346,6 +392,20 @@ function PaymentPage() {
             <p><strong>Policy No:</strong> {billing.insuranceDetails.policyNumber}</p>
             <p><strong>Claim Ref ID:</strong> {billing.insuranceDetails.claimId}</p>
             <p><strong>Insured Member:</strong> {billing.insuranceDetails.insuredMemberName}</p>
+          </section>
+        )}
+
+        {billing.paymentStatus === "partially_paid" && billing.chequeDetails && (
+          <section className="rounded-2xl bg-amber-50 border border-amber-200 shadow-md p-6 space-y-2 text-xs text-amber-950">
+            <div className="flex items-center justify-between font-bold text-sm">
+              <span>📜 Cheque Clearing Status</span>
+              <span className="px-2 py-0.5 rounded bg-amber-100 border border-amber-300 uppercase text-[10px]">
+                Pending Bank Clearing
+              </span>
+            </div>
+            <p><strong>Cheque / DD No:</strong> {billing.chequeDetails.chequeNumber}</p>
+            <p><strong>Bank:</strong> {billing.chequeDetails.bankName}</p>
+            <p><strong>Ref Code:</strong> {billing.chequeDetails.transactionRef}</p>
           </section>
         )}
 

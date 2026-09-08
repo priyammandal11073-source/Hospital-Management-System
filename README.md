@@ -15,11 +15,16 @@ This system enables receptionists to register patients and book appointments, do
 - **Billing**: Itemized charges with auto-calculated totals via pre‑save hook; payment status tracking (pending / paid / partially_paid); revenue summary via MongoDB aggregation
 - **Reports & Dashboard**: Admin‑only dashboard with summary cards, revenue charts (recharts), and busiest‑doctors table; visual design consistent across all pages
 - **OPD Auto‑Billing**: When an appointment is booked, a billing record with a default ₹500 fee is automatically generated.
-- **Payment Methods**: Cash, Instant UPI (QR code & UTR verification), **Online Credit/Debit Card Gateway**, and **Health Insurance TPA Claim Desk** supported throughout the UI.
-- **Online Card Gateway**: Patients can enter Cardholder Name, 16-digit Card Number (with auto brand detection: Visa/Mastercard/RuPay/Amex), Expiry, and CVV to pay invoices directly online.
-- **Health Insurance & TPA Desk**: Patients can select their Insurance Provider (Star Health, HDFC ERGO, Care Health, Ayushman Bharat PM-JAY, etc.) and submit Policy Number, Pre-Auth Claim ID, and Insured Member details for cashless verification.
-- **Public Payment Page**: `/pay/:billingId` provides a secure payment flow via SMS link, supporting instant online settlement.
-- **SMS Payment Links**: Receptionists can send payment‑link SMS directly from the billing screen using an email‑to‑SMS gateway.
+- **Comprehensive Hospital Payment Methods**: Supports all 7 major hospital payment channels throughout the system:
+  1. **Cash**: Counter cash billing and desk receipt recording.
+  2. **Instant UPI**: Dynamic QR code scanning and UTR reference verification (GPay, PhonePe, Paytm, BHIM, Cred).
+  3. **Online Card Gateway**: Online credit/debit card checkout with live 3D Secure card preview & brand detection (Visa, Mastercard, RuPay, Amex).
+  4. **Health Insurance & TPA Desk**: Pre-authorization cashless claim details submission (Star Health, HDFC ERGO, Care Health, Ayushman Bharat PM-JAY, etc.).
+  5. **Net Banking & Wire Transfer**: Direct internet banking checkout & NEFT/RTGS UTR reference tracking (SBI, HDFC, ICICI, Axis, PNB).
+  6. **Hospital Patient Wallet**: Prepaid advance deposit credit deduction directly from patient hospital accounts.
+  7. **Cheque / Demand Draft**: CTS cheque clearing and bank demand draft (DD) entry.
+- **Public Payment Page**: `/pay/:billingId` provides a secure payment flow via SMS link, supporting all online payment channels.
+- **SMS Payment Links**: Receptionists can send payment‑link SMS directly from the billing screen using an email‑to-SMS gateway.
 
 ---
 

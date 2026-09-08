@@ -10,13 +10,16 @@ import {
 } from "../services/api.js";
 
 const paymentStatuses = ["pending", "paid", "partially_paid"];
-const paymentMethods = ["cash", "card", "insurance", "upi"];
+const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque"];
 
 const paymentMethodLabels = {
   cash: "Cash",
-  card: "Card",
-  insurance: "Insurance",
-  upi: "UPI",
+  card: "Online Card",
+  insurance: "Health Insurance",
+  upi: "Instant UPI",
+  netbanking: "Net Banking",
+  wallet: "Hospital Wallet",
+  cheque: "Cheque / DD",
 };
 
 const paymentStatusLabels = {

@@ -6,7 +6,7 @@ import Patient from "../models/Patient.js";
 import { sendPaymentLinkSms } from "../services/smsService.js";
 
 const paymentStatuses = ["pending", "paid", "partially_paid"];
-const paymentMethods = ["cash", "card", "insurance", "upi"];
+const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque"];
 
 const sendDatabaseError = (error, res) => {
   if (error.name === "ValidationError") {
@@ -156,7 +156,18 @@ export const getBillingById = async (req, res) => {
 // PATCH /api/billing/:id/payment
 export const updatePaymentStatus = async (req, res) => {
   try {
-    const { paymentStatus, paymentDate, paymentMethod, upiTransactionId, upiPayerVpa, cardDetails, insuranceDetails } = req.body;
+    const {
+      paymentStatus,
+      paymentDate,
+      paymentMethod,
+      upiTransactionId,
+      upiPayerVpa,
+      cardDetails,
+      insuranceDetails,
+      netbankingDetails,
+      walletDetails,
+      chequeDetails,
+    } = req.body;
 
     if (!isValidBillingId(req.params.id)) {
       return res.status(400).json({ message: "Invalid billing ID" });
@@ -199,13 +210,11 @@ export const updatePaymentStatus = async (req, res) => {
       updates.upiPayerVpa = String(upiPayerVpa).trim();
     }
 
-    if (cardDetails) {
-      updates.cardDetails = cardDetails;
-    }
-
-    if (insuranceDetails) {
-      updates.insuranceDetails = insuranceDetails;
-    }
+    if (cardDetails) updates.cardDetails = cardDetails;
+    if (insuranceDetails) updates.insuranceDetails = insuranceDetails;
+    if (netbankingDetails) updates.netbankingDetails = netbankingDetails;
+    if (walletDetails) updates.walletDetails = walletDetails;
+    if (chequeDetails) updates.chequeDetails = chequeDetails;
 
     const billing = await Billing.findByIdAndUpdate(req.params.id, updates, {
       new: true,
