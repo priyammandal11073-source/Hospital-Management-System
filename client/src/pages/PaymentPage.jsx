@@ -1,29 +1,14 @@
 /**
  * PaymentPage – public page accessible via SMS payment link & patient portal.
  * Route: /pay/:billingId
- *
- * Patients can view their invoice and pay online directly via:
- * 1. Razorpay Payment Gateway (Cards, UPI, NetBanking, Wallet)
- * 2. Instant UPI QR (GPay / PhonePe / Paytm / BHIM)
- * 3. Online Credit/Debit Card Gateway (Visa / Mastercard / RuPay / Amex)
- * 4. Health Insurance & TPA Cashless Desk
- * 5. Net Banking & NEFT/RTGS Wire Transfer
- * 6. Hospital Patient Advance Deposit Wallet
- * 7. Demand Draft (DD) & CTS Bank Cheque Clearing
- * 8. Counter Cash Payment
  */
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import RazorpayPaymentBox from "../components/RazorpayPaymentBox.jsx";
 import UpiPaymentBox from "../components/UpiPaymentBox.jsx";
-import CardPaymentBox from "../components/CardPaymentBox.jsx";
 import InsurancePaymentBox from "../components/InsurancePaymentBox.jsx";
-import NetBankingPaymentBox from "../components/NetBankingPaymentBox.jsx";
-import WalletPaymentBox from "../components/WalletPaymentBox.jsx";
-import ChequePaymentBox from "../components/ChequePaymentBox.jsx";
 import PaymentMethodSelect from "../components/PaymentMethodSelect.jsx";
-import { getBillingById, payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
+import { getBillingById, createRazorpayOrder, verifyRazorpayPayment, payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
 
 const STATUS_COLORS = {
   paid: "bg-emerald-100 text-emerald-800 border-emerald-300",
@@ -38,12 +23,17 @@ function PaymentPage() {
   const [billing, setBilling] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("razorpay");
-  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [isRazorpayProcessing, setIsRazorpayProcessing] = useState(false);
+  
+  // Modals for instant actions
+  const [showUpiModal, setShowUpiModal] = useState(false);
+  const [showInsuranceModal, setShowInsuranceModal] = useState(false);
+
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Detect if user is a patient (has patient token)
+  // Detect if user is a patient
   const isPatient = Boolean(localStorage.getItem("patient_token"));
 
   useEffect(() => {
@@ -69,36 +59,123 @@ function PaymentPage() {
     return () => { active = false; };
   }, [billingId]);
 
-  const handleMarkPaid = async () => {
-    setIsMarkingPaid(true);
+  const handlePaymentSuccess = (updatedBilling) => {
+    setBilling(updatedBilling);
+    setShowUpiModal(false);
+    setShowInsuranceModal(false);
+    setSuccessMsg("Payment / Transaction update recorded successfully!");
+  };
+
+  // Launch official Razorpay payment window directly
+  const handleLaunchRazorpayDirectly = async () => {
     setErrorMsg("");
     setSuccessMsg("");
+    setIsRazorpayProcessing(true);
+
     try {
-      let updated;
-      if (isPatient) {
-        const res = await payMyBillingUpi(billingId, {
-          paymentMethod,
-        });
-        updated = res.billing;
-      } else {
-        const res = await updatePaymentStatus(billingId, {
-          paymentStatus: "paid",
-          paymentMethod,
-        });
-        updated = res.billing;
+      // 1. Create Razorpay order from backend API
+      const orderData = await createRazorpayOrder(billing._id);
+      
+      if (!orderData || !orderData.amount) {
+        throw new Error("Failed to initialize Razorpay payment order.");
       }
-      setBilling(updated);
-      setSuccessMsg(`Payment recorded as ${paymentMethod.toUpperCase()}. Thank you!`);
+
+      // 2. Load Razorpay script if needed
+      let scriptOK = Boolean(window.Razorpay);
+      if (!scriptOK) {
+        scriptOK = await new Promise((resolve) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.async = true;
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+      }
+
+      if (window.Razorpay && scriptOK) {
+        const invoiceNumber = `INV-${billing._id?.toString().slice(-6).toUpperCase()}`;
+        const options = {
+          key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TZavagxglGTRZp",
+          amount: orderData.amount,
+          currency: orderData.currency || "INR",
+          name: "Nivora Care Hospital",
+          description: `Hospital Invoice ${invoiceNumber}`,
+          ...(orderData.orderId ? { order_id: orderData.orderId } : {}),
+          image: "https://cdn.razorpay.com/static/assets/logo/rzp.png",
+          prefill: {
+            name: orderData.patientDetails?.name || billing.patient?.name || "Patient",
+            email: orderData.patientDetails?.email || billing.patient?.email || "patient@example.com",
+            contact: orderData.patientDetails?.contact || billing.patient?.contactNumber || "9876543210",
+          },
+          theme: {
+            color: "#0F766E", // Healthcare Teal
+          },
+          handler: async function (response) {
+            try {
+              const res = await verifyRazorpayPayment({
+                billingId: billing._id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpaySignature: response.razorpay_signature,
+              });
+
+              handlePaymentSuccess(res.billing);
+            } catch (err) {
+              console.error("Razorpay verification error:", err);
+              setErrorMsg(err.response?.data?.message || "Failed to verify Razorpay payment signature.");
+            } finally {
+              setIsRazorpayProcessing(false);
+            }
+          },
+          modal: {
+            ondismiss: function () {
+              setIsRazorpayProcessing(false);
+            },
+          },
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on("payment.failed", function (resp) {
+          setErrorMsg(resp.error?.description || "Razorpay Payment Failed.");
+          setIsRazorpayProcessing(false);
+        });
+
+        rzp.open();
+      } else {
+        setErrorMsg("Unable to load Razorpay SDK. Please check connection.");
+        setIsRazorpayProcessing(false);
+      }
     } catch (err) {
-      setErrorMsg(err.response?.data?.message || "Failed to record payment.");
-    } finally {
-      setIsMarkingPaid(false);
+      console.error("Razorpay launch error:", err);
+      setErrorMsg(err.message || "Failed to launch Razorpay checkout.");
+      setIsRazorpayProcessing(false);
     }
   };
 
-  const handlePaymentSuccess = (updatedBilling) => {
-    setBilling(updatedBilling);
-    setSuccessMsg("Payment / Transaction update recorded successfully!");
+  // Direct tile click router
+  const handleSelectMethod = (method) => {
+    setPaymentMethod(method);
+    setErrorMsg("");
+    setSuccessMsg("");
+
+    if (method === "razorpay") {
+      handleLaunchRazorpayDirectly();
+    } else if (method === "upi") {
+      setShowUpiModal(true);
+    } else if (method === "insurance") {
+      setShowInsuranceModal(true);
+    } else if (method === "cash") {
+      const amountStr = Number(billing.totalAmount).toFixed(2);
+      setSuccessMsg(`💵 Cash Desk Selected: Please pay ₹${amountStr} in cash at the hospital billing counter. Redirecting to your appointments...`);
+      setTimeout(() => {
+        if (isPatient) {
+          navigate("/patient/appointments");
+        } else {
+          navigate("/appointments");
+        }
+      }, 2000);
+    }
   };
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -259,69 +336,35 @@ function PaymentPage() {
           </div>
         </section>
 
-        {/* ── Payment Section ── */}
+        {/* ── Status Messages & Feedback ── */}
+        {errorMsg && (
+          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-bold flex items-center justify-between">
+            <span>{errorMsg}</span>
+            <button onClick={() => setErrorMsg("")} className="text-rose-500 hover:text-rose-700 font-bold ml-2">✕</button>
+          </div>
+        )}
+
+        {successMsg && (
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold shadow-sm animate-in fade-in">
+            {successMsg}
+          </div>
+        )}
+
+        {/* ── Direct Action Payment Tiles ── */}
         {!isPaid ? (
-          <section className="rounded-2xl bg-white shadow-md p-6 space-y-5">
+          <section className="rounded-2xl bg-white shadow-md p-6 space-y-4">
             <h2 className="text-base font-bold text-slate-900">Select Hospital Payment Method</h2>
 
             <PaymentMethodSelect
               value={paymentMethod}
-              onChange={setPaymentMethod}
+              onChange={handleSelectPaymentMethod}
+              disabled={isRazorpayProcessing}
             />
 
-            {/* 1. Instant UPI & QR Code */}
-            {paymentMethod === "upi" && (
-              <UpiPaymentBox
-                billing={billing}
-                onPaymentSuccess={handlePaymentSuccess}
-                isPatient={isPatient}
-              />
-            )}
-
-            {/* 2. Razorpay Gateway (Cards, NetBanking, Wallets) */}
-            {paymentMethod === "razorpay" && (
-              <RazorpayPaymentBox
-                billing={billing}
-                onPaymentSuccess={handlePaymentSuccess}
-                isPatient={isPatient}
-                autoOpen={true}
-              />
-            )}
-
-            {/* 3. Health Insurance & TPA Desk */}
-            {paymentMethod === "insurance" && (
-              <InsurancePaymentBox
-                billing={billing}
-                onPaymentSuccess={handlePaymentSuccess}
-                isPatient={isPatient}
-              />
-            )}
-
-            {/* 3. Cash Payment Instructions */}
-            {paymentMethod === "cash" && (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-3">
-                <p className="text-sm text-slate-700">
-                  💵 Please visit the hospital billing counter to pay in cash. Your invoice will be marked as paid once cash is received at the reception desk.
-                </p>
-
-                {/* Staff-only instant mark paid */}
-                {!isPatient && (
-                  <button
-                    type="button"
-                    disabled={isMarkingPaid}
-                    onClick={handleMarkPaid}
-                    className="w-full rounded-xl bg-teal-600 px-4 py-3 font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition"
-                  >
-                    {isMarkingPaid ? "Recording…" : "Mark as Paid (CASH)"}
-                  </button>
-                )}
-
-                {errorMsg && (
-                  <p className="text-sm text-red-600 font-medium">{errorMsg}</p>
-                )}
-                {successMsg && (
-                  <p className="text-sm text-emerald-700 font-semibold">{successMsg}</p>
-                )}
+            {isRazorpayProcessing && (
+              <div className="p-4 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold flex items-center justify-center gap-2">
+                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-teal-600 border-r-transparent" />
+                <span>Opening Razorpay Secure Payment Window...</span>
               </div>
             )}
           </section>
@@ -342,52 +385,47 @@ function PaymentPage() {
                 UPI Reference UTR: <code className="font-mono font-bold text-emerald-700">{billing.upiTransactionId}</code>
               </p>
             )}
-            {billing.cardDetails?.transactionRef && (
-              <p className="text-xs text-slate-500">
-                Card Transaction Ref: <code className="font-mono font-bold text-emerald-700">{billing.cardDetails.transactionRef}</code> ({billing.cardDetails.cardBrand} ending in •••• {billing.cardDetails.cardLast4})
-              </p>
-            )}
-            {billing.netbankingDetails?.transactionRef && (
-              <p className="text-xs text-slate-500">
-                Net Banking UTR: <code className="font-mono font-bold text-emerald-700">{billing.netbankingDetails.transactionRef}</code> ({billing.netbankingDetails.bankName})
-              </p>
-            )}
-            {billing.walletDetails?.transactionRef && (
-              <p className="text-xs text-slate-500">
-                Wallet Txn ID: <code className="font-mono font-bold text-emerald-700">{billing.walletDetails.transactionRef}</code> (Prepaid Deposit Account {billing.walletDetails.walletAccountId})
-              </p>
-            )}
           </section>
         )}
 
-        {/* Display Insurance TPA or Cheque submission status if partially paid */}
-        {billing.paymentStatus === "partially_paid" && billing.insuranceDetails && (
-          <section className="rounded-2xl bg-blue-50 border border-blue-200 shadow-md p-6 space-y-2 text-xs text-blue-950">
-            <div className="flex items-center justify-between font-bold text-sm">
-              <span>🏥 Insurance Claim Submission Status</span>
-              <span className="px-2 py-0.5 rounded bg-blue-100 border border-blue-300 uppercase text-[10px]">
-                {billing.insuranceDetails.status.replace("_", " ")}
-              </span>
+        {/* ── MODAL: INSTANT UPI QR CODE & APPS ── */}
+        {showUpiModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200 relative">
+              <button
+                type="button"
+                onClick={() => setShowUpiModal(false)}
+                className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition"
+              >
+                ✕
+              </button>
+              <UpiPaymentBox
+                billing={billing}
+                onPaymentSuccess={handlePaymentSuccess}
+                isPatient={isPatient}
+              />
             </div>
-            <p><strong>Provider:</strong> {billing.insuranceDetails.providerName}</p>
-            <p><strong>Policy No:</strong> {billing.insuranceDetails.policyNumber}</p>
-            <p><strong>Claim Ref ID:</strong> {billing.insuranceDetails.claimId}</p>
-            <p><strong>Insured Member:</strong> {billing.insuranceDetails.insuredMemberName}</p>
-          </section>
+          </div>
         )}
 
-        {billing.paymentStatus === "partially_paid" && billing.chequeDetails && (
-          <section className="rounded-2xl bg-amber-50 border border-amber-200 shadow-md p-6 space-y-2 text-xs text-amber-950">
-            <div className="flex items-center justify-between font-bold text-sm">
-              <span>📜 Cheque Clearing Status</span>
-              <span className="px-2 py-0.5 rounded bg-amber-100 border border-amber-300 uppercase text-[10px]">
-                Pending Bank Clearing
-              </span>
+        {/* ── MODAL: HEALTH INSURANCE & TPA CLAIM ── */}
+        {showInsuranceModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200 relative">
+              <button
+                type="button"
+                onClick={() => setShowInsuranceModal(false)}
+                className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition"
+              >
+                ✕
+              </button>
+              <InsurancePaymentBox
+                billing={billing}
+                onPaymentSuccess={handlePaymentSuccess}
+                isPatient={isPatient}
+              />
             </div>
-            <p><strong>Cheque / DD No:</strong> {billing.chequeDetails.chequeNumber}</p>
-            <p><strong>Bank:</strong> {billing.chequeDetails.bankName}</p>
-            <p><strong>Ref Code:</strong> {billing.chequeDetails.transactionRef}</p>
-          </section>
+          </div>
         )}
 
         {/* Footer */}
