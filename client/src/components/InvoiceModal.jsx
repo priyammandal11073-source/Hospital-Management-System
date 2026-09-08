@@ -40,9 +40,153 @@ For queries, contact billing at +91 98765 43210.`;
 
   const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 
-  // Print handler
+  // Clean isolated print handler
   const handlePrint = () => {
-    window.print();
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Invoice - ${invoiceNumber}</title>
+          <meta charset="utf-8" />
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body {
+              font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              color: #1e293b;
+              background: #ffffff;
+              padding: 24px;
+              font-size: 13px;
+              line-height: 1.5;
+            }
+            .header-flex { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1e293b; padding-bottom: 16px; margin-bottom: 20px; }
+            .hosp-title { font-size: 22px; font-weight: 900; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+            .hosp-title span { color: #2563eb; }
+            .hosp-subtitle { font-size: 11px; text-transform: uppercase; font-weight: 700; color: #64748b; margin-top: 2px; }
+            .hosp-contact { font-size: 11px; color: #475569; margin-top: 4px; }
+            .badge { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+            .badge-paid { background-color: #dcfce7; color: #166534; }
+            .badge-pending { background-color: #fee2e2; color: #991b1b; }
+            .badge-partially_paid { background-color: #fef3c7; color: #92400e; }
+            .inv-meta { text-align: right; }
+            .inv-num { font-size: 14px; font-weight: bold; margin-top: 6px; }
+            .inv-date { font-size: 11px; color: #64748b; }
+            .details-grid { display: flex; gap: 20px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; }
+            .details-col { flex: 1; }
+            .col-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; margin-bottom: 4px; }
+            .name-highlight { font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom: 4px; }
+            .info-line { font-size: 12px; color: #334155; margin-bottom: 2px; }
+            .info-label { font-weight: 600; color: #475569; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+            th { background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1; padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; font-weight: 700; color: #475569; }
+            td { padding: 9px 10px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+            .text-right { text-align: right; }
+            .text-center { text-align: center; }
+            .total-row td { font-weight: 900; font-size: 16px; border-top: 2px solid #0f172a; padding: 12px 10px; color: #2563eb; }
+            .footer-flex { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 36px; padding-top: 16px; border-top: 1px solid #cbd5e1; }
+            .terms { font-size: 11px; color: #64748b; max-width: 340px; }
+            .sign-box { text-align: center; }
+            .sign-line { width: 180px; border-bottom: 1px solid #475569; height: 35px; margin-bottom: 4px; }
+            @page { size: A4 portrait; margin: 12mm 15mm; }
+          </style>
+        </head>
+        <body>
+          <div class="header-flex">
+            <div>
+              <div class="hosp-title"><span>✚</span> CITY GENERAL HOSPITAL</div>
+              <div class="hosp-subtitle">Multi-Specialty Healthcare & Research Institute</div>
+              <div class="hosp-contact">123 Healthcare Boulevard, Medical District • New Delhi - 110001</div>
+              <div class="hosp-contact">Phone: +91 98765 43210 • Email: billing@hospital.com</div>
+            </div>
+            <div class="inv-meta">
+              <span class="badge ${billing.paymentStatus === 'paid' ? 'badge-paid' : billing.paymentStatus === 'partially_paid' ? 'badge-partially_paid' : 'badge-pending'}">
+                ${billing.paymentStatus === 'paid' ? 'PAID INVOICE' : 'PAYMENT PENDING'}
+              </span>
+              <div class="inv-num">Invoice #${invoiceNumber}</div>
+              <div class="inv-date">Date: ${formatDate(billing.createdAt)}</div>
+              ${billing.paymentDate ? `<div class="inv-date">Paid On: ${formatDate(billing.paymentDate)} (${billing.paymentMethod?.toUpperCase() || 'CASH'})</div>` : ''}
+            </div>
+          </div>
+
+          <div class="details-grid">
+            <div class="details-col">
+              <div class="col-title">Billed To (Patient Details)</div>
+              <div class="name-highlight">${patient.name || '—'}</div>
+              <div class="info-line"><span class="info-label">Age / Gender:</span> ${patient.age ? `${patient.age} yrs` : '—'} / ${patient.gender || '—'}</div>
+              <div class="info-line"><span class="info-label">Phone:</span> ${patient.contactNumber || '—'}</div>
+              <div class="info-line"><span class="info-label">Email:</span> ${patient.email || '—'}</div>
+              ${patient.address ? `<div class="info-line"><span class="info-label">Address:</span> ${patient.address}</div>` : ''}
+            </div>
+            <div class="details-col">
+              <div class="col-title">Consultation Details</div>
+              <div class="name-highlight">Dr. ${doctor.name || 'Assigned Physician'}</div>
+              <div class="info-line"><span class="info-label">Specialization:</span> ${doctor.specialization || 'General'} (${doctor.department || 'Medicine'})</div>
+              <div class="info-line"><span class="info-label">Appointment Date:</span> ${formatDate(appointment.appointmentDate)} ${appointment.timeSlot ? `at ${appointment.timeSlot}` : ''}</div>
+              ${appointment.reasonForVisit ? `<div class="info-line"><span class="info-label">Reason for Visit:</span> ${appointment.reasonForVisit}</div>` : ''}
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px;" class="text-center">#</th>
+                <th>Description / Procedure</th>
+                <th style="width: 140px;" class="text-right">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(billing.itemizedCharges || []).map((c, i) => `
+                <tr style="${i % 2 === 0 ? 'background:#fff;' : 'background:#f8fafc;'}">
+                  <td class="text-center" style="color: #64748b;">${i + 1}</td>
+                  <td style="font-weight: 500;">${c.description}</td>
+                  <td class="text-right" style="font-family: monospace; font-size: 13px;">₹${Number(c.cost || 0).toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+            <tfoot>
+              <tr class="total-row">
+                <td colspan="2" class="text-right" style="color: #0f172a;">Total Amount Due:</td>
+                <td class="text-right" style="font-family: monospace;">₹${totalAmount}</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div class="footer-flex">
+            <div class="terms">
+              <strong>Payment Terms & Notes:</strong><br />
+              This is an official computer-generated medical bill issued by City General Hospital.
+              All consultations and diagnostic test fees are non-refundable.
+            </div>
+            <div class="sign-box">
+              <div class="sign-line"></div>
+              <div style="font-size: 11px; font-weight: bold; color: #334155;">Authorized Signatory</div>
+              <div style="font-size: 10px; color: #64748b;">Billing & Accounts Department</div>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+    doc.close();
+
+    iframe.contentWindow.focus();
+    setTimeout(() => {
+      iframe.contentWindow.print();
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 2000);
+    }, 250);
   };
 
   // Email handler
