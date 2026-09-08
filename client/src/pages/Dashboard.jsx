@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import DoctorScheduleModal from "../components/DoctorScheduleModal.jsx";
 import PrescriptionForm from "../components/PrescriptionForm.jsx";
 import VitalsTracker from "../components/VitalsTracker.jsx";
 import NursingChecklistModal from "../components/NursingChecklistModal.jsx";
 import PatientClinicalProfileModal from "../components/nurse/PatientClinicalProfileModal.jsx";
+import DoctorPatientProfileModal from "../components/doctor/DoctorPatientProfileModal.jsx";
 import {
   cancelMyAppointment,
   getAppointments,
@@ -26,6 +27,7 @@ import {
   administerMedication,
   updateNursingTaskStatus,
   updateDoctorOrderStatus,
+  getDoctorDashboardData,
 } from "../services/api.js";
 
 const formatDate = (date) =>
@@ -287,7 +289,9 @@ function AdminDashboard({ user, refreshKey, onTriggerRefresh }) {
    2. DOCTOR CLINICAL WORKSPACE PORTAL DASHBOARD
    ========================================================================= */
 function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
+  const [workspaceData, setWorkspaceData] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -299,6 +303,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
   const [rxAppointment, setRxAppointment] = useState(null);
   const [vitalsPatient, setVitalsPatient] = useState(null);
   const [patientVitalsList, setPatientVitalsList] = useState([]);
+  const [selectedChartPatientId, setSelectedChartPatientId] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -306,15 +311,19 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
       setLoading(true);
       setError("");
       try {
-        const [meData, aData, pData] = await Promise.all([
+        const [meData, aData, pData, wsData] = await Promise.all([
           getMyDoctorProfile(),
           getAppointments(),
           getPatients("", 1, 20),
+          getDoctorDashboardData().catch(() => ({ success: false })),
         ]);
         if (active) {
           setProfileData(meData);
           setAppointments(aData.appointments || []);
           setPatients(pData.patients || []);
+          if (wsData?.success && wsData.data) {
+            setWorkspaceData(wsData.data);
+          }
         }
       } catch (err) {
         if (active) setError(err.response?.data?.message || "Failed to load doctor clinical workspace.");
@@ -327,21 +336,24 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
   }, [refreshKey]);
 
   const doctor = profileData?.doctor;
-  const stats = profileData?.stats || {
-    todayAppointments: 0,
-    pendingAppointments: 0,
-    completedAppointments: 0,
-    totalAppointments: 0,
-    totalPatients: 0,
+  const metrics = workspaceData?.metrics || {
+    todayConsultations: appointments.length,
+    waitingQueue: appointments.filter((a) => a.status === "waiting" || a.status === "pending").length,
+    inProgressConsultations: appointments.filter((a) => a.status === "in_progress" || a.status === "in_consultation").length,
+    completedToday: appointments.filter((a) => a.status === "completed").length,
+    assignedPatients: patients.length,
+    pendingLabReviews: 0,
+    criticalLabReports: 0,
+    activeOrders: 0,
+    inboundReferrals: 0,
+    upcomingFollowUps: 0,
   };
-  const todaySchedule = profileData?.todaySchedule;
+  const urgentAlerts = workspaceData?.urgentAlerts || [];
+  const consultationQueue = workspaceData?.consultationQueue?.length
+    ? workspaceData.consultationQueue
+    : appointments;
 
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const todayConsultations = appointments.filter(
-    (a) => a.appointmentDate && String(a.appointmentDate).slice(0, 10) === todayStr
-  );
-  const pendingCount = appointments.filter((a) => a.status === "pending").length;
-  const completedCount = appointments.filter((a) => a.status === "completed").length;
+  const todaySchedule = workspaceData?.doctorProfile?.todaySchedule || profileData?.todaySchedule;
 
   const handleMarkComplete = async (id) => {
     setUpdatingId(id);
@@ -403,59 +415,159 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           </div>
 
           {/* Quick Actions in Hero */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setScheduleDoctor(doctor)}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-900 shadow-md transition hover:bg-emerald-50 hover:shadow-lg"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-xs font-bold text-slate-900 shadow-md transition hover:bg-emerald-50"
               type="button"
             >
               <span>📅</span>
-              <span>My schedule & leaves</span>
+              <span>Schedule</span>
             </button>
             <Link
-              to="/prescriptions"
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-md transition border border-emerald-400/30"
+              to="/doctor/orders"
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 px-3.5 py-2 text-xs font-bold text-white shadow-md transition border border-slate-700"
             >
-              <span>℞</span>
-              <span>Write prescription</span>
+              <span>📋</span>
+              <span>Doctor Orders</span>
+            </Link>
+            <Link
+              to="/doctor/referrals"
+              className="inline-flex items-center gap-2 rounded-xl bg-purple-700/80 hover:bg-purple-700 px-3.5 py-2 text-xs font-bold text-white shadow-md transition border border-purple-500/40"
+            >
+              <span>⇄</span>
+              <span>Referrals</span>
+            </Link>
+            <Link
+              to="/doctor/critical-labs"
+              className="inline-flex items-center gap-2 rounded-xl bg-rose-700/90 hover:bg-rose-700 px-3.5 py-2 text-xs font-bold text-white shadow-md transition border border-rose-500/40"
+            >
+              <span>🧪</span>
+              <span>Critical Labs</span>
             </Link>
           </div>
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {/* Urgent Clinical Alerts Banner */}
+      {urgentAlerts.length > 0 && (
+        <div className="space-y-2">
+          {urgentAlerts.map((alt, idx) => (
+            <div
+              key={idx}
+              className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs ${
+                alt.level === "danger"
+                  ? "bg-rose-50 border-rose-200 text-rose-900"
+                  : alt.level === "warning"
+                  ? "bg-amber-50 border-amber-200 text-amber-900"
+                  : "bg-blue-50 border-blue-200 text-blue-900"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">⚠️</span>
+                <div>
+                  <h4 className="text-xs font-bold tracking-tight">{alt.title}</h4>
+                  <p className="text-xs opacity-90">{alt.message}</p>
+                </div>
+              </div>
+              {alt.actionLink && (
+                <Link
+                  to={alt.actionLink}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap self-start sm:self-auto ${
+                    alt.level === "danger"
+                      ? "bg-rose-600 hover:bg-rose-700 text-white shadow-xs"
+                      : "bg-slate-900 hover:bg-slate-800 text-white"
+                  }`}
+                >
+                  Action Required →
+                </Link>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 10 Clinical KPI Metrics Row */}
+      <div className="grid gap-3.5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         <MetricCard
-          label="Today's consultations"
-          value={todayConsultations.length}
+          label="Today's Consults"
+          value={metrics.todayConsultations}
           gradient="from-emerald-600 to-teal-600"
           badge="Scheduled for today"
           badgeColor="bg-emerald-50 text-emerald-700"
-          icon={<span className="text-2xl">🩺</span>}
+          icon={<span className="text-xl">🩺</span>}
         />
         <MetricCard
-          label="In waiting queue"
-          value={pendingCount}
+          label="Waiting Queue"
+          value={metrics.waitingQueue}
           gradient="from-amber-500 to-orange-600"
-          badge="Pending consultation"
+          badge="Waiting at station"
           badgeColor="bg-amber-50 text-amber-700"
-          icon={<span className="text-2xl">⏳</span>}
+          icon={<span className="text-xl">⏳</span>}
         />
         <MetricCard
-          label="Completed visits"
-          value={completedCount}
+          label="In Progress"
+          value={metrics.inProgressConsultations || 0}
           gradient="from-blue-600 to-indigo-600"
-          badge="Concluded consultations"
+          badge="Active consultation"
           badgeColor="bg-blue-50 text-blue-700"
-          icon={<span className="text-2xl">✓</span>}
+          icon={<span className="text-xl">🔄</span>}
         />
         <MetricCard
-          label="Total assigned patients"
-          value={stats.totalPatients || patients.length}
+          label="Completed Today"
+          value={metrics.completedToday}
+          gradient="from-teal-600 to-cyan-600"
+          badge="Concluded visits"
+          badgeColor="bg-teal-50 text-teal-700"
+          icon={<span className="text-xl">✓</span>}
+        />
+        <MetricCard
+          label="Assigned Patients"
+          value={metrics.assignedPatients}
           gradient="from-purple-600 to-pink-600"
-          badge="Under your clinical care"
+          badge="Total patient cohort"
           badgeColor="bg-purple-50 text-purple-700"
-          icon={<span className="text-2xl">👥</span>}
+          icon={<span className="text-xl">👥</span>}
+        />
+        <MetricCard
+          label="Pending Lab Reviews"
+          value={metrics.pendingLabReviews}
+          gradient="from-cyan-600 to-blue-600"
+          badge="Awaiting doctor sign-off"
+          badgeColor="bg-cyan-50 text-cyan-700"
+          icon={<span className="text-xl">🧪</span>}
+        />
+        <MetricCard
+          label="Critical Lab Results"
+          value={metrics.criticalLabReports}
+          gradient="from-rose-600 to-red-600"
+          badge={metrics.criticalLabReports > 0 ? "URGENT ATTENTION" : "None pending"}
+          badgeColor={metrics.criticalLabReports > 0 ? "bg-rose-100 text-rose-800 font-bold" : "bg-slate-100 text-slate-600"}
+          icon={<span className="text-xl">⚠️</span>}
+        />
+        <MetricCard
+          label="Active Doctor Orders"
+          value={metrics.activeOrders}
+          gradient="from-indigo-600 to-purple-600"
+          badge="Ward instructions"
+          badgeColor="bg-indigo-50 text-indigo-700"
+          icon={<span className="text-xl">📋</span>}
+        />
+        <MetricCard
+          label="Inbound Referrals"
+          value={metrics.inboundReferrals}
+          gradient="from-violet-600 to-indigo-700"
+          badge="Cross-department opinions"
+          badgeColor="bg-violet-50 text-violet-700"
+          icon={<span className="text-xl">⇄</span>}
+        />
+        <MetricCard
+          label="Follow-ups Due"
+          value={metrics.upcomingFollowUps}
+          gradient="from-emerald-700 to-teal-800"
+          badge="Next 7 days"
+          badgeColor="bg-emerald-50 text-emerald-700"
+          icon={<span className="text-xl">📅</span>}
         />
       </div>
 
@@ -500,19 +612,21 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
         </div>
       </div>
 
-      {/* Main Consultation Queue */}
+      {/* Main Consultation Queue with Live Triage & Abnormal Vitals Warning */}
       <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div>
-            <h2 className="text-base font-bold text-slate-800">My consultation queue</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Patients scheduled exclusively for Dr. {doctor?.name || user?.name}</p>
+            <h2 className="text-base font-bold text-slate-800">My Consultation Queue & Live Triage</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Patients queued exclusively for Dr. {doctor?.name || user?.name} with automated vital signs alerts
+            </p>
           </div>
           <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-500/20">
-            {appointments.length} assigned consultations
+            {consultationQueue.length} queued consultations
           </span>
         </div>
 
-        {appointments.length === 0 ? (
+        {consultationQueue.length === 0 ? (
           <div className="py-12 text-center text-slate-500">
             <span className="text-4xl">🎉</span>
             <p className="mt-3 text-sm font-semibold text-slate-700">No appointments scheduled for you right now.</p>
@@ -520,14 +634,14 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           </div>
         ) : (
           <ul className="mt-4 divide-y divide-slate-100">
-            {appointments.map((a) => (
+            {consultationQueue.map((a, idx) => (
               <li key={a._id} className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-4 hover:bg-slate-50/70 rounded-xl px-3 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs ring-1 ring-emerald-500/20 flex-shrink-0">
-                    {a.timeSlot ? a.timeSlot.slice(0, 5) : "AM"}
+                    {a.queuePosition ? `#${a.queuePosition}` : a.timeSlot ? a.timeSlot.slice(0, 5) : `#${idx + 1}`}
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <p className="font-bold text-slate-900">{a.patient?.name}</p>
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-mono text-slate-600">
                         {a.patient?.age ? `${a.patient.age}y` : ""} {a.patient?.gender}
@@ -537,9 +651,14 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
                           {a.patient.bloodGroup}
                         </span>
                       )}
+                      {a.isVitalsAbnormal && (
+                        <span className="rounded-full bg-rose-100 text-rose-800 px-2 py-0.5 text-[10px] font-extrabold border border-rose-300 animate-pulse">
+                          ⚠️ Abnormal: {a.abnormalDetails}
+                        </span>
+                      )}
                     </div>
                     <p className="text-xs text-slate-500 mt-1">
-                      <span className="font-medium text-slate-700">Reason:</span> {a.reasonForVisit || "Routine consultation"} • {formatDate(a.appointmentDate)} • <span className="font-mono text-slate-600">{a.patient?.contactNumber || ""}</span>
+                      <span className="font-medium text-slate-700">Reason:</span> {a.reasonForVisit || "Routine consultation"} • {formatDate(a.appointmentDate)} • <span className="font-mono text-slate-600">{a.patient?.phone || a.patient?.contactNumber || ""}</span>
                     </p>
                   </div>
                 </div>
@@ -552,12 +671,38 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
                   <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ring-1 ${
                     a.status === "completed"
                       ? "bg-emerald-50 text-emerald-700 ring-emerald-500/20"
+                      : a.status === "in_progress" || a.status === "in_consultation"
+                      ? "bg-purple-50 text-purple-700 ring-purple-500/20"
+                      : a.status === "waiting"
+                      ? "bg-rose-50 text-rose-700 ring-rose-500/20"
                       : a.status === "confirmed"
                       ? "bg-blue-50 text-blue-700 ring-blue-500/20"
                       : "bg-amber-50 text-amber-700 ring-amber-500/20"
                   }`}>
                     {a.status}
                   </span>
+
+                  {/* Primary Action: Start Consultation Workspace */}
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/doctor/consultation/${a._id}`)}
+                    className="rounded-lg bg-emerald-600 hover:bg-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-sm transition flex items-center gap-1"
+                  >
+                    <span>🩺</span>
+                    <span>Start Consult</span>
+                  </button>
+
+                  {/* 360° Chart Button */}
+                  {a.patient && (
+                    <button
+                      onClick={() => setSelectedChartPatientId(a.patient._id)}
+                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-2xs"
+                      title="View 360° patient clinical history chart"
+                      type="button"
+                    >
+                      📋 Chart
+                    </button>
+                  )}
 
                   {/* Vitals Button */}
                   {a.patient && (
@@ -578,7 +723,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
                     title="Generate prescription for this patient"
                     type="button"
                   >
-                    ℞ Prescribe
+                    ℞ Rx
                   </button>
 
                   {/* Complete Visit Button */}
@@ -586,10 +731,10 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
                     <button
                       disabled={updatingId === a._id}
                       onClick={() => handleMarkComplete(a._id)}
-                      className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition shadow-2xs disabled:opacity-50"
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shadow-2xs disabled:opacity-50"
                       type="button"
                     >
-                      {updatingId === a._id ? "Saving..." : "✓ Conclude"}
+                      {updatingId === a._id ? "..." : "✓ Conclude"}
                     </button>
                   )}
                 </div>
@@ -643,6 +788,23 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
             ))}
           </div>
         </section>
+      )}
+
+      {/* 360° Clinical Patient Profile Modal */}
+      {selectedChartPatientId && (
+        <DoctorPatientProfileModal
+          patientId={selectedChartPatientId}
+          onClose={() => setSelectedChartPatientId(null)}
+          onStartConsultation={(id) => {
+            // If an appointment exists for this patient, find it
+            const matchingApt = consultationQueue.find((c) => c.patient?._id === id);
+            if (matchingApt) {
+              navigate(`/doctor/consultation/${matchingApt._id}`);
+            } else {
+              navigate("/appointments");
+            }
+          }}
+        />
       )}
 
       {/* Doctor Schedule Modal */}

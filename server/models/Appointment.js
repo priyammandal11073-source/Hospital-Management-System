@@ -24,7 +24,17 @@ const appointmentSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: {
-        values: ["pending", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"],
+        values: [
+          "pending",
+          "confirmed",
+          "waiting",
+          "checked_in",
+          "in_consultation",
+          "in_progress",
+          "completed",
+          "cancelled",
+          "no_show",
+        ],
         message: "Please provide a valid appointment status",
       },
       default: "pending",
@@ -33,6 +43,27 @@ const appointmentSchema = new mongoose.Schema(
       type: String,
       required: [true, "Reason for visit is required"],
       trim: true,
+    },
+    diagnosis: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    clinicalSummary: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    followUpDate: {
+      type: Date,
+    },
+    followUpInstructions: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    queueNumber: {
+      type: Number,
     },
     notes: {
       type: String,

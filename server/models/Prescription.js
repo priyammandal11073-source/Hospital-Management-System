@@ -13,6 +13,16 @@ const medicationItemSchema = new mongoose.Schema(
       trim: true,
       default: "1 tablet",
     },
+    strength: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    route: {
+      type: String,
+      enum: ["Oral", "IV", "IM", "Subcutaneous", "Topical", "Inhalation", "Ophthalmic", "Other"],
+      default: "Oral",
+    },
     frequency: {
       type: String,
       required: [true, "Frequency is required"],
@@ -32,6 +42,17 @@ const medicationItemSchema = new mongoose.Schema(
       required: [true, "Duration is required"],
       trim: true,
       default: "5 days",
+    },
+    quantity: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    startDate: {
+      type: Date,
+    },
+    endDate: {
+      type: Date,
     },
     instructions: {
       type: String,
@@ -136,6 +157,20 @@ const prescriptionSchema = new mongoose.Schema(
       signedByName: { type: String, default: "" },
       designation: { type: String, default: "" },
       signedAt: { type: Date, default: Date.now },
+    },
+    status: {
+      type: String,
+      enum: ["Active", "Completed", "Cancelled", "Expired"],
+      default: "Active",
+      index: true,
+    },
+    allergyWarningAcknowledged: {
+      type: Boolean,
+      default: false,
+    },
+    allergyWarningDetails: {
+      type: String,
+      default: "",
     },
   },
   {

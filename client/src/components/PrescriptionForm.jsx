@@ -90,6 +90,8 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
   const [followUpDate, setFollowUpDate] = useState(
     prescriptionToEdit?.followUpDate ? new Date(prescriptionToEdit.followUpDate).toISOString().split("T")[0] : ""
   );
+  const [allergyConfirmed, setAllergyConfirmed] = useState(false);
+  const [allergyConflictDetected, setAllergyConflictDetected] = useState(false);
 
   // Load patients and doctors for selection dropdowns
   useEffect(() => {
@@ -205,11 +207,36 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
       return;
     }
 
+    const currentPatient = patients.find((p) => p._id === selectedPatientId) || initialPatient;
+    const patientAllergies = Array.isArray(currentPatient?.allergies)
+      ? currentPatient.allergies
+      : currentPatient?.allergies
+      ? [currentPatient.allergies]
+      : [];
+
+    if (patientAllergies.length > 0 && !allergyConfirmed) {
+      const conflicting = medications.find((m) => {
+        const nameLower = m.name.toLowerCase();
+        return patientAllergies.some(
+          (alg) => nameLower.includes(alg.toLowerCase()) || alg.toLowerCase().includes(nameLower)
+        );
+      });
+      if (conflicting) {
+        setErrorMsg(
+          `⚠️ ALLERGY ALERT: Patient has documented allergy to "${patientAllergies.join(", ")}", matching "${conflicting.name}". Review and acknowledge below to proceed.`
+        );
+        setAllergyConflictDetected(true);
+        return;
+      }
+    }
+
     const payload = {
       patient: selectedPatientId,
       doctor: selectedDoctorId,
       appointment: appointmentId || undefined,
       diagnosis: diagnosis.trim(),
+      allergyWarningAcknowledged: allergyConfirmed,
+      allergyWarningDetails: allergyConflictDetected ? `Overrode: ${patientAllergies.join(", ")}` : "",
       symptoms: symptomsInput
         .split(",")
         .map((s) => s.trim())
@@ -266,8 +293,20 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
       </div>
 
       {errorMsg && (
-        <div className="mx-6 mt-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
-          {errorMsg}
+        <div className="mx-6 mt-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex flex-wrap items-center justify-between gap-3">
+          <span>{errorMsg}</span>
+          {allergyConflictDetected && !allergyConfirmed && (
+            <button
+              type="button"
+              onClick={() => {
+                setAllergyConfirmed(true);
+                setErrorMsg("");
+              }}
+              className="px-3 py-1.5 rounded-lg bg-rose-700 text-white text-xs font-bold hover:bg-rose-800 whitespace-nowrap shadow-xs"
+            >
+              Acknowledge & Confirm Drug
+            </button>
+          )}
         </div>
       )}
 

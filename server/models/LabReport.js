@@ -93,6 +93,29 @@ const labReportSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isCritical: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    doctorReviewStatus: {
+      type: String,
+      enum: ["pending", "reviewed"],
+      default: "pending",
+      index: true,
+    },
+    reviewedByDoctor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Doctor",
+    },
+    reviewedAt: {
+      type: Date,
+    },
+    doctorReviewNotes: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     notes: {
       type: String,
       trim: true,

@@ -99,8 +99,8 @@ export const createDoctor = async (req, res) => {
 // GET /api/doctors?specialization=cardio&department=medicine
 export const getAllDoctors = async (req, res) => {
   try {
-    // If a doctor is authenticated, only allow them to see their own profile
-    if (req.user?.role === "doctor") {
+    // If a doctor is authenticated, default to their own profile unless hospital directory requested
+    if (req.user?.role === "doctor" && req.query.directory !== "true" && req.query.all !== "true") {
       const myDoctor = await resolveDoctorForUser(req.user);
       return res.status(200).json({ doctors: myDoctor ? [myDoctor] : [] });
     }

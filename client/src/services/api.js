@@ -543,6 +543,75 @@ export const updateSampleStatus = async (id, data) => {
   return response.data;
 };
 
+// ==========================================
+// DOCTOR CLINICAL WORKSPACE API HELPERS
+// ==========================================
+
+export const getDoctorDashboardData = async () => {
+  const response = await api.get("/api/doctor-workspace/dashboard");
+  return response.data;
+};
+
+export const getConsultationBundle = async (appointmentId) => {
+  const response = await api.get(`/api/doctor-workspace/consultation-bundle/${appointmentId}`);
+  return response.data;
+};
+
+export const concludeConsultation = async (consultationData) => {
+  const response = await api.post("/api/doctor-workspace/conclude-consultation", consultationData);
+  return response.data;
+};
+
+export const getDoctorPatientProfile = async (patientId) => {
+  const response = await api.get(`/api/doctor-workspace/patient-profile/${patientId}`);
+  return response.data;
+};
+
+export const getDoctorWorkspaceOrders = async (filters = {}) => {
+  const response = await api.get("/api/doctor-workspace/orders", { params: filters });
+  return response.data;
+};
+
+export const createDoctorWorkspaceOrder = async (orderData) => {
+  const response = await api.post("/api/doctor-workspace/orders", orderData);
+  return response.data;
+};
+
+export const getSpecialistReferrals = async (filters = {}) => {
+  const response = await api.get("/api/doctor-workspace/referrals", { params: filters });
+  return response.data;
+};
+
+export const createSpecialistReferral = async (referralData) => {
+  const response = await api.post("/api/doctor-workspace/referrals", referralData);
+  return response.data;
+};
+
+export const updateSpecialistReferralStatus = async (id, updateData) => {
+  const response = await api.patch(`/api/doctor-workspace/referrals/${id}/status`, updateData);
+  return response.data;
+};
+
+export const getCriticalLabResults = async (filters = {}) => {
+  const response = await api.get("/api/doctor-workspace/critical-labs", { params: filters });
+  return response.data;
+};
+
+export const acknowledgeCriticalLabResult = async (reportId, data = {}) => {
+  const response = await api.post(`/api/doctor-workspace/acknowledge-lab/${reportId}`, data);
+  return response.data;
+};
+
+export const getDoctorFollowUps = async (days = 14) => {
+  const response = await api.get(`/api/doctor-workspace/follow-ups?days=${days}`);
+  return response.data;
+};
+
+export const getSpecialistDirectory = async () => {
+  const response = await api.get("/api/doctor-workspace/specialist-directory");
+  return response.data;
+};
+
 export default api;
 
 

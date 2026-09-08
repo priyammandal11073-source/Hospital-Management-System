@@ -26,6 +26,12 @@ import PatientTransfersPage from "./pages/nurse/PatientTransfersPage.jsx";
 import AdmissionDischargePage from "./pages/nurse/AdmissionDischargePage.jsx";
 import MyShiftPage from "./pages/nurse/MyShiftPage.jsx";
 import NurseHandoverPage from "./pages/nurse/NurseHandoverPage.jsx";
+import ConsultationWorkspace from "./pages/doctor/ConsultationWorkspace.jsx";
+import DoctorWorkspaceOrdersPage from "./pages/doctor/DoctorOrdersPage.jsx";
+import DoctorReferralsPage from "./pages/doctor/DoctorReferralsPage.jsx";
+import CriticalLabResultsPage from "./pages/doctor/CriticalLabResultsPage.jsx";
+import DoctorFollowUpsPage from "./pages/doctor/DoctorFollowUpsPage.jsx";
+import SpecialistDirectoryPage from "./pages/doctor/SpecialistDirectoryPage.jsx";
 import BookAppointment from "./pages/patient/BookAppointment.jsx";
 import MyAppointments from "./pages/patient/MyAppointments.jsx";
 import MyBillings from "./pages/patient/MyBillings.jsx";
@@ -85,6 +91,14 @@ function App() {
           <Route path="/nurse/admission-discharge" element={<AdmissionDischargePage />} />
           <Route path="/nurse/shift" element={<MyShiftPage />} />
           <Route path="/nurse/handover" element={<NurseHandoverPage />} />
+
+          {/* Doctor Clinical Workspace Routes */}
+          <Route path="/doctor/consultation/:appointmentId" element={<ConsultationWorkspace />} />
+          <Route path="/doctor/orders" element={<DoctorWorkspaceOrdersPage />} />
+          <Route path="/doctor/referrals" element={<DoctorReferralsPage />} />
+          <Route path="/doctor/critical-labs" element={<CriticalLabResultsPage />} />
+          <Route path="/doctor/follow-ups" element={<DoctorFollowUpsPage />} />
+          <Route path="/specialist-directory" element={<SpecialistDirectoryPage />} />
         </Route>
       </Route>
       {/* Fallback — render 404 instead of blindly redirecting to /dashboard (which then bounces to /login for unauthed users) */}
