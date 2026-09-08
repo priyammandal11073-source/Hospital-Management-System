@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import BillingForm from "../components/BillingForm.jsx";
 import InvoiceModal from "../components/InvoiceModal.jsx";
+import PaymentMethodSelect from "../components/PaymentMethodSelect.jsx";
 import {
   getBillingById,
   getBillings,
+  sendBillingPaymentLinkSms,
   updatePaymentStatus,
 } from "../services/api.js";
 
@@ -51,8 +53,14 @@ function Billing() {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [paymentBilling, setPaymentBilling] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [upiUtr, setUpiUtr] = useState("");
   const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  // SMS payment link state
+  const [smsBilling, setSmsBilling] = useState(null);
+  const [smsPhone, setSmsPhone] = useState("");
+  const [isSendingSms, setIsSendingSms] = useState(false);
+  const [smsResult, setSmsResult] = useState("");
 
   useEffect(() => {
     let isCurrentRequest = true;
@@ -103,11 +111,16 @@ function Billing() {
     setError("");
 
     try {
-      await updatePaymentStatus(paymentBilling._id, {
+      const payload = {
         paymentStatus: "paid",
         paymentMethod,
-      });
+      };
+      if (paymentMethod === "upi" && upiUtr.trim()) {
+        payload.upiTransactionId = upiUtr.trim();
+      }
+      await updatePaymentStatus(paymentBilling._id, payload);
       setPaymentBilling(null);
+      setUpiUtr("");
       setRefreshKey((currentKey) => currentKey + 1);
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to update payment status.");
@@ -119,6 +132,21 @@ function Billing() {
   const handleBillingSuccess = () => {
     setIsFormOpen(false);
     setRefreshKey((currentKey) => currentKey + 1);
+  };
+
+  const handleSendSms = async (e) => {
+    e.preventDefault();
+    if (!smsBilling) return;
+    setIsSendingSms(true);
+    setSmsResult("");
+    try {
+      await sendBillingPaymentLinkSms(smsBilling._id, smsPhone || undefined);
+      setSmsResult("✅ Payment link sent successfully!");
+    } catch (err) {
+      setSmsResult("❌ " + (err.response?.data?.message || "Failed to send SMS."));
+    } finally {
+      setIsSendingSms(false);
+    }
   };
 
   return (
@@ -247,16 +275,29 @@ function Billing() {
                       📄 Invoice
                     </button>
                     {billing.paymentStatus !== "paid" && (
-                      <button
-                        className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition shadow-2xs"
-                        onClick={() => {
-                          setPaymentBilling(billing);
-                          setPaymentMethod("cash");
-                        }}
-                        type="button"
-                      >
-                        Mark as paid
-                      </button>
+                      <>
+                        <button
+                          className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition shadow-2xs"
+                          onClick={() => {
+                            setPaymentBilling(billing);
+                            setPaymentMethod("cash");
+                          }}
+                          type="button"
+                        >
+                          Mark as paid
+                        </button>
+                        <button
+                          className="rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition shadow-2xs"
+                          onClick={() => {
+                            setSmsBilling(billing);
+                            setSmsPhone(billing.patient?.contactNumber || "");
+                            setSmsResult("");
+                          }}
+                          type="button"
+                        >
+                          📲 Send SMS link
+                        </button>
+                      </>
                     )}
                   </td>
                 </tr>
@@ -300,20 +341,35 @@ function Billing() {
             <p className="mt-2 text-sm text-slate-600">
               Confirm payment of ₹{paymentBilling.totalAmount.toFixed(2)} for {paymentBilling.patient?.name || "this patient"}.
             </p>
-            <label className="mt-4 block text-sm font-medium text-slate-700">
-              Payment method
-              <select
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-                onChange={(event) => setPaymentMethod(event.target.value)}
+
+            <div className="mt-4">
+              <PaymentMethodSelect
                 value={paymentMethod}
-              >
-                {paymentMethods.map((method) => (
-                  <option key={method} value={method}>
-                    {paymentMethodLabels[method] || method}
-                  </option>
-                ))}
-              </select>
-            </label>
+                onChange={setPaymentMethod}
+                label="Payment Method"
+              />
+            </div>
+            {paymentMethod === "upi" && (
+              <label className="mt-3 block text-sm font-medium text-slate-700">
+                UPI transaction / UTR number
+                <div className="mt-1 flex gap-2">
+                  <input
+                    type="text"
+                    className="flex-1 rounded-md border border-slate-300 px-3 py-2 font-mono text-sm"
+                    placeholder="e.g. 423891029381"
+                    value={upiUtr}
+                    onChange={(e) => setUpiUtr(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="rounded-md bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition"
+                    onClick={() => setUpiUtr("UPI" + Math.floor(100000000000 + Math.random() * 900000000000))}
+                  >
+                    Generate mock UTR
+                  </button>
+                </div>
+              </label>
+            )}
             <div className="mt-6 flex justify-end gap-3">
               <button
                 className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
@@ -334,10 +390,72 @@ function Billing() {
         </div>
       )}
 
+      {/* ── SMS Payment Link Modal ── */}
+      {smsBilling && (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          role="dialog"
+        >
+          <form
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4"
+            onSubmit={handleSendSms}
+          >
+            <h2 className="text-xl font-semibold text-slate-800">📲 Send Payment Link via SMS</h2>
+            <p className="text-sm text-slate-600">
+              Send a secure payment link to the patient's phone. They can pay online without visiting the hospital.
+            </p>
+
+            <div className="rounded-xl bg-violet-50 border border-violet-200 p-4 text-sm text-violet-900">
+              <p className="font-semibold">{smsBilling.patient?.name}</p>
+              <p className="text-xs text-violet-700 mt-0.5">Invoice #{smsBilling._id?.toString().slice(-6).toUpperCase()} · ₹{smsBilling.totalAmount?.toFixed(2)}</p>
+            </div>
+
+            <label className="block text-sm font-medium text-slate-700">
+              Patient phone number
+              <input
+                type="tel"
+                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono"
+                placeholder="10-digit mobile number"
+                value={smsPhone}
+                onChange={(e) => setSmsPhone(e.target.value)}
+              />
+              <span className="text-xs text-slate-400 mt-0.5 block">Pre-filled from patient record. Edit if needed.</span>
+            </label>
+
+            {smsResult && (
+              <p className={`text-sm font-medium ${
+                smsResult.startsWith("✅") ? "text-emerald-700" : "text-red-600"
+              }`}>{smsResult}</p>
+            )}
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                onClick={() => { setSmsBilling(null); setSmsResult(""); }}
+                type="button"
+              >
+                Close
+              </button>
+              <button
+                className="rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+                disabled={isSendingSms}
+                type="submit"
+              >
+                {isSendingSms ? "Sending…" : "Send SMS"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
       {selectedInvoice && (
         <InvoiceModal
           billing={selectedInvoice}
           onClose={() => setSelectedInvoice(null)}
+          onBillingUpdate={() => {
+            setRefreshKey((k) => k + 1);
+          }}
         />
       )}
     </section>

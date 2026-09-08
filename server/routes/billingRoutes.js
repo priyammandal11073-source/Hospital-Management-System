@@ -5,6 +5,7 @@ import {
   getBillingById,
   getRevenueSummary,
   sendBillingEmail,
+  sendPaymentLinkSmsHandler,
   updatePaymentStatus,
 } from "../controllers/billingController.js";
 import { protect, restrictTo } from "../middleware/authMiddleware.js";
@@ -22,5 +23,6 @@ router
 
 router.patch("/:id/payment", protect, updatePaymentStatus);
 router.post("/:id/send-email", protect, sendBillingEmail);
+router.post("/:id/send-sms", protect, sendPaymentLinkSmsHandler);
 
 export default router;

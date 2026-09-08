@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { sendBillingEmail } from "../services/api.js";
+import UpiPaymentBox, { generateUpiQrDataUrl, getUpiPaymentUrl } from "./UpiPaymentBox.jsx";
 
 const formatDate = (date) =>
   date
@@ -10,11 +11,14 @@ const formatDate = (date) =>
       })
     : "—";
 
-function InvoiceModal({ billing, onClose }) {
+function InvoiceModal({ billing: initialBilling, onClose, onBillingUpdate, isPatient = false }) {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailStatus, setEmailStatus] = useState(null);
+  const [currentBilling, setCurrentBilling] = useState(initialBilling);
 
-  if (!billing) return null;
+  if (!currentBilling) return null;
+
+  const billing = currentBilling;
 
   const invoiceNumber = `INV-${billing._id?.toString().slice(-6).toUpperCase()}`;
   const totalAmount = (billing.totalAmount || 0).toFixed(2);
@@ -49,8 +53,50 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
 
   const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 
-  // Clean isolated print handler
-  const handlePrint = () => {
+  // Handle UPI payment success — update local billing and notify parent
+  const handleUpiPaymentSuccess = (updatedBilling) => {
+    setCurrentBilling(updatedBilling);
+    if (onBillingUpdate) onBillingUpdate(updatedBilling);
+  };
+
+  // Clean isolated print handler — async to pre-generate QR data URL
+  const handlePrint = async () => {
+    // Pre-generate QR code data URL for embedding into print HTML
+    let qrDataUrl = "";
+    if (billing.paymentStatus !== "paid") {
+      qrDataUrl = await generateUpiQrDataUrl(billing);
+    }
+
+    const upiPrintSection = billing.paymentStatus === "paid" && billing.upiTransactionId
+      ? `<div style="margin-top: 20px; padding: 14px 18px; border: 2px solid #166534; border-radius: 8px; background: #f0fdf4;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 32px; height: 32px; border-radius: 50%; background: #166534; display: flex; align-items: center; justify-content: center;">
+                <span style="color: white; font-size: 18px; font-weight: bold;">✓</span>
+              </div>
+              <div>
+                <div style="font-size: 13px; font-weight: 800; color: #166534; text-transform: uppercase;">Paid via UPI — Verified</div>
+                <div style="font-size: 11px; color: #334155; margin-top: 2px;">UTR / Ref: <strong style="font-family: monospace;">${billing.upiTransactionId}</strong></div>
+                ${billing.paymentDate ? `<div style="font-size: 10px; color: #64748b; margin-top: 1px;">Payment date: ${formatDate(billing.paymentDate)}</div>` : ''}
+              </div>
+            </div>
+          </div>`
+      : billing.paymentStatus !== "paid" && qrDataUrl
+        ? `<div style="margin-top: 20px; padding: 16px; border: 2px solid #0d9488; border-radius: 8px; background: #f0fdfa; display: flex; align-items: center; gap: 20px;">
+            <div style="text-align: center; flex-shrink: 0;">
+              <img src="${qrDataUrl}" alt="UPI QR Code" style="width: 140px; height: 140px; border: 2px solid #1e293b; border-radius: 8px; padding: 4px; background: #fff;" />
+              <div style="font-size: 10px; font-weight: 700; color: #475569; margin-top: 4px;">Scan & Pay ₹${totalAmount}</div>
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 13px; font-weight: 800; color: #0f172a;">Pay via UPI — Scan QR Code</div>
+              <div style="font-size: 11px; color: #334155; margin-top: 4px;">UPI ID: <strong style="font-family: monospace;">nivoracare@icici</strong></div>
+              <div style="font-size: 11px; color: #334155;">Payee: <strong>Nivora Care Hospital</strong></div>
+              <div style="font-size: 11px; color: #334155;">Amount: <strong style="color: #0d9488;">₹${totalAmount}</strong></div>
+              <div style="font-size: 11px; color: #334155;">Ref: <strong>${invoiceNumber}</strong></div>
+              <div style="font-size: 10px; color: #64748b; margin-top: 6px;">Scan with Google Pay, PhonePe, Paytm, BHIM, Cred, or any UPI app.</div>
+            </div>
+          </div>`
+        : '';
+
     const iframe = document.createElement("iframe");
     iframe.style.position = "fixed";
     iframe.style.right = "0";
@@ -179,6 +225,8 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
               </tr>
             </tfoot>
           </table>
+
+          ${upiPrintSection}
 
           <div class="footer-flex">
             <div class="terms">
@@ -492,6 +540,15 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
                 </tr>
               </tfoot>
             </table>
+          </div>
+
+          {/* Dynamic UPI QR Code Section */}
+          <div className="mt-6 no-print">
+            <UpiPaymentBox
+              billing={billing}
+              onPaymentSuccess={handleUpiPaymentSuccess}
+              isPatient={isPatient}
+            />
           </div>
 
           {/* Payment Terms & Signatures */}

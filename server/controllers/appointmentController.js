@@ -1,8 +1,10 @@
 import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
+import Billing from "../models/Billing.js";
 
 const appointmentStatuses = ["pending", "confirmed", "completed", "cancelled"];
 const activeStatuses = ["pending", "confirmed"];
+const OPD_FEE = Number(process.env.OPD_FEE || 500);
 
 const sendDatabaseError = (error, res) => {
   if (error.name === "ValidationError") {
@@ -33,7 +35,7 @@ const normaliseAppointmentDate = (value) => {
 // POST /api/appointments
 export const createAppointment = async (req, res) => {
   try {
-    const { patient, doctor, appointmentDate, timeSlot, reasonForVisit } = req.body;
+    const { patient, doctor, appointmentDate, timeSlot, reasonForVisit, paymentMethod } = req.body;
 
     if (!patient || !doctor || !appointmentDate || !timeSlot || !reasonForVisit) {
       return res.status(400).json({
@@ -76,9 +78,24 @@ export const createAppointment = async (req, res) => {
       bookedBy: "staff",
     });
 
+    // Auto-create an OPD billing record so the patient can pay immediately.
+    const allowedPaymentMethods = ["cash", "card", "upi", "insurance"];
+    const resolvedMethod = allowedPaymentMethods.includes(paymentMethod)
+      ? paymentMethod
+      : undefined;
+
+    const billing = await Billing.create({
+      patient,
+      appointment: appointment._id,
+      itemizedCharges: [{ description: "OPD Consultation Fee", cost: OPD_FEE }],
+      paymentMethod: resolvedMethod,
+      paymentStatus: "pending",
+    });
+
     return res.status(201).json({
       message: "Appointment created successfully",
       appointment,
+      billingId: billing._id,
     });
   } catch (error) {
     return sendDatabaseError(error, res);

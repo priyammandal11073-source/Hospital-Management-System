@@ -155,6 +155,12 @@ export const sendBillingEmail = async (id) => {
   return response.data;
 };
 
+export const sendBillingPaymentLinkSms = async (id, phoneNumber) => {
+  const response = await api.post(`/api/billing/${id}/send-sms`, phoneNumber ? { phoneNumber } : {});
+  return response.data;
+};
+
+
 // Patient self-service auth (separate from staff auth)
 export const registerPatient = async (patientData) => {
   const response = await api.post("/api/patient-auth/register", patientData);
@@ -190,6 +196,11 @@ export const cancelMyAppointment = async (id) => {
 
 export const getMyBillings = async () => {
   const response = await api.get("/api/patient-portal/billings");
+  return response.data;
+};
+
+export const payMyBillingUpi = async (id, paymentData = {}) => {
+  const response = await api.patch(`/api/patient-portal/billings/${id}/pay-upi`, paymentData);
   return response.data;
 };
 

@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Doctors from "./pages/Doctors.jsx";
 import Login from "./pages/Login.jsx";
 import Patients from "./pages/Patients.jsx";
+import PaymentPage from "./pages/PaymentPage.jsx";
 import Reports from "./pages/Reports.jsx";
 import Prescriptions from "./pages/Prescriptions.jsx";
 import Beds from "./pages/Beds.jsx";
@@ -26,6 +27,8 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/patient/login" element={<PatientLogin />} />
       <Route path="/patient/register" element={<PatientRegister />} />
+      {/* Public payment link — no auth required, accessible via SMS */}
+      <Route path="/pay/:billingId" element={<PaymentPage />} />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
       {/* Patient branch — separate from staff, uses PatientAuthContext */}

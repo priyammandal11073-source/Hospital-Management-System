@@ -4,11 +4,19 @@ import {
   getDoctors,
   getPatients,
 } from "../services/api.js";
+import PaymentMethodSelect from "./PaymentMethodSelect.jsx";
+import UpiPaymentBox from "./UpiPaymentBox.jsx";
 
 function AppointmentForm({ onCancel, onSuccess }) {
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [patientSearch, setPatientSearch] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+
+  // After successful booking, hold the new billingId to show payment UI
+  const [createdBillingId, setCreatedBillingId] = useState(null);
+  const [createdBilling, setCreatedBilling] = useState(null);
+
   const [formData, setFormData] = useState({
     patient: "",
     doctor: "",
@@ -16,6 +24,7 @@ function AppointmentForm({ onCancel, onSuccess }) {
     timeSlot: "",
     reasonForVisit: "",
   });
+
   const [isLoadingOptions, setIsLoadingOptions] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -86,12 +95,26 @@ function AppointmentForm({ onCancel, onSuccess }) {
     setIsSubmitting(true);
 
     try {
-      await createAppointment({
+      const res = await createAppointment({
         ...formData,
         timeSlot: formData.timeSlot.trim(),
         reasonForVisit: formData.reasonForVisit.trim(),
+        paymentMethod,
       });
-      onSuccess();
+
+      // If UPI is selected show inline payment; otherwise signal success
+      if (paymentMethod === "upi" && res.billingId) {
+        // Build a minimal billing stub so UpiPaymentBox can render
+        setCreatedBillingId(res.billingId);
+        setCreatedBilling({
+          _id: res.billingId,
+          totalAmount: 500, // OPD fee — will be refreshed after payment
+          paymentStatus: "pending",
+          paymentMethod: "upi",
+        });
+      } else {
+        onSuccess();
+      }
     } catch (requestError) {
       if (requestError.response?.status === 409) {
         setError("This time slot is already booked for this doctor. Please choose another slot.");
@@ -102,6 +125,38 @@ function AppointmentForm({ onCancel, onSuccess }) {
       setIsSubmitting(false);
     }
   };
+
+  // ── After successful booking with UPI ──────────────────────────────────────
+  if (createdBillingId) {
+    return (
+      <div className="space-y-5">
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4">
+          <p className="font-semibold text-emerald-800 text-sm">
+            ✅ Appointment booked! Complete UPI payment below.
+          </p>
+          <p className="text-xs text-emerald-700 mt-1">
+            Your appointment is confirmed. Scan the QR or click to launch your UPI app.
+          </p>
+        </div>
+
+        <UpiPaymentBox
+          billing={createdBilling}
+          onPaymentSuccess={() => onSuccess()}
+          isPatient={false}
+        />
+
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={onSuccess}
+            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Pay later & close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (isLoadingOptions) {
     return <p className="py-8 text-center text-slate-600">Loading patients and doctors...</p>;
@@ -211,6 +266,18 @@ function AppointmentForm({ onCancel, onSuccess }) {
           value={formData.reasonForVisit}
         />
       </label>
+
+      {/* Payment Method */}
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+        <PaymentMethodSelect
+          value={paymentMethod}
+          onChange={setPaymentMethod}
+          label="OPD Payment Method"
+        />
+        <p className="mt-2 text-xs text-slate-500">
+          OPD consultation fee: <strong>₹500</strong>. An invoice will be automatically generated.
+        </p>
+      </div>
 
       {error && (
         <p className="rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">

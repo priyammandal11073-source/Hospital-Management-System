@@ -60,6 +60,14 @@ const billingSchema = new mongoose.Schema(
         message: "Please provide a valid payment method",
       },
     },
+    upiTransactionId: {
+      type: String,
+      trim: true,
+    },
+    upiPayerVpa: {
+      type: String,
+      trim: true,
+    },
   },
   {
     timestamps: true,

@@ -5,6 +5,8 @@ import Billing from "../models/Billing.js";
 import Patient from "../models/Patient.js";
 import Prescription from "../models/Prescription.js";
 
+const OPD_FEE = Number(process.env.OPD_FEE || 500);
+
 // GET /api/patient-portal/me
 export const getMyProfile = async (req, res) => {
   try {
@@ -45,7 +47,7 @@ export const getMyAppointments = async (req, res) => {
 // POST /api/patient-portal/appointments
 export const bookMyAppointment = async (req, res) => {
   try {
-    const { doctor, appointmentDate, timeSlot, reasonForVisit } = req.body;
+    const { doctor, appointmentDate, timeSlot, reasonForVisit, paymentMethod } = req.body;
 
     if (!doctor || !appointmentDate || !timeSlot || !reasonForVisit) {
       return res.status(400).json({
@@ -89,9 +91,24 @@ export const bookMyAppointment = async (req, res) => {
       bookedBy: "patient",
     });
 
+    // Auto-create an OPD billing record for immediate payment.
+    const allowedPaymentMethods = ["cash", "card", "upi", "insurance"];
+    const resolvedMethod = allowedPaymentMethods.includes(paymentMethod)
+      ? paymentMethod
+      : undefined;
+
+    const billing = await Billing.create({
+      patient: req.patient.id,
+      appointment: appointment._id,
+      itemizedCharges: [{ description: "OPD Consultation Fee", cost: OPD_FEE }],
+      paymentMethod: resolvedMethod,
+      paymentStatus: "pending",
+    });
+
     return res.status(201).json({
       message: "Appointment booked successfully. Pending staff confirmation.",
       appointment,
+      billingId: billing._id,
     });
   } catch (error) {
     if (error.code === 11000) {
@@ -186,6 +203,61 @@ export const getMyBedStay = async (req, res) => {
     return res.status(200).json({ bedStay });
   } catch (error) {
     return res.status(500).json({ message: "Unable to fetch bed allocation details" });
+  }
+};
+
+// PATCH /api/patient-portal/billings/:id/pay-upi
+export const payMyBillingUpi = async (req, res) => {
+  try {
+    const { id: billingId } = req.params;
+    const { upiTransactionId, upiPayerVpa } = req.body;
+
+    if (!mongoose.isValidObjectId(billingId)) {
+      return res.status(400).json({ message: "Invalid billing ID" });
+    }
+
+    const billing = await Billing.findOne({
+      _id: billingId,
+      patient: req.patient.id,
+    });
+
+    if (!billing) {
+      return res.status(404).json({ message: "Invoice not found or does not belong to you" });
+    }
+
+    if (billing.paymentStatus === "paid") {
+      return res.status(400).json({ message: "This invoice is already paid" });
+    }
+
+    const finalUpiTrxId = upiTransactionId
+      ? String(upiTransactionId).trim()
+      : "UPI" + Math.floor(100000000000 + Math.random() * 900000000000);
+
+    billing.paymentStatus = "paid";
+    billing.paymentMethod = "upi";
+    billing.paymentDate = new Date();
+    billing.upiTransactionId = finalUpiTrxId;
+    if (upiPayerVpa) {
+      billing.upiPayerVpa = String(upiPayerVpa).trim();
+    }
+
+    await billing.save();
+
+    const populatedBilling = await Billing.findById(billing._id)
+      .populate("patient", "name contactNumber email age gender address")
+      .populate({
+        path: "appointment",
+        select: "appointmentDate timeSlot status reasonForVisit doctor",
+        populate: { path: "doctor", select: "name specialization department contactNumber" },
+      });
+
+    return res.status(200).json({
+      message: "UPI payment received and invoice marked as paid!",
+      billing: populatedBilling,
+    });
+  } catch (error) {
+    console.error("Error processing UPI payment:", error);
+    return res.status(500).json({ message: "Unable to complete UPI payment" });
   }
 };
 

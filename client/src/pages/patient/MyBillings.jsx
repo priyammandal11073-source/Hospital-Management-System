@@ -73,6 +73,14 @@ function MyBillings() {
                   >
                     📄 View / print
                   </button>
+                  {b.paymentStatus !== "paid" && (
+                    <a
+                      href={`/pay/${b._id}`}
+                      className="rounded-lg bg-teal-600 px-3 py-1 text-xs font-semibold text-white hover:bg-teal-700 transition shadow-2xs"
+                    >
+                      💳 Pay Now
+                    </a>
+                  )}
                 </div>
               </li>
             ))}
@@ -84,6 +92,12 @@ function MyBillings() {
         <InvoiceModal
           billing={selectedInvoice}
           onClose={() => setSelectedInvoice(null)}
+          isPatient={true}
+          onBillingUpdate={(updatedBilling) => {
+            setBillings((prev) =>
+              prev.map((b) => (b._id === updatedBilling._id ? updatedBilling : b))
+            );
+          }}
         />
       )}
     </section>

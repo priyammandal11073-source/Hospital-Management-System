@@ -3,6 +3,7 @@ import nodemailer from "nodemailer";
 import Appointment from "../models/Appointment.js";
 import Billing from "../models/Billing.js";
 import Patient from "../models/Patient.js";
+import { sendPaymentLinkSms } from "../services/smsService.js";
 
 const paymentStatuses = ["pending", "paid", "partially_paid"];
 const paymentMethods = ["cash", "card", "insurance", "upi"];
@@ -153,7 +154,7 @@ export const getBillingById = async (req, res) => {
 // PATCH /api/billing/:id/payment
 export const updatePaymentStatus = async (req, res) => {
   try {
-    const { paymentStatus, paymentDate, paymentMethod } = req.body;
+    const { paymentStatus, paymentDate, paymentMethod, upiTransactionId, upiPayerVpa } = req.body;
 
     if (!isValidBillingId(req.params.id)) {
       return res.status(400).json({ message: "Invalid billing ID" });
@@ -185,10 +186,27 @@ export const updatePaymentStatus = async (req, res) => {
       updates.paymentMethod = paymentMethod;
     }
 
+    if (upiTransactionId) {
+      updates.upiTransactionId = String(upiTransactionId).trim();
+    } else if (paymentMethod === "upi" && !updates.upiTransactionId) {
+      // If paying via UPI without explicit UTR, auto-generate standard 12-digit mock UTR
+      updates.upiTransactionId = "UPI" + Math.floor(100000000000 + Math.random() * 900000000000);
+    }
+
+    if (upiPayerVpa) {
+      updates.upiPayerVpa = String(upiPayerVpa).trim();
+    }
+
     const billing = await Billing.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true,
-    });
+    })
+      .populate("patient", "name contactNumber email age gender address")
+      .populate({
+        path: "appointment",
+        select: "appointmentDate timeSlot status reasonForVisit doctor",
+        populate: { path: "doctor", select: "name specialization department contactNumber" },
+      });
 
     if (!billing) {
       return res.status(404).json({ message: "Billing record not found" });
@@ -374,3 +392,45 @@ export const sendBillingEmail = async (req, res) => {
   }
 };
 
+// POST /api/billing/:id/send-sms
+export const sendPaymentLinkSmsHandler = async (req, res) => {
+  try {
+    if (!isValidBillingId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid billing ID" });
+    }
+
+    const billing = await Billing.findById(req.params.id).populate(
+      "patient",
+      "name contactNumber"
+    );
+
+    if (!billing) {
+      return res.status(404).json({ message: "Billing record not found" });
+    }
+
+    // Allow override from request body (receptionist may correct the number)
+    const phoneNumber =
+      req.body.phoneNumber || billing.patient?.contactNumber;
+
+    if (!phoneNumber) {
+      return res.status(400).json({
+        message: "No phone number found for this patient. Please provide one.",
+      });
+    }
+
+    const result = await sendPaymentLinkSms(
+      phoneNumber,
+      billing._id.toString(),
+      billing.patient?.name || "Patient",
+      billing.totalAmount
+    );
+
+    return res.status(200).json({
+      message: `Payment link sent to ${phoneNumber}`,
+      ...result,
+    });
+  } catch (error) {
+    console.error("Error sending payment SMS:", error);
+    return res.status(500).json({ message: "Failed to send payment SMS: " + error.message });
+  }
+};

@@ -4,6 +4,7 @@ import {
   getMyAppointments,
   bookMyAppointment,
   getMyBillings,
+  payMyBillingUpi,
   cancelMyAppointment,
   getMyPrescriptions,
   getMyBedStay,
@@ -21,6 +22,7 @@ router.patch(
   cancelMyAppointment
 );
 router.get("/billings", protectPatient, getMyBillings);
+router.patch("/billings/:id/pay-upi", protectPatient, payMyBillingUpi);
 router.get("/prescriptions", protectPatient, getMyPrescriptions);
 router.get("/bed", protectPatient, getMyBedStay);
 
