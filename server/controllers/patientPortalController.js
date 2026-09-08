@@ -103,7 +103,12 @@ export const bookMyAppointment = async (req, res) => {
 export const getMyBillings = async (req, res) => {
   try {
     const billings = await Billing.find({ patient: req.patient.id })
-      .populate("appointment", "appointmentDate timeSlot status reasonForVisit")
+      .populate("patient", "name contactNumber email age gender address")
+      .populate({
+        path: "appointment",
+        select: "appointmentDate timeSlot status reasonForVisit doctor",
+        populate: { path: "doctor", select: "name specialization department contactNumber" },
+      })
       .sort({ createdAt: -1 });
 
     return res.status(200).json({ billings });

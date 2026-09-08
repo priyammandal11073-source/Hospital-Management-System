@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import BillingForm from "../components/BillingForm.jsx";
+import InvoiceModal from "../components/InvoiceModal.jsx";
 import {
   getBillingById,
   getBillings,
@@ -27,6 +28,7 @@ function Billing() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [paymentBilling, setPaymentBilling] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
@@ -195,7 +197,14 @@ function Billing() {
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">{formatDate(billing.paymentDate)}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                  <td className="whitespace-nowrap px-4 py-3 text-right space-x-2">
+                    <button
+                      className="rounded-md bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition"
+                      onClick={() => setSelectedInvoice(billing)}
+                      type="button"
+                    >
+                      📄 Invoice
+                    </button>
                     {billing.paymentStatus !== "paid" && (
                       <button
                         className="rounded-md bg-green-600 px-3 py-1 text-xs font-medium text-white hover:bg-green-700"
@@ -282,6 +291,13 @@ function Billing() {
             </div>
           </form>
         </div>
+      )}
+
+      {selectedInvoice && (
+        <InvoiceModal
+          billing={selectedInvoice}
+          onClose={() => setSelectedInvoice(null)}
+        />
       )}
     </section>
   );

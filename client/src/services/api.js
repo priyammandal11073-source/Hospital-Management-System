@@ -150,6 +150,11 @@ export const getRevenueSummary = async () => {
   return response.data;
 };
 
+export const sendBillingEmail = async (id) => {
+  const response = await api.post(`/api/billing/${id}/send-email`);
+  return response.data;
+};
+
 // Patient self-service auth (separate from staff auth)
 export const registerPatient = async (patientData) => {
   const response = await api.post("/api/patient-auth/register", patientData);

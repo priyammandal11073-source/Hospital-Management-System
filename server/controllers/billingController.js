@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import nodemailer from "nodemailer";
 import Appointment from "../models/Appointment.js";
 import Billing from "../models/Billing.js";
 import Patient from "../models/Patient.js";
@@ -110,8 +111,12 @@ export const getAllBillings = async (req, res) => {
     }
 
     const billings = await Billing.find(filter)
-      .populate("patient", "name contactNumber")
-      .populate("appointment", "appointmentDate timeSlot status reasonForVisit")
+      .populate("patient", "name contactNumber email age gender address")
+      .populate({
+        path: "appointment",
+        select: "appointmentDate timeSlot status reasonForVisit doctor",
+        populate: { path: "doctor", select: "name specialization department contactNumber" },
+      })
       .sort({ createdAt: -1 });
 
     return res.status(200).json({ billings });
@@ -128,8 +133,12 @@ export const getBillingById = async (req, res) => {
     }
 
     const billing = await Billing.findById(req.params.id)
-      .populate("patient", "name contactNumber")
-      .populate("appointment", "appointmentDate timeSlot status reasonForVisit");
+      .populate("patient", "name contactNumber email age gender address")
+      .populate({
+        path: "appointment",
+        select: "appointmentDate timeSlot status reasonForVisit doctor",
+        populate: { path: "doctor", select: "name specialization department contactNumber" },
+      });
 
     if (!billing) {
       return res.status(404).json({ message: "Billing record not found" });
@@ -224,3 +233,143 @@ export const getRevenueSummary = async (req, res) => {
     return sendDatabaseError(error, res);
   }
 };
+
+// POST /api/billing/:id/send-email
+export const sendBillingEmail = async (req, res) => {
+  try {
+    if (!isValidBillingId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid billing ID" });
+    }
+
+    const billing = await Billing.findById(req.params.id)
+      .populate("patient", "name contactNumber email age gender address")
+      .populate({
+        path: "appointment",
+        select: "appointmentDate timeSlot status reasonForVisit doctor",
+        populate: { path: "doctor", select: "name specialization department contactNumber" },
+      });
+
+    if (!billing) {
+      return res.status(404).json({ message: "Billing record not found" });
+    }
+
+    if (!billing.patient?.email) {
+      return res.status(400).json({
+        message: "Patient does not have an email address registered.",
+      });
+    }
+
+    // Configure transporter
+    let transporter;
+    let isTest = false;
+
+    if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+      transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: process.env.SMTP_SECURE === "true",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+    } else {
+      isTest = true;
+      try {
+        const testAccount = await nodemailer.createTestAccount();
+        transporter = nodemailer.createTransport({
+          host: "smtp.ethereal.email",
+          port: 587,
+          secure: false,
+          auth: {
+            user: testAccount.user,
+            pass: testAccount.pass,
+          },
+        });
+      } catch {
+        transporter = {
+          sendMail: async () => ({ messageId: "simulated-" + Date.now() }),
+        };
+      }
+    }
+
+    const patientName = billing.patient.name;
+    const invoiceNumber = `INV-${billing._id.toString().slice(-6).toUpperCase()}`;
+    const invoiceDate = new Date(billing.createdAt).toLocaleDateString();
+    const totalAmount = billing.totalAmount.toFixed(2);
+    const paymentStatus = billing.paymentStatus.toUpperCase();
+
+    const chargesRows = (billing.itemizedCharges || [])
+      .map(
+        (charge, idx) => `
+        <tr style="border-bottom: 1px solid #e2e8f0;">
+          <td style="padding: 10px; font-size: 14px; color: #475569;">${idx + 1}</td>
+          <td style="padding: 10px; font-size: 14px; color: #1e293b;">${charge.description}</td>
+          <td style="padding: 10px; font-size: 14px; text-align: right; color: #1e293b;">₹${charge.cost.toFixed(2)}</td>
+        </tr>`
+      )
+      .join("");
+
+    const htmlContent = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px; background-color: #ffffff;">
+        <div style="border-bottom: 2px solid #2563eb; padding-bottom: 15px; margin-bottom: 20px;">
+          <h2 style="color: #1e293b; margin: 0 0 5px 0;">City General Hospital</h2>
+          <p style="color: #64748b; font-size: 13px; margin: 0;">123 Healthcare Boulevard, Medical District • Tel: +91 9876543210</p>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+          <h3 style="color: #2563eb; margin: 0 0 10px 0;">Medical Invoice — ${invoiceNumber}</h3>
+          <p style="margin: 3px 0; font-size: 14px; color: #334155;"><strong>Patient Name:</strong> ${patientName}</p>
+          <p style="margin: 3px 0; font-size: 14px; color: #334155;"><strong>Date:</strong> ${invoiceDate}</p>
+          <p style="margin: 3px 0; font-size: 14px; color: #334155;"><strong>Payment Status:</strong> <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: bold; background-color: ${billing.paymentStatus === "paid" ? "#dcfce7; color: #166534" : "#fef9c3; color: #854d0e"};">${paymentStatus}</span></p>
+          ${billing.paymentMethod ? `<p style="margin: 3px 0; font-size: 14px; color: #334155;"><strong>Payment Method:</strong> ${billing.paymentMethod.toUpperCase()}</p>` : ""}
+        </div>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+          <thead>
+            <tr style="background-color: #f8fafc; border-bottom: 2px solid #cbd5e1; text-align: left;">
+              <th style="padding: 10px; font-size: 13px; color: #475569;">#</th>
+              <th style="padding: 10px; font-size: 13px; color: #475569;">Description</th>
+              <th style="padding: 10px; font-size: 13px; text-align: right; color: #475569;">Cost (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${chargesRows}
+          </tbody>
+          <tfoot>
+            <tr style="font-weight: bold; background-color: #f1f5f9;">
+              <td colspan="2" style="padding: 12px; font-size: 15px; color: #0f172a; text-align: right;">Total Amount:</td>
+              <td style="padding: 12px; font-size: 15px; color: #2563eb; text-align: right;">₹${totalAmount}</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; font-size: 12px; color: #64748b; text-align: center;">
+          <p style="margin: 0 0 5px 0;">Thank you for choosing City General Hospital. We wish you good health!</p>
+          <p style="margin: 0;">This is a computer-generated invoice and requires no physical signature.</p>
+        </div>
+      </div>
+    `;
+
+    const info = await transporter.sendMail({
+      from: `"City General Hospital" <${process.env.SMTP_FROM || "billing@hospital.com"}>`,
+      to: billing.patient.email,
+      subject: `Hospital Invoice ${invoiceNumber} - City General Hospital`,
+      html: htmlContent,
+    });
+
+    let previewUrl = null;
+    if (isTest && nodemailer.getTestMessageUrl) {
+      previewUrl = nodemailer.getTestMessageUrl(info);
+    }
+
+    return res.status(200).json({
+      message: `Invoice successfully sent to ${billing.patient.email}`,
+      previewUrl,
+    });
+  } catch (error) {
+    console.error("Error sending billing email:", error);
+    return res.status(500).json({ message: "Failed to send invoice email: " + error.message });
+  }
+};
+

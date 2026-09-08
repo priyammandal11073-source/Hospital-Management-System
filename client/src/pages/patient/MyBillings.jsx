@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import InvoiceModal from "../../components/InvoiceModal.jsx";
 import { getMyBillings } from "../../services/api.js";
 
 const statusClasses = { pending: "bg-yellow-100 text-yellow-800", paid: "bg-green-100 text-green-800", partially_paid: "bg-orange-100 text-orange-800" };
@@ -7,6 +8,7 @@ function MyBillings() {
   const [billings, setBillings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -20,11 +22,19 @@ function MyBillings() {
   return (
     <section>
       <h1 className="text-2xl font-semibold text-slate-800">My Bills</h1>
-      <p className="mt-1 text-sm text-slate-600">Read-only — contact reception for payment.</p>
+      <p className="mt-1 text-sm text-slate-600">View and print your medical invoices.</p>
       <div className="mt-4 overflow-x-auto rounded-lg bg-white shadow-sm">
         {billings.length === 0 ? <p className="p-6 text-center text-slate-600">No bills found.</p> : (
           <table className="min-w-full divide-y divide-slate-200 text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500"><tr><th className="px-4 py-3 text-left">Date</th><th className="px-4 py-3">Appointment</th><th className="px-4 py-3">Total</th><th className="px-4 py-3">Status</th></tr></thead>
+            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-4 py-3 text-left">Date</th>
+                <th className="px-4 py-3">Appointment</th>
+                <th className="px-4 py-3">Total</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3 text-right">Action</th>
+              </tr>
+            </thead>
             <tbody className="divide-y divide-slate-100">
               {billings.map((b) => (
                 <tr key={b._id}>
@@ -32,12 +42,28 @@ function MyBillings() {
                   <td className="px-4 py-3">{b.appointment ? `${new Date(b.appointment.appointmentDate).toLocaleDateString()} ${b.appointment.timeSlot}` : "—"}</td>
                   <td className="px-4 py-3 font-medium">₹{b.totalAmount?.toFixed(2)}</td>
                   <td className="px-4 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClasses[b.paymentStatus]}`}>{b.paymentStatus?.replace("_", " ")}</span></td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => setSelectedInvoice(b)}
+                      type="button"
+                      className="rounded-md bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition"
+                    >
+                      📄 View / Print
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         )}
       </div>
+
+      {selectedInvoice && (
+        <InvoiceModal
+          billing={selectedInvoice}
+          onClose={() => setSelectedInvoice(null)}
+        />
+      )}
     </section>
   );
 }
