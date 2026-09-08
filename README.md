@@ -14,6 +14,10 @@ This system enables receptionists to register patients and book appointments, do
 - **Appointment Scheduling**: Book appointments with double‑booking prevention (application-level check + compound DB index); status tracking (pending / confirmed / completed / cancelled); inline status updates
 - **Billing**: Itemized charges with auto-calculated totals via pre‑save hook; payment status tracking (pending / paid / partially_paid); revenue summary via MongoDB aggregation
 - **Reports & Dashboard**: Admin‑only dashboard with summary cards, revenue charts (recharts), and busiest‑doctors table; visual design consistent across all pages
+- **OPD Auto‑Billing**: When an appointment is booked, a billing record with a default ₹500 fee is automatically generated.
+- **Payment Methods**: Cash, UPI, Card, and Insurance options are now supported throughout the UI (appointment booking, billing, and payment).
+- **Public Payment Page**: `/pay/:billingId` provides a secure, unauthenticated payment flow via a link sent by SMS.
+- **SMS Payment Links**: Receptionists can send payment‑link SMS directly from the billing screen using a free email‑to‑SMS gateway.
 
 ---
 
@@ -208,3 +212,57 @@ All role-based permissions are enforced independently at the **backend** (middle
 ## Author
 
 **Priyam Mandal** — College sophomore project. Built as a full-stack web application using React, Node.js, Express, and MongoDB.
+
+---
+
+## Detailed Documentation
+
+The following sections provide exhaustive information about the Hospital Management System, covering the newly added payment infrastructure, SMS link generation, and UI components.
+
+### Payment Infrastructure
+- **OPD Auto‑Billing**: When an appointment is created, a billing record is automatically generated with a default fee defined by the `OPD_FEE` environment variable (₹500 by default). This logic resides in `server/controllers/appointmentController.js` where a `Billing.create` call is made after successfully saving an appointment.
+- **Supported Payment Methods**: Cash, UPI, Card, and Insurance. The payment method is stored in the `Billing` model (`paymentMethod` field) and can be updated via the `PATCH /api/billing/:id` endpoint.
+- **Public Payment Page**: Implemented in `client/src/pages/PaymentPage.jsx` and served by the backend route `GET /pay/:billingId`. This page is accessible without authentication and allows patients to settle their bills using any supported method.
+- **SMS Payment Links**: Receptionists can trigger an SMS containing a direct payment link from the billing view. The endpoint `POST /api/billing/:id/send-sms` in `billingController.js` uses `services/smsService.js`, which leverages Nodemailer to send an email to the carrier’s email‑to‑SMS gateway (e.g., `1234567890@sms.vodafone.in`).
+
+### UI Components Overview
+- **`PaymentMethodSelect.jsx`**: A reusable card‑style selector that displays icons for each payment option. Integrated into `AppointmentForm.jsx`, `BookAppointment.jsx`, and `Billing.jsx`.
+- **`UpiPaymentBox.jsx`**: Renders a QR code using `react-qr-code` for UPI transactions and handles the submission of the transaction ID.
+- **`PaymentPage.jsx`**: Public page that fetches billing details via `GET /api/billing/:id` and renders the payment options without requiring a logged‑in session.
+- **`Billing.jsx` Enhancements**:
+  - Added **Send SMS Link** button which opens a modal to input a phone number.
+  - Updated **Mark as Paid** modal to allow selecting the payment method via `PaymentMethodSelect`.
+- **`MyBillings.jsx`**: Unpaid invoices now show a **Pay Now** button linking to the public payment page (`/pay/:billingId`).
+
+### Environment Variables Explained
+| Variable | Purpose |
+|----------|---------|
+| `OPD_FEE` | Base fee for automatically generated OPD billing records.
+| `CLIENT_URL` | Base URL of the frontend used to construct payment links sent via SMS.
+| `SMTP_USER` / `SMTP_PASS` | Credentials for Nodemailer to send emails (used for email‑to‑SMS). |
+| `SMS_GATEWAY_DOMAIN` | Domain of the carrier’s SMS gateway (e.g., `sms.vodafone.in`). |
+| `PORT` | Port on which the Express server runs.
+| `MONGO_URI` | MongoDB connection string.
+| `JWT_SECRET` | Secret key for signing JWT tokens.
+
+### Deployment Considerations
+- **CORS**: The backend is configured to allow requests from `http://localhost:5173` (development) and should be updated to the production domain in `server/config/corsOptions.js`.
+- **Static Assets**: In production, `client/dist` is served by Express (`server.js`), and the API routes are prefixed with `/api`.
+- **HTTPS**: For secure payment handling, deploy behind an HTTPS reverse proxy (e.g., Nginx) and ensure JWT cookies are set with `secure` and `httpOnly` flags.
+
+### Testing Strategy
+- **Unit Tests**: Backend route handlers can be tested with Jest and Supertest. Example: test that `POST /api/appointments` creates both an appointment and a billing record.
+- **Integration Tests**: Use Cypress to simulate a user booking an appointment, receiving the SMS link (mocked), and completing payment via the public page.
+- **Manual QA**: Verify that:
+  1. Booking an appointment auto‑creates a billing entry.
+  2. Payment method selection updates the billing record correctly.
+  3. SMS link contains a valid URL (`${CLIENT_URL}/pay/${billingId}`).
+  4. The public payment page processes payments without authentication.
+
+---
+
+## License
+
+MIT License – see `LICENSE` file for details.
+
+---
