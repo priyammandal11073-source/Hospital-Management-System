@@ -11,6 +11,7 @@ import patientAuthRoutes from "./routes/patientAuthRoutes.js";
 import patientPortalRoutes from "./routes/patientPortalRoutes.js";
 import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 import bedRoutes from "./routes/bedRoutes.js";
+import razorpayRoutes from "./routes/razorpayRoutes.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -34,6 +35,7 @@ app.use("/api/patient-auth", patientAuthRoutes);
 app.use("/api/patient-portal", patientPortalRoutes);
 app.use("/api/prescriptions", prescriptionRoutes);
 app.use("/api/beds", bedRoutes);
+app.use("/api/razorpay", razorpayRoutes);
 
 // Temporary route to confirm that the API is running.
 app.get("/api/health", (req, res) => {

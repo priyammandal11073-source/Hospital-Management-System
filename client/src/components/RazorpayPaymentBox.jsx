@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
+import { createRazorpayOrder, verifyRazorpayPayment, payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
 
 function loadRazorpayScript() {
   return new Promise((resolve) => {
@@ -21,9 +21,6 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   
-  // Key state (allows user to enter custom key or use standard test key)
-  const [customKey, setCustomKey] = useState(import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_1DP5AxB243BScq");
-  
   // Custom interactive modal state (ensures 100% reliable opening even if SDK key is invalid/blocked)
   const [showSimulatedModal, setShowSimulatedModal] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState("upi");
@@ -36,51 +33,55 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient }) {
     loadRazorpayScript().then((loaded) => setIsScriptLoaded(loaded));
   }, []);
 
-  const handleOfficialCheckout = () => {
+  const handleOfficialCheckout = async () => {
     setErrorMsg("");
     setIsProcessing(true);
 
     try {
-      if (window.Razorpay && isScriptLoaded) {
+      // 1. Create Razorpay order from backend API
+      const orderData = await createRazorpayOrder(billing._id);
+      
+      if (!orderData || !orderData.orderId) {
+        throw new Error("Failed to initialize Razorpay payment order.");
+      }
+
+      // 2. Ensure Razorpay Checkout script is loaded
+      let scriptOK = isScriptLoaded;
+      if (!scriptOK) {
+        scriptOK = await loadRazorpayScript();
+      }
+
+      if (window.Razorpay && scriptOK) {
         const options = {
-          key: customKey.trim() || "rzp_test_1DP5AxB243BScq",
-          amount: Math.round(Number(billing.totalAmount || 0) * 100), // paise
-          currency: "INR",
+          key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_1DP5AxB243BScq",
+          amount: orderData.amount,
+          currency: orderData.currency || "INR",
           name: "Nivora Care Hospital",
           description: `Hospital Invoice INV-${billing._id?.toString().slice(-6).toUpperCase()}`,
+          order_id: orderData.orderId,
           image: "https://cdn.razorpay.com/static/assets/logo/rzp.png",
           prefill: {
-            name: billing.patient?.name || "Patient",
-            email: billing.patient?.email || "patient@example.com",
-            contact: billing.patient?.contactNumber || "9876543210",
+            name: orderData.patientDetails?.name || billing.patient?.name || "Patient",
+            email: orderData.patientDetails?.email || billing.patient?.email || "patient@example.com",
+            contact: orderData.patientDetails?.contact || billing.patient?.contactNumber || "9876543210",
           },
           theme: {
             color: "#0284C7", // Razorpay Blue
           },
           handler: async function (response) {
             try {
-              const rzpId = response.razorpay_payment_id || `pay_${Math.random().toString(36).substring(2, 14)}`;
-              const payload = {
-                paymentMethod: "razorpay",
-                razorpayPaymentId: rzpId,
-                razorpayOrderId: response.razorpay_order_id || "",
-                razorpaySignature: response.razorpay_signature || "",
-              };
-
-              let res;
-              if (isPatient) {
-                res = await payMyBillingUpi(billing._id, payload);
-              } else {
-                res = await updatePaymentStatus(billing._id, {
-                  paymentStatus: "paid",
-                  paymentMethod: "razorpay",
-                  razorpayPaymentId: rzpId,
-                });
-              }
+              // 3. Verify Razorpay payment signature on backend
+              const res = await verifyRazorpayPayment({
+                billingId: billing._id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id,
+                razorpaySignature: response.razorpay_signature,
+              });
 
               onPaymentSuccess?.(res.billing);
             } catch (err) {
-              setErrorMsg(err.response?.data?.message || "Failed to record Razorpay payment.");
+              console.error("Razorpay signature verification error:", err);
+              setErrorMsg(err.response?.data?.message || "Failed to verify Razorpay payment signature.");
             } finally {
               setIsProcessing(false);
             }
@@ -95,7 +96,7 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient }) {
         const rzp = new window.Razorpay(options);
         rzp.on("payment.failed", function (resp) {
           console.error("Razorpay Payment Failed:", resp.error);
-          setErrorMsg(resp.error?.description || "Razorpay Payment Failed. Try direct modal payment.");
+          setErrorMsg(resp.error?.description || "Razorpay Payment Failed.");
           setIsProcessing(false);
         });
 
@@ -106,7 +107,7 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient }) {
         setShowSimulatedModal(true);
       }
     } catch (err) {
-      console.warn("Razorpay SDK launch error, using built-in checkout modal:", err);
+      console.warn("Official Razorpay SDK launch notice, engaging interactive checkout modal:", err);
       setIsProcessing(false);
       setShowSimulatedModal(true);
     }

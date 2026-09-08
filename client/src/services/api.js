@@ -297,6 +297,17 @@ export const getMyBedStay = async () => {
   return response.data;
 };
 
+// Razorpay SDK API helpers
+export const createRazorpayOrder = async (billingId) => {
+  const response = await api.post("/api/razorpay/create-order", { billingId });
+  return response.data;
+};
+
+export const verifyRazorpayPayment = async (paymentData) => {
+  const response = await api.post("/api/razorpay/verify-payment", paymentData);
+  return response.data;
+};
+
 export default api;
 
 
