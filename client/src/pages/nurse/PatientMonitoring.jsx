@@ -1,18 +1,28 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getInpatientsWithCare, getBeds } from "../../services/api.js";
 import VitalsTracker from "../../components/VitalsTracker.jsx";
 import PatientClinicalProfileModal from "../../components/nurse/PatientClinicalProfileModal.jsx";
 
 export default function PatientMonitoring() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [inpatients, setInpatients] = useState([]);
   const [allBeds, setAllBeds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeWard, setActiveWard] = useState("All");
+  const [riskFilter, setRiskFilter] = useState(() => searchParams.get("risk") || "All");
 
   const [vitalsPatient, setVitalsPatient] = useState(null);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const risk = searchParams.get("risk");
+    if (risk) {
+      setRiskFilter(risk);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -41,9 +51,11 @@ export default function PatientMonitoring() {
 
   const wards = ["All", "ICU (Intensive Care Unit)", "CCU (Critical Care Unit)", "Emergency & Trauma", "General Ward", "Pediatric Ward", "Private Deluxe Room"];
 
-  const filteredInpatients = activeWard === "All"
-    ? inpatients
-    : inpatients.filter((item) => item.ward === activeWard);
+  const filteredInpatients = inpatients.filter((item) => {
+    if (activeWard !== "All" && item.ward !== activeWard) return false;
+    if (riskFilter !== "All" && item.riskLevel !== riskFilter) return false;
+    return true;
+  });
 
   const getRiskBorder = (risk) => {
     switch (risk) {
@@ -92,6 +104,30 @@ export default function PatientMonitoring() {
             }`}
           >
             {w}
+          </button>
+        ))}
+      </div>
+
+      {/* Severity Filter Pills */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Severity Flag:</span>
+        {["All", "Critical", "High", "Moderate", "Stable"].map((r) => (
+          <button
+            key={r}
+            type="button"
+            onClick={() => setRiskFilter(r)}
+            className={`px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+              riskFilter === r
+                ? r === "Critical"
+                  ? "bg-rose-600 text-white shadow-xs"
+                  : r === "High"
+                  ? "bg-amber-600 text-white shadow-xs"
+                  : "bg-teal-700 text-white shadow-xs"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200"
+            }`}
+          >
+            {r === "Critical" && <span className="h-1.5 w-1.5 rounded-full bg-white animate-ping"></span>}
+            {r === "Critical" ? "Critical Risk" : r === "High" ? "High Risk" : r === "All" ? "All Severities" : r}
           </button>
         ))}
       </div>

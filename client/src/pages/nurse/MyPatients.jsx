@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getInpatientsWithCare } from "../../services/api.js";
 import PatientClinicalProfileModal from "../../components/nurse/PatientClinicalProfileModal.jsx";
 
@@ -13,16 +14,24 @@ const WARDS = [
 ];
 
 export default function MyPatients() {
+  const [searchParams] = useSearchParams();
   const [inpatients, setInpatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [search, setSearch] = useState("");
-  const [wardFilter, setWardFilter] = useState("All Wards");
-  const [riskFilter, setRiskFilter] = useState("All");
+  const [wardFilter, setWardFilter] = useState(() => searchParams.get("ward") || "All Wards");
+  const [riskFilter, setRiskFilter] = useState(() => searchParams.get("risk") || "All");
   const [sortBy, setSortBy] = useState("bedNumber");
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const risk = searchParams.get("risk");
+    if (risk) setRiskFilter(risk);
+    const ward = searchParams.get("ward");
+    if (ward) setWardFilter(ward);
+  }, [searchParams]);
 
   useEffect(() => {
     let isCurrent = true;

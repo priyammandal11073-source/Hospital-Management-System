@@ -1,14 +1,23 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getInpatientsWithCare, createNursingNote } from "../../services/api.js";
 
 export default function AdmissionDischargePage() {
+  const [searchParams] = useSearchParams();
   const [inpatients, setInpatients] = useState([]);
   const [selectedPatientId, setSelectedPatientId] = useState("");
-  const [activeTab, setActiveTab] = useState("admission"); // "admission" | "discharge"
+  const [activeTab, setActiveTab] = useState(() => (searchParams.get("tab") === "discharge" ? "discharge" : "admission"));
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "discharge" || tab === "admission") {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   // Admission checklist states
   const [admissionChecks, setAdmissionChecks] = useState({

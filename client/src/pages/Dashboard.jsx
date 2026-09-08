@@ -1521,6 +1521,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Admitted Inpatients"
           badgeColor="bg-blue-50 text-blue-700"
           icon={<span className="text-xl">🛏️</span>}
+          to="/nurse/patients"
         />
         <MetricCard
           label="Critical Patients"
@@ -1529,6 +1530,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge={metrics.criticalPatients > 0 ? "Immediate Attention" : "All Stable"}
           badgeColor={metrics.criticalPatients > 0 ? "bg-rose-50 text-rose-700" : "bg-emerald-50 text-emerald-700"}
           icon={<span className="text-xl">🚨</span>}
+          to="/nurse/monitoring?risk=Critical"
         />
         <MetricCard
           label="Medications Due"
@@ -1537,6 +1539,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="eMAR Scheduled"
           badgeColor="bg-amber-50 text-amber-700"
           icon={<span className="text-xl">💊</span>}
+          to="/nurse/medications"
         />
         <MetricCard
           label="Pending Tasks"
@@ -1545,6 +1548,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Care Routines"
           badgeColor="bg-violet-50 text-violet-700"
           icon={<span className="text-xl">📋</span>}
+          to="/nurse/tasks?status=Active"
         />
         <MetricCard
           label="Doctor Orders"
@@ -1553,6 +1557,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Physician Directives"
           badgeColor="bg-cyan-50 text-cyan-700"
           icon={<span className="text-xl">🩺</span>}
+          to="/nurse/doctor-orders"
         />
         <MetricCard
           label="Discharge Pending"
@@ -1561,6 +1566,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
           badge="Ready for Clearance"
           badgeColor="bg-teal-50 text-teal-700"
           icon={<span className="text-xl">📤</span>}
+          to="/nurse/admission-discharge?tab=discharge"
         />
       </div>
 

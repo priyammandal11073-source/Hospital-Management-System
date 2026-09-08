@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getInpatientsWithCare, getNursingTasks, createNursingTask, updateNursingTaskStatus } from "../../services/api.js";
 
 const TASK_TYPES = [
@@ -15,13 +16,19 @@ const TASK_TYPES = [
 ];
 
 export default function NursingTasksPage() {
+  const [searchParams] = useSearchParams();
   const [tasks, setTasks] = useState([]);
   const [inpatients, setInpatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [statusFilter, setStatusFilter] = useState("Active");
+  const [statusFilter, setStatusFilter] = useState(() => searchParams.get("status") || "Active");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const s = searchParams.get("status");
+    if (s) setStatusFilter(s);
+  }, [searchParams]);
 
   const [newTask, setNewTask] = useState({
     patient: "",

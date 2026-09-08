@@ -100,9 +100,15 @@ export default function MyShiftPage() {
               </div>
             </div>
 
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-              <div className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                Assigned Inpatients
+            <Link
+              to="/nurse/patients"
+              className="block group bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md hover:border-indigo-300 transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                  Assigned Inpatients
+                </div>
+                <span className="text-xs font-bold text-slate-400 group-hover:text-indigo-600 transition">Open →</span>
               </div>
               <div className="text-2xl font-bold text-slate-900 mt-1">
                 {shiftData.totalAssignedPatients} Patients
@@ -111,15 +117,21 @@ export default function MyShiftPage() {
                 Across {shiftData.assignedWard}
               </div>
               <div className="mt-3">
-                <Link to="/nurse/patients" className="text-xs text-indigo-600 font-semibold hover:underline">
+                <span className="text-xs text-indigo-600 font-semibold group-hover:underline">
                   View patient roster →
-                </Link>
+                </span>
               </div>
-            </div>
+            </Link>
 
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-              <div className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                Pending Care Tasks
+            <Link
+              to="/nurse/tasks"
+              className="block group bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md hover:border-indigo-300 transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                  Pending Care Tasks
+                </div>
+                <span className="text-xs font-bold text-slate-400 group-hover:text-indigo-600 transition">Open →</span>
               </div>
               <div className="text-2xl font-bold text-amber-600 mt-1">
                 {shiftData.pendingTasksCount} Tasks
@@ -128,15 +140,21 @@ export default function MyShiftPage() {
                 Scheduled during current shift
               </div>
               <div className="mt-3">
-                <Link to="/nurse/tasks" className="text-xs text-indigo-600 font-semibold hover:underline">
+                <span className="text-xs text-indigo-600 font-semibold group-hover:underline">
                   View tasks board →
-                </Link>
+                </span>
               </div>
-            </div>
+            </Link>
 
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-              <div className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
-                Shift Schedule Chain
+            <Link
+              to="/nurse/handover"
+              className="block group bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:-translate-y-1 hover:shadow-md hover:border-indigo-300 transition-all"
+            >
+              <div className="flex items-center justify-between">
+                <div className="text-xs uppercase tracking-wider text-slate-500 font-semibold">
+                  Shift Schedule Chain
+                </div>
+                <span className="text-xs font-bold text-slate-400 group-hover:text-indigo-600 transition">Open →</span>
               </div>
               <div className="text-xs text-slate-700 mt-2">
                 <strong>Prev:</strong> {shiftData.prevShift}
@@ -144,10 +162,12 @@ export default function MyShiftPage() {
               <div className="text-xs text-slate-700 mt-1.5">
                 <strong>Next:</strong> {shiftData.nextShift}
               </div>
-              <div className="text-xs text-slate-500 mt-2">
-                Date: {shiftData.shiftDate}
+              <div className="mt-3">
+                <span className="text-xs text-indigo-600 font-semibold group-hover:underline">
+                  Go to Handover Desk →
+                </span>
               </div>
-            </div>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

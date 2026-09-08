@@ -1,18 +1,27 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { getDoctorOrders, updateDoctorOrderStatus } from "../../services/api.js";
 
 const ORDER_TYPES = ["All Types", "Medication", "Lab Test", "Imaging", "Procedure", "Diet", "Monitoring", "Other"];
 
 export default function DoctorOrdersPage() {
+  const [searchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [typeFilter, setTypeFilter] = useState("All Types");
-  const [statusFilter, setStatusFilter] = useState("Active");
+  const [typeFilter, setTypeFilter] = useState(() => searchParams.get("type") || "All Types");
+  const [statusFilter, setStatusFilter] = useState(() => searchParams.get("status") || "Active");
   const [actionOrder, setActionOrder] = useState(null);
   const [actionStatus, setActionStatus] = useState("");
   const [nurseNotes, setNurseNotes] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    const s = searchParams.get("status");
+    if (s) setStatusFilter(s);
+    const t = searchParams.get("type");
+    if (t) setTypeFilter(t);
+  }, [searchParams]);
 
   useEffect(() => {
     let isCurrent = true;
