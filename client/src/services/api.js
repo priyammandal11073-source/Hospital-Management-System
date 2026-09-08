@@ -193,4 +193,44 @@ export const getMyBillings = async () => {
   return response.data;
 };
 
+// Prescription API helpers
+export const getPrescriptions = async (filters = {}) => {
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value !== undefined && value !== "")
+  );
+  const response = await api.get("/api/prescriptions", { params });
+  return response.data;
+};
+
+export const getPrescriptionById = async (id) => {
+  const response = await api.get(`/api/prescriptions/${id}`);
+  return response.data;
+};
+
+export const createPrescription = async (prescriptionData) => {
+  const response = await api.post("/api/prescriptions", prescriptionData);
+  return response.data;
+};
+
+export const updatePrescription = async (id, prescriptionData) => {
+  const response = await api.put(`/api/prescriptions/${id}`, prescriptionData);
+  return response.data;
+};
+
+export const deletePrescription = async (id) => {
+  const response = await api.delete(`/api/prescriptions/${id}`);
+  return response.data;
+};
+
+export const sendPrescriptionEmail = async (id) => {
+  const response = await api.post(`/api/prescriptions/${id}/send-email`);
+  return response.data;
+};
+
+export const getMyPrescriptions = async () => {
+  const response = await api.get("/api/patient-portal/prescriptions");
+  return response.data;
+};
+
 export default api;
+

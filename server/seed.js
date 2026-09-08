@@ -4,6 +4,7 @@ import Appointment from "./models/Appointment.js";
 import Billing from "./models/Billing.js";
 import Doctor from "./models/Doctor.js";
 import Patient from "./models/Patient.js";
+import Prescription from "./models/Prescription.js";
 import User from "./models/User.js";
 
 import path from "path";
@@ -28,6 +29,7 @@ const seedDatabase = async () => {
       Patient.deleteMany({}),
       Appointment.deleteMany({}),
       Billing.deleteMany({}),
+      Prescription.deleteMany({}),
     ]);
 
     // 1. Create Staff Users
@@ -206,6 +208,113 @@ const seedDatabase = async () => {
         { description: "Allergy Screening Test", cost: 800 },
       ],
       paymentStatus: "pending",
+    });
+
+    // 6. Create Digital Prescriptions
+    console.log("Creating digital prescriptions...");
+    const followUp1 = new Date(today);
+    followUp1.setDate(followUp1.getDate() + 30);
+
+    const followUp2 = new Date(today);
+    followUp2.setDate(followUp2.getDate() + 14);
+
+    await Prescription.create({
+      prescriptionNumber: "RX-2026-1042",
+      patient: patient1._id,
+      doctor: doctor1._id,
+      appointment: appt3._id,
+      diagnosis: "Primary Hypertension with Mild Tachycardia",
+      symptoms: ["Occasional dizziness", "Morning headache", "Palpitations"],
+      vitals: {
+        bloodPressure: "142/92 mmHg",
+        pulseRate: "88 bpm",
+        temperature: "98.4 °F",
+        weight: "74 kg",
+        spo2: "99%",
+      },
+      medications: [
+        {
+          name: "Telmisartan 40mg (Telma 40)",
+          dosage: "1 tablet",
+          frequency: "1-0-0",
+          timing: "Before food",
+          duration: "30 days",
+          instructions: "Take every morning at the same time with water",
+        },
+        {
+          name: "Metoprolol Succinate 25mg (Betaloc)",
+          dosage: "1 tablet",
+          frequency: "0-0-1",
+          timing: "After food",
+          duration: "15 days",
+          instructions: "Take at bedtime",
+        },
+        {
+          name: "Paracetamol 650mg (Dolo 650)",
+          dosage: "1 tablet",
+          frequency: "As needed (SOS)",
+          timing: "After food",
+          duration: "3 days",
+          instructions: "Only if severe headache occurs",
+        },
+      ],
+      labTestsRecommended: ["Serum Electrolytes & Creatinine", "Lipid Profile Fasting", "Repeat 12-Lead ECG in 1 month"],
+      advice: "Maintain a low-sodium diet (<2g/day). Engage in 30 mins brisk walking daily. Avoid tobacco and excess caffeine. Log BP readings twice weekly.",
+      followUpDate: followUp1,
+      digitalSignature: {
+        signedByName: "Dr. Rajesh Sharma",
+        designation: "Cardiology (Cardiology)",
+        signedAt: pastDate,
+      },
+    });
+
+    await Prescription.create({
+      prescriptionNumber: "RX-2026-2189",
+      patient: patient2._id,
+      doctor: doctor2._id,
+      diagnosis: "Allergic Rhinitis with Seasonal Bronchial Hyperresponsiveness",
+      symptoms: ["Nasal congestion", "Sneezing fits", "Dry cough at night"],
+      vitals: {
+        bloodPressure: "118/76 mmHg",
+        pulseRate: "76 bpm",
+        temperature: "98.6 °F",
+        weight: "56 kg",
+        spo2: "98%",
+      },
+      medications: [
+        {
+          name: "Montelukast 10mg + Levocetirizine 5mg (Montair-LC)",
+          dosage: "1 tablet",
+          frequency: "0-0-1",
+          timing: "At bedtime",
+          duration: "10 days",
+          instructions: "Take before sleeping",
+        },
+        {
+          name: "Fluticasone Furoate Nasal Spray (Flomist)",
+          dosage: "2 puffs per nostril",
+          frequency: "1-0-1",
+          timing: "After food",
+          duration: "14 days",
+          instructions: "Rinse mouth after use",
+        },
+        {
+          name: "Steam Inhalation with Karvol Plus",
+          dosage: "1 capsule in hot water",
+          frequency: "1-0-1",
+          timing: "As needed (SOS)",
+          duration: "5 days",
+          instructions: "Inhale steam for 10 minutes",
+        },
+      ],
+      labTestsRecommended: ["Complete Blood Count (CBC) with Absolute Eosinophil Count (AEC)"],
+      advice: "Avoid exposure to sudden temperature shifts and dust. Drink warm fluids. Wear a mask in traffic.",
+      followUpDate: followUp2,
+      digitalSignature: {
+        signedByName: "Dr. Priya Nair",
+        designation: "Pediatrics (Pediatrics)",
+        signedAt: pastDate,
+      },
     });
 
     console.log("\n========================================================");

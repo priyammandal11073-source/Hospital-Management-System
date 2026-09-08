@@ -10,9 +10,11 @@ import Doctors from "./pages/Doctors.jsx";
 import Login from "./pages/Login.jsx";
 import Patients from "./pages/Patients.jsx";
 import Reports from "./pages/Reports.jsx";
+import Prescriptions from "./pages/Prescriptions.jsx";
 import BookAppointment from "./pages/patient/BookAppointment.jsx";
 import MyAppointments from "./pages/patient/MyAppointments.jsx";
 import MyBillings from "./pages/patient/MyBillings.jsx";
+import MyPrescriptions from "./pages/patient/MyPrescriptions.jsx";
 import PatientDashboard from "./pages/patient/PatientDashboard.jsx";
 import PatientLogin from "./pages/patient/PatientLogin.jsx";
 import PatientRegister from "./pages/patient/PatientRegister.jsx";
@@ -32,6 +34,7 @@ function App() {
           <Route path="/patient/appointments" element={<MyAppointments />} />
           <Route path="/patient/appointments/book" element={<BookAppointment />} />
           <Route path="/patient/billings" element={<MyBillings />} />
+          <Route path="/patient/prescriptions" element={<MyPrescriptions />} />
         </Route>
       </Route>
 
@@ -43,6 +46,7 @@ function App() {
           <Route path="/doctors" element={<Doctors />} />
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/billing" element={<Billing />} />
+          <Route path="/prescriptions" element={<Prescriptions />} />
           <Route path="/reports" element={<Reports />} />
         </Route>
       </Route>

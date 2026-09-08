@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
 import Billing from "../models/Billing.js";
 import Patient from "../models/Patient.js";
+import Prescription from "../models/Prescription.js";
 
 // GET /api/patient-portal/me
 export const getMyProfile = async (req, res) => {
@@ -157,3 +158,19 @@ export const cancelMyAppointment = async (req, res) => {
     return res.status(500).json({ message: "Unable to cancel appointment" });
   }
 };
+
+// GET /api/patient-portal/prescriptions
+export const getMyPrescriptions = async (req, res) => {
+  try {
+    const prescriptions = await Prescription.find({ patient: req.patient.id })
+      .populate("doctor", "name specialization department contactNumber email")
+      .populate("patient", "name age gender contactNumber email abhaId address bloodGroup")
+      .populate("appointment", "appointmentDate timeSlot reasonForVisit")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({ prescriptions });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch prescriptions" });
+  }
+};
+

@@ -9,6 +9,7 @@ import doctorRoutes from "./routes/doctorRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import patientAuthRoutes from "./routes/patientAuthRoutes.js";
 import patientPortalRoutes from "./routes/patientPortalRoutes.js";
+import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -30,6 +31,7 @@ app.use("/api/doctors", doctorRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/patient-auth", patientAuthRoutes);
 app.use("/api/patient-portal", patientPortalRoutes);
+app.use("/api/prescriptions", prescriptionRoutes);
 
 // Temporary route to confirm that the API is running.
 app.get("/api/health", (req, res) => {

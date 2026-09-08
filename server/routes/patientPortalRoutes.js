@@ -5,6 +5,7 @@ import {
   bookMyAppointment,
   getMyBillings,
   cancelMyAppointment,
+  getMyPrescriptions,
 } from "../controllers/patientPortalController.js";
 import { protectPatient } from "../middleware/authMiddleware.js";
 
@@ -19,5 +20,6 @@ router.patch(
   cancelMyAppointment
 );
 router.get("/billings", protectPatient, getMyBillings);
+router.get("/prescriptions", protectPatient, getMyPrescriptions);
 
 export default router;
