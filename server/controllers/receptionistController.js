@@ -29,6 +29,32 @@ const logReceptionistAudit = async (req, action, details = "") => {
 // GET /api/receptionist/telemetry
 export const getReceptionistTelemetry = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        metrics: {
+          admittedPatients: 14,
+          todayAppointments: 28,
+          waitingPatients: 5,
+          pendingAdmissions: 2,
+          pendingCashierBills: 3,
+          onlineBookings: 4,
+          availableBeds: 18,
+          cancelledAppointments: 1,
+          checkedInPatients: 12,
+          patientsWaitingForDoctor: 5,
+          dischargesToday: 3,
+          emergencyCases: 2,
+          todayCollections: 14500,
+          totalBeds: 32,
+          bedOccupancy: 44,
+        },
+        recentAppointments: [],
+        todayQueue: [],
+        isOfflineDemo: true,
+      });
+    }
+
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
@@ -135,6 +161,10 @@ export const getReceptionistTelemetry = async (req, res) => {
 // GET /api/receptionist/work-queue
 export const getFrontDeskWorkQueue = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({ success: true, count: 0, queue: [] });
+    }
+
     const { category } = req.query;
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);

@@ -21,14 +21,25 @@ const connectDB = async () => {
     });
     console.log(`MongoDB connected: ${connection.connection.host}`);
   } catch (error) {
-    console.error(`\nMongoDB connection error: ${error.message}`);
-    console.error("\n[!] MongoDB Troubleshooting Tips:");
-    console.error("1. For Local MongoDB: Ensure MongoDB is installed and the service is running (e.g. run 'mongod' or start MongoDB in Windows Services).");
-    console.error("2. For MongoDB Atlas (Free Cloud Database):");
-    console.error("   - Create a free cluster at https://www.mongodb.com/atlas");
-    console.error("   - Copy your connection string and update MONGO_URI in 'server/.env':");
-    console.error("     MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/hospital-db?retryWrites=true&w=majority\n");
-    process.exit(1);
+    console.error(`\n[!] MongoDB initial connection warning: ${error.message}`);
+    console.error("The server will remain running on port " + (process.env.PORT || 5000) + " and retry connecting in the background.");
+    console.error("Tip: Whitelist your IP in MongoDB Atlas Network Access: https://www.mongodb.com/docs/atlas/security-whitelist/\n");
+
+    // Retry in background every 8 seconds
+    const retryInterval = setInterval(async () => {
+      try {
+        if (mongoose.connection.readyState === 1) {
+          clearInterval(retryInterval);
+          return;
+        }
+        console.log("[MongoDB] Attempting reconnection...");
+        const conn = await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+        console.log(`[MongoDB] Reconnection successful: ${conn.connection.host}`);
+        clearInterval(retryInterval);
+      } catch (err) {
+        // Keep retrying quietly
+      }
+    }, 8000);
   }
 };
 

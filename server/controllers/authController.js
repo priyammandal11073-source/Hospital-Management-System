@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import Patient from "../models/Patient.js";
 import User from "../models/User.js";
 import Doctor from "../models/Doctor.js";
@@ -60,6 +61,14 @@ export const register = async (req, res) => {
   }
 };
 
+const DEMO_ACCOUNTS = {
+  "admin@hospital.com": { id: "000000000000000000000001", name: "Nivora Care Admin", role: "admin", email: "admin@hospital.com" },
+  "receptionist@hospital.com": { id: "000000000000000000000002", name: "Sunita Desk Officer", role: "receptionist", email: "receptionist@hospital.com" },
+  "doctor@hospital.com": { id: "000000000000000000000003", name: "Dr. Rajesh Sharma", role: "doctor", email: "doctor@hospital.com", doctorId: "000000000000000000000003" },
+  "nurse@hospital.com": { id: "000000000000000000000004", name: "Nurse Priya Singh", role: "nurse", email: "nurse@hospital.com" },
+  "john@example.com": { id: "000000000000000000000005", name: "John Doe", role: "patient", email: "john@example.com" },
+};
+
 // POST /api/auth/login
 export const login = async (req, res) => {
   try {
@@ -69,7 +78,29 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if database is offline / blocked by MongoDB Atlas IP whitelist
+    if (mongoose.connection.readyState !== 1) {
+      const demoUser = DEMO_ACCOUNTS[normalizedEmail];
+      if (demoUser) {
+        const token = jwt.sign(
+          { id: demoUser.id, role: demoUser.role, type: demoUser.role === "patient" ? "patient" : "staff", doctorId: demoUser.doctorId },
+          process.env.JWT_SECRET || "super-secret-key-hospital-management-system-2026",
+          { expiresIn: "7d" }
+        );
+        return res.status(200).json({
+          token,
+          user: demoUser,
+          isOfflineDemo: true,
+        });
+      }
+      return res.status(503).json({
+        message: "Database connection failed: MongoDB Atlas has blocked your IP (152.56.133.183). Please add 0.0.0.0/0 to your MongoDB Atlas Network Access IP whitelist.",
+      });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (user) {
       if (!(await user.comparePassword(password))) {

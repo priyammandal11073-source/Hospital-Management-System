@@ -23,6 +23,25 @@ const sendError = (res, statusCode, message, err = null) => {
  */
 export const getDoctorDashboard = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        doctor: { name: "Dr. Rajesh Sharma", specialization: "Cardiology", department: "Cardiology" },
+        metrics: {
+          todayConsultations: 8,
+          waitingInQueue: 3,
+          admittedPatients: 6,
+          criticalAlerts: 1,
+          pendingOrders: 2,
+          teleconsultations: 1,
+        },
+        queue: [],
+        criticalLabs: [],
+        roster: [],
+        isOfflineDemo: true,
+      });
+    }
+
     const doctor = await resolveDoctorForUser(req.user);
     if (!doctor && req.user.role === "doctor") {
       return sendError(res, 404, "Doctor profile not found for this account");

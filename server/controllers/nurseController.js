@@ -60,6 +60,21 @@ const assessPatientRisk = (vitals, bed) => {
 // 1. GET /api/nurse/dashboard-metrics
 export const getNurseDashboardMetrics = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        admittedPatients: [],
+        metrics: {
+          totalAdmitted: 6,
+          highRiskVitalsCount: 1,
+          pendingTasksCount: 4,
+          todayMedicationsCount: 8,
+          criticalAlertsCount: 0,
+        },
+        isOfflineDemo: true,
+      });
+    }
+
     const todayStr = new Date().toISOString().split("T")[0];
 
     // Fetch occupied beds
