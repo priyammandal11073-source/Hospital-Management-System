@@ -2,19 +2,24 @@ import { useEffect, useState } from "react";
 import AppointmentForm from "../components/AppointmentForm.jsx";
 import PrescriptionForm from "../components/PrescriptionForm.jsx";
 import PrescriptionModal from "../components/PrescriptionModal.jsx";
+import NursingChecklistModal from "../components/NursingChecklistModal.jsx";
+import VitalsTracker from "../components/VitalsTracker.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import {
   deleteAppointment,
   getAppointments,
   getDoctors,
   updateAppointmentStatus,
+  getPatientVitals,
 } from "../services/api.js";
 
-const statuses = ["pending", "confirmed", "completed", "cancelled"];
+const statuses = ["pending", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"];
 
 const statusLabels = {
   pending: "Pending",
   confirmed: "Confirmed",
+  checked_in: "Checked In (Waiting)",
+  in_consultation: "In Consultation",
   completed: "Completed",
   cancelled: "Cancelled",
 };
@@ -22,6 +27,8 @@ const statusLabels = {
 const statusClasses = {
   pending: "bg-yellow-100 text-yellow-800",
   confirmed: "bg-blue-100 text-blue-800",
+  checked_in: "bg-teal-100 text-teal-800",
+  in_consultation: "bg-purple-100 text-purple-800",
   completed: "bg-green-100 text-green-800",
   cancelled: "bg-red-100 text-red-800",
 };
@@ -43,6 +50,9 @@ function Appointments() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [rxAppointment, setRxAppointment] = useState(null);
   const [viewedRx, setViewedRx] = useState(null);
+  const [checklistAppointment, setChecklistAppointment] = useState(null);
+  const [vitalsPatient, setVitalsPatient] = useState(null);
+  const [patientVitalsList, setPatientVitalsList] = useState([]);
   const [updatingId, setUpdatingId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState("");
@@ -313,6 +323,14 @@ function Appointments() {
                     {appointment.reasonForVisit}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5 text-right">
+                    <button
+                      type="button"
+                      onClick={() => setChecklistAppointment(appointment)}
+                      className="mr-2 inline-flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition shadow-2xs"
+                      title="Nursing triage & pre-procedure checklist"
+                    >
+                      <span>📋 Checklist</span>
+                    </button>
                     {isDoctor && (
                       <button
                         type="button"
@@ -410,6 +428,61 @@ function Appointments() {
           prescription={viewedRx}
           onClose={() => setViewedRx(null)}
         />
+      )}
+
+      {/* Nursing Triage / Pre-Procedure Checklist Modal */}
+      {checklistAppointment && (
+        <NursingChecklistModal
+          appointment={checklistAppointment}
+          onClose={() => setChecklistAppointment(null)}
+          onUpdated={() => {
+            setRefreshKey((k) => k + 1);
+          }}
+          onOpenVitals={async (patient) => {
+            setVitalsPatient(patient);
+            try {
+              const res = await getPatientVitals(patient._id);
+              setPatientVitalsList(res.vitals || []);
+            } catch (err) {
+              setPatientVitalsList([]);
+            }
+          }}
+        />
+      )}
+
+      {/* Vitals Tracker Modal triggered from Checklist */}
+      {vitalsPatient && (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
+          role="dialog"
+        >
+          <div className="relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Record Pre-Consultation Vitals: {vitalsPatient.name}
+                </h3>
+                <p className="text-xs text-slate-500">Record BP, Pulse, SpO2, Temperature & Glucose</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVitalsPatient(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+              >
+                ✕
+              </button>
+            </div>
+            <VitalsTracker
+              vitals={patientVitalsList}
+              patientId={vitalsPatient._id}
+              onVitalsUpdated={async () => {
+                const res = await getPatientVitals(vitalsPatient._id);
+                setPatientVitalsList(res.vitals || []);
+              }}
+            />
+          </div>
+        </div>
       )}
     </section>
   );

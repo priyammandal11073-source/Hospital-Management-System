@@ -114,3 +114,26 @@ export const deleteVitals = async (req, res) => {
     return res.status(500).json({ message: "Unable to delete vitals record" });
   }
 };
+
+// GET /api/vitals/alerts/recent
+export const getRecentVitalsAlerts = async (req, res) => {
+  try {
+    const alerts = await Vitals.find({
+      $or: [
+        { bloodPressureSys: { $gte: 150 } },
+        { bloodPressureDia: { $gte: 95 } },
+        { spo2: { $lte: 92 } },
+        { bloodSugar: { $gte: 220 } },
+        { temperature: { $gte: 102 } },
+        { heartRate: { $gte: 115 } },
+      ],
+    })
+      .populate("patient", "name age gender contactNumber isAdmitted")
+      .sort({ recordedAt: -1 })
+      .limit(10);
+
+    return res.status(200).json({ alerts });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Failed to fetch vitals alerts" });
+  }
+};

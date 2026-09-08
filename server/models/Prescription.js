@@ -53,6 +53,27 @@ const vitalsSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const administrationRecordSchema = new mongoose.Schema(
+  {
+    medicationIndex: { type: Number, required: true },
+    medicationName: { type: String, required: true },
+    doseTime: { type: Date, default: Date.now },
+    administeredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    administeredByName: { type: String, default: "Staff Nurse" },
+    status: {
+      type: String,
+      enum: ["given", "held", "refused"],
+      default: "given",
+    },
+    notes: { type: String, default: "" },
+  },
+  { timestamps: true }
+);
+
 const prescriptionSchema = new mongoose.Schema(
   {
     prescriptionNumber: {
@@ -106,6 +127,10 @@ const prescriptionSchema = new mongoose.Schema(
     },
     followUpDate: {
       type: Date,
+    },
+    administrations: {
+      type: [administrationRecordSchema],
+      default: [],
     },
     digitalSignature: {
       signedByName: { type: String, default: "" },

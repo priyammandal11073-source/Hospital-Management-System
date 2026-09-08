@@ -122,6 +122,11 @@ export const updateAppointmentStatus = async (id, status) => {
   return response.data;
 };
 
+export const updateAppointmentChecklist = async (id, prepChecklist) => {
+  const response = await api.patch(`/api/appointments/${id}/checklist`, { prepChecklist });
+  return response.data;
+};
+
 export const deleteAppointment = async (id) => {
   const response = await api.delete(`/api/appointments/${id}`);
   return response.data;
@@ -243,6 +248,11 @@ export const sendPrescriptionEmail = async (id) => {
   return response.data;
 };
 
+export const administerMedication = async (id, adminData) => {
+  const response = await api.post(`/api/prescriptions/${id}/administer`, adminData);
+  return response.data;
+};
+
 export const getMyPrescriptions = async () => {
   const response = await api.get("/api/patient-portal/prescriptions");
   return response.data;
@@ -336,6 +346,11 @@ export const getMyVitals = async () => {
 
 export const recordMyVitals = async (vitalsData) => {
   const response = await api.post("/api/patient-portal/vitals", vitalsData);
+  return response.data;
+};
+
+export const getRecentVitalsAlerts = async () => {
+  const response = await api.get("/api/vitals/alerts/recent");
   return response.data;
 };
 

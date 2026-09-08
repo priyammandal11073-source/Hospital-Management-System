@@ -427,3 +427,50 @@ export const sendPrescriptionEmail = async (req, res) => {
     return res.status(500).json({ message: "Failed to send prescription email" });
   }
 };
+
+// POST /api/prescriptions/:id/administer
+export const recordMedicationAdministration = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { medicationIndex, status = "given", notes = "" } = req.body;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid prescription ID" });
+    }
+
+    const prescription = await Prescription.findById(id).populate("patient doctor");
+    if (!prescription) {
+      return res.status(404).json({ message: "Prescription not found" });
+    }
+
+    const medIndex = Number(medicationIndex);
+    if (isNaN(medIndex) || medIndex < 0 || medIndex >= prescription.medications.length) {
+      return res.status(400).json({ message: "Invalid medication selection" });
+    }
+
+    const med = prescription.medications[medIndex];
+
+    const adminEntry = {
+      medicationIndex: medIndex,
+      medicationName: med.name,
+      doseTime: new Date(),
+      administeredBy: req.user._id,
+      administeredByName: req.user.name || "Staff Nurse",
+      status: ["given", "held", "refused"].includes(status) ? status : "given",
+      notes: typeof notes === "string" ? notes.trim() : "",
+    };
+
+    prescription.administrations.unshift(adminEntry);
+    await prescription.save();
+
+    return res.status(200).json({
+      message: `Dose of ${med.name} marked as ${status} by ${req.user.name || "Nurse"}.`,
+      administration: adminEntry,
+      administrations: prescription.administrations,
+      prescription,
+    });
+  } catch (error) {
+    console.error("Record medication administration error:", error);
+    return res.status(500).json({ message: error.message || "Failed to log dose administration" });
+  }
+};

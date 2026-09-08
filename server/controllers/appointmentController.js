@@ -3,8 +3,8 @@ import Appointment from "../models/Appointment.js";
 import Billing from "../models/Billing.js";
 import { resolveDoctorForUser } from "../utils/doctorHelper.js";
 
-const appointmentStatuses = ["pending", "confirmed", "completed", "cancelled"];
-const activeStatuses = ["pending", "confirmed"];
+const appointmentStatuses = ["pending", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"];
+const activeStatuses = ["pending", "confirmed", "checked_in", "in_consultation"];
 const OPD_FEE = Number(process.env.OPD_FEE || 500);
 
 const sendDatabaseError = (error, res) => {
@@ -252,6 +252,36 @@ export const deleteAppointment = async (req, res) => {
     }
 
     return res.status(200).json({ message: "Appointment deleted successfully" });
+  } catch (error) {
+    return sendDatabaseError(error, res);
+  }
+};
+
+// PATCH /api/appointments/:id/checklist
+export const updateAppointmentChecklist = async (req, res) => {
+  try {
+    if (!isValidAppointmentId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid appointment ID" });
+    }
+
+    const { prepChecklist } = req.body;
+
+    const appointment = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      { prepChecklist },
+      { new: true }
+    )
+      .populate("patient", "name age gender contactNumber isAdmitted")
+      .populate("doctor", "name specialization department");
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    return res.status(200).json({
+      message: "Nursing intake / pre-procedure checklist updated",
+      appointment,
+    });
   } catch (error) {
     return sendDatabaseError(error, res);
   }

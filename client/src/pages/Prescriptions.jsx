@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import PrescriptionForm from "../components/PrescriptionForm.jsx";
 import PrescriptionModal from "../components/PrescriptionModal.jsx";
+import MedicationAdminModal from "../components/MedicationAdminModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getPrescriptions, getPrescriptionById, deletePrescription } from "../services/api.js";
 
@@ -26,6 +27,7 @@ function Prescriptions() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [prescriptionToEdit, setPrescriptionToEdit] = useState(null);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
+  const [administerRx, setAdministerRx] = useState(null);
   const [isDeletingId, setIsDeletingId] = useState(null);
 
   const fetchPrescriptions = async () => {
@@ -320,6 +322,15 @@ function Prescriptions() {
                           >
                             View / Print
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => setAdministerRx(rx)}
+                            className="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white transition-colors shadow-2xs inline-flex items-center gap-1"
+                            title="Administer medications & log eMAR dose"
+                          >
+                            <span>💊</span>
+                            <span>eMAR</span>
+                          </button>
                           {isDoctor && (
                             <button
                               type="button"
@@ -361,6 +372,17 @@ function Prescriptions() {
         <PrescriptionModal
           prescription={selectedPrescription}
           onClose={() => setSelectedPrescription(null)}
+        />
+      )}
+
+      {/* Medication Administration (eMAR) Modal */}
+      {administerRx && (
+        <MedicationAdminModal
+          prescription={administerRx}
+          onClose={() => setAdministerRx(null)}
+          onUpdated={() => {
+            fetchPrescriptions();
+          }}
         />
       )}
     </div>

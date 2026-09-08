@@ -6,6 +6,7 @@ import {
   updatePrescription,
   deletePrescription,
   sendPrescriptionEmail,
+  recordMedicationAdministration,
 } from "../controllers/prescriptionController.js";
 import { protect, restrictTo } from "../middleware/authMiddleware.js";
 
@@ -23,5 +24,6 @@ router
   .delete(protect, restrictTo("admin", "doctor"), deletePrescription);
 
 router.post("/:id/send-email", protect, sendPrescriptionEmail);
+router.post("/:id/administer", protect, restrictTo("nurse", "doctor"), recordMedicationAdministration);
 
 export default router;

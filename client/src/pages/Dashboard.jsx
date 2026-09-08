@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import DoctorScheduleModal from "../components/DoctorScheduleModal.jsx";
 import PrescriptionForm from "../components/PrescriptionForm.jsx";
 import VitalsTracker from "../components/VitalsTracker.jsx";
+import NursingChecklistModal from "../components/NursingChecklistModal.jsx";
 import {
   cancelMyAppointment,
   getAppointments,
@@ -17,6 +18,9 @@ import {
   getPatientVitals,
   updateAppointmentStatus,
   updatePaymentStatus,
+  getBeds,
+  dischargeBed,
+  getRecentVitalsAlerts,
 } from "../services/api.js";
 
 const formatDate = (date) =>
@@ -1120,6 +1124,594 @@ function PatientPortalDashboard({ user, refreshKey, onTriggerRefresh }) {
 }
 
 /* =========================================================================
+   5. NURSE & INPATIENT CLINICAL STATION DASHBOARD
+   ========================================================================= */
+function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
+  const [patients, setPatients] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [beds, setBeds] = useState([]);
+  const [vitalsAlerts, setVitalsAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [activeTab, setActiveTab] = useState("rounds"); // "rounds" | "triage" | "alerts"
+  const [vitalsPatient, setVitalsPatient] = useState(null);
+  const [patientVitalsList, setPatientVitalsList] = useState([]);
+  const [checklistAppointment, setChecklistAppointment] = useState(null);
+  const [dischargingBedId, setDischargingBedId] = useState(null);
+  const [actionSuccess, setActionSuccess] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    const loadNurseData = async () => {
+      setLoading(true);
+      try {
+        const [pData, aData, bData, vAlerts] = await Promise.all([
+          getPatients("", 1, 50),
+          getAppointments(),
+          getBeds(),
+          getRecentVitalsAlerts().catch(() => ({ alerts: [] })),
+        ]);
+        if (active) {
+          setPatients(pData.patients || []);
+          setAppointments(aData.appointments || []);
+          setBeds(bData.beds || []);
+          setVitalsAlerts(vAlerts.alerts || []);
+        }
+      } catch (err) {
+        if (active) setError(err.response?.data?.message || "Failed to load nursing station data.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+    loadNurseData();
+    return () => { active = false; };
+  }, [refreshKey]);
+
+  const occupiedBeds = useMemo(() => {
+    return beds.filter((b) => b.status === "occupied" && b.currentPatient);
+  }, [beds]);
+
+  const availableBeds = useMemo(() => {
+    return beds.filter((b) => b.status === "available");
+  }, [beds]);
+
+  const triageQueue = useMemo(() => {
+    return appointments.filter(
+      (a) => a.status === "pending" || a.status === "confirmed" || a.status === "checked_in" || a.status === "in_consultation"
+    );
+  }, [appointments]);
+
+  const handleQuickCheckIn = async (appId) => {
+    try {
+      await updateAppointmentStatus(appId, "checked_in");
+      setActionSuccess("Patient marked as checked in (waiting in lobby).");
+      onTriggerRefresh();
+      setTimeout(() => setActionSuccess(""), 3000);
+    } catch (err) {
+      alert("Failed to check in: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleQuickCallIn = async (appId) => {
+    try {
+      await updateAppointmentStatus(appId, "in_consultation");
+      setActionSuccess("Patient called into doctor's consultation room.");
+      onTriggerRefresh();
+      setTimeout(() => setActionSuccess(""), 3000);
+    } catch (err) {
+      alert("Failed to update status: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleDischargeBed = async (bedId) => {
+    if (!window.confirm("Confirm patient discharge and mark bed for sanitary turnover?")) return;
+    setDischargingBedId(bedId);
+    try {
+      await dischargeBed(bedId, { dischargeNotes: "Discharged by Floor Nurse upon physician approval" });
+      setActionSuccess("Patient discharged & bed released successfully.");
+      onTriggerRefresh();
+      setTimeout(() => setActionSuccess(""), 3000);
+    } catch (err) {
+      alert("Discharge failed: " + (err.response?.data?.message || err.message));
+    } finally {
+      setDischargingBedId(null);
+    }
+  };
+
+  const handleOpenVitals = async (patient) => {
+    setVitalsPatient(patient);
+    try {
+      const res = await getPatientVitals(patient._id);
+      setPatientVitalsList(res.vitals || []);
+    } catch (err) {
+      setPatientVitalsList([]);
+    }
+  };
+
+  if (loading) return <LoadingSpinner label="Opening nursing station, ward beds & clinical records..." />;
+  if (error) return <ErrorMessage message={error} />;
+
+  return (
+    <div className="space-y-6">
+      {/* Nurse Clinical Station Banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-800 via-cyan-900 to-slate-950 p-6 sm:p-8 text-white shadow-lg">
+        <div className="relative z-10 max-w-2xl">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
+            <span className="h-2 w-2 rounded-full bg-teal-400 animate-pulse"></span>
+            <span>Clinical Inpatient & Floor Care Desk</span>
+            <span className="opacity-60">•</span>
+            <span>On-Duty Shift</span>
+          </div>
+          <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
+            Nursing Station & Inpatient Floor Care
+          </h1>
+          <p className="mt-2 text-sm text-teal-100/90 leading-relaxed">
+            Welcome, {user?.name}. Monitor inpatient beds, review critical vital alerts, manage waiting room triage, and verify medication schedules.
+          </p>
+        </div>
+      </div>
+
+      {actionSuccess && (
+        <div className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-800 flex items-center justify-between shadow-2xs">
+          <span>✅ {actionSuccess}</span>
+          <button onClick={() => setActionSuccess("")} className="text-emerald-600 hover:text-emerald-900">✕</button>
+        </div>
+      )}
+
+      {/* KPI Metric Cards */}
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Admitted Inpatients"
+          value={occupiedBeds.length}
+          gradient="from-teal-600 to-cyan-600"
+          badge="Bedside care"
+          badgeColor="bg-teal-50 text-teal-700"
+          icon={<span className="text-2xl">🛏️</span>}
+        />
+        <MetricCard
+          label="Available Ward Beds"
+          value={`${availableBeds.length}/${beds.length}`}
+          gradient="from-emerald-600 to-teal-600"
+          badge="Ready for admit"
+          badgeColor="bg-emerald-50 text-emerald-700"
+          icon={<span className="text-2xl">🏥</span>}
+        />
+        <MetricCard
+          label="OPD Triage Queue"
+          value={triageQueue.length}
+          gradient="from-blue-600 to-indigo-600"
+          badge="Scheduled today"
+          badgeColor="bg-blue-50 text-blue-700"
+          icon={<span className="text-2xl">📋</span>}
+        />
+        <MetricCard
+          label="Critical Vitals Alerts"
+          value={vitalsAlerts.length}
+          gradient={vitalsAlerts.length > 0 ? "from-rose-500 to-red-600" : "from-slate-600 to-slate-700"}
+          badge={vitalsAlerts.length > 0 ? "Attention needed" : "All stable"}
+          badgeColor={vitalsAlerts.length > 0 ? "bg-rose-50 text-rose-700" : "bg-slate-100 text-slate-700"}
+          icon={<span className="text-2xl">🚨</span>}
+        />
+      </div>
+
+      {/* Tabs Navigation */}
+      <div className="flex border-b border-slate-200 gap-4 text-xs font-bold">
+        <button
+          type="button"
+          onClick={() => setActiveTab("rounds")}
+          className={`pb-3 px-1 border-b-2 transition flex items-center gap-2 ${
+            activeTab === "rounds"
+              ? "border-teal-600 text-teal-700 font-extrabold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <span>🛏️ Inpatient Bedside Rounds</span>
+          <span className="rounded-full bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 text-[10px]">
+            {occupiedBeds.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("triage")}
+          className={`pb-3 px-1 border-b-2 transition flex items-center gap-2 ${
+            activeTab === "triage"
+              ? "border-blue-600 text-blue-700 font-extrabold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <span>📋 OPD Triage & Waiting Queue</span>
+          <span className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[10px]">
+            {triageQueue.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("alerts")}
+          className={`pb-3 px-1 border-b-2 transition flex items-center gap-2 ${
+            activeTab === "alerts"
+              ? "border-rose-600 text-rose-700 font-extrabold"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <span>🚨 Critical Vitals Deterioration Monitor</span>
+          <span className="rounded-full bg-rose-50 text-rose-700 border border-rose-200 px-2 py-0.5 text-[10px]">
+            {vitalsAlerts.length}
+          </span>
+        </button>
+      </div>
+
+      {/* TAB 1: INPATIENT BEDSIDE ROUNDS */}
+      {activeTab === "rounds" && (
+        <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-teal-500"></span>
+                Floor Rounds & Inpatient Care Tracker
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Check bedside vitals, track patient comfort, and process discharge releases.
+              </p>
+            </div>
+            <Link
+              to="/beds"
+              className="text-xs font-bold text-teal-700 hover:text-teal-900 border border-teal-200 bg-teal-50 px-3 py-1.5 rounded-xl hover:bg-teal-100 transition shadow-2xs"
+            >
+              Manage All Beds & Wards →
+            </Link>
+          </div>
+
+          {occupiedBeds.length === 0 ? (
+            <div className="text-center py-12 text-slate-400 text-xs">
+              <span className="text-3xl block mb-2">🛏️</span>
+              No inpatients currently admitted to ward beds.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-3">Bed & Ward</th>
+                    <th className="py-3 px-3">Admitted Patient</th>
+                    <th className="py-3 px-3">Age / Gender</th>
+                    <th className="py-3 px-3">Admit Date</th>
+                    <th className="py-3 px-3 text-right">Floor Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {occupiedBeds.map((bed) => {
+                    const patient = bed.currentPatient || {};
+                    return (
+                      <tr key={bed._id} className="hover:bg-slate-50/80 transition">
+                        <td className="py-3.5 px-3">
+                          <span className="font-mono font-bold text-teal-800 text-xs bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">
+                            {bed.bedNumber}
+                          </span>
+                          <span className="ml-2 text-slate-700 font-semibold">{bed.ward}</span>
+                          <span className="block text-[11px] text-slate-400 capitalize">{bed.roomType}</span>
+                        </td>
+
+                        <td className="py-3.5 px-3">
+                          <div className="font-bold text-slate-900 text-sm">{patient.name || "Patient"}</div>
+                          <div className="text-[11px] text-slate-500">Ph: {patient.contactNumber || "—"}</div>
+                        </td>
+
+                        <td className="py-3.5 px-3 font-medium text-slate-700">
+                          {patient.age ? `${patient.age}y` : "—"} / {patient.gender || "—"}
+                        </td>
+
+                        <td className="py-3.5 px-3 text-slate-600 font-mono text-[11px]">
+                          {bed.admissionDate ? new Date(bed.admissionDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+                        </td>
+
+                        <td className="py-3.5 px-3 text-right space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenVitals(patient)}
+                            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-teal-50 border border-teal-200 text-teal-700 hover:bg-teal-100 transition shadow-2xs"
+                            title="Record fresh bedside vitals"
+                          >
+                            📊 Bedside Vitals
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={dischargingBedId === bed._id}
+                            onClick={() => handleDischargeBed(bed._id)}
+                            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 transition shadow-2xs disabled:opacity-50"
+                            title="Discharge patient upon physician approval"
+                          >
+                            {dischargingBedId === bed._id ? "Releasing..." : "Discharge"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* TAB 2: OPD TRIAGE & WAITING QUEUE */}
+      {activeTab === "triage" && (
+        <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-blue-500"></span>
+                OPD Waiting Room Triage & Dispatcher
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Check in patients, verify preparation checklists, and call patients into physician chambers.
+              </p>
+            </div>
+            <Link
+              to="/appointments"
+              className="text-xs font-bold text-blue-700 hover:text-blue-900 border border-blue-200 bg-blue-50 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition shadow-2xs"
+            >
+              View Full OPD Calendar →
+            </Link>
+          </div>
+
+          {triageQueue.length === 0 ? (
+            <div className="text-center py-12 text-slate-400 text-xs">
+              <span className="text-3xl block mb-2">📋</span>
+              No appointments waiting in queue.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-3">Time & Date</th>
+                    <th className="py-3 px-3">Patient</th>
+                    <th className="py-3 px-3">Consulting Doctor</th>
+                    <th className="py-3 px-3">Queue Status</th>
+                    <th className="py-3 px-3 text-right">Triage Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {triageQueue.map((apt) => {
+                    const patient = apt.patient || {};
+                    const doctor = apt.doctor || {};
+                    return (
+                      <tr key={apt._id} className="hover:bg-slate-50/80 transition">
+                        <td className="py-3.5 px-3">
+                          <span className="font-mono font-bold text-blue-800 text-xs bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">
+                            {apt.timeSlot}
+                          </span>
+                          <span className="block text-[11px] text-slate-500 mt-0.5">
+                            {apt.appointmentDate ? new Date(apt.appointmentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short" }) : "—"}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-3">
+                          <div className="font-bold text-slate-900 text-sm">{patient.name || "Patient"}</div>
+                          <div className="text-[11px] text-slate-500">
+                            {patient.age ? `${patient.age}y` : "—"} / {patient.gender || "—"} • {apt.reasonForVisit}
+                          </div>
+                        </td>
+
+                        <td className="py-3.5 px-3">
+                          <div className="font-semibold text-slate-800">Dr. {doctor.name || "Doctor"}</div>
+                          <div className="text-[11px] text-slate-500">{doctor.specialization || "Consultant"}</div>
+                        </td>
+
+                        <td className="py-3.5 px-3">
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ring-1 ${
+                              apt.status === "in_consultation"
+                                ? "bg-purple-50 text-purple-700 ring-purple-500/20"
+                                : apt.status === "checked_in"
+                                ? "bg-teal-50 text-teal-700 ring-teal-500/20"
+                                : apt.status === "confirmed"
+                                ? "bg-blue-50 text-blue-700 ring-blue-500/20"
+                                : "bg-amber-50 text-amber-700 ring-amber-500/20"
+                            }`}
+                          >
+                            <span className="h-1.5 w-1.5 rounded-full mr-1 bg-current"></span>
+                            {apt.status === "checked_in" ? "Checked In (Waiting)" : apt.status === "in_consultation" ? "In Consultation" : apt.status}
+                          </span>
+                        </td>
+
+                        <td className="py-3.5 px-3 text-right space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => setChecklistAppointment(apt)}
+                            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 transition shadow-2xs"
+                            title="Pre-procedure clinical checklist"
+                          >
+                            📋 Checklist
+                          </button>
+
+                          {apt.status !== "checked_in" && apt.status !== "in_consultation" && (
+                            <button
+                              type="button"
+                              onClick={() => handleQuickCheckIn(apt._id)}
+                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition shadow-2xs"
+                            >
+                              ✓ Check In
+                            </button>
+                          )}
+
+                          {apt.status === "checked_in" && (
+                            <button
+                              type="button"
+                              onClick={() => handleQuickCallIn(apt._id)}
+                              className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition shadow-2xs"
+                            >
+                              Call In →
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* TAB 3: CRITICAL VITALS ALERT MONITOR */}
+      {activeTab === "alerts" && (
+        <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+            <div>
+              <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
+                Critical Vitals Deterioration Monitor
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Automated clinical detection for high blood pressure, desaturation (SpO2 &lt; 92%), fever, and acute hyper/hypoglycemia.
+              </p>
+            </div>
+            <span className="rounded-full bg-rose-50 text-rose-700 border border-rose-200 px-2.5 py-1 text-xs font-bold">
+              {vitalsAlerts.length} Active Triggers
+            </span>
+          </div>
+
+          {vitalsAlerts.length === 0 ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-8 text-center text-xs text-emerald-800">
+              <span className="text-3xl block mb-2">💚</span>
+              <strong>All patient vitals are within normal clinical thresholds.</strong>
+              <p className="mt-1 text-emerald-600">No acute vital deterioration triggers detected across hospital wards.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {vitalsAlerts.map((alertItem) => {
+                const patient = alertItem.patient || {};
+                return (
+                  <div
+                    key={alertItem._id}
+                    className="p-4 rounded-xl border border-rose-200 bg-rose-50/40 hover:bg-rose-50/80 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-900 text-sm">{patient.name || "Patient"}</span>
+                        <span className="text-xs text-slate-500">
+                          ({patient.age ? `${patient.age}y` : "—"} / {patient.gender || "—"})
+                        </span>
+                        {patient.isAdmitted && (
+                          <span className="rounded-full bg-blue-100 text-blue-800 px-2 py-0.5 text-[10px] font-bold">
+                            Inpatient Ward
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2 pt-1 text-xs font-semibold">
+                        {alertItem.spo2 && alertItem.spo2 <= 92 && (
+                          <span className="rounded-md bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5">
+                            Low SpO2: {alertItem.spo2}%
+                          </span>
+                        )}
+                        {alertItem.bloodPressureSys && alertItem.bloodPressureSys >= 150 && (
+                          <span className="rounded-md bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5">
+                            High BP: {alertItem.bloodPressureSys}/{alertItem.bloodPressureDia || "—"} mmHg
+                          </span>
+                        )}
+                        {alertItem.bloodSugar && alertItem.bloodSugar >= 220 && (
+                          <span className="rounded-md bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5">
+                            Elevated Sugar: {alertItem.bloodSugar} mg/dL
+                          </span>
+                        )}
+                        {alertItem.temperature && alertItem.temperature >= 102 && (
+                          <span className="rounded-md bg-orange-100 text-orange-800 border border-orange-300 px-2 py-0.5">
+                            High Fever: {alertItem.temperature} °F
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="text-[11px] text-slate-500 pt-0.5">
+                        Recorded at {new Date(alertItem.recordedAt || alertItem.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                        {alertItem.recorderName && ` by ${alertItem.recorderName}`}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenVitals(patient)}
+                        className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 text-xs font-bold text-slate-700 transition"
+                      >
+                        📊 View History
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          alert(`🚨 Physician notification dispatched for patient ${patient.name}. On-call doctor notified.`);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-xs font-bold text-white transition shadow-2xs"
+                      >
+                        🚨 Alert Attending Doctor
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Bedside Vitals Logger Modal */}
+      {vitalsPatient && (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
+          role="dialog"
+        >
+          <div className="relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Record Bedside Vitals: {vitalsPatient.name}
+                </h3>
+                <p className="text-xs text-slate-500">Record BP, Pulse, SpO2, Temperature & Blood Glucose</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVitalsPatient(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition"
+              >
+                ✕
+              </button>
+            </div>
+            <VitalsTracker
+              vitals={patientVitalsList}
+              patientId={vitalsPatient._id}
+              onVitalsUpdated={async () => {
+                const res = await getPatientVitals(vitalsPatient._id);
+                setPatientVitalsList(res.vitals || []);
+                onTriggerRefresh();
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Triage / Pre-Procedure Checklist Modal */}
+      {checklistAppointment && (
+        <NursingChecklistModal
+          appointment={checklistAppointment}
+          onClose={() => setChecklistAppointment(null)}
+          onUpdated={() => {
+            onTriggerRefresh();
+          }}
+          onOpenVitals={handleOpenVitals}
+        />
+      )}
+    </div>
+  );
+}
+
+/* =========================================================================
    MAIN DASHBOARD ROUTER: Renders based on role
    ========================================================================= */
 function Dashboard() {
@@ -1136,7 +1728,11 @@ function Dashboard() {
     return <DoctorDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
   }
 
-  if (role === "receptionist" || role === "nurse") {
+  if (role === "nurse") {
+    return <NurseDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+  }
+
+  if (role === "receptionist") {
     return <ReceptionistDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
   }
 

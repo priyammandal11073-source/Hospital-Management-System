@@ -24,7 +24,7 @@ const appointmentSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: {
-        values: ["pending", "confirmed", "completed", "cancelled"],
+        values: ["pending", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"],
         message: "Please provide a valid appointment status",
       },
       default: "pending",
@@ -38,6 +38,14 @@ const appointmentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    prepChecklist: [
+      {
+        label: { type: String, required: true },
+        isDone: { type: Boolean, default: false },
+        checkedByName: { type: String, default: "" },
+        checkedAt: { type: Date },
+      },
+    ],
     bookedBy: {
       type: String,
       enum: {
