@@ -130,7 +130,7 @@ function PatientLogin() {
               }}
               className="w-full rounded-lg border border-slate-700 bg-slate-800/90 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:border-cyan-500/50 hover:bg-slate-700 hover:text-white text-center"
             >
-              👤 John Doe (john@example.com)
+              👤 Rahul Sharma (john@example.com)
             </button>
           </div>
         </div>

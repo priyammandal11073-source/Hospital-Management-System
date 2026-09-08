@@ -1,4 +1,5 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import { usePatientAuth } from "../context/PatientAuthContext.jsx";
 import HospitalLogo from "./HospitalLogo.jsx";
 
@@ -11,11 +12,14 @@ const navLinkClass = ({ isActive }) =>
 
 function PatientLayout() {
   const navigate = useNavigate();
-  const { patient, logout } = usePatientAuth();
+  const { patient: patientAuthPatient, logout: patientLogout } = usePatientAuth();
+  const { user: unifiedUser, logout: unifiedLogout } = useAuth();
+  const patient = patientAuthPatient || (unifiedUser?.role === "patient" ? unifiedUser : null);
 
   const handleLogout = () => {
-    logout();
-    navigate("/patient/login");
+    patientLogout();
+    unifiedLogout();
+    navigate("/login");
   };
 
   const todayStr = new Date().toLocaleDateString("en-IN", {

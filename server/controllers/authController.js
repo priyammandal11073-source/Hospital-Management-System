@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import Patient from "../models/Patient.js";
 import User from "../models/User.js";
 
 const createToken = (user) => {
@@ -6,7 +7,7 @@ const createToken = (user) => {
     throw new Error("JWT_SECRET is not configured");
   }
 
-  return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: user._id, role: user.role, type: user.role === "patient" ? "patient" : "staff" }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
 };
@@ -53,21 +54,46 @@ export const login = async (req, res) => {
 
     const user = await User.findOne({ email: email.toLowerCase() });
 
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ message: "Invalid email or password" });
+    if (user) {
+      if (!(await user.comparePassword(password))) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      const token = createToken(user);
+
+      return res.status(200).json({
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      });
     }
 
-    const token = createToken(user);
+    // Fallback: Check if the email belongs to a registered patient
+    const patient = await Patient.findOne({ email: email.toLowerCase() }).select("+password");
 
-    return res.status(200).json({
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    if (patient && (await patient.comparePassword(password))) {
+      const token = jwt.sign(
+        { id: patient._id, role: "patient", type: "patient" },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      return res.status(200).json({
+        token,
+        user: {
+          id: patient._id,
+          name: patient.name,
+          email: patient.email,
+          role: "patient",
+        },
+      });
+    }
+
+    return res.status(401).json({ message: "Invalid email or password" });
   } catch (error) {
     console.error("Login error:", error.message);
     return res.status(500).json({ message: "Unable to log in" });
