@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 import {
   getAppointments,
   getBillings,
@@ -42,6 +44,7 @@ function SummaryCard({ label, value, icon, gradient, badge, badgeColor }) {
 }
 
 function Dashboard() {
+  const { user } = useAuth();
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -236,6 +239,113 @@ function Dashboard() {
           }
         />
       </div>
+
+      {/* ================= ACTIVE FEATURE CONTROL HUB ================= */}
+      <section className="rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Active Feature Control Hub
+            </h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Direct 1-click access to all hospital operations & management modules
+            </p>
+          </div>
+          <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 ring-1 ring-emerald-500/20 self-start sm:self-auto flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+            All Modules Live & Connected
+          </span>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {/* Patients Module */}
+          <Link
+            to="/patients"
+            className="group flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400 hover:bg-white hover:shadow-md"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-600 transition-transform group-hover:scale-110">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+            </div>
+            <span className="mt-2 text-xs font-bold text-slate-800 group-hover:text-blue-600">Patient Records</span>
+            <span className="text-[10px] text-slate-500">Admit & Manage</span>
+          </Link>
+
+          {/* Appointments Module */}
+          <Link
+            to="/appointments"
+            className="group flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-emerald-400 hover:bg-white hover:shadow-md"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 transition-transform group-hover:scale-110">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <span className="mt-2 text-xs font-bold text-slate-800 group-hover:text-emerald-600">Appointments</span>
+            <span className="text-[10px] text-slate-500">Book & Review</span>
+          </Link>
+
+          {/* Billing & Invoices Module */}
+          <Link
+            to="/billing"
+            className="group flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400 hover:bg-white hover:shadow-md"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600 transition-transform group-hover:scale-110">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+            </div>
+            <span className="mt-2 text-xs font-bold text-slate-800 group-hover:text-amber-600">Billing & Bills</span>
+            <span className="text-[10px] text-slate-500">Invoices & Print</span>
+          </Link>
+
+          {/* Doctors Module */}
+          <Link
+            to="/doctors"
+            className="group flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-400 hover:bg-white hover:shadow-md"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600 transition-transform group-hover:scale-110">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <span className="mt-2 text-xs font-bold text-slate-800 group-hover:text-indigo-600">Doctors</span>
+            <span className="text-[10px] text-slate-500">Specialists</span>
+          </Link>
+
+          {/* Reports & Analytics Module */}
+          <Link
+            to="/reports"
+            className="group flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-purple-400 hover:bg-white hover:shadow-md"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-100 text-purple-600 transition-transform group-hover:scale-110">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <span className="mt-2 text-xs font-bold text-slate-800 group-hover:text-purple-600">Analytics</span>
+            <span className="text-[10px] text-slate-500">Revenue & Charts</span>
+          </Link>
+
+          {/* Patient Portal Live Link */}
+          <a
+            href="/patient/login"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3.5 text-center transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-400 hover:bg-white hover:shadow-md"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-100 text-cyan-600 transition-transform group-hover:scale-110">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </div>
+            <span className="mt-2 text-xs font-bold text-slate-800 group-hover:text-cyan-600">Patient Portal</span>
+            <span className="text-[10px] text-slate-500">Patient Login ↗</span>
+          </a>
+        </div>
+      </section>
 
       {/* ================= APPOINTMENTS SECTION ================= */}
       <div className="grid gap-6 xl:grid-cols-2">
