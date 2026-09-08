@@ -11,7 +11,11 @@ export const protect = (req, res, next) => {
   const token = authorizationHeader.split(" ")[1];
 
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.type === "patient" || !decoded.role) {
+      return res.status(403).json({ message: "Access denied: Staff credentials required" });
+    }
+    req.user = decoded;
     return next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid or expired authentication token" });

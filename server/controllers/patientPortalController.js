@@ -7,6 +7,10 @@ import Prescription from "../models/Prescription.js";
 import Vitals from "../models/Vitals.js";
 import LabReport from "../models/LabReport.js";
 import Notification from "../models/Notification.js";
+import Doctor from "../models/Doctor.js";
+import ClinicalNote from "../models/ClinicalNote.js";
+import Referral from "../models/Referral.js";
+import Feedback from "../models/Feedback.js";
 
 const OPD_FEE = Number(process.env.OPD_FEE || 500);
 
@@ -488,3 +492,936 @@ export const markAllMyNotificationsRead = async (req, res) => {
     return res.status(500).json({ message: "Unable to mark notifications as read" });
   }
 };
+
+// ── PATIENT HEALTH HUB / DASHBOARD SUMMARY ──────────────────────────────────
+// GET /api/patient-portal/dashboard
+export const getPatientDashboardSummary = async (req, res) => {
+  try {
+    const patientId = req.patient.id;
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
+    const [
+      patient,
+      upcomingAppointments,
+      completedCount,
+      activePrescriptionsCount,
+      pendingLabsCount,
+      billings,
+      unreadNotifications,
+      nextAppointment,
+      recentConsultation,
+      latestPrescription,
+      latestLabReport,
+      bedStay,
+      latestVitals,
+    ] = await Promise.all([
+      Patient.findById(patientId).select("-password"),
+      Appointment.countDocuments({
+        patient: patientId,
+        status: { $in: ["pending", "confirmed", "waiting", "in_consultation"] },
+        appointmentDate: { $gte: today },
+      }),
+      Appointment.countDocuments({
+        patient: patientId,
+        status: "completed",
+      }),
+      Prescription.countDocuments({
+        patient: patientId,
+        status: { $ne: "Discontinued" },
+      }),
+      LabReport.countDocuments({
+        patient: patientId,
+        status: { $ne: "completed" },
+        isSharedWithPatient: true,
+      }),
+      Billing.find({ patient: patientId }),
+      Notification.countDocuments({
+        $or: [{ recipientType: "patient", patient: patientId }, { recipientType: "all" }],
+        isRead: false,
+      }),
+      Appointment.findOne({
+        patient: patientId,
+        status: { $in: ["pending", "confirmed", "waiting", "in_consultation"] },
+        appointmentDate: { $gte: today },
+      })
+        .sort({ appointmentDate: 1, timeSlot: 1 })
+        .populate("doctor", "name specialization department contactNumber email consultationFee"),
+      Appointment.findOne({
+        patient: patientId,
+        status: "completed",
+      })
+        .sort({ appointmentDate: -1 })
+        .populate("doctor", "name specialization department"),
+      Prescription.findOne({ patient: patientId })
+        .sort({ createdAt: -1 })
+        .populate("doctor", "name specialization department"),
+      LabReport.findOne({ patient: patientId, isSharedWithPatient: true })
+        .sort({ testDate: -1, createdAt: -1 })
+        .populate("doctor", "name specialization department"),
+      Bed.findOne({
+        "currentAdmission.patient": patientId,
+        status: "occupied",
+      }).populate("currentAdmission.attendingDoctor", "name specialization department contactNumber"),
+      Vitals.findOne({ patient: patientId }).sort({ recordedAt: -1 }),
+    ]);
+
+    const unpaidBills = billings.filter((b) => b.paymentStatus !== "paid");
+    const unpaidAmount = unpaidBills.reduce((acc, b) => acc + (b.totalAmount || 0), 0);
+
+    // Active Health Alerts
+    const alerts = [];
+    if (patient?.allergies && patient.allergies.length > 0) {
+      alerts.push({
+        type: "allergy",
+        severity: "warning",
+        title: "Allergy Alert",
+        message: `Registered allergies: ${patient.allergies.join(", ")}. Always notify hospital care teams.`,
+      });
+    }
+
+    if (unpaidBills.length > 0) {
+      alerts.push({
+        type: "billing",
+        severity: "info",
+        title: "Pending Invoices",
+        message: `You have ${unpaidBills.length} unpaid invoice(s) totaling ₹${unpaidAmount}.`,
+      });
+    }
+
+    if (nextAppointment) {
+      const apptDate = new Date(nextAppointment.appointmentDate);
+      const diffHours = (apptDate.getTime() - Date.now()) / (1000 * 60 * 60);
+      if (diffHours >= 0 && diffHours <= 48) {
+        alerts.push({
+          type: "appointment",
+          severity: "urgent",
+          title: "Upcoming Visit Reminder",
+          message: `Consultation with Dr. ${nextAppointment.doctor?.name} scheduled for ${apptDate.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })} at ${nextAppointment.timeSlot}.`,
+        });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      profile: patient,
+      stats: {
+        upcomingAppointments,
+        completedConsultations: completedCount,
+        activePrescriptions: activePrescriptionsCount,
+        labReportsCount: pendingLabsCount,
+        pendingBills: unpaidBills.length,
+        pendingAmount: unpaidAmount,
+        unreadNotifications,
+      },
+      metrics: {
+        upcomingVisits: upcomingAppointments,
+        completedVisits: completedCount,
+        activePrescriptions: activePrescriptionsCount,
+        pendingLabReports: pendingLabsCount,
+        outstandingBillsCount: unpaidBills.length,
+        outstandingBillsAmount: unpaidAmount,
+        unreadNotifications,
+      },
+      nextAppointment,
+      activePrescription: latestPrescription,
+      latestPrescription,
+      latestLabReport,
+      activeBedStay: bedStay,
+      bedStay,
+      recentConsultation,
+      latestVitals,
+      alerts,
+    });
+  } catch (error) {
+    console.error("Dashboard summary error:", error);
+    return res.status(500).json({ message: "Unable to load patient health hub summary" });
+  }
+};
+
+// ── RESCHEDULE APPOINTMENT ──────────────────────────────────────────────────
+// PATCH /api/patient-portal/appointments/:id/reschedule
+export const rescheduleMyAppointment = async (req, res) => {
+  try {
+    const { id: appointmentId } = req.params;
+    const { appointmentDate, timeSlot, reason } = req.body;
+
+    if (!appointmentDate || !timeSlot) {
+      return res.status(400).json({ message: "New appointment date and time slot are required" });
+    }
+
+    const appointment = await Appointment.findOne({
+      _id: appointmentId,
+      patient: req.patient.id,
+      status: { $in: ["pending", "confirmed"] },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({
+        message: "Appointment not found or is no longer eligible for rescheduling",
+      });
+    }
+
+    const formattedDate = new Date(appointmentDate);
+    if (Number.isNaN(formattedDate.getTime())) {
+      return res.status(400).json({ message: "Invalid appointment date format" });
+    }
+    formattedDate.setUTCHours(0, 0, 0, 0);
+
+    // Verify slot collision for the same doctor
+    const collision = await Appointment.findOne({
+      _id: { $ne: appointment._id },
+      doctor: appointment.doctor,
+      appointmentDate: formattedDate,
+      timeSlot: timeSlot.trim(),
+      status: { $in: ["pending", "confirmed", "waiting", "in_consultation"] },
+    });
+
+    if (collision) {
+      return res.status(409).json({ message: "Selected time slot is already booked for this doctor" });
+    }
+
+    appointment.appointmentDate = formattedDate;
+    appointment.timeSlot = timeSlot.trim();
+    if (reason) appointment.reasonForVisit = `${appointment.reasonForVisit} [Rescheduled: ${reason}]`;
+    appointment.status = "pending"; // Requires station re-confirmation
+    await appointment.save();
+
+    const populated = await Appointment.findById(appointment._id).populate(
+      "doctor",
+      "name specialization department contactNumber email consultationFee"
+    );
+
+    // Create confirmation notification
+    await Notification.create({
+      recipientType: "patient",
+      patient: req.patient.id,
+      title: "Appointment Rescheduled",
+      message: `Your visit with Dr. ${populated.doctor?.name} was rescheduled to ${formattedDate.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} at ${timeSlot}.`,
+      type: "appointment",
+      priority: "normal",
+      link: "/patient/appointments",
+    });
+
+    return res.status(200).json({
+      message: "Appointment rescheduled successfully",
+      appointment: populated,
+    });
+  } catch (error) {
+    console.error("Reschedule error:", error);
+    return res.status(500).json({ message: "Unable to reschedule appointment" });
+  }
+};
+
+// ── DOCTOR DIRECTORY & PROFILES ─────────────────────────────────────────────
+// GET /api/patient-portal/doctors
+export const getMyDoctors = async (req, res) => {
+  try {
+    const { search, department, specialization } = req.query;
+    const filter = {};
+
+    if (department && department !== "All") {
+      filter.department = department;
+    }
+    if (specialization && specialization !== "All") {
+      filter.specialization = specialization;
+    }
+    if (search) {
+      const regex = new RegExp(search, "i");
+      filter.$or = [{ name: regex }, { specialization: regex }, { department: regex }];
+    }
+
+    const doctors = await Doctor.find(filter)
+      .select("name specialization department contactNumber email availableDays availableTimeSlots weeklySchedule yearsOfExperience consultationFee leaves")
+      .sort({ name: 1 });
+
+    return res.status(200).json({ success: true, doctors });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch doctor directory" });
+  }
+};
+
+// GET /api/patient-portal/doctors/:id
+export const getMyDoctorById = async (req, res) => {
+  try {
+    const doctor = await Doctor.findById(req.params.id);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+    return res.status(200).json({ success: true, doctor });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch doctor profile" });
+  }
+};
+
+// ── MEDICAL RECORDS (360 AGGREGATED VIEW) ───────────────────────────────────
+// GET /api/patient-portal/records
+export const getMyMedicalRecords = async (req, res) => {
+  try {
+    const patientId = req.patient.id;
+    const { category, search } = req.query;
+
+    const [appointments, prescriptions, labReports, clinicalNotes, bedStays] = await Promise.all([
+      Appointment.find({ patient: patientId, status: "completed" })
+        .populate("doctor", "name specialization department")
+        .sort({ appointmentDate: -1 }),
+      Prescription.find({ patient: patientId })
+        .populate("doctor", "name specialization department")
+        .sort({ createdAt: -1 }),
+      LabReport.find({ patient: patientId, isSharedWithPatient: true })
+        .populate("doctor", "name specialization department")
+        .sort({ testDate: -1, createdAt: -1 }),
+      ClinicalNote.find({ patient: patientId, isConfidential: false })
+        .populate("doctor", "name specialization department")
+        .sort({ createdAt: -1 }),
+      Bed.find({
+        $or: [{ "currentAdmission.patient": patientId }, { "admissionHistory.patient": patientId }],
+      }).populate("currentAdmission.attendingDoctor admissionHistory.attendingDoctor", "name specialization department"),
+    ]);
+
+    const records = [];
+
+    // Map completed consultations
+    appointments.forEach((a) => {
+      records.push({
+        id: a._id,
+        recordType: "Consultation",
+        date: a.appointmentDate,
+        doctor: a.doctor?.name || "Consultant",
+        department: a.doctor?.department || "General OPD",
+        title: `Consultation: ${a.doctor?.specialization || "General"}`,
+        summary: a.diagnosis || a.reasonForVisit || "Completed consultation visit",
+        details: {
+          diagnosis: a.diagnosis,
+          clinicalSummary: a.clinicalSummary,
+          followUpDate: a.followUpDate,
+          followUpInstructions: a.followUpInstructions,
+          reasonForVisit: a.reasonForVisit,
+          timeSlot: a.timeSlot,
+        },
+      });
+    });
+
+    // Map prescriptions
+    prescriptions.forEach((p) => {
+      const medNames = (p.medications || []).map((m) => m.name).join(", ");
+      records.push({
+        id: p._id,
+        recordType: "Prescription",
+        date: p.createdAt,
+        doctor: p.doctor?.name || "Physician",
+        department: p.doctor?.department || "Clinical Care",
+        title: `Prescription (${p.medications?.length || 0} medicines)`,
+        summary: medNames || "Prescribed medication schedule",
+        details: {
+          medications: p.medications,
+          diagnosis: p.diagnosis,
+          notes: p.notes,
+          status: p.status,
+        },
+      });
+    });
+
+    // Map lab reports
+    labReports.forEach((l) => {
+      records.push({
+        id: l._id,
+        recordType: "Lab Report",
+        date: l.testDate || l.createdAt,
+        doctor: l.doctor?.name || "Pathologist",
+        department: l.category || "Diagnostic Laboratory",
+        title: l.testName,
+        summary: l.summary || `Status: ${l.status}. Results verified.`,
+        details: {
+          reportNumber: l.reportNumber,
+          category: l.category,
+          status: l.status,
+          results: l.results,
+          isCritical: l.isCritical,
+          summary: l.summary,
+        },
+      });
+    });
+
+    // Map non-confidential clinical notes
+    clinicalNotes.forEach((n) => {
+      records.push({
+        id: n._id,
+        recordType: "Clinical Note",
+        date: n.createdAt,
+        doctor: n.doctorName || n.doctor?.name || "Attending Doctor",
+        department: n.doctor?.department || "Clinical Department",
+        title: `${n.noteType} Note`,
+        summary: n.assessment || n.diagnosis || n.chiefComplaint || "Clinical assessment note",
+        details: {
+          chiefComplaint: n.chiefComplaint,
+          examination: n.examination,
+          assessment: n.assessment,
+          diagnosis: n.diagnosis,
+          treatmentPlan: n.treatmentPlan,
+          followUpInstructions: n.followUpInstructions,
+        },
+      });
+    });
+
+    // Map admissions
+    bedStays.forEach((b) => {
+      if (b.currentAdmission && b.currentAdmission.patient?.toString() === patientId.toString()) {
+        records.push({
+          id: b._id,
+          recordType: "Admission",
+          date: b.currentAdmission.admittedAt,
+          doctor: b.currentAdmission.attendingDoctor?.name || "Inpatient Attending",
+          department: b.ward,
+          title: `Active Inpatient Stay (${b.bedNumber})`,
+          summary: `Admitted for: ${b.currentAdmission.admissionReason || "Inpatient Care"}`,
+          details: {
+            bedNumber: b.bedNumber,
+            ward: b.ward,
+            floor: b.floor,
+            status: "Admitted",
+            admittedAt: b.currentAdmission.admittedAt,
+            reason: b.currentAdmission.admissionReason,
+          },
+        });
+      }
+
+      (b.admissionHistory || []).forEach((hist) => {
+        if (hist.patient?.toString() === patientId.toString()) {
+          records.push({
+            id: hist._id,
+            recordType: "Discharge",
+            date: hist.dischargedAt || hist.admittedAt,
+            doctor: hist.attendingDoctor?.name || "Attending Physician",
+            department: b.ward,
+            title: `Hospital Discharge: Ward ${b.ward}`,
+            summary: hist.dischargeSummary || `Stay duration: ${hist.totalDays || 1} day(s)`,
+            details: {
+              bedNumber: b.bedNumber,
+              ward: b.ward,
+              admittedAt: hist.admittedAt,
+              dischargedAt: hist.dischargedAt,
+              admissionReason: hist.admissionReason,
+              dischargeSummary: hist.dischargeSummary,
+              totalDays: hist.totalDays,
+            },
+          });
+        }
+      });
+    });
+
+    // Filter by category if specified
+    let filtered = records;
+    if (category && category !== "All") {
+      filtered = filtered.filter((r) => r.recordType.toLowerCase() === category.toLowerCase());
+    }
+
+    // Filter by search text
+    if (search && search.trim()) {
+      const q = search.toLowerCase();
+      filtered = filtered.filter(
+        (r) =>
+          r.title.toLowerCase().includes(q) ||
+          r.summary.toLowerCase().includes(q) ||
+          r.doctor.toLowerCase().includes(q) ||
+          r.department.toLowerCase().includes(q)
+      );
+    }
+
+    // Sort by date descending
+    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    return res.status(200).json({ success: true, records: filtered });
+  } catch (error) {
+    console.error("Medical records error:", error);
+    return res.status(500).json({ message: "Unable to compile medical records" });
+  }
+};
+
+// ── MEDICAL TIMELINE ────────────────────────────────────────────────────────
+// GET /api/patient-portal/timeline
+export const getMyTimeline = async (req, res) => {
+  try {
+    const patientId = req.patient.id;
+
+    const [appointments, prescriptions, labReports, notes, bedStays] = await Promise.all([
+      Appointment.find({ patient: patientId }).populate("doctor", "name specialization department"),
+      Prescription.find({ patient: patientId }).populate("doctor", "name specialization department"),
+      LabReport.find({ patient: patientId, isSharedWithPatient: true }).populate("doctor", "name specialization department"),
+      ClinicalNote.find({ patient: patientId, isConfidential: false }).populate("doctor", "name specialization department"),
+      Bed.find({
+        $or: [{ "currentAdmission.patient": patientId }, { "admissionHistory.patient": patientId }],
+      }).populate("currentAdmission.attendingDoctor admissionHistory.attendingDoctor", "name specialization department"),
+    ]);
+
+    const timeline = [];
+
+    appointments.forEach((a) => {
+      timeline.push({
+        id: a._id,
+        eventType: "Appointment",
+        badge: a.status === "completed" ? "Consultation Completed" : "Appointment Scheduled",
+        icon: "🩺",
+        color: a.status === "completed" ? "emerald" : "cyan",
+        date: a.appointmentDate,
+        doctor: a.doctor?.name || "Physician",
+        department: a.doctor?.department || "Outpatient Care",
+        title: `Consultation with Dr. ${a.doctor?.name || "Consultant"}`,
+        description: a.diagnosis ? `Diagnosis: ${a.diagnosis}` : a.reasonForVisit || "Scheduled Consultation",
+      });
+    });
+
+    prescriptions.forEach((p) => {
+      timeline.push({
+        id: p._id,
+        eventType: "Prescription",
+        badge: "Prescription Issued",
+        icon: "💊",
+        color: "indigo",
+        date: p.createdAt,
+        doctor: p.doctor?.name || "Physician",
+        department: p.doctor?.department || "Pharmacy",
+        title: "Digital Prescription Issued",
+        description: `${p.medications?.length || 0} medications prescribed (${(p.medications || []).map((m) => m.name).slice(0, 3).join(", ")})`,
+      });
+    });
+
+    labReports.forEach((l) => {
+      timeline.push({
+        id: l._id,
+        eventType: "Lab Report",
+        badge: l.status === "completed" ? "Report Available" : "Lab Test Ordered",
+        icon: "🧪",
+        color: l.isCritical ? "rose" : "teal",
+        date: l.testDate || l.createdAt,
+        doctor: l.doctor?.name || "Pathologist",
+        department: l.category || "Laboratory",
+        title: l.testName,
+        description: l.summary || `Test status: ${l.status}. Results cataloged.`,
+      });
+    });
+
+    notes.forEach((n) => {
+      timeline.push({
+        id: n._id,
+        eventType: "Clinical Note",
+        badge: "Physician Assessment",
+        icon: "📋",
+        color: "blue",
+        date: n.createdAt,
+        doctor: n.doctorName || n.doctor?.name || "Doctor",
+        department: n.doctor?.department || "Medicine",
+        title: `${n.noteType} Record`,
+        description: n.assessment || n.treatmentPlan || n.chiefComplaint || "Clinical documentation entry",
+      });
+    });
+
+    bedStays.forEach((b) => {
+      if (b.currentAdmission && b.currentAdmission.patient?.toString() === patientId.toString()) {
+        timeline.push({
+          id: b._id,
+          eventType: "Admission",
+          badge: "Ward Admission",
+          icon: "🛏️",
+          color: "amber",
+          date: b.currentAdmission.admittedAt,
+          doctor: b.currentAdmission.attendingDoctor?.name || "Inpatient Care",
+          department: b.ward,
+          title: `Admitted to ${b.ward} (Bed ${b.bedNumber})`,
+          description: b.currentAdmission.admissionReason || "Inpatient clinical monitoring",
+        });
+      }
+      (b.admissionHistory || []).forEach((hist) => {
+        if (hist.patient?.toString() === patientId.toString()) {
+          timeline.push({
+            id: hist._id,
+            eventType: "Discharge",
+            badge: "Patient Discharge",
+            icon: "📤",
+            color: "emerald",
+            date: hist.dischargedAt,
+            doctor: hist.attendingDoctor?.name || "Physician",
+            department: b.ward,
+            title: `Discharged from Ward ${b.ward}`,
+            description: hist.dischargeSummary || `Completed inpatient stay (${hist.totalDays || 1} days)`,
+          });
+        }
+      });
+    });
+
+    timeline.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    return res.status(200).json({ success: true, timeline });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch medical timeline" });
+  }
+};
+
+// ── PATIENT-FRIENDLY ACTIVE MEDICINES ───────────────────────────────────────
+// GET /api/patient-portal/medicines
+export const getMyActiveMedicines = async (req, res) => {
+  try {
+    const prescriptions = await Prescription.find({
+      patient: req.patient.id,
+      status: { $ne: "Discontinued" },
+    })
+      .populate("doctor", "name specialization department")
+      .sort({ createdAt: -1 });
+
+    const medicines = [];
+
+    prescriptions.forEach((p) => {
+      (p.medications || []).forEach((m, idx) => {
+        // Translate clinical frequency into plain language
+        let scheduleText = m.timing || "With meals";
+        if (m.frequency === "1-0-1") scheduleText = "Twice daily: Morning & Night";
+        else if (m.frequency === "1-1-1") scheduleText = "Thrice daily: Morning, Afternoon & Night";
+        else if (m.frequency === "1-0-0") scheduleText = "Once daily: Morning";
+        else if (m.frequency === "0-0-1") scheduleText = "Once daily: At bedtime";
+        else if (m.frequency === "0-1-0") scheduleText = "Once daily: Afternoon";
+        else if (m.frequency?.toLowerCase().includes("sos")) scheduleText = "As needed (SOS)";
+
+        medicines.push({
+          id: `${p._id}_${idx}`,
+          prescriptionId: p._id,
+          name: m.name,
+          dosage: m.dosage,
+          strength: m.strength || "Standard",
+          route: m.route || "Oral",
+          frequency: m.frequency,
+          timing: m.timing,
+          scheduleText,
+          duration: m.duration,
+          instructions: m.instructions || "Follow prescribed dosage routine",
+          prescribingDoctor: p.doctor?.name || "Consulting Physician",
+          doctorDepartment: p.doctor?.department || "General Medicine",
+          prescribedDate: p.createdAt,
+          startDate: m.startDate || p.createdAt,
+          endDate: m.endDate,
+          status: m.status || p.status || "Active",
+        });
+      });
+    });
+
+    return res.status(200).json({ success: true, medicines });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch active medicines" });
+  }
+};
+
+// ── CONSULTATION HISTORY & SUMMARY ──────────────────────────────────────────
+// GET /api/patient-portal/consultations
+export const getMyConsultationHistory = async (req, res) => {
+  try {
+    const appointments = await Appointment.find({
+      patient: req.patient.id,
+      status: "completed",
+    })
+      .populate("doctor", "name specialization department contactNumber email consultationFee")
+      .sort({ appointmentDate: -1 });
+
+    return res.status(200).json({ success: true, consultations: appointments });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch consultation history" });
+  }
+};
+
+// GET /api/patient-portal/consultations/:id
+export const getMyConsultationSummary = async (req, res) => {
+  try {
+    const appointment = await Appointment.findOne({
+      _id: req.params.id,
+      patient: req.patient.id,
+    }).populate("doctor", "name specialization department contactNumber email consultationFee");
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Consultation not found" });
+    }
+
+    const [prescription, clinicalNotes] = await Promise.all([
+      Prescription.findOne({ appointment: appointment._id }).populate("doctor", "name specialization"),
+      ClinicalNote.find({
+        appointment: appointment._id,
+        isConfidential: false,
+      }),
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      consultation: appointment,
+      prescription,
+      notes: clinicalNotes,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch consultation summary" });
+  }
+};
+
+// ── FOLLOW-UP APPOINTMENTS ──────────────────────────────────────────────────
+// GET /api/patient-portal/follow-ups
+export const getMyFollowUps = async (req, res) => {
+  try {
+    const appointmentsWithFollowUp = await Appointment.find({
+      patient: req.patient.id,
+      followUpDate: { $exists: true, $ne: null },
+    })
+      .populate("doctor", "name specialization department consultationFee")
+      .sort({ followUpDate: 1 });
+
+    const followUps = appointmentsWithFollowUp.map((a) => ({
+      id: a._id,
+      doctor: a.doctor,
+      department: a.doctor?.department || "General",
+      followUpDate: a.followUpDate,
+      reason: a.diagnosis || a.reasonForVisit || "Routine Follow-up",
+      instructions: a.followUpInstructions || "Post-consultation evaluation",
+      previousAppointmentDate: a.appointmentDate,
+      isScheduled: false,
+    }));
+
+    return res.status(200).json({ success: true, followUps });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch follow-ups" });
+  }
+};
+
+// ── SPECIALIST REFERRALS ────────────────────────────────────────────────────
+// GET /api/patient-portal/referrals
+export const getMyReferrals = async (req, res) => {
+  try {
+    const referrals = await Referral.find({ patient: req.patient.id })
+      .populate("referringDoctor", "name specialization department")
+      .populate("specialistDoctor", "name specialization department consultationFee availableDays")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({ success: true, referrals });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch referrals" });
+  }
+};
+
+// ── INPATIENT ADMISSIONS ────────────────────────────────────────────────────
+// GET /api/patient-portal/admissions
+export const getMyAdmissions = async (req, res) => {
+  try {
+    const patientId = req.patient.id;
+
+    const [currentStay, historyBeds] = await Promise.all([
+      Bed.findOne({
+        "currentAdmission.patient": patientId,
+        status: "occupied",
+      }).populate("currentAdmission.attendingDoctor", "name specialization department contactNumber"),
+      Bed.find({
+        "admissionHistory.patient": patientId,
+      }).populate("admissionHistory.attendingDoctor", "name specialization department"),
+    ]);
+
+    const pastAdmissions = [];
+    historyBeds.forEach((b) => {
+      (b.admissionHistory || []).forEach((hist) => {
+        if (hist.patient?.toString() === patientId.toString()) {
+          pastAdmissions.push({
+            id: hist._id,
+            ward: b.ward,
+            floor: b.floor,
+            bedNumber: b.bedNumber,
+            admittedAt: hist.admittedAt,
+            dischargedAt: hist.dischargedAt,
+            attendingDoctor: hist.attendingDoctor,
+            admissionReason: hist.admissionReason,
+            dischargeSummary: hist.dischargeSummary,
+            totalDays: hist.totalDays,
+            totalBedCost: hist.totalBedCost,
+            status: "Discharged",
+          });
+        }
+      });
+    });
+
+    return res.status(200).json({
+      success: true,
+      currentAdmission: currentStay
+        ? {
+            bedId: currentStay._id,
+            ward: currentStay.ward,
+            floor: currentStay.floor,
+            bedNumber: currentStay.bedNumber,
+            dailyRate: currentStay.dailyRate,
+            admittedAt: currentStay.currentAdmission?.admittedAt,
+            admissionReason: currentStay.currentAdmission?.admissionReason,
+            attendingDoctor: currentStay.currentAdmission?.attendingDoctor,
+            status: "Admitted",
+          }
+        : null,
+      pastAdmissions,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch admission history" });
+  }
+};
+
+// ── MY DOCUMENTS CATALOG ────────────────────────────────────────────────────
+// GET /api/patient-portal/documents
+export const getMyDocuments = async (req, res) => {
+  try {
+    const patientId = req.patient.id;
+
+    const [prescriptions, labReports, billings, beds] = await Promise.all([
+      Prescription.find({ patient: patientId }).populate("doctor", "name specialization department"),
+      LabReport.find({ patient: patientId, isSharedWithPatient: true }).populate("doctor", "name specialization department"),
+      Billing.find({ patient: patientId, paymentStatus: "paid" }),
+      Bed.find({ "admissionHistory.patient": patientId }).populate("admissionHistory.attendingDoctor", "name specialization department"),
+    ]);
+
+    const documents = [];
+
+    prescriptions.forEach((p) => {
+      documents.push({
+        id: p._id,
+        type: "Prescription",
+        title: `Digital Prescription (Dr. ${p.doctor?.name || "Consultant"})`,
+        date: p.createdAt,
+        doctor: p.doctor?.name || "Physician",
+        department: p.doctor?.department || "Pharmacy",
+        sourceId: p._id,
+        downloadable: true,
+        summary: `${p.medications?.length || 0} prescribed medications`,
+      });
+    });
+
+    labReports.forEach((l) => {
+      documents.push({
+        id: l._id,
+        type: "Lab Report",
+        title: `Investigation: ${l.testName}`,
+        date: l.testDate || l.createdAt,
+        doctor: l.doctor?.name || "Pathologist",
+        department: l.category || "Diagnostic Laboratory",
+        sourceId: l._id,
+        downloadable: true,
+        summary: `Status: ${l.status}. Verified results catalog.`,
+      });
+    });
+
+    billings.forEach((b) => {
+      documents.push({
+        id: b._id,
+        type: "Medical Receipt",
+        title: `Receipt #${b._id.toString().slice(-8).toUpperCase()}`,
+        date: b.paymentDate || b.createdAt,
+        doctor: "Hospital Accounts",
+        department: "Billing Desk",
+        sourceId: b._id,
+        downloadable: true,
+        summary: `Paid amount: ₹${b.totalAmount} via ${(b.paymentMethod || "UPI").toUpperCase()}`,
+      });
+    });
+
+    beds.forEach((b) => {
+      (b.admissionHistory || []).forEach((hist) => {
+        if (hist.patient?.toString() === patientId.toString() && hist.dischargeSummary) {
+          documents.push({
+            id: hist._id,
+            type: "Discharge Summary",
+            title: `Discharge Summary - ${b.ward}`,
+            date: hist.dischargedAt,
+            doctor: hist.attendingDoctor?.name || "Attending Physician",
+            department: b.ward,
+            sourceId: hist._id,
+            downloadable: true,
+            summary: hist.dischargeSummary,
+          });
+        }
+      });
+    });
+
+    documents.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    return res.status(200).json({ success: true, documents });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch patient documents" });
+  }
+};
+
+// ── UPDATE PATIENT PROFILE (SAFE FIELDS) ────────────────────────────────────
+// PATCH /api/patient-portal/me
+export const updateMyProfile = async (req, res) => {
+  try {
+    const { contactNumber, address, emergencyContact } = req.body;
+
+    const patient = await Patient.findById(req.patient.id);
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    if (contactNumber) patient.contactNumber = String(contactNumber).trim();
+    if (address) patient.address = String(address).trim();
+    if (emergencyContact) {
+      if (typeof emergencyContact === "string") {
+        patient.emergencyContact = { name: emergencyContact.trim(), phone: "", relationship: "" };
+      } else if (typeof emergencyContact === "object") {
+        patient.emergencyContact = {
+          name: emergencyContact.name ? String(emergencyContact.name).trim() : "",
+          phone: emergencyContact.phone ? String(emergencyContact.phone).trim() : "",
+          relationship: emergencyContact.relationship ? String(emergencyContact.relationship).trim() : "",
+        };
+      }
+    }
+
+    await patient.save();
+
+    const updated = patient.toObject();
+    delete updated.password;
+
+    return res.status(200).json({
+      success: true,
+      message: "Personal details updated successfully",
+      patient: updated,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Unable to update profile" });
+  }
+};
+
+// ── PATIENT FEEDBACK ────────────────────────────────────────────────────────
+// POST /api/patient-portal/feedback
+export const submitFeedback = async (req, res) => {
+  try {
+    const { appointment, doctor, rating, category, comments } = req.body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ message: "Please provide a valid rating between 1 and 5 stars" });
+    }
+
+    const feedback = await Feedback.create({
+      patient: req.patient.id,
+      appointment: appointment || undefined,
+      doctor: doctor || undefined,
+      rating: Number(rating),
+      category: category || "Doctor Consultation",
+      comments: comments ? comments.trim() : "",
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Thank you! Your feedback has been submitted to Nivora Care Hospital quality desk.",
+      feedback,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Unable to submit feedback" });
+  }
+};
+
+// GET /api/patient-portal/feedback
+export const getMyFeedback = async (req, res) => {
+  try {
+    const feedbackList = await Feedback.find({ patient: req.patient.id })
+      .populate("doctor", "name specialization")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({ success: true, feedback: feedbackList });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch feedback history" });
+  }
+};
+

@@ -214,6 +214,88 @@ export const payMyBillingUpi = async (id, paymentData = {}) => {
   return response.data;
 };
 
+export const getPatientDashboardSummary = async () => {
+  const response = await api.get("/api/patient-portal/dashboard");
+  return response.data;
+};
+
+export const rescheduleMyAppointment = async (id, data) => {
+  const response = await api.patch(`/api/patient-portal/appointments/${id}/reschedule`, data);
+  return response.data;
+};
+
+export const getPatientDoctors = async (filters = {}) => {
+  const params = Object.fromEntries(Object.entries(filters).filter(([, v]) => v));
+  const response = await api.get("/api/patient-portal/doctors", { params });
+  return response.data;
+};
+
+export const getPatientDoctorById = async (id) => {
+  const response = await api.get(`/api/patient-portal/doctors/${id}`);
+  return response.data;
+};
+
+export const getMyMedicalRecords = async (filters = {}) => {
+  const params = Object.fromEntries(Object.entries(filters).filter(([, v]) => v));
+  const response = await api.get("/api/patient-portal/records", { params });
+  return response.data;
+};
+
+export const getMyMedicalTimeline = async () => {
+  const response = await api.get("/api/patient-portal/timeline");
+  return response.data;
+};
+
+export const getMyActiveMedicines = async () => {
+  const response = await api.get("/api/patient-portal/medicines");
+  return response.data;
+};
+
+export const getMyConsultations = async () => {
+  const response = await api.get("/api/patient-portal/consultations");
+  return response.data;
+};
+
+export const getMyConsultationSummary = async (id) => {
+  const response = await api.get(`/api/patient-portal/consultations/${id}`);
+  return response.data;
+};
+
+export const getMyFollowUps = async () => {
+  const response = await api.get("/api/patient-portal/follow-ups");
+  return response.data;
+};
+
+export const getMyReferrals = async () => {
+  const response = await api.get("/api/patient-portal/referrals");
+  return response.data;
+};
+
+export const getMyAdmissions = async () => {
+  const response = await api.get("/api/patient-portal/admissions");
+  return response.data;
+};
+
+export const getMyDocuments = async () => {
+  const response = await api.get("/api/patient-portal/documents");
+  return response.data;
+};
+
+export const updateMyProfile = async (profileData) => {
+  const response = await api.patch("/api/patient-portal/me", profileData);
+  return response.data;
+};
+
+export const submitPatientFeedback = async (feedbackData) => {
+  const response = await api.post("/api/patient-portal/feedback", feedbackData);
+  return response.data;
+};
+
+export const getMyFeedback = async () => {
+  const response = await api.get("/api/patient-portal/feedback");
+  return response.data;
+};
+
 // Prescription API helpers
 export const getPrescriptions = async (filters = {}) => {
   const params = Object.fromEntries(

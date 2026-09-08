@@ -58,6 +58,11 @@ const patientSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    emergencyContact: {
+      name: { type: String, trim: true },
+      phone: { type: String, trim: true },
+      relationship: { type: String, trim: true },
+    },
     // Patient self-service authentication fields
     // Not required:true to keep staff-created patients (via POST /api/patients) working.
     // Patient self-registration (POST /api/patient-auth/register) validates password separately.

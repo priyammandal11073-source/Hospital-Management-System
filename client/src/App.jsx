@@ -41,6 +41,20 @@ import MyLabReports from "./pages/patient/MyLabReports.jsx";
 import PatientDashboard from "./pages/patient/PatientDashboard.jsx";
 import PatientLogin from "./pages/patient/PatientLogin.jsx";
 import PatientRegister from "./pages/patient/PatientRegister.jsx";
+import FindDoctorsPage from "./pages/patient/FindDoctorsPage.jsx";
+import MyMedicalRecords from "./pages/patient/MyMedicalRecords.jsx";
+import MyMedicalTimeline from "./pages/patient/MyMedicalTimeline.jsx";
+import MyMedicines from "./pages/patient/MyMedicines.jsx";
+import MyConsultations from "./pages/patient/MyConsultations.jsx";
+import MyReferrals from "./pages/patient/MyReferrals.jsx";
+import MyFollowUps from "./pages/patient/MyFollowUps.jsx";
+import MyAdmissions from "./pages/patient/MyAdmissions.jsx";
+import MyDocuments from "./pages/patient/MyDocuments.jsx";
+import PaymentHistory from "./pages/patient/PaymentHistory.jsx";
+import PatientProfilePage from "./pages/patient/PatientProfilePage.jsx";
+import HelpSupportPage from "./pages/patient/HelpSupportPage.jsx";
+import PatientFeedbackPage from "./pages/patient/PatientFeedbackPage.jsx";
+import PatientNotificationsPage from "./pages/patient/PatientNotificationsPage.jsx";
 
 function App() {
   return (
@@ -58,10 +72,24 @@ function App() {
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/patient/appointments" element={<MyAppointments />} />
           <Route path="/patient/appointments/book" element={<BookAppointment />} />
+          <Route path="/patient/consultations" element={<MyConsultations />} />
+          <Route path="/patient/doctors" element={<FindDoctorsPage />} />
+          <Route path="/patient/records" element={<MyMedicalRecords />} />
+          <Route path="/patient/timeline" element={<MyMedicalTimeline />} />
+          <Route path="/patient/medicines" element={<MyMedicines />} />
           <Route path="/patient/vitals" element={<MyVitals />} />
           <Route path="/patient/lab-reports" element={<MyLabReports />} />
           <Route path="/patient/billings" element={<MyBillings />} />
+          <Route path="/patient/payments" element={<PaymentHistory />} />
           <Route path="/patient/prescriptions" element={<MyPrescriptions />} />
+          <Route path="/patient/referrals" element={<MyReferrals />} />
+          <Route path="/patient/follow-ups" element={<MyFollowUps />} />
+          <Route path="/patient/admissions" element={<MyAdmissions />} />
+          <Route path="/patient/documents" element={<MyDocuments />} />
+          <Route path="/patient/profile" element={<PatientProfilePage />} />
+          <Route path="/patient/support" element={<HelpSupportPage />} />
+          <Route path="/patient/feedback" element={<PatientFeedbackPage />} />
+          <Route path="/patient/notifications" element={<PatientNotificationsPage />} />
         </Route>
       </Route>
 

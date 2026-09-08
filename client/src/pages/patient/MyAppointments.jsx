@@ -1,24 +1,48 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { cancelMyAppointment, getMyAppointments } from "../../services/api.js";
+import { Link, useLocation } from "react-router-dom";
+import {
+  cancelMyAppointment,
+  getMyAppointments,
+  rescheduleMyAppointment,
+} from "../../services/api.js";
 
-const statusClasses = { pending: "bg-yellow-100 text-yellow-800", confirmed: "bg-blue-100 text-blue-800", completed: "bg-green-100 text-green-800", cancelled: "bg-red-100 text-red-800" };
+const statusClasses = {
+  pending: "bg-amber-50 text-amber-800 border-amber-200",
+  confirmed: "bg-blue-50 text-blue-800 border-blue-200",
+  completed: "bg-emerald-50 text-emerald-800 border-emerald-200",
+  cancelled: "bg-rose-50 text-rose-800 border-rose-200",
+  no_show: "bg-slate-100 text-slate-700 border-slate-200",
+};
+
+const TIME_SLOTS = [
+  "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+  "12:00 PM", "12:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM",
+  "04:00 PM", "04:30 PM", "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM"
+];
 
 function MyAppointments() {
   const location = useLocation();
   const [successToast, setSuccessToast] = useState(location.state?.successMsg || "");
   const [appointments, setAppointments] = useState([]);
-  const [status, setStatus] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [cancelling, setCancelling] = useState(null);
 
-  const fetch = async () => {
+  // Reschedule Modal State
+  const [rescheduleAppt, setRescheduleAppt] = useState(null);
+  const [newDate, setNewDate] = useState("");
+  const [newTimeSlot, setNewTimeSlot] = useState("");
+  const [rescheduleReason, setRescheduleReason] = useState("");
+  const [rescheduling, setRescheduling] = useState(false);
+  const [rescheduleError, setRescheduleError] = useState("");
+
+  const fetchAppointments = async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await getMyAppointments(status ? { status } : {});
-      setAppointments(data.appointments);
+      const data = await getMyAppointments();
+      setAppointments(data.appointments || []);
     } catch (err) {
       setError(err.response?.data?.message || "Unable to load appointments");
     } finally {
@@ -26,108 +50,366 @@ function MyAppointments() {
     }
   };
 
-  useEffect(() => { fetch(); }, [status]);
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
 
   const handleCancel = async (id) => {
-    if (!window.confirm("Cancel this appointment?")) return;
+    if (!window.confirm("Are you sure you wish to cancel this appointment?")) return;
     setCancelling(id);
     setError("");
     try {
       await cancelMyAppointment(id);
-      await fetch();
+      setSuccessToast("Appointment cancelled successfully.");
+      await fetchAppointments();
     } catch (err) {
-      setError(err.response?.data?.message || "Unable to cancel");
+      setError(err.response?.data?.message || "Unable to cancel appointment");
     } finally {
       setCancelling(null);
     }
   };
 
+  const openRescheduleModal = (appt) => {
+    setRescheduleAppt(appt);
+    setNewDate(appt.appointmentDate ? appt.appointmentDate.split("T")[0] : "");
+    setNewTimeSlot(appt.timeSlot || "10:00 AM");
+    setRescheduleReason("");
+    setRescheduleError("");
+  };
+
+  const handleRescheduleSubmit = async (e) => {
+    e.preventDefault();
+    if (!newDate || !newTimeSlot) {
+      setRescheduleError("Please select both a date and a time slot.");
+      return;
+    }
+
+    setRescheduling(true);
+    setRescheduleError("");
+    try {
+      await rescheduleMyAppointment(rescheduleAppt._id, {
+        appointmentDate: newDate,
+        timeSlot: newTimeSlot,
+        reasonForVisit: rescheduleReason || rescheduleAppt.reasonForVisit,
+      });
+      setSuccessToast("Appointment rescheduled successfully!");
+      setRescheduleAppt(null);
+      await fetchAppointments();
+    } catch (err) {
+      setRescheduleError(err.response?.data?.message || "Failed to reschedule appointment.");
+    } finally {
+      setRescheduling(false);
+    }
+  };
+
+  const filteredAppointments = appointments.filter((a) => {
+    if (activeTab === "all") return true;
+    if (activeTab === "upcoming") return ["pending", "confirmed"].includes(a.status);
+    if (activeTab === "completed") return a.status === "completed";
+    if (activeTab === "cancelled") return a.status === "cancelled";
+    return true;
+  });
+
   return (
-    <section>
-      <h1 className="text-2xl font-semibold text-slate-800">My appointments</h1>
-      <div className="mt-4 max-w-xs">
-        <label className="text-sm font-medium text-slate-700">Filter by status
-          <select value={status} onChange={(e) => setStatus(e.target.value)} className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2">
-            <option value="">All statuses</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-        </label>
+    <section className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Scheduled Visits</h1>
+            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-500/20">
+              OPD Consultations
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-slate-500">
+            View upcoming visits, manage appointment schedules, or book a consultation with specialist physicians.
+          </p>
+        </div>
+
+        <Link
+          to="/patient/appointments/book"
+          className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-blue-700 shadow-2xs transition self-start sm:self-auto"
+        >
+          ➕ Book Specialist Visit
+        </Link>
       </div>
+
+      {/* Preparation & Clinic Protocol Banner */}
+      <div className="rounded-2xl bg-blue-50/70 border border-blue-200/80 p-4 sm:p-5 flex items-start gap-3.5">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-100 text-blue-800 text-lg flex-shrink-0">
+          ℹ️
+        </div>
+        <div className="text-xs sm:text-sm text-blue-900 leading-relaxed">
+          <p className="font-bold text-blue-950">Patient Visit Guidelines:</p>
+          <ul className="mt-1 list-disc list-inside space-y-0.5 text-blue-800">
+            <li>Please arrive at the clinic reception 15 minutes prior to your time slot for mandatory vitals check.</li>
+            <li>Carry past prescriptions, previous lab test reports, and your government photo ID / ABHA card.</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Status Filter Tabs */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+        {[
+          { key: "all", label: `All Visits (${appointments.length})` },
+          { key: "upcoming", label: `Upcoming (${appointments.filter((a) => ["pending", "confirmed"].includes(a.status)).length})` },
+          { key: "completed", label: `Completed (${appointments.filter((a) => a.status === "completed").length})` },
+          { key: "cancelled", label: `Cancelled (${appointments.filter((a) => a.status === "cancelled").length})` },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
+              activeTab === tab.key
+                ? "bg-slate-900 text-white shadow-xs"
+                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {successToast && (
-        <div className="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm font-bold flex items-center justify-between shadow-sm animate-in fade-in">
-          <span>{successToast}</span>
-          <button onClick={() => setSuccessToast("")} className="text-emerald-600 hover:text-emerald-800 font-bold ml-2">✕</button>
+        <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-xs sm:text-sm font-bold flex items-center justify-between shadow-xs">
+          <span>✅ {successToast}</span>
+          <button onClick={() => setSuccessToast("")} className="text-emerald-600 hover:text-emerald-800 font-bold ml-2">
+            ✕
+          </button>
         </div>
       )}
-      {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
-      <div className="mt-6 rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80">
+
+      {error && (
+        <div className="rounded-xl bg-red-50 border border-red-200 p-4 text-sm font-semibold text-red-700">
+          {error}
+        </div>
+      )}
+
+      <div className="rounded-3xl bg-white p-5 sm:p-6 shadow-xs border border-slate-200/90">
         {loading ? (
-          <p className="p-6 text-center text-slate-600">Loading appointments...</p>
-        ) : appointments.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-3 border-blue-600 border-r-transparent"></div>
+            <p className="mt-3 text-sm font-semibold text-slate-600">Loading your consultations...</p>
+          </div>
+        ) : filteredAppointments.length === 0 ? (
           <div className="py-12 text-center">
-            <svg className="mx-auto h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            <p className="mt-2 text-sm text-slate-500">No appointments found.</p>
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl">
+              📅
+            </div>
+            <h3 className="mt-3 text-base font-bold text-slate-800">No appointments found</h3>
+            <p className="mt-1 text-sm text-slate-500">
+              There are no visits matching the "{activeTab}" filter.
+            </p>
+            <div className="mt-4">
+              <Link
+                to="/patient/appointments/book"
+                className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition"
+              >
+                Book An Appointment
+              </Link>
+            </div>
           </div>
         ) : (
-          <ul className="divide-y divide-slate-100">
-            {appointments.map((a) => (
-              <li
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 hover:bg-slate-50/60 rounded-xl px-2 transition-colors"
-                key={a._id}
-              >
-                {/* Left side: Badge + Doctor Name + Subtitle */}
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs ring-1 ring-emerald-500/20 flex-shrink-0">
-                    {a.timeSlot ? a.timeSlot.slice(0, 5) : "AM"}
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-800">
-                      Dr. {a.doctor?.name || "Specialist"}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      Consultation with <span className="font-medium text-slate-700">{a.doctor?.specialization || "General Medicine"}</span>
-                      {a.reasonForVisit && (
-                        <span className="hidden md:inline text-slate-400"> • {a.reasonForVisit}</span>
-                      )}
-                    </p>
-                  </div>
-                </div>
+          <div className="divide-y divide-slate-100">
+            {filteredAppointments.map((a) => {
+              const apptDate = new Date(a.appointmentDate);
+              const formattedDate = apptDate.toLocaleDateString("en-IN", {
+                weekday: "short",
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              });
 
-                {/* Right side: Date + Time Slot + Status Badge + Cancel Action */}
-                <div className="flex flex-wrap items-center gap-2.5 self-end sm:self-auto">
-                  <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-600">
-                    {new Date(a.appointmentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                  </span>
-                  <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
-                    {a.timeSlot}
-                  </span>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ring-1 ${
-                      statusClasses[a.status] || "bg-slate-100 text-slate-700"
-                    }`}
-                  >
-                    {a.status}
-                  </span>
-                  {["pending", "confirmed"].includes(a.status) && (
-                    <button
-                      disabled={cancelling === a._id}
-                      onClick={() => handleCancel(a._id)}
-                      className="rounded-lg bg-red-50 text-red-600 ring-1 ring-red-200 px-2.5 py-1 text-xs font-semibold hover:bg-red-600 hover:text-white transition disabled:opacity-50"
-                    >
-                      {cancelling === a._id ? "Cancelling..." : "Cancel"}
-                    </button>
-                  )}
+              return (
+                <div
+                  key={a._id}
+                  className="py-4 sm:py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/70 rounded-2xl px-2.5 transition-colors"
+                >
+                  {/* Left: Doctor & Details */}
+                  <div className="flex items-start gap-3.5">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-sm shadow-xs flex-shrink-0">
+                      {a.doctor?.name ? a.doctor.name.charAt(0) : "D"}
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs font-semibold text-slate-500">
+                          {formattedDate} • {a.timeSlot}
+                        </span>
+                        <span
+                          className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider border ${
+                            statusClasses[a.status] || "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          {a.status}
+                        </span>
+                        <span className="rounded-md bg-slate-100 text-slate-700 px-2 py-0.5 text-[10px] font-bold uppercase">
+                          {a.appointmentType || "In-person"}
+                        </span>
+                      </div>
+
+                      <h3 className="text-base font-bold text-slate-900 mt-1">
+                        Dr. {a.doctor?.name || "Specialist"}
+                      </h3>
+                      <p className="text-xs font-semibold text-blue-700">
+                        {a.doctor?.specialization || "General Medicine"}
+                        {a.doctor?.department && ` • ${a.doctor.department}`}
+                      </p>
+
+                      {a.reasonForVisit && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          Reason: <span className="text-slate-700 font-medium">{a.reasonForVisit}</span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right: Actions */}
+                  <div className="flex flex-wrap items-center gap-2 self-end md:self-center">
+                    {/* Teleconsult action if applicable */}
+                    {a.appointmentType === "teleconsult" && ["pending", "confirmed"].includes(a.status) && (
+                      <a
+                        href={`https://meet.google.com/new`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="rounded-xl bg-purple-50 text-purple-700 border border-purple-200 px-3 py-1.5 text-xs font-bold hover:bg-purple-100 transition shadow-2xs"
+                      >
+                        🎥 Teleconsult Room
+                      </a>
+                    )}
+
+                    {/* Reschedule Button */}
+                    {["pending", "confirmed"].includes(a.status) && (
+                      <button
+                        onClick={() => openRescheduleModal(a)}
+                        className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
+                      >
+                        🔄 Reschedule
+                      </button>
+                    )}
+
+                    {/* Cancel Button */}
+                    {["pending", "confirmed"].includes(a.status) && (
+                      <button
+                        disabled={cancelling === a._id}
+                        onClick={() => handleCancel(a._id)}
+                        className="rounded-xl bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1.5 text-xs font-bold hover:bg-rose-600 hover:text-white transition shadow-2xs disabled:opacity-50"
+                      >
+                        {cancelling === a._id ? "Cancelling..." : "Cancel"}
+                      </button>
+                    )}
+
+                    {a.status === "completed" && (
+                      <Link
+                        to="/patient/consultations"
+                        className="rounded-xl bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 text-xs font-bold hover:bg-blue-100 transition shadow-2xs"
+                      >
+                        View Summary →
+                      </Link>
+                    )}
+                  </div>
                 </div>
-              </li>
-            ))}
-          </ul>
+              );
+            })}
+          </div>
         )}
       </div>
+
+      {/* ================= RESCHEDULE MODAL ================= */}
+      {rescheduleAppt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-extrabold text-slate-900">
+                Reschedule Doctor Visit
+              </h3>
+              <button
+                onClick={() => setRescheduleAppt(null)}
+                className="text-slate-400 hover:text-slate-600 font-bold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleRescheduleSubmit} className="mt-4 space-y-4">
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs">
+                <p className="font-bold text-slate-800">
+                  Doctor: Dr. {rescheduleAppt.doctor?.name}
+                </p>
+                <p className="text-slate-500">{rescheduleAppt.doctor?.specialization}</p>
+                <p className="mt-1 text-slate-400">
+                  Current: {new Date(rescheduleAppt.appointmentDate).toLocaleDateString("en-IN")} at {rescheduleAppt.timeSlot}
+                </p>
+              </div>
+
+              {rescheduleError && (
+                <div className="p-3 bg-rose-50 text-rose-700 text-xs font-semibold rounded-xl border border-rose-200">
+                  {rescheduleError}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Select New Date
+                </label>
+                <input
+                  type="date"
+                  required
+                  min={new Date().toISOString().split("T")[0]}
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Select Preferred Slot
+                </label>
+                <select
+                  value={newTimeSlot}
+                  onChange={(e) => setNewTimeSlot(e.target.value)}
+                  className="mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                >
+                  {TIME_SLOTS.map((slot) => (
+                    <option key={slot} value={slot}>
+                      {slot}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Reason for Rescheduling (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={rescheduleReason}
+                  onChange={(e) => setRescheduleReason(e.target.value)}
+                  placeholder="e.g. Work schedule conflict"
+                  className="mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setRescheduleAppt(null)}
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={rescheduling}
+                  className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-700 transition disabled:opacity-50"
+                >
+                  {rescheduling ? "Updating..." : "Confirm Reschedule"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
