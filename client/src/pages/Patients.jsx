@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import PatientForm from "../components/PatientForm.jsx";
 import AllocateBedModal from "../components/AllocateBedModal.jsx";
-import { deletePatient, getPatients } from "../services/api.js";
+import VitalsTracker from "../components/VitalsTracker.jsx";
+import { deletePatient, getPatients, getPatientVitals } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
 function Patients() {
   const { user } = useAuth();
   const isReceptionist = user?.role === "receptionist";
+  const isDoctor = user?.role === "doctor";
+  const canDelete = ["admin", "receptionist"].includes(user?.role);
+  const canAdmitBed = ["admin", "receptionist", "nurse"].includes(user?.role);
 
   const [patients, setPatients] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -18,6 +22,8 @@ function Patients() {
   const [error, setError] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [admittingPatient, setAdmittingPatient] = useState(null);
+  const [vitalsPatient, setVitalsPatient] = useState(null);
+  const [patientVitalsList, setPatientVitalsList] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   useEffect(() => {
@@ -102,8 +108,14 @@ function Patients() {
     <section>
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-800">Patients</h1>
-          <p className="mt-1 text-sm text-slate-600">Manage hospital patient records.</p>
+          <h1 className="text-2xl font-bold text-slate-800">
+            {isDoctor ? "My Assigned Patients" : "Patients"}
+          </h1>
+          <p className="mt-1 text-sm text-slate-600">
+            {isDoctor
+              ? `Patients under the clinical care and consultation of Dr. ${user?.name?.replace(/^Dr\.\s*/i, "") || "Doctor"}.`
+              : "Manage hospital patient records."}
+          </p>
         </div>
         <button
           className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -182,10 +194,27 @@ function Patients() {
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
-                    {isReceptionist && (
+                    <button
+                      aria-label={`Vitals for ${patient.name}`}
+                      className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
+                      onClick={async () => {
+                        setVitalsPatient(patient);
+                        try {
+                          const res = await getPatientVitals(patient._id);
+                          setPatientVitalsList(res.vitals || []);
+                        } catch (err) {
+                          setPatientVitalsList([]);
+                        }
+                      }}
+                      title="View & log health vitals"
+                      type="button"
+                    >
+                      📊 Vitals
+                    </button>
+                    {!patient.isAdmitted && canAdmitBed && (
                       <button
-                        aria-label={`Admit ${patient.name} to bed`}
-                        className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
+                        aria-label={`Admit ${patient.name}`}
+                        className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition shadow-2xs"
                         onClick={() => setAdmittingPatient(patient)}
                         title="Admit patient to bed"
                         type="button"
@@ -202,15 +231,17 @@ function Patients() {
                     >
                       ✎ Edit
                     </button>
-                    <button
-                      aria-label={`Delete ${patient.name}`}
-                      className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs"
-                      onClick={() => handleDelete(patient)}
-                      title="Delete patient"
-                      type="button"
-                    >
-                      🗑 Delete
-                    </button>
+                    {canDelete && (
+                      <button
+                        aria-label={`Delete ${patient.name}`}
+                        className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs"
+                        onClick={() => handleDelete(patient)}
+                        title="Delete patient"
+                        type="button"
+                      >
+                        🗑 Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -283,6 +314,39 @@ function Patients() {
             setRefreshKey((k) => k + 1);
           }}
         />
+      )}
+
+      {vitalsPatient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-4xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 bg-teal-700 text-white flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-sm">Health Records & Vitals — {vitalsPatient.name}</h3>
+                <p className="text-[11px] text-teal-100">
+                  {vitalsPatient.gender}, {vitalsPatient.age} Y · Contact: {vitalsPatient.contactNumber}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVitalsPatient(null)}
+                className="h-7 w-7 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center font-bold text-xs"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-5 overflow-y-auto flex-1">
+              <VitalsTracker
+                patientId={vitalsPatient._id}
+                vitals={patientVitalsList}
+                isPatient={false}
+                onVitalsUpdated={async () => {
+                  const res = await getPatientVitals(vitalsPatient._id);
+                  setPatientVitalsList(res.vitals || []);
+                }}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

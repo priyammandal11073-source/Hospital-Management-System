@@ -14,8 +14,8 @@ import { protect, restrictTo } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Enforce authentication & receptionist-only access across all bed & ward management routes
-router.use(protect, restrictTo("receptionist"));
+// Enforce authentication & staff access across bed & ward management routes
+router.use(protect, restrictTo("receptionist", "nurse", "admin"));
 
 router
   .route("/")

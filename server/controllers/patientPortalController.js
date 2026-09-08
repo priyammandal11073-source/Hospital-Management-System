@@ -4,6 +4,9 @@ import Bed from "../models/Bed.js";
 import Billing from "../models/Billing.js";
 import Patient from "../models/Patient.js";
 import Prescription from "../models/Prescription.js";
+import Vitals from "../models/Vitals.js";
+import LabReport from "../models/LabReport.js";
+import Notification from "../models/Notification.js";
 
 const OPD_FEE = Number(process.env.OPD_FEE || 500);
 
@@ -92,10 +95,10 @@ export const bookMyAppointment = async (req, res) => {
     });
 
     // Auto-create an OPD billing record for immediate payment.
-    const allowedPaymentMethods = ["cash", "card", "upi", "insurance"];
+    const allowedPaymentMethods = ["cash", "card", "upi", "insurance", "razorpay", "netbanking", "wallet"];
     const resolvedMethod = allowedPaymentMethods.includes(paymentMethod)
       ? paymentMethod
-      : undefined;
+      : "cash";
 
     const billing = await Billing.create({
       patient: req.patient.id,
@@ -341,4 +344,147 @@ export const payMyBillingUpi = async (req, res) => {
   }
 };
 
+// ── PATIENT VITALS ──────────────────────────────────────────────────────────
+// GET /api/patient-portal/vitals
+export const getMyVitals = async (req, res) => {
+  try {
+    const vitals = await Vitals.find({ patient: req.patient.id }).sort({ recordedAt: -1 });
+    return res.status(200).json({ vitals });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch vitals records" });
+  }
+};
 
+// POST /api/patient-portal/vitals
+export const recordMyVitals = async (req, res) => {
+  try {
+    const {
+      bloodPressureSys,
+      bloodPressureDia,
+      bloodSugar,
+      sugarType,
+      weight,
+      height,
+      heartRate,
+      temperature,
+      spo2,
+      notes,
+    } = req.body;
+
+    const patientObj = await Patient.findById(req.patient.id);
+
+    const vitals = await Vitals.create({
+      patient: req.patient.id,
+      recordedBy: "patient",
+      recorderName: patientObj?.name || "Patient Self-Logged",
+      bloodPressureSys: bloodPressureSys ? Number(bloodPressureSys) : undefined,
+      bloodPressureDia: bloodPressureDia ? Number(bloodPressureDia) : undefined,
+      bloodSugar: bloodSugar ? Number(bloodSugar) : undefined,
+      sugarType,
+      weight: weight ? Number(weight) : undefined,
+      height: height ? Number(height) : undefined,
+      heartRate: heartRate ? Number(heartRate) : undefined,
+      temperature: temperature ? Number(temperature) : undefined,
+      spo2: spo2 ? Number(spo2) : undefined,
+      notes,
+    });
+
+    return res.status(201).json({
+      message: "Vitals logged successfully",
+      vitals,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message || "Unable to log vitals" });
+  }
+};
+
+// ── PATIENT LAB REPORTS ─────────────────────────────────────────────────────
+// GET /api/patient-portal/lab-reports
+export const getMyLabReports = async (req, res) => {
+  try {
+    const reports = await LabReport.find({
+      patient: req.patient.id,
+      isSharedWithPatient: true,
+    })
+      .populate("doctor", "name specialization department")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({ reports });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch lab reports" });
+  }
+};
+
+// GET /api/patient-portal/lab-reports/:id
+export const getMyLabReportById = async (req, res) => {
+  try {
+    const report = await LabReport.findOne({
+      _id: req.params.id,
+      patient: req.patient.id,
+      isSharedWithPatient: true,
+    }).populate("doctor", "name specialization department");
+
+    if (!report) {
+      return res.status(404).json({ message: "Lab report not found or not shared" });
+    }
+
+    return res.status(200).json({ report });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch lab report" });
+  }
+};
+
+// ── PATIENT NOTIFICATIONS ───────────────────────────────────────────────────
+// GET /api/patient-portal/notifications
+export const getMyPatientNotifications = async (req, res) => {
+  try {
+    const filter = {
+      $or: [{ recipientType: "patient", patient: req.patient.id }, { recipientType: "all" }],
+    };
+
+    const notifications = await Notification.find(filter)
+      .sort({ createdAt: -1 })
+      .limit(30);
+
+    const unreadCount = await Notification.countDocuments({ ...filter, isRead: false });
+
+    return res.status(200).json({ notifications, unreadCount });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch notifications" });
+  }
+};
+
+// PATCH /api/patient-portal/notifications/:id/read
+export const markMyNotificationRead = async (req, res) => {
+  try {
+    const notification = await Notification.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        $or: [{ patient: req.patient.id }, { recipientType: "all" }],
+      },
+      { isRead: true },
+      { new: true }
+    );
+
+    return res.status(200).json({ notification });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to update notification" });
+  }
+};
+
+// PATCH /api/patient-portal/notifications/read-all
+export const markAllMyNotificationsRead = async (req, res) => {
+  try {
+    await Notification.updateMany(
+      {
+        $or: [{ recipientType: "patient", patient: req.patient.id }, { recipientType: "all" }],
+        isRead: false,
+      },
+      { isRead: true }
+    );
+
+    return res.status(200).json({ message: "All notifications marked as read" });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to mark notifications as read" });
+  }
+};

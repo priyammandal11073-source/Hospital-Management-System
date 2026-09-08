@@ -50,11 +50,32 @@ const seedDatabase = async () => {
       role: "doctor",
     });
 
+    const doctor2User = await User.create({
+      name: "Dr. Priya Nair",
+      email: "dr.nair@hospital.com",
+      password: "doctor123",
+      role: "doctor",
+    });
+
+    const doctor3User = await User.create({
+      name: "Dr. Vikram Patel",
+      email: "dr.patel@hospital.com",
+      password: "doctor123",
+      role: "doctor",
+    });
+
     const receptionistUser = await User.create({
       name: "Sunita Desk Officer",
       email: "receptionist@hospital.com",
       password: "receptionist123",
       role: "receptionist",
+    });
+
+    const nurseUser = await User.create({
+      name: "Sister Mary Clinical Nurse",
+      email: "nurse@hospital.com",
+      password: "nurse123",
+      role: "nurse",
     });
 
     // 2. Create Doctors
@@ -102,6 +123,13 @@ const seedDatabase = async () => {
       availableTimeSlots: ["10:00 AM", "01:00 PM", "05:00 PM"],
       yearsOfExperience: 14,
     });
+
+    doctorUser.doctor = doctor1._id;
+    await doctorUser.save();
+    doctor2User.doctor = doctor2._id;
+    await doctor2User.save();
+    doctor3User.doctor = doctor3._id;
+    await doctor3User.save();
 
     // 3. Create Patients (with ABHA numbers and Indian addresses)
     console.log("Creating patients...");
@@ -526,6 +554,7 @@ const seedDatabase = async () => {
     console.log("  1. Admin:        admin@hospital.com       / admin123");
     console.log("  2. Doctor:       doctor@hospital.com      / doctor123");
     console.log("  3. Receptionist: receptionist@hospital.com / receptionist123");
+    console.log("  4. Nurse:        nurse@hospital.com       / nurse123");
     console.log("\nPatient Portal Login (http://localhost:5173/patient/login):");
     console.log("  1. Patient:      john@example.com         / patient123 (Rahul Sharma)");
     console.log("  2. Patient:      alice@example.com        / patient123 (Priya Patel)");

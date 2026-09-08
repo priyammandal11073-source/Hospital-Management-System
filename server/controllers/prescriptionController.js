@@ -4,6 +4,7 @@ import Prescription from "../models/Prescription.js";
 import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
 import Appointment from "../models/Appointment.js";
+import { resolveDoctorForUser } from "../utils/doctorHelper.js";
 
 const generateRxNumber = () => {
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -27,19 +28,28 @@ export const createPrescription = async (req, res) => {
       followUpDate,
     } = req.body;
 
-    if (!patient || !doctor || !diagnosis || !medications || medications.length === 0) {
+    let targetDoctorId = doctor;
+    if (req.user?.role === "doctor") {
+      const myDoctor = await resolveDoctorForUser(req.user);
+      if (!myDoctor) {
+        return res.status(403).json({ message: "Doctor profile not found for this account" });
+      }
+      targetDoctorId = myDoctor._id;
+    }
+
+    if (!patient || !targetDoctorId || !diagnosis || !medications || medications.length === 0) {
       return res.status(400).json({
         message: "Patient, doctor, diagnosis, and at least one medication are required",
       });
     }
 
-    if (!mongoose.isValidObjectId(patient) || !mongoose.isValidObjectId(doctor)) {
+    if (!mongoose.isValidObjectId(patient) || !mongoose.isValidObjectId(targetDoctorId)) {
       return res.status(400).json({ message: "Invalid patient or doctor ID" });
     }
 
     const [patientRecord, doctorRecord] = await Promise.all([
       Patient.findById(patient),
-      Doctor.findById(doctor),
+      Doctor.findById(targetDoctorId),
     ]);
 
     if (!patientRecord) {
@@ -60,7 +70,7 @@ export const createPrescription = async (req, res) => {
     const prescription = await Prescription.create({
       prescriptionNumber: rxNumber,
       patient,
-      doctor,
+      doctor: targetDoctorId,
       appointment: appointment && mongoose.isValidObjectId(appointment) ? appointment : undefined,
       diagnosis: diagnosis.trim(),
       symptoms: Array.isArray(symptoms) ? symptoms : typeof symptoms === "string" ? symptoms.split(",").map(s => s.trim()).filter(Boolean) : [],
@@ -101,12 +111,19 @@ export const getAllPrescriptions = async (req, res) => {
     const { patient, doctor, search } = req.query;
     const filter = {};
 
-    if (patient && mongoose.isValidObjectId(patient)) {
-      filter.patient = patient;
+    // Doctor role enforcement: doctor can only view their own authored prescriptions
+    if (req.user?.role === "doctor") {
+      const myDoctor = await resolveDoctorForUser(req.user);
+      if (!myDoctor) {
+        return res.status(403).json({ message: "Doctor profile not found for this account" });
+      }
+      filter.doctor = myDoctor._id;
+    } else if (doctor && mongoose.isValidObjectId(doctor)) {
+      filter.doctor = doctor;
     }
 
-    if (doctor && mongoose.isValidObjectId(doctor)) {
-      filter.doctor = doctor;
+    if (patient && mongoose.isValidObjectId(patient)) {
+      filter.patient = patient;
     }
 
     if (search && search.trim()) {
@@ -155,6 +172,14 @@ export const getPrescriptionById = async (req, res) => {
       return res.status(404).json({ message: "Prescription not found" });
     }
 
+    // Doctor role enforcement
+    if (req.user?.role === "doctor") {
+      const myDoctor = await resolveDoctorForUser(req.user);
+      if (!myDoctor || !prescription.doctor?._id.equals(myDoctor._id)) {
+        return res.status(403).json({ message: "Access denied. You can only view your own prescriptions." });
+      }
+    }
+
     return res.status(200).json({ prescription });
   } catch (error) {
     console.error("Get prescription by ID error:", error);
@@ -169,6 +194,18 @@ export const updatePrescription = async (req, res) => {
 
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({ message: "Invalid prescription ID" });
+    }
+
+    // Doctor role enforcement
+    if (req.user?.role === "doctor") {
+      const myDoctor = await resolveDoctorForUser(req.user);
+      const existing = await Prescription.findById(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Prescription not found" });
+      }
+      if (!myDoctor || !existing.doctor.equals(myDoctor._id)) {
+        return res.status(403).json({ message: "Access denied. You can only modify your own prescriptions." });
+      }
     }
 
     const { diagnosis, symptoms, vitals, medications, labTestsRecommended, advice, followUpDate } = req.body;
@@ -207,6 +244,18 @@ export const deletePrescription = async (req, res) => {
 
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({ message: "Invalid prescription ID" });
+    }
+
+    // Doctor role enforcement
+    if (req.user?.role === "doctor") {
+      const myDoctor = await resolveDoctorForUser(req.user);
+      const existing = await Prescription.findById(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Prescription not found" });
+      }
+      if (!myDoctor || !existing.doctor.equals(myDoctor._id)) {
+        return res.status(403).json({ message: "Access denied. You can only delete your own prescriptions." });
+      }
     }
 
     const deleted = await Prescription.findByIdAndDelete(id);

@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import DoctorScheduleModal from "../components/DoctorScheduleModal.jsx";
+import PrescriptionForm from "../components/PrescriptionForm.jsx";
+import VitalsTracker from "../components/VitalsTracker.jsx";
 import {
   cancelMyAppointment,
   getAppointments,
@@ -10,6 +13,8 @@ import {
   getMyAppointments,
   getMyBillings,
   getPatients,
+  getMyDoctorProfile,
+  getPatientVitals,
   updateAppointmentStatus,
   updatePaymentStatus,
 } from "../services/api.js";
@@ -273,27 +278,37 @@ function AdminDashboard({ user, refreshKey, onTriggerRefresh }) {
    2. DOCTOR CLINICAL WORKSPACE PORTAL DASHBOARD
    ========================================================================= */
 function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
+  const [profileData, setProfileData] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [updatingId, setUpdatingId] = useState(null);
 
+  // Modals for clinical workflow
+  const [scheduleDoctor, setScheduleDoctor] = useState(null);
+  const [rxAppointment, setRxAppointment] = useState(null);
+  const [vitalsPatient, setVitalsPatient] = useState(null);
+  const [patientVitalsList, setPatientVitalsList] = useState([]);
+
   useEffect(() => {
     let active = true;
     const loadDoctorData = async () => {
       setLoading(true);
+      setError("");
       try {
-        const [aData, pData] = await Promise.all([
+        const [meData, aData, pData] = await Promise.all([
+          getMyDoctorProfile(),
           getAppointments(),
           getPatients("", 1, 20),
         ]);
         if (active) {
+          setProfileData(meData);
           setAppointments(aData.appointments || []);
           setPatients(pData.patients || []);
         }
       } catch (err) {
-        if (active) setError(err.response?.data?.message || "Failed to load clinical workspace.");
+        if (active) setError(err.response?.data?.message || "Failed to load doctor clinical workspace.");
       } finally {
         if (active) setLoading(false);
       }
@@ -302,22 +317,22 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
     return () => { active = false; };
   }, [refreshKey]);
 
-  // Filter appointments for this doctor (or all if name doesn't match seed doctor)
-  const myAppointments = useMemo(() => {
-    const docName = user?.name ? user.name.replace(/^Dr\.\s*/i, "").toLowerCase() : "";
-    const matched = appointments.filter((a) => {
-      const aDocName = (a.doctor?.name || "").toLowerCase();
-      return docName ? aDocName.includes(docName) : true;
-    });
-    return matched.length > 0 ? matched : appointments;
-  }, [appointments, user]);
+  const doctor = profileData?.doctor;
+  const stats = profileData?.stats || {
+    todayAppointments: 0,
+    pendingAppointments: 0,
+    completedAppointments: 0,
+    totalAppointments: 0,
+    totalPatients: 0,
+  };
+  const todaySchedule = profileData?.todaySchedule;
 
   const todayStr = new Date().toISOString().slice(0, 10);
-  const todayConsultations = myAppointments.filter(
+  const todayConsultations = appointments.filter(
     (a) => a.appointmentDate && String(a.appointmentDate).slice(0, 10) === todayStr
   );
-  const pendingCount = myAppointments.filter((a) => a.status === "pending").length;
-  const completedCount = myAppointments.filter((a) => a.status === "completed").length;
+  const pendingCount = appointments.filter((a) => a.status === "pending").length;
+  const completedCount = appointments.filter((a) => a.status === "completed").length;
 
   const handleMarkComplete = async (id) => {
     setUpdatingId(id);
@@ -331,30 +346,75 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
     }
   };
 
+  const handleOpenVitals = async (patient) => {
+    setVitalsPatient(patient);
+    try {
+      const res = await getPatientVitals(patient._id);
+      setPatientVitalsList(res.vitals || []);
+    } catch {
+      setPatientVitalsList([]);
+    }
+  };
+
   if (loading) return <LoadingSpinner label="Opening Doctor Clinical Workspace..." />;
   if (error) return <ErrorMessage message={error} />;
 
   return (
     <div className="space-y-6">
-      {/* Doctor Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-800 via-teal-800 to-slate-950 p-6 sm:p-8 text-white shadow-lg">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>Doctor clinical workspace</span>
-            <span className="opacity-60">•</span>
-            <span>Active consulting shift</span>
+      {/* Doctor Hero & Identity Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-950 p-6 sm:p-8 text-white shadow-xl ring-1 ring-emerald-500/20">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-md ring-1 ring-white/20">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Doctor clinical workspace</span>
+              <span className="opacity-60">•</span>
+              <span className="text-emerald-300 font-mono">ID: {doctor?._id?.slice(-6).toUpperCase()}</span>
+            </div>
+
+            <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
+              Welcome, Dr. {doctor?.name || user?.name?.replace(/^Dr\.\s*/i, "")}
+            </h1>
+
+            <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-emerald-100/90">
+              <span className="font-semibold text-emerald-200">
+                {doctor?.specialization || "Specialist"}
+              </span>
+              <span>•</span>
+              <span>Department of {doctor?.department || "Medicine"}</span>
+              <span>•</span>
+              <span className="rounded-md bg-emerald-800/80 px-2 py-0.5 text-xs font-medium">
+                {doctor?.yearsOfExperience ?? 5} yrs experience
+              </span>
+              <span>•</span>
+              <span className="text-emerald-300 font-bold">
+                Fee: ₹{doctor?.consultationFee ?? 500} / visit
+              </span>
+            </div>
           </div>
-          <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Welcome, Dr. {user?.name?.replace(/^Dr\.\s*/i, "")}
-          </h1>
-          <p className="mt-2 text-sm text-emerald-100/90 leading-relaxed">
-            Your patient consultation queue for today is active. Review medical histories, examine symptoms, and conclude clinical visits.
-          </p>
+
+          {/* Quick Actions in Hero */}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setScheduleDoctor(doctor)}
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-900 shadow-md transition hover:bg-emerald-50 hover:shadow-lg"
+              type="button"
+            >
+              <span>📅</span>
+              <span>My schedule & leaves</span>
+            </button>
+            <Link
+              to="/prescriptions"
+              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 px-4 py-2.5 text-xs font-bold text-white shadow-md transition border border-emerald-400/30"
+            >
+              <span>℞</span>
+              <span>Write prescription</span>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Doctor Metrics */}
+      {/* Metrics Row */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           label="Today's consultations"
@@ -365,10 +425,10 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           icon={<span className="text-2xl">🩺</span>}
         />
         <MetricCard
-          label="Awaiting confirmation"
+          label="In waiting queue"
           value={pendingCount}
           gradient="from-amber-500 to-orange-600"
-          badge="Patient bookings"
+          badge="Pending consultation"
           badgeColor="bg-amber-50 text-amber-700"
           icon={<span className="text-2xl">⏳</span>}
         />
@@ -376,68 +436,151 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           label="Completed visits"
           value={completedCount}
           gradient="from-blue-600 to-indigo-600"
-          badge="Concluded cases"
+          badge="Concluded consultations"
           badgeColor="bg-blue-50 text-blue-700"
           icon={<span className="text-2xl">✓</span>}
         />
         <MetricCard
-          label="Total clinical queue"
-          value={myAppointments.length}
+          label="Total assigned patients"
+          value={stats.totalPatients || patients.length}
           gradient="from-purple-600 to-pink-600"
-          badge="All scheduled"
+          badge="Under your clinical care"
           badgeColor="bg-purple-50 text-purple-700"
-          icon={<span className="text-2xl">📋</span>}
+          icon={<span className="text-2xl">👥</span>}
         />
       </div>
 
-      {/* Doctor Today's Patient Queue with Action */}
+      {/* Today's Shift & Availability Strip */}
+      <div className="rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 text-teal-700 font-bold text-xl ring-1 ring-teal-500/20">
+            ⏰
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-800">
+                Today's Roster ({new Date().toLocaleDateString("en-IN", { weekday: "long" })})
+              </h3>
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                todaySchedule?.isAvailable !== false ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
+              }`}>
+                {todaySchedule?.isAvailable !== false ? "● Active consulting shift" : "Off Duty"}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {todaySchedule?.shifts?.length
+                ? todaySchedule.shifts.map((s) => `${s.startTime} - ${s.endTime} (${s.slotDurationMinutes || 30}m slots)`).join(", ")
+                : "Standard hospital shift: 09:00 AM - 05:00 PM"}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 self-end md:self-auto">
+          {doctor?.leaves?.length > 0 && (
+            <span className="text-xs text-amber-700 bg-amber-50 px-3 py-1 rounded-lg border border-amber-200 font-medium">
+              🏖️ {doctor.leaves.length} approved leave scheduled
+            </span>
+          )}
+          <button
+            onClick={() => setScheduleDoctor(doctor)}
+            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition"
+            type="button"
+          >
+            ⚙ Edit weekly slots
+          </button>
+        </div>
+      </div>
+
+      {/* Main Consultation Queue */}
       <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div>
             <h2 className="text-base font-bold text-slate-800">My consultation queue</h2>
-            <p className="text-xs text-slate-500 mt-0.5">Patients assigned for your review</p>
+            <p className="text-xs text-slate-500 mt-0.5">Patients scheduled exclusively for Dr. {doctor?.name || user?.name}</p>
           </div>
           <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-500/20">
-            {myAppointments.length} assigned cases
+            {appointments.length} assigned consultations
           </span>
         </div>
 
-        {myAppointments.length === 0 ? (
-          <p className="py-12 text-center text-sm text-slate-500">No appointments scheduled for you right now.</p>
+        {appointments.length === 0 ? (
+          <div className="py-12 text-center text-slate-500">
+            <span className="text-4xl">🎉</span>
+            <p className="mt-3 text-sm font-semibold text-slate-700">No appointments scheduled for you right now.</p>
+            <p className="text-xs text-slate-400 mt-1">New patient bookings assigned to your schedule will appear here immediately.</p>
+          </div>
         ) : (
           <ul className="mt-4 divide-y divide-slate-100">
-            {myAppointments.map((a) => (
-              <li key={a._id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 hover:bg-slate-50/60 rounded-xl px-2 transition-colors">
+            {appointments.map((a) => (
+              <li key={a._id} className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-4 hover:bg-slate-50/70 rounded-xl px-3 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs ring-1 ring-emerald-500/20 flex-shrink-0">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs ring-1 ring-emerald-500/20 flex-shrink-0">
                     {a.timeSlot ? a.timeSlot.slice(0, 5) : "AM"}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-bold text-slate-800">{a.patient?.name}</p>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-mono text-slate-600">{a.patient?.age ? `${a.patient.age}y` : ""} {a.patient?.gender}</span>
+                      <p className="font-bold text-slate-900">{a.patient?.name}</p>
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-mono text-slate-600">
+                        {a.patient?.age ? `${a.patient.age}y` : ""} {a.patient?.gender}
+                      </span>
+                      {a.patient?.bloodGroup && (
+                        <span className="rounded-full bg-rose-50 text-rose-700 px-2 py-0.5 text-[10px] font-bold border border-rose-100">
+                          {a.patient.bloodGroup}
+                        </span>
+                      )}
                     </div>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      <span className="font-medium text-slate-700">Reason:</span> {a.reasonForVisit || "Routine consultation"} • {formatDate(a.appointmentDate)}
+                    <p className="text-xs text-slate-500 mt-1">
+                      <span className="font-medium text-slate-700">Reason:</span> {a.reasonForVisit || "Routine consultation"} • {formatDate(a.appointmentDate)} • <span className="font-mono text-slate-600">{a.patient?.contactNumber || ""}</span>
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2.5 self-end sm:self-auto">
-                  <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">{a.timeSlot}</span>
+                <div className="flex flex-wrap items-center gap-2 self-end lg:self-auto">
+                  <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                    {a.timeSlot}
+                  </span>
+
                   <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ring-1 ${
-                    a.status === "completed" ? "bg-emerald-50 text-emerald-700 ring-emerald-500/20" : "bg-blue-50 text-blue-700 ring-blue-500/20"
+                    a.status === "completed"
+                      ? "bg-emerald-50 text-emerald-700 ring-emerald-500/20"
+                      : a.status === "confirmed"
+                      ? "bg-blue-50 text-blue-700 ring-blue-500/20"
+                      : "bg-amber-50 text-amber-700 ring-amber-500/20"
                   }`}>
                     {a.status}
                   </span>
 
+                  {/* Vitals Button */}
+                  {a.patient && (
+                    <button
+                      onClick={() => handleOpenVitals(a.patient)}
+                      className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
+                      title="View or record vitals"
+                      type="button"
+                    >
+                      📊 Vitals
+                    </button>
+                  )}
+
+                  {/* Prescribe Rx Button */}
+                  <button
+                    onClick={() => setRxAppointment(a)}
+                    className="rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition shadow-2xs"
+                    title="Generate prescription for this patient"
+                    type="button"
+                  >
+                    ℞ Prescribe
+                  </button>
+
+                  {/* Complete Visit Button */}
                   {a.status !== "completed" && (
                     <button
                       disabled={updatingId === a._id}
                       onClick={() => handleMarkComplete(a._id)}
                       className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition shadow-2xs disabled:opacity-50"
+                      type="button"
                     >
-                      {updatingId === a._id ? "Saving..." : "✓ Complete visit"}
+                      {updatingId === a._id ? "Saving..." : "✓ Conclude"}
                     </button>
                   )}
                 </div>
@@ -446,6 +589,122 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           </ul>
         )}
       </section>
+
+      {/* Weekly Schedule Overview Widget */}
+      {doctor?.weeklySchedule && (
+        <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+            <div>
+              <h2 className="text-base font-bold text-slate-800">My weekly availability timetable</h2>
+              <p className="text-xs text-slate-500 mt-0.5">Your recurring shift schedule configured in hospital registry</p>
+            </div>
+            <button
+              onClick={() => setScheduleDoctor(doctor)}
+              className="text-xs font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+              type="button"
+            >
+              Modify schedule →
+            </button>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
+            {doctor.weeklySchedule.map((dayPlan) => (
+              <div
+                key={dayPlan.day}
+                className={`p-3 rounded-xl border text-center transition-all ${
+                  dayPlan.isAvailable
+                    ? "border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50"
+                    : "border-slate-200 bg-slate-50 opacity-60"
+                }`}
+              >
+                <p className="text-xs font-bold text-slate-800">{dayPlan.day.slice(0, 3)}</p>
+                <div className="mt-1.5">
+                  <span className={`inline-block text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                    dayPlan.isAvailable ? "bg-emerald-100 text-emerald-800" : "bg-slate-200 text-slate-600"
+                  }`}>
+                    {dayPlan.isAvailable ? "Available" : "Off"}
+                  </span>
+                </div>
+                {dayPlan.isAvailable && dayPlan.shifts?.[0] && (
+                  <p className="mt-1.5 text-[11px] font-mono text-slate-600">
+                    {dayPlan.shifts[0].startTime.replace(" ", "")} - {dayPlan.shifts[0].endTime.replace(" ", "")}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Doctor Schedule Modal */}
+      {scheduleDoctor && (
+        <DoctorScheduleModal
+          doctor={scheduleDoctor}
+          onClose={() => setScheduleDoctor(null)}
+          onUpdated={() => {
+            setScheduleDoctor(null);
+            onTriggerRefresh();
+          }}
+        />
+      )}
+
+      {/* Prescription Form Modal directly from Dashboard */}
+      {rxAppointment && (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs overflow-y-auto"
+          role="dialog"
+        >
+          <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white shadow-2xl">
+            <PrescriptionForm
+              initialAppointment={rxAppointment}
+              initialPatient={rxAppointment.patient}
+              initialDoctor={doctor}
+              onCancel={() => setRxAppointment(null)}
+              onSuccess={() => {
+                setRxAppointment(null);
+                onTriggerRefresh();
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Vitals Modal */}
+      {vitalsPatient && (
+        <div
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"
+          role="dialog"
+        >
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between border-b pb-3">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Health Vitals Tracker — {vitalsPatient.name}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  {vitalsPatient.age ? `${vitalsPatient.age}y / ` : ""}{vitalsPatient.gender} • Blood Group: {vitalsPatient.bloodGroup || "—"}
+                </p>
+              </div>
+              <button
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                onClick={() => setVitalsPatient(null)}
+                type="button"
+              >
+                ✕
+              </button>
+            </div>
+            <VitalsTracker
+              patientId={vitalsPatient._id}
+              initialVitals={patientVitalsList}
+              onVitalsRecorded={(newV) => {
+                setPatientVitalsList((prev) => [newV, ...prev]);
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -454,6 +713,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
    3. RECEPTIONIST & FRONT DESK ADMISSIONS PORTAL DASHBOARD
    ========================================================================= */
 function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
+  const isNurse = user?.role === "nurse";
   const [patients, setPatients] = useState([]);
   const [appointments, setAppointments] = useState([]);
   const [billings, setBillings] = useState([]);
@@ -507,33 +767,35 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
     }
   };
 
-  if (loading) return <LoadingSpinner label="Opening front desk & admissions counter..." />;
+  if (loading) return <LoadingSpinner label={isNurse ? "Opening nursing station & inpatient care records..." : "Opening front desk & admissions counter..."} />;
   if (error) return <ErrorMessage message={error} />;
 
   return (
     <div className="space-y-6">
-      {/* Reception Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-700 via-orange-700 to-slate-950 p-6 sm:p-8 text-white shadow-lg">
+      {/* Reception / Nurse Hero */}
+      <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${isNurse ? "from-teal-800 via-cyan-900 to-slate-950" : "from-amber-700 via-orange-700 to-slate-950"} p-6 sm:p-8 text-white shadow-lg`}>
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
-            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
-            <span>Hospital admissions & cashier counter</span>
+            <span className={`h-2 w-2 rounded-full ${isNurse ? "bg-teal-400" : "bg-amber-400"} animate-pulse`}></span>
+            <span>{isNurse ? "Clinical care & inpatient nursing station" : "Hospital admissions & cashier counter"}</span>
             <span className="opacity-60">•</span>
-            <span>Front office desk</span>
+            <span>{isNurse ? "Ward care desk" : "Front office desk"}</span>
           </div>
           <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Hospital front desk & admissions
+            {isNurse ? "Nursing station & inpatient care" : "Hospital front desk & admissions"}
           </h1>
-          <p className="mt-2 text-sm text-amber-100/90 leading-relaxed">
-            Welcome, {user?.name}. Process walk-in admissions, register patient check-ins, manage appointment schedules, and collect counter payments.
+          <p className="mt-2 text-sm text-teal-100/90 leading-relaxed">
+            {isNurse
+              ? `Welcome, ${user?.name}. Monitor admitted inpatients, record vital signs, coordinate ward bed allocations, and review diagnostic lab results.`
+              : `Welcome, ${user?.name}. Process walk-in admissions, register patient check-ins, manage appointment schedules, and collect counter payments.`}
           </p>
         </div>
       </div>
 
-      {/* Front Desk Metrics */}
+      {/* Front Desk / Nurse Metrics */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          label="Admitted patients"
+          label={isNurse ? "Inpatients & records" : "Admitted patients"}
           value={patients.length}
           gradient="from-blue-600 to-cyan-600"
           badge="In system"
@@ -549,11 +811,11 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
           icon={<span className="text-2xl">📅</span>}
         />
         <MetricCard
-          label="Pending cashier bills"
+          label={isNurse ? "Unpaid hospital invoices" : "Pending cashier bills"}
           value={billings.length}
-          gradient="from-amber-500 to-orange-600"
-          badge="Unsettled invoices"
-          badgeColor="bg-amber-50 text-amber-700"
+          gradient={isNurse ? "from-slate-600 to-slate-700" : "from-amber-500 to-orange-600"}
+          badge={isNurse ? "View-only" : "Unsettled invoices"}
+          badgeColor={isNurse ? "bg-slate-100 text-slate-700" : "bg-amber-50 text-amber-700"}
           icon={<span className="text-2xl">💳</span>}
         />
         <MetricCard
@@ -566,51 +828,63 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
         />
       </div>
 
-      {/* Front Desk Quick Action Hub */}
+      {/* Operations Quick Action Hub */}
       <section className="rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h2 className="text-sm font-bold text-slate-700 flex items-center gap-2">
-              <span className="flex h-2 w-2 rounded-full bg-amber-500"></span>
-              Front office quick operations
+              <span className={`flex h-2 w-2 rounded-full ${isNurse ? "bg-teal-500" : "bg-amber-500"}`}></span>
+              {isNurse ? "Nursing care quick actions" : "Front office quick operations"}
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">Admissions, OPD booking, and cashier desks</p>
+            <p className="text-xs text-slate-500 mt-0.5">{isNurse ? "Ward admissions, appointments & bed management" : "Admissions, OPD booking, and cashier desks"}</p>
           </div>
         </div>
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Link to="/patients" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-blue-400 hover:shadow-md transition">
             <span className="text-2xl">➕</span>
             <div>
-              <p className="text-xs font-bold text-slate-800">New patient admission</p>
-              <p className="text-[11px] text-slate-500">Register new hospital walk-in</p>
+              <p className="text-xs font-bold text-slate-800">{isNurse ? "Patient care directory" : "New patient admission"}</p>
+              <p className="text-[11px] text-slate-500">{isNurse ? "View patients & record vitals" : "Register new hospital walk-in"}</p>
             </div>
           </Link>
           <Link to="/appointments" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-emerald-400 hover:shadow-md transition">
             <span className="text-2xl">📅</span>
             <div>
-              <p className="text-xs font-bold text-slate-800">Book OPD appointment</p>
-              <p className="text-[11px] text-slate-500">Schedule specialist consultation</p>
+              <p className="text-xs font-bold text-slate-800">OPD appointments</p>
+              <p className="text-[11px] text-slate-500">View & coordinate visits</p>
             </div>
           </Link>
-          <Link to="/billing" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-amber-400 hover:shadow-md transition">
-            <span className="text-2xl">🧾</span>
-            <div>
-              <p className="text-xs font-bold text-slate-800">Cashier & invoicing</p>
-              <p className="text-[11px] text-slate-500">Generate bill & collect payment</p>
-            </div>
-          </Link>
+          {isNurse ? (
+            <Link to="/beds" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-teal-400 hover:shadow-md transition">
+              <span className="text-2xl">🛏️</span>
+              <div>
+                <p className="text-xs font-bold text-slate-800">Beds & wards</p>
+                <p className="text-[11px] text-slate-500">Allocate beds & manage occupancy</p>
+              </div>
+            </Link>
+          ) : (
+            <Link to="/billing" className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-amber-400 hover:shadow-md transition">
+              <span className="text-2xl">🧾</span>
+              <div>
+                <p className="text-xs font-bold text-slate-800">Cashier & invoicing</p>
+                <p className="text-[11px] text-slate-500">Generate bill & collect payment</p>
+              </div>
+            </Link>
+          )}
         </div>
       </section>
 
-      {/* Pending Cashier Queue with 1-click Cash Settlement */}
+      {/* Pending Cashier Queue / Billing Monitor */}
       <div className="grid gap-6 xl:grid-cols-2">
         <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <h2 className="text-base font-bold text-slate-800">Pending billing settlements</h2>
+            <h2 className="text-base font-bold text-slate-800">
+              {isNurse ? "Unpaid billing records (view-only)" : "Pending billing settlements"}
+            </h2>
             <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-500/20">{billings.length} unpaid</span>
           </div>
           {billings.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">All counter bills are settled!</p>
+            <p className="py-8 text-center text-sm text-slate-500">All bills are settled!</p>
           ) : (
             <ul className="mt-4 divide-y divide-slate-100">
               {billings.slice(0, 5).map((b) => (
@@ -619,13 +893,19 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
                     <p className="font-bold text-slate-800">{b.patient?.name || "Patient"}</p>
                     <p className="text-xs text-slate-500">Inv #{b._id.slice(-6).toUpperCase()} • ₹{b.totalAmount.toFixed(2)}</p>
                   </div>
-                  <button
-                    disabled={settlingId === b._id}
-                    onClick={() => handleQuickCashSettlement(b._id)}
-                    className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition disabled:opacity-50"
-                  >
-                    {settlingId === b._id ? "Saving..." : "Collect cash"}
-                  </button>
+                  {isNurse ? (
+                    <span className="rounded-lg bg-slate-100 border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600">
+                      Unsettled
+                    </span>
+                  ) : (
+                    <button
+                      disabled={settlingId === b._id}
+                      onClick={() => handleQuickCashSettlement(b._id)}
+                      className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition disabled:opacity-50"
+                    >
+                      {settlingId === b._id ? "Saving..." : "Collect cash"}
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -856,7 +1136,7 @@ function Dashboard() {
     return <DoctorDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
   }
 
-  if (role === "receptionist") {
+  if (role === "receptionist" || role === "nurse") {
     return <ReceptionistDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
   }
 

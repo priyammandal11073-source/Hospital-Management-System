@@ -35,7 +35,7 @@ const formatDate = (date) =>
 
 function Beds() {
   const { user } = useAuth();
-  const isReceptionist = user?.role === "receptionist";
+  const canManageBeds = ["receptionist", "nurse", "admin"].includes(user?.role);
 
   const [beds, setBeds] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -112,16 +112,16 @@ function Beds() {
     return map;
   }, [summary]);
 
-  if (!isReceptionist) {
+  if (!canManageBeds) {
     return (
       <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4 max-w-xl mx-auto mt-12">
         <div className="text-4xl">🔒</div>
         <h2 className="text-xl font-extrabold text-slate-900">Access Restricted</h2>
         <p className="text-sm font-medium text-slate-600">
-          Ward and bed allocation management is restricted exclusively to Receptionists.
+          Ward and bed allocation management is restricted to authorized healthcare staff (Receptionists, Nurses, and Administrators).
         </p>
         <p className="text-xs text-slate-500">
-          If you require bed assignment or patient transfer, please contact the hospital reception desk.
+          If you require bed assignment or patient transfer, please contact the nursing station or reception desk.
         </p>
       </div>
     );

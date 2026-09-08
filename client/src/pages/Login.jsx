@@ -37,6 +37,22 @@ const PORTAL_TYPES = [
     ),
   },
   {
+    id: "nurse",
+    role: "nurse",
+    authType: "staff",
+    title: "Nursing station",
+    badge: "Clinical care nurse",
+    badgeColor: "bg-teal-500/20 text-teal-300 ring-teal-500/30",
+    iconBg: "bg-teal-600/20 text-teal-400 border-teal-500/30",
+    defaultEmail: "nurse@hospital.com",
+    defaultPass: "nurse123",
+    icon: (
+      <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+      </svg>
+    ),
+  },
+  {
     id: "receptionist",
     role: "receptionist",
     authType: "staff",
@@ -141,10 +157,10 @@ function Login() {
       <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-indigo-600/10 blur-3xl" />
 
-      <div className="relative z-10 w-full max-w-5xl">
+      <div className="relative z-10 w-full max-w-6xl">
         {/* ================= STEP 1: SELECT PORTAL TILE ================= */}
         {step === 1 && (
-          <div className="w-full max-w-4xl mx-auto">
+          <div className="w-full max-w-5xl mx-auto">
             {/* Top Header & Branding */}
             <div className="text-center mb-10">
               <Link to="/" onClick={() => setStep(1)} className="inline-flex transition hover:opacity-95 cursor-pointer" title="Home page">
@@ -158,13 +174,13 @@ function Login() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-4">
               {PORTAL_TYPES.map((portal) => (
                 <button
                   key={portal.id}
                   type="button"
                   onClick={() => handlePortalSelect(portal)}
-                  className="group relative flex flex-col items-center justify-center p-8 rounded-2xl border border-slate-800/80 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-600 hover:shadow-2xl hover:shadow-black/60 hover:-translate-y-1.5 transition-all duration-200 cursor-pointer text-center"
+                  className="group relative flex flex-col items-center justify-center p-6 rounded-2xl border border-slate-800/80 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-600 hover:shadow-2xl hover:shadow-black/60 hover:-translate-y-1.5 transition-all duration-200 cursor-pointer text-center"
                 >
                   <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border ${portal.iconBg} mb-5 transition-transform duration-200 group-hover:scale-110 shadow-lg shadow-black/30`}>
                     {portal.icon}

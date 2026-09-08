@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import HospitalLogo from "./HospitalLogo.jsx";
+import NotificationBell from "./NotificationBell.jsx";
 
 const navLinkClass = ({ isActive }) =>
   `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
@@ -36,6 +37,15 @@ const PORTAL_CONFIG = {
     avatarGrad: "from-amber-600 to-orange-600",
     tagColor: "text-amber-600",
     roleDesc: "Admissions executive",
+  },
+  nurse: {
+    label: "Nursing station",
+    title: "Nursing & inpatient care station",
+    badge: "👩‍⚕️ Clinical nursing station",
+    badgeClass: "bg-teal-50 text-teal-700 ring-teal-500/30",
+    avatarGrad: "from-teal-600 to-cyan-600",
+    tagColor: "text-teal-600",
+    roleDesc: "Clinical care & ward nurse",
   },
   patient: {
     label: "Patient care portal",
@@ -79,7 +89,9 @@ function DashboardLayout() {
 
             <div className="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4">
               <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${config.badgeClass}`}>
-                {config.badge}
+                {role === "doctor" && user?.name
+                  ? `🩺 Dr. ${user.name.replace(/^Dr\.\s*/i, "")} consultation desk`
+                  : config.badge}
               </span>
             </div>
           </div>
@@ -110,6 +122,9 @@ function DashboardLayout() {
               </svg>
               <span>{todayStr}</span>
             </div>
+
+            {/* Real-time Notification Bell */}
+            <NotificationBell isPatient={false} />
 
             {/* User Profile Card */}
             <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-1.5 shadow-2xs">
@@ -170,6 +185,8 @@ function DashboardLayout() {
                     ? "Clinical dashboard"
                     : role === "receptionist"
                     ? "Reception desk"
+                    : role === "nurse"
+                    ? "Nursing station"
                     : role === "patient"
                     ? "My health hub"
                     : "Executive dashboard"}
@@ -208,42 +225,46 @@ function DashboardLayout() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span>
-                      {role === "receptionist" ? "Patient admissions" : "Patients directory"}
+                      {role === "doctor" ? "My patients" : role === "receptionist" ? "Patient admissions" : role === "nurse" ? "Inpatients & care" : "Patients directory"}
                     </span>
                   </NavLink>
 
-                  {/* Doctors: Admin and Doctor can view specialist directory */}
-                  {(role === "admin" || role === "doctor") && (
+                  {/* Doctors / Schedule: Admin views all, Doctor views own schedule, Nurse views doctor directory */}
+                  {(role === "admin" || role === "doctor" || role === "nurse") && (
                     <NavLink className={navLinkClass} to="/doctors">
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <span>Specialist doctors</span>
+                      <span>
+                        {role === "doctor" ? "My schedule & availability" : "Specialist doctors"}
+                      </span>
                     </NavLink>
                   )}
 
                   {/* Appointments */}
                   <NavLink className={navLinkClass} to="/appointments">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
                     <span>
                       {role === "doctor"
-                        ? "Clinical consultations"
+                        ? "My consultations"
                         : role === "receptionist"
                         ? "OPD scheduling"
+                        : role === "nurse"
+                        ? "Consultations schedule"
                         : "Appointments"}
                     </span>
                   </NavLink>
 
-                  {/* Billing: Admin and Receptionist */}
-                  {(role === "admin" || role === "receptionist") && (
+                  {/* Billing: Admin, Receptionist, and Nurse (view-only) */}
+                  {(role === "admin" || role === "receptionist" || role === "nurse") && (
                     <NavLink className={navLinkClass} to="/billing">
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                       </svg>
                       <span>
-                        {role === "receptionist" ? "Cashier & billing" : "Billing & invoices"}
+                        {role === "receptionist" ? "Cashier & billing" : role === "nurse" ? "Billing records (view)" : "Billing & invoices"}
                       </span>
                     </NavLink>
                   )}
@@ -258,8 +279,8 @@ function DashboardLayout() {
                     </span>
                   </NavLink>
 
-                  {/* Beds & Ward Management: Receptionist Only */}
-                  {role === "receptionist" && (
+                  {/* Beds & Ward Management: Receptionist, Nurse, Admin */}
+                  {(role === "receptionist" || role === "nurse" || role === "admin") && (
                     <NavLink className={navLinkClass} to="/beds">
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -267,6 +288,14 @@ function DashboardLayout() {
                       <span>Beds & wards</span>
                     </NavLink>
                   )}
+
+                  {/* Lab Reports & Pathology */}
+                  <NavLink className={navLinkClass} to="/lab-reports">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                    <span>Lab & diagnostics</span>
+                  </NavLink>
 
                   {/* Reports: Admin Only */}
                   {role === "admin" && (

@@ -17,6 +17,6 @@ router.patch("/:id/status", protect, updateAppointmentStatus);
 router
   .route("/:id")
   .get(protect, getAppointmentById)
-  .delete(protect, restrictTo("admin", "receptionist"), deleteAppointment);
+  .delete(protect, restrictTo("admin", "receptionist", "nurse"), deleteAppointment);
 
 export default router;

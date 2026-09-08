@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import DoctorForm from "../components/DoctorForm.jsx";
+import DoctorScheduleModal from "../components/DoctorScheduleModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { deleteDoctor, getDoctors } from "../services/api.js";
 
@@ -15,6 +16,7 @@ function Doctors() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [scheduleDoctor, setScheduleDoctor] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -67,12 +69,20 @@ function Doctors() {
     }
   };
 
+  const isDoctor = user?.role === "doctor";
+
   return (
     <section>
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-800">Doctors</h1>
-          <p className="mt-1 text-sm text-slate-600">View doctor profiles and availability.</p>
+          <h1 className="text-2xl font-bold text-slate-800">
+            {isDoctor ? "My Schedule & Availability" : "Doctors Directory"}
+          </h1>
+          <p className="mt-1 text-sm text-slate-600">
+            {isDoctor
+              ? "Manage your weekly consultation shifts, slot durations, and planned leaves."
+              : "View doctor profiles, specialties, and clinical availability."}
+          </p>
         </div>
         {isAdmin && (
           <button
@@ -88,38 +98,40 @@ function Doctors() {
         )}
       </div>
 
-      <div className="mb-5 grid max-w-2xl gap-3 sm:grid-cols-2">
-        <label className="text-sm font-medium text-slate-700">
-          Specialization
-          <select
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            onChange={(event) => setSpecialization(event.target.value)}
-            value={specialization}
-          >
-            <option value="">All specializations</option>
-            {specializations.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="text-sm font-medium text-slate-700">
-          Department
-          <select
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            onChange={(event) => setDepartment(event.target.value)}
-            value={department}
-          >
-            <option value="">All departments</option>
-            {departments.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
+      {!isDoctor && (
+        <div className="mb-5 grid max-w-2xl gap-3 sm:grid-cols-2">
+          <label className="text-sm font-medium text-slate-700">
+            Specialization
+            <select
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              onChange={(event) => setSpecialization(event.target.value)}
+              value={specialization}
+            >
+              <option value="">All specializations</option>
+              {specializations.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Department
+            <select
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              onChange={(event) => setDepartment(event.target.value)}
+              value={department}
+            >
+              <option value="">All departments</option>
+              {departments.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
 
       {error && (
         <p className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
@@ -178,31 +190,41 @@ function Doctors() {
                       {doctor.yearsOfExperience ?? 0} yrs exp
                     </span>
                   </td>
-                  {isAdmin && (
-                    <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
-                      <button
-                        aria-label={`Edit Dr. ${doctor.name}`}
-                        className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
-                        onClick={() => {
-                          setSelectedDoctor(doctor);
-                          setIsFormOpen(true);
-                        }}
-                        title="Edit doctor"
-                        type="button"
-                      >
-                        ✎ Edit
-                      </button>
-                      <button
-                        aria-label={`Delete Dr. ${doctor.name}`}
-                        className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs"
-                        onClick={() => handleDelete(doctor)}
-                        title="Delete doctor"
-                        type="button"
-                      >
-                        🗑 Delete
-                      </button>
-                    </td>
-                  )}
+                  <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
+                    <button
+                      className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
+                      onClick={() => setScheduleDoctor(doctor)}
+                      title="Manage availability schedule and leaves"
+                      type="button"
+                    >
+                      📅 Schedule
+                    </button>
+                    {isAdmin && (
+                      <>
+                        <button
+                          aria-label={`Edit Dr. ${doctor.name}`}
+                          className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
+                          onClick={() => {
+                            setSelectedDoctor(doctor);
+                            setIsFormOpen(true);
+                          }}
+                          title="Edit doctor"
+                          type="button"
+                        >
+                          ✎ Edit
+                        </button>
+                        <button
+                          aria-label={`Delete Dr. ${doctor.name}`}
+                          className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs"
+                          onClick={() => handleDelete(doctor)}
+                          title="Delete doctor"
+                          type="button"
+                        >
+                          🗑 Delete
+                        </button>
+                      </>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -238,6 +260,16 @@ function Doctors() {
             />
           </div>
         </div>
+      )}
+      {scheduleDoctor && (
+        <DoctorScheduleModal
+          doctor={scheduleDoctor}
+          onClose={() => setScheduleDoctor(null)}
+          onUpdated={() => {
+            setScheduleDoctor(null);
+            setRefreshKey((k) => k + 1);
+          }}
+        />
       )}
     </section>
   );

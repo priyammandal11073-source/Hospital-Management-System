@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
 import { getPatients, getDoctors, createPrescription, updatePrescription } from "../services/api.js";
 
 const COMMON_DIAGNOSES = [
@@ -35,6 +36,7 @@ const COMMON_LAB_TESTS = [
 const DOSAGE_SHORTCUTS = ["1-0-1", "1-0-0", "0-1-0", "0-0-1", "1-1-1", "SOS"];
 
 function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatient, initialDoctor, onSuccess, onCancel }) {
+  const { user } = useAuth();
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [loadingLookups, setLoadingLookups] = useState(true);
@@ -312,23 +314,39 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
               Consulting physician *
             </label>
-            <select
-              value={selectedDoctorId}
-              onChange={(e) => setSelectedDoctorId(e.target.value)}
-              required
-              className="w-full text-xs font-semibold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
-            >
-              <option value="">Select doctor</option>
-              {doctors.map((d) => (
-                <option key={d._id} value={d._id}>
-                  Dr. {d.name} — {d.specialization} ({d.department})
-                </option>
-              ))}
-            </select>
-            {selectedDoctorObj && (
-              <p className="text-[11px] font-medium text-slate-600 mt-1">
-                Department: {selectedDoctorObj.department} • Ref: Dr-{selectedDoctorObj._id?.toString().slice(-6).toUpperCase()}
-              </p>
+            {user?.role === "doctor" ? (
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <p className="text-sm font-extrabold text-slate-900">
+                  Dr. {selectedDoctorObj?.name || user?.name?.replace(/^Dr\.\s*/i, "")}
+                </p>
+                <p className="text-xs text-slate-600 font-medium mt-0.5">
+                  {selectedDoctorObj?.specialization || "Specialist"} • Department of {selectedDoctorObj?.department || "Medicine"}
+                </p>
+                <p className="text-[11px] font-mono text-emerald-700 font-semibold mt-1">
+                  ✓ Verified Clinical Prescriber (NABH Reg)
+                </p>
+              </div>
+            ) : (
+              <>
+                <select
+                  value={selectedDoctorId}
+                  onChange={(e) => setSelectedDoctorId(e.target.value)}
+                  required
+                  className="w-full text-xs font-semibold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
+                >
+                  <option value="">Select doctor</option>
+                  {doctors.map((d) => (
+                    <option key={d._id} value={d._id}>
+                      Dr. {d.name} — {d.specialization} ({d.department})
+                    </option>
+                  ))}
+                </select>
+                {selectedDoctorObj && (
+                  <p className="text-[11px] font-medium text-slate-600 mt-1">
+                    Department: {selectedDoctorObj.department} • Ref: Dr-{selectedDoctorObj._id?.toString().slice(-6).toUpperCase()}
+                  </p>
+                )}
+              </>
             )}
           </div>
         </div>

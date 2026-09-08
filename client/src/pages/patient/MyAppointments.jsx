@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { cancelMyAppointment, getMyAppointments } from "../../services/api.js";
 
 const statusClasses = { pending: "bg-yellow-100 text-yellow-800", confirmed: "bg-blue-100 text-blue-800", completed: "bg-green-100 text-green-800", cancelled: "bg-red-100 text-red-800" };
 
 function MyAppointments() {
+  const location = useLocation();
+  const [successToast, setSuccessToast] = useState(location.state?.successMsg || "");
   const [appointments, setAppointments] = useState([]);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
@@ -53,6 +56,12 @@ function MyAppointments() {
           </select>
         </label>
       </div>
+      {successToast && (
+        <div className="mt-4 rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm font-bold flex items-center justify-between shadow-sm animate-in fade-in">
+          <span>{successToast}</span>
+          <button onClick={() => setSuccessToast("")} className="text-emerald-600 hover:text-emerald-800 font-bold ml-2">✕</button>
+        </div>
+      )}
       {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
       <div className="mt-6 rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80">
         {loading ? (

@@ -8,6 +8,7 @@ import {
   sendBillingPaymentLinkSms,
   updatePaymentStatus,
 } from "../services/api.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const paymentStatuses = ["pending", "paid", "partially_paid"];
 const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque"];
@@ -44,6 +45,8 @@ const formatDate = (date) =>
     : "—";
 
 function Billing() {
+  const { user } = useAuth();
+  const canManageBilling = ["admin", "receptionist"].includes(user?.role);
   const [billings, setBillings] = useState([]);
   const [filters, setFilters] = useState({
     paymentStatus: "",
@@ -159,13 +162,19 @@ function Billing() {
           <h1 className="text-2xl font-semibold text-slate-800">Billing</h1>
           <p className="mt-1 text-sm text-slate-600">Create invoices and track patient payments.</p>
         </div>
-        <button
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-          onClick={() => setIsFormOpen(true)}
-          type="button"
-        >
-          + Create bill
-        </button>
+        {canManageBilling ? (
+          <button
+            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            onClick={() => setIsFormOpen(true)}
+            type="button"
+          >
+            + Create bill
+          </button>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 border border-teal-200 px-3 py-1.5 text-xs font-semibold text-teal-700">
+            👁️ View-only access (Nursing staff)
+          </span>
+        )}
       </div>
 
       <div className="mb-5 grid gap-3 md:grid-cols-3">
@@ -278,29 +287,35 @@ function Billing() {
                       📄 Invoice
                     </button>
                     {billing.paymentStatus !== "paid" && (
-                      <>
-                        <button
-                          className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition shadow-2xs"
-                          onClick={() => {
-                            setPaymentBilling(billing);
-                            setPaymentMethod("cash");
-                          }}
-                          type="button"
-                        >
-                          Mark as paid
-                        </button>
-                        <button
-                          className="rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition shadow-2xs"
-                          onClick={() => {
-                            setSmsBilling(billing);
-                            setSmsPhone(billing.patient?.contactNumber || "");
-                            setSmsResult("");
-                          }}
-                          type="button"
-                        >
-                          📲 Send SMS link
-                        </button>
-                      </>
+                      canManageBilling ? (
+                        <>
+                          <button
+                            className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition shadow-2xs"
+                            onClick={() => {
+                              setPaymentBilling(billing);
+                              setPaymentMethod("cash");
+                            }}
+                            type="button"
+                          >
+                            Mark as paid
+                          </button>
+                          <button
+                            className="rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition shadow-2xs"
+                            onClick={() => {
+                              setSmsBilling(billing);
+                              setSmsPhone(billing.patient?.contactNumber || "");
+                              setSmsResult("");
+                            }}
+                            type="button"
+                          >
+                            📲 Send SMS link
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-xs text-amber-600 font-medium px-2 py-1 bg-amber-50 rounded-md border border-amber-200">
+                          Unsettled
+                        </span>
+                      )
                     )}
                   </td>
                 </tr>

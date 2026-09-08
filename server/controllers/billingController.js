@@ -461,3 +461,103 @@ export const sendPaymentLinkSmsHandler = async (req, res) => {
     return res.status(500).json({ message: "Failed to send payment SMS: " + error.message });
   }
 };
+
+// GET /api/billing/analytics
+export const getRevenueAnalytics = async (req, res) => {
+  try {
+    const now = new Date();
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    // 1. Total KPI stats
+    const allBillings = await Billing.find({});
+    
+    let totalRevenue = 0;
+    let pendingAmount = 0;
+    let todayRevenue = 0;
+    let monthRevenue = 0;
+    let paidInvoicesCount = 0;
+    let pendingInvoicesCount = 0;
+
+    const methodCounts = {
+      razorpay: { name: "Razorpay Gateway", value: 0, count: 0 },
+      upi: { name: "Instant UPI / QR", value: 0, count: 0 },
+      cash: { name: "Cash Counter", value: 0, count: 0 },
+      insurance: { name: "Health Insurance", value: 0, count: 0 },
+      card: { name: "Debit / Credit Card", value: 0, count: 0 },
+      other: { name: "Other / Direct", value: 0, count: 0 },
+    };
+
+    // Monthly aggregation map for the last 6 months
+    const monthlyMap = {};
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = d.toLocaleString("default", { month: "short", year: "2-digit" });
+      monthlyMap[key] = { month: key, revenue: 0, pending: 0, count: 0 };
+    }
+
+    allBillings.forEach((b) => {
+      const amt = Number(b.totalAmount) || 0;
+      const createdAt = new Date(b.createdAt);
+      const monthKey = createdAt.toLocaleString("default", { month: "short", year: "2-digit" });
+
+      if (b.paymentStatus === "paid") {
+        totalRevenue += amt;
+        paidInvoicesCount++;
+
+        if (createdAt >= startOfToday) {
+          todayRevenue += amt;
+        }
+        if (createdAt >= startOfThisMonth) {
+          monthRevenue += amt;
+        }
+
+        const methodKey = b.paymentMethod && methodCounts[b.paymentMethod] ? b.paymentMethod : "other";
+        methodCounts[methodKey].value += amt;
+        methodCounts[methodKey].count += 1;
+
+        if (monthlyMap[monthKey]) {
+          monthlyMap[monthKey].revenue += amt;
+          monthlyMap[monthKey].count += 1;
+        }
+      } else {
+        pendingAmount += amt;
+        pendingInvoicesCount++;
+
+        if (monthlyMap[monthKey]) {
+          monthlyMap[monthKey].pending += amt;
+        }
+      }
+    });
+
+    const monthlyTrends = Object.values(monthlyMap);
+    const paymentMethodsBreakdown = Object.values(methodCounts).filter((m) => m.value > 0 || m.count > 0);
+
+    // If all are 0 (e.g. fresh DB), provide structured starter data
+    const safeMethodsBreakdown = paymentMethodsBreakdown.length > 0 ? paymentMethodsBreakdown : [
+      { name: "Razorpay Gateway", value: 0, count: 0 },
+      { name: "Instant UPI / QR", value: 0, count: 0 },
+      { name: "Cash Counter", value: 0, count: 0 },
+      { name: "Health Insurance", value: 0, count: 0 },
+    ];
+
+    return res.status(200).json({
+      kpis: {
+        totalRevenue,
+        pendingAmount,
+        todayRevenue,
+        monthRevenue,
+        paidInvoicesCount,
+        pendingInvoicesCount,
+        totalInvoices: allBillings.length,
+        collectionRate: allBillings.length > 0 ? Math.round((paidInvoicesCount / allBillings.length) * 100) : 100,
+      },
+      monthlyTrends,
+      paymentMethodsBreakdown: safeMethodsBreakdown,
+    });
+  } catch (error) {
+    console.error("Error generating revenue analytics:", error);
+    return res.status(500).json({ message: "Unable to generate revenue analytics" });
+  }
+};
+

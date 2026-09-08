@@ -2,6 +2,7 @@ import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePatientAuth } from "../context/PatientAuthContext.jsx";
 import HospitalLogo from "./HospitalLogo.jsx";
+import NotificationBell from "./NotificationBell.jsx";
 
 const navLinkClass = ({ isActive }) =>
   `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
@@ -46,7 +47,7 @@ function PatientLayout() {
             </span>
           </div>
 
-          {/* Right Section: 24/7 Emergency, Date, Patient Profile, Logout */}
+          {/* Right Section: 24/7 Emergency, Date, Notifications, Patient Profile, Logout */}
           <div className="flex flex-wrap items-center gap-3 sm:gap-5">
             {/* Emergency Hotline Pill */}
             <div className="hidden lg:flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-300/60 shadow-xs">
@@ -67,6 +68,9 @@ function PatientLayout() {
               </svg>
               <span>{todayStr}</span>
             </div>
+
+            {/* Notification Bell */}
+            <NotificationBell isPatient={true} />
 
             {/* Patient Profile Card */}
             <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-1.5 shadow-2xs">
@@ -139,6 +143,22 @@ function PatientLayout() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <span>Book appointment</span>
+              </NavLink>
+
+              {/* My Vitals / Health Records */}
+              <NavLink className={navLinkClass} to="/patient/vitals">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span>My health vitals</span>
+              </NavLink>
+
+              {/* My Lab Reports */}
+              <NavLink className={navLinkClass} to="/patient/lab-reports">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+                <span>My lab reports</span>
               </NavLink>
 
               {/* My Prescriptions */}

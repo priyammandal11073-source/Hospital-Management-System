@@ -18,6 +18,20 @@ export const protect = (req, res, next) => {
   }
 };
 
+// Optionally decodes Bearer token if present without rejecting unauthenticated requests.
+export const optionalProtect = (req, res, next) => {
+  const authorizationHeader = req.headers.authorization;
+  if (authorizationHeader?.startsWith("Bearer ")) {
+    const token = authorizationHeader.split(" ")[1];
+    try {
+      req.user = jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+      // Ignore token verification errors for optional auth
+    }
+  }
+  return next();
+};
+
 // Restricts a protected route to one or more staff roles.
 export const restrictTo = (...roles) => (req, res, next) => {
   if (!req.user || !roles.includes(req.user.role)) {

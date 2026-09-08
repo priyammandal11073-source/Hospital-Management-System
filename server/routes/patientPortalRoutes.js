@@ -8,6 +8,13 @@ import {
   cancelMyAppointment,
   getMyPrescriptions,
   getMyBedStay,
+  getMyVitals,
+  recordMyVitals,
+  getMyLabReports,
+  getMyLabReportById,
+  getMyPatientNotifications,
+  markMyNotificationRead,
+  markAllMyNotificationsRead,
 } from "../controllers/patientPortalController.js";
 import { protectPatient } from "../middleware/authMiddleware.js";
 
@@ -25,5 +32,18 @@ router.get("/billings", protectPatient, getMyBillings);
 router.patch("/billings/:id/pay-upi", protectPatient, payMyBillingUpi);
 router.get("/prescriptions", protectPatient, getMyPrescriptions);
 router.get("/bed", protectPatient, getMyBedStay);
+
+// Vitals
+router.get("/vitals", protectPatient, getMyVitals);
+router.post("/vitals", protectPatient, recordMyVitals);
+
+// Lab Reports
+router.get("/lab-reports", protectPatient, getMyLabReports);
+router.get("/lab-reports/:id", protectPatient, getMyLabReportById);
+
+// Notifications
+router.get("/notifications", protectPatient, getMyPatientNotifications);
+router.patch("/notifications/read-all", protectPatient, markAllMyNotificationsRead);
+router.patch("/notifications/:id/read", protectPatient, markMyNotificationRead);
 
 export default router;

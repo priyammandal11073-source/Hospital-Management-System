@@ -29,7 +29,7 @@ const statusClasses = {
 function Appointments() {
   const { user } = useAuth();
   const isDoctor = user?.role === "doctor";
-  const canDelete = ["admin", "receptionist"].includes(user?.role);
+  const canDelete = ["admin", "receptionist", "nurse"].includes(user?.role);
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [filters, setFilters] = useState({
@@ -135,8 +135,14 @@ function Appointments() {
     <section>
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-800">Appointments</h1>
-          <p className="mt-1 text-sm text-slate-600">Book and manage patient appointments.</p>
+          <h1 className="text-2xl font-bold text-slate-800">
+            {isDoctor ? "My Clinical Consultations" : "Appointments"}
+          </h1>
+          <p className="mt-1 text-sm text-slate-600">
+            {isDoctor
+              ? "Review and manage consultations assigned to your clinical schedule."
+              : "Book and manage hospital-wide patient appointments."}
+          </p>
         </div>
         <button
           className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -147,7 +153,7 @@ function Appointments() {
         </button>
       </div>
 
-      <div className="mb-5 grid gap-3 lg:grid-cols-5">
+      <div className={`mb-5 grid gap-3 ${isDoctor ? "lg:grid-cols-4" : "lg:grid-cols-5"}`}>
         <label className="text-sm font-medium text-slate-700">
           Status
           <select
@@ -164,22 +170,24 @@ function Appointments() {
             ))}
           </select>
         </label>
-        <label className="text-sm font-medium text-slate-700">
-          Doctor
-          <select
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
-            name="doctor"
-            onChange={handleFilterChange}
-            value={filters.doctor}
-          >
-            <option value="">All doctors</option>
-            {doctors.map((doctor) => (
-              <option key={doctor._id} value={doctor._id}>
-                Dr. {doctor.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        {!isDoctor && (
+          <label className="text-sm font-medium text-slate-700">
+            Doctor
+            <select
+              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              name="doctor"
+              onChange={handleFilterChange}
+              value={filters.doctor}
+            >
+              <option value="">All doctors</option>
+              {doctors.map((doctor) => (
+                <option key={doctor._id} value={doctor._id}>
+                  Dr. {doctor.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="text-sm font-medium text-slate-700">
           From date
           <input

@@ -74,6 +74,11 @@ export const getDoctors = async (specialization = "", department = "") => {
   return response.data;
 };
 
+export const getMyDoctorProfile = async () => {
+  const response = await api.get("/api/doctors/me");
+  return response.data;
+};
+
 export const getDoctorById = async (id) => {
   const response = await api.get(`/api/doctors/${id}`);
   return response.data;
@@ -308,6 +313,120 @@ export const verifyRazorpayPayment = async (paymentData) => {
   return response.data;
 };
 
+// ── Vitals & Health Records API ─────────────────────────────────────────────
+export const getPatientVitals = async (patientId) => {
+  const response = await api.get(`/api/vitals/${patientId}`);
+  return response.data;
+};
+
+export const recordVitals = async (vitalsData) => {
+  const response = await api.post("/api/vitals", vitalsData);
+  return response.data;
+};
+
+export const deleteVitals = async (id) => {
+  const response = await api.delete(`/api/vitals/${id}`);
+  return response.data;
+};
+
+export const getMyVitals = async () => {
+  const response = await api.get("/api/patient-portal/vitals");
+  return response.data;
+};
+
+export const recordMyVitals = async (vitalsData) => {
+  const response = await api.post("/api/patient-portal/vitals", vitalsData);
+  return response.data;
+};
+
+// ── Doctor Schedule Manager API ─────────────────────────────────────────────
+export const updateDoctorSchedule = async (doctorId, scheduleData) => {
+  const response = await api.put(`/api/doctors/${doctorId}/schedule`, scheduleData);
+  return response.data;
+};
+
+export const addDoctorLeave = async (doctorId, leaveData) => {
+  const response = await api.post(`/api/doctors/${doctorId}/leaves`, leaveData);
+  return response.data;
+};
+
+export const removeDoctorLeave = async (doctorId, leaveIndex) => {
+  const response = await api.delete(`/api/doctors/${doctorId}/leaves/${leaveIndex}`);
+  return response.data;
+};
+
+// ── Lab Reports API ─────────────────────────────────────────────────────────
+export const getLabReports = async (filters = {}) => {
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value !== undefined && value !== "")
+  );
+  const response = await api.get("/api/lab-reports", { params });
+  return response.data;
+};
+
+export const getLabReportById = async (id) => {
+  const response = await api.get(`/api/lab-reports/${id}`);
+  return response.data;
+};
+
+export const createLabReport = async (reportData) => {
+  const response = await api.post("/api/lab-reports", reportData);
+  return response.data;
+};
+
+export const updateLabReport = async (id, reportData) => {
+  const response = await api.put(`/api/lab-reports/${id}`, reportData);
+  return response.data;
+};
+
+export const deleteLabReport = async (id) => {
+  const response = await api.delete(`/api/lab-reports/${id}`);
+  return response.data;
+};
+
+export const getMyLabReports = async () => {
+  const response = await api.get("/api/patient-portal/lab-reports");
+  return response.data;
+};
+
+export const getMyLabReportById = async (id) => {
+  const response = await api.get(`/api/patient-portal/lab-reports/${id}`);
+  return response.data;
+};
+
+// ── Notifications API (Staff & Patient) ─────────────────────────────────────
+export const getNotifications = async () => {
+  const isPatient = Boolean(localStorage.getItem("patient_token"));
+  const url = isPatient ? "/api/patient-portal/notifications" : "/api/notifications";
+  const response = await api.get(url);
+  return response.data;
+};
+
+export const markNotificationRead = async (id) => {
+  const isPatient = Boolean(localStorage.getItem("patient_token"));
+  const url = isPatient
+    ? `/api/patient-portal/notifications/${id}/read`
+    : `/api/notifications/${id}/read`;
+  const response = await api.patch(url);
+  return response.data;
+};
+
+export const markAllNotificationsRead = async () => {
+  const isPatient = Boolean(localStorage.getItem("patient_token"));
+  const url = isPatient
+    ? "/api/patient-portal/notifications/read-all"
+    : "/api/notifications/read-all";
+  const response = await api.patch(url);
+  return response.data;
+};
+
+// ── Revenue Analytics API ───────────────────────────────────────────────────
+export const getRevenueAnalytics = async () => {
+  const response = await api.get("/api/billing/analytics");
+  return response.data;
+};
+
 export default api;
+
 
 

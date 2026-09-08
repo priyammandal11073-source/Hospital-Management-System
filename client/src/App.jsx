@@ -13,10 +13,13 @@ import PaymentPage from "./pages/PaymentPage.jsx";
 import Reports from "./pages/Reports.jsx";
 import Prescriptions from "./pages/Prescriptions.jsx";
 import Beds from "./pages/Beds.jsx";
+import LabReports from "./pages/LabReports.jsx";
 import BookAppointment from "./pages/patient/BookAppointment.jsx";
 import MyAppointments from "./pages/patient/MyAppointments.jsx";
 import MyBillings from "./pages/patient/MyBillings.jsx";
 import MyPrescriptions from "./pages/patient/MyPrescriptions.jsx";
+import MyVitals from "./pages/patient/MyVitals.jsx";
+import MyLabReports from "./pages/patient/MyLabReports.jsx";
 import PatientDashboard from "./pages/patient/PatientDashboard.jsx";
 import PatientLogin from "./pages/patient/PatientLogin.jsx";
 import PatientRegister from "./pages/patient/PatientRegister.jsx";
@@ -37,6 +40,8 @@ function App() {
           <Route path="/patient/dashboard" element={<PatientDashboard />} />
           <Route path="/patient/appointments" element={<MyAppointments />} />
           <Route path="/patient/appointments/book" element={<BookAppointment />} />
+          <Route path="/patient/vitals" element={<MyVitals />} />
+          <Route path="/patient/lab-reports" element={<MyLabReports />} />
           <Route path="/patient/billings" element={<MyBillings />} />
           <Route path="/patient/prescriptions" element={<MyPrescriptions />} />
         </Route>
@@ -52,6 +57,7 @@ function App() {
           <Route path="/billing" element={<Billing />} />
           <Route path="/prescriptions" element={<Prescriptions />} />
           <Route path="/beds" element={<Beds />} />
+          <Route path="/lab-reports" element={<LabReports />} />
           <Route path="/reports" element={<Reports />} />
         </Route>
       </Route>

@@ -1,13 +1,24 @@
 import jwt from "jsonwebtoken";
 import Patient from "../models/Patient.js";
 import User from "../models/User.js";
+import Doctor from "../models/Doctor.js";
 
-const createToken = (user) => {
+const createToken = (user, doctorId = null) => {
   if (!process.env.JWT_SECRET) {
     throw new Error("JWT_SECRET is not configured");
   }
 
-  return jwt.sign({ id: user._id, role: user.role, type: user.role === "patient" ? "patient" : "staff" }, process.env.JWT_SECRET, {
+  const payload = {
+    id: user._id,
+    role: user.role,
+    type: user.role === "patient" ? "patient" : "staff",
+  };
+
+  if (doctorId) {
+    payload.doctorId = doctorId;
+  }
+
+  return jwt.sign(payload, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
 };
@@ -29,7 +40,13 @@ export const register = async (req, res) => {
       return res.status(409).json({ message: "Email is already registered" });
     }
 
-    await User.create({ name, email, password, role });
+    let doctorRef = null;
+    if (role === "doctor") {
+      const doc = await Doctor.findOne({ email: email.toLowerCase() });
+      if (doc) doctorRef = doc._id;
+    }
+
+    await User.create({ name, email, password, role, doctor: doctorRef });
 
     return res.status(201).json({
       message: "User registered successfully. Please log in to continue.",
@@ -59,7 +76,22 @@ export const login = async (req, res) => {
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
-      const token = createToken(user);
+      let doctorId = user.doctor || null;
+      if (user.role === "doctor") {
+        if (!doctorId) {
+          const doc = await Doctor.findOne({ email: user.email.toLowerCase() }) ||
+            await Doctor.findOne({
+              name: { $regex: new RegExp(`^${user.name.replace(/^Dr\.\s*/i, "").trim()}$`, "i") },
+            });
+          if (doc) {
+            doctorId = doc._id;
+            user.doctor = doc._id;
+            await user.save().catch(() => {});
+          }
+        }
+      }
+
+      const token = createToken(user, doctorId);
 
       return res.status(200).json({
         token,
@@ -68,6 +100,7 @@ export const login = async (req, res) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          doctorId: doctorId || undefined,
         },
       });
     }

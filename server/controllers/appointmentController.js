@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
 import Billing from "../models/Billing.js";
+import { resolveDoctorForUser } from "../utils/doctorHelper.js";
 
 const appointmentStatuses = ["pending", "confirmed", "completed", "cancelled"];
 const activeStatuses = ["pending", "confirmed"];
@@ -108,6 +109,21 @@ export const getAllAppointments = async (req, res) => {
     const { status, doctor, startDate, endDate, bookedBy } = req.query;
     const filter = {};
 
+    // Doctor role enforcement: doctor can only ever see their own appointments
+    if (req.user?.role === "doctor") {
+      const doctorRecord = await resolveDoctorForUser(req.user);
+      if (!doctorRecord) {
+        return res.status(403).json({ message: "Doctor profile not found for this account" });
+      }
+      filter.doctor = doctorRecord._id;
+    } else if (doctor) {
+      if (!mongoose.isValidObjectId(doctor)) {
+        return res.status(400).json({ message: "Invalid doctor ID" });
+      }
+
+      filter.doctor = doctor;
+    }
+
     if (bookedBy) {
       if (!["staff", "patient"].includes(bookedBy)) {
         return res.status(400).json({ message: "Invalid bookedBy filter" });
@@ -121,14 +137,6 @@ export const getAllAppointments = async (req, res) => {
       }
 
       filter.status = status;
-    }
-
-    if (doctor) {
-      if (!mongoose.isValidObjectId(doctor)) {
-        return res.status(400).json({ message: "Invalid doctor ID" });
-      }
-
-      filter.doctor = doctor;
     }
 
     if (startDate || endDate) {
@@ -149,8 +157,8 @@ export const getAllAppointments = async (req, res) => {
     }
 
     const appointments = await Appointment.find(filter)
-      .populate("patient", "name contactNumber")
-      .populate("doctor", "name specialization")
+      .populate("patient", "name contactNumber age gender abhaId bloodGroup")
+      .populate("doctor", "name specialization department")
       .sort({ appointmentDate: 1, timeSlot: 1 });
 
     return res.status(200).json({ appointments });
@@ -167,11 +175,18 @@ export const getAppointmentById = async (req, res) => {
     }
 
     const appointment = await Appointment.findById(req.params.id)
-      .populate("patient", "name contactNumber")
-      .populate("doctor", "name specialization");
+      .populate("patient", "name contactNumber age gender abhaId bloodGroup")
+      .populate("doctor", "name specialization department");
 
     if (!appointment) {
       return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    if (req.user?.role === "doctor") {
+      const doctorRecord = await resolveDoctorForUser(req.user);
+      if (!doctorRecord || !appointment.doctor?._id.equals(doctorRecord._id)) {
+        return res.status(403).json({ message: "Access denied. You can only view your own appointments." });
+      }
     }
 
     return res.status(200).json({ appointment });
@@ -191,6 +206,17 @@ export const updateAppointmentStatus = async (req, res) => {
 
     if (!appointmentStatuses.includes(status)) {
       return res.status(400).json({ message: "Invalid appointment status" });
+    }
+
+    if (req.user?.role === "doctor") {
+      const doctorRecord = await resolveDoctorForUser(req.user);
+      const existing = await Appointment.findById(req.params.id);
+      if (!existing) {
+        return res.status(404).json({ message: "Appointment not found" });
+      }
+      if (!doctorRecord || !existing.doctor.equals(doctorRecord._id)) {
+        return res.status(403).json({ message: "Access denied. You can only update your own appointments." });
+      }
     }
 
     const appointment = await Appointment.findByIdAndUpdate(

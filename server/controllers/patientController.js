@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
 import Patient from "../models/Patient.js";
+import Appointment from "../models/Appointment.js";
+import Prescription from "../models/Prescription.js";
+import { resolveDoctorForUser } from "../utils/doctorHelper.js";
 
 const sendDatabaseError = (error, res) => {
   if (error.name === "ValidationError") {
@@ -46,13 +49,39 @@ export const getAllPatients = async (req, res) => {
 
     const filter = {};
 
+    // Doctor role enforcement: only view patients assigned to this doctor via appointments or prescriptions
+    if (req.user?.role === "doctor") {
+      const myDoctor = await resolveDoctorForUser(req.user);
+      if (!myDoctor) {
+        return res.status(403).json({ message: "Doctor profile not found for this account" });
+      }
+
+      const [apptPatientIds, rxPatientIds] = await Promise.all([
+        Appointment.distinct("patient", { doctor: myDoctor._id }),
+        Prescription.distinct("patient", { doctor: myDoctor._id }),
+      ]);
+
+      const assignedPatientIds = Array.from(
+        new Set([...apptPatientIds.map(String), ...rxPatientIds.map(String)])
+      );
+
+      filter._id = { $in: assignedPatientIds };
+    }
+
     if (search?.trim()) {
       const escaped = escapeRegex(search.trim());
-      filter.$or = [
+      const searchFilter = [
         { name: { $regex: escaped, $options: "i" } },
         { contactNumber: { $regex: escaped, $options: "i" } },
         { abhaId: { $regex: escaped, $options: "i" } },
       ];
+
+      if (filter._id) {
+        filter.$and = [{ _id: filter._id }, { $or: searchFilter }];
+        delete filter._id;
+      } else {
+        filter.$or = searchFilter;
+      }
     }
 
     const [patients, totalPatients] = await Promise.all([
@@ -82,6 +111,25 @@ export const getPatientById = async (req, res) => {
   try {
     if (!isValidPatientId(req.params.id)) {
       return res.status(400).json({ message: "Invalid patient ID" });
+    }
+
+    // Doctor role enforcement
+    if (req.user?.role === "doctor") {
+      const myDoctor = await resolveDoctorForUser(req.user);
+      if (!myDoctor) {
+        return res.status(403).json({ message: "Doctor profile not found for this account" });
+      }
+
+      const [hasAppt, hasRx] = await Promise.all([
+        Appointment.exists({ doctor: myDoctor._id, patient: req.params.id }),
+        Prescription.exists({ doctor: myDoctor._id, patient: req.params.id }),
+      ]);
+
+      if (!hasAppt && !hasRx) {
+        return res.status(403).json({
+          message: "Access denied: This patient is not assigned to your clinical care.",
+        });
+      }
     }
 
     const patient = await Patient.findById(req.params.id);

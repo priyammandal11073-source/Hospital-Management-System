@@ -92,10 +92,12 @@ function Prescriptions() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Clinical prescriptions (Rx)
+            {isDoctor ? "My Clinical Prescriptions (Rx)" : "Clinical Prescriptions (Rx)"}
           </h1>
           <p className="text-sm font-medium text-slate-600 mt-1">
-            Generate, print, and share digital clinical prescriptions on official Nivora Care letterhead
+            {isDoctor
+              ? `Digital clinical prescriptions authored by Dr. ${user?.name?.replace(/^Dr\.\s*/i, "") || "Doctor"}`
+              : "Generate, print, and share digital clinical prescriptions on official Nivora Care letterhead"}
           </p>
         </div>
 

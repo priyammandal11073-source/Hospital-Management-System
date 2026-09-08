@@ -375,7 +375,7 @@ function PaymentPage() {
 
             <PaymentMethodSelect
               value={paymentMethod}
-              onChange={handleSelectPaymentMethod}
+              onChange={handleSelectMethod}
               disabled={isRazorpayProcessing}
             />
 

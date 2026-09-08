@@ -24,9 +24,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Role is required"],
       enum: {
-        values: ["admin", "doctor", "receptionist", "patient"],
-        message: "Role must be admin, doctor, receptionist, or patient",
+        values: ["admin", "doctor", "receptionist", "nurse", "patient"],
+        message: "Role must be admin, doctor, receptionist, nurse, or patient",
       },
+    },
+    doctor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Doctor",
     },
   },
   {
