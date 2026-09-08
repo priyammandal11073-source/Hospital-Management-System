@@ -232,5 +232,60 @@ export const getMyPrescriptions = async () => {
   return response.data;
 };
 
+// Bed & Ward API helpers
+export const getBeds = async (filters = {}) => {
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(([, value]) => value !== undefined && value !== "")
+  );
+  const response = await api.get("/api/beds", { params });
+  return response.data;
+};
+
+export const getBedSummary = async () => {
+  const response = await api.get("/api/beds/summary");
+  return response.data;
+};
+
+export const getBedById = async (id) => {
+  const response = await api.get(`/api/beds/${id}`);
+  return response.data;
+};
+
+export const createBed = async (bedData) => {
+  const response = await api.post("/api/beds", bedData);
+  return response.data;
+};
+
+export const allocateBed = async (id, allocationData) => {
+  const response = await api.post(`/api/beds/${id}/allocate`, allocationData);
+  return response.data;
+};
+
+export const transferBed = async (id, transferData) => {
+  const response = await api.post(`/api/beds/${id}/transfer`, transferData);
+  return response.data;
+};
+
+export const dischargeBed = async (id, dischargeData) => {
+  const response = await api.post(`/api/beds/${id}/discharge`, dischargeData);
+  return response.data;
+};
+
+export const updateBedStatus = async (id, status) => {
+  const response = await api.patch(`/api/beds/${id}/status`, { status });
+  return response.data;
+};
+
+export const deleteBed = async (id) => {
+  const response = await api.delete(`/api/beds/${id}`);
+  return response.data;
+};
+
+export const getMyBedStay = async () => {
+  const response = await api.get("/api/patient-portal/bed");
+  return response.data;
+};
+
 export default api;
+
 

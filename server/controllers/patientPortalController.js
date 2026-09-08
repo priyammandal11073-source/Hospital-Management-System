@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
+import Bed from "../models/Bed.js";
 import Billing from "../models/Billing.js";
 import Patient from "../models/Patient.js";
 import Prescription from "../models/Prescription.js";
@@ -173,4 +174,19 @@ export const getMyPrescriptions = async (req, res) => {
     return res.status(500).json({ message: "Unable to fetch prescriptions" });
   }
 };
+
+// GET /api/patient-portal/bed
+export const getMyBedStay = async (req, res) => {
+  try {
+    const bedStay = await Bed.findOne({
+      "currentAdmission.patient": req.patient.id,
+      status: "occupied",
+    }).populate("currentAdmission.attendingDoctor", "name specialization department contactNumber email");
+
+    return res.status(200).json({ bedStay });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch bed allocation details" });
+  }
+};
+
 

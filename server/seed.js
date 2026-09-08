@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import Appointment from "./models/Appointment.js";
+import Bed from "./models/Bed.js";
 import Billing from "./models/Billing.js";
 import Doctor from "./models/Doctor.js";
 import Patient from "./models/Patient.js";
@@ -30,6 +31,7 @@ const seedDatabase = async () => {
       Appointment.deleteMany({}),
       Billing.deleteMany({}),
       Prescription.deleteMany({}),
+      Bed.deleteMany({}),
     ]);
 
     // 1. Create Staff Users
@@ -316,6 +318,206 @@ const seedDatabase = async () => {
         signedAt: pastDate,
       },
     });
+
+    // 7. Create Hospital Beds Across All 6 Wards
+    console.log("Creating hospital wards and beds...");
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+
+    const oneDayAgo = new Date();
+    oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+
+    const bedsData = [
+      // ICU (Intensive Care Unit) - 2nd Floor
+      {
+        bedNumber: "ICU-01",
+        ward: "ICU (Intensive Care Unit)",
+        floor: "2nd floor (East wing)",
+        dailyRate: 5000,
+        features: { hasOxygen: true, hasVentilator: true, isIsolation: false, hasMonitor: true },
+        status: "occupied",
+        currentAdmission: {
+          patient: patient1._id,
+          attendingDoctor: doctor1._id,
+          admittedAt: twoDaysAgo,
+          admissionReason: "Severe hypertensive urgency with acute chest discomfort & continuous arterial monitoring",
+          emergencyContact: "Anjali Sharma (+91 98765 43219)",
+          notes: "Cardiac telemetry active. Administering IV antihypertensives as charted.",
+        },
+      },
+      {
+        bedNumber: "ICU-02",
+        ward: "ICU (Intensive Care Unit)",
+        floor: "2nd floor (East wing)",
+        dailyRate: 5000,
+        features: { hasOxygen: true, hasVentilator: true, isIsolation: false, hasMonitor: true },
+        status: "available",
+      },
+      {
+        bedNumber: "ICU-03",
+        ward: "ICU (Intensive Care Unit)",
+        floor: "2nd floor (East wing)",
+        dailyRate: 4500,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: false, hasMonitor: true },
+        status: "available",
+      },
+      {
+        bedNumber: "ICU-04",
+        ward: "ICU (Intensive Care Unit)",
+        floor: "2nd floor (East wing)",
+        dailyRate: 4500,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: true, hasMonitor: true },
+        status: "cleaning",
+      },
+
+      // CCU (Critical Care Unit) - 2nd Floor
+      {
+        bedNumber: "CCU-01",
+        ward: "CCU (Critical Care Unit)",
+        floor: "2nd floor (West wing)",
+        dailyRate: 4500,
+        features: { hasOxygen: true, hasVentilator: true, isIsolation: false, hasMonitor: true },
+        status: "available",
+      },
+      {
+        bedNumber: "CCU-02",
+        ward: "CCU (Critical Care Unit)",
+        floor: "2nd floor (West wing)",
+        dailyRate: 4500,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: false, hasMonitor: true },
+        status: "available",
+      },
+
+      // Emergency & Trauma - Ground Floor
+      {
+        bedNumber: "EMG-01",
+        ward: "Emergency & Trauma",
+        floor: "Ground floor (Trauma center)",
+        dailyRate: 2500,
+        features: { hasOxygen: true, hasVentilator: true, isIsolation: false, hasMonitor: true },
+        status: "available",
+      },
+      {
+        bedNumber: "EMG-02",
+        ward: "Emergency & Trauma",
+        floor: "Ground floor (Trauma center)",
+        dailyRate: 2500,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: false, hasMonitor: true },
+        status: "available",
+      },
+      {
+        bedNumber: "EMG-03",
+        ward: "Emergency & Trauma",
+        floor: "Ground floor (Trauma center)",
+        dailyRate: 2500,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: false, hasMonitor: true },
+        status: "cleaning",
+      },
+      {
+        bedNumber: "EMG-04",
+        ward: "Emergency & Trauma",
+        floor: "Ground floor (Trauma center)",
+        dailyRate: 2500,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: true, hasMonitor: true },
+        status: "maintenance",
+      },
+
+      // General Ward - 1st Floor
+      {
+        bedNumber: "GEN-101",
+        ward: "General Ward",
+        floor: "1st floor (Ward A)",
+        dailyRate: 800,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: false, hasMonitor: false },
+        status: "available",
+      },
+      {
+        bedNumber: "GEN-102",
+        ward: "General Ward",
+        floor: "1st floor (Ward A)",
+        dailyRate: 800,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: false, hasMonitor: false },
+        status: "occupied",
+        currentAdmission: {
+          patient: patient2._id,
+          attendingDoctor: doctor2._id,
+          admittedAt: oneDayAgo,
+          admissionReason: "Acute bronchial hyperresponsiveness & severe allergic flare under nebulization",
+          emergencyContact: "Suresh Patel (+91 98765 43218)",
+          notes: "Patient on 4-hourly salbutamol nebulizer. SpO2 stable at 98% on room air.",
+        },
+      },
+      {
+        bedNumber: "GEN-103",
+        ward: "General Ward",
+        floor: "1st floor (Ward A)",
+        dailyRate: 800,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: false, hasMonitor: false },
+        status: "available",
+      },
+      {
+        bedNumber: "GEN-104",
+        ward: "General Ward",
+        floor: "1st floor (Ward B)",
+        dailyRate: 800,
+        features: { hasOxygen: false, hasVentilator: false, isIsolation: false, hasMonitor: false },
+        status: "available",
+      },
+      {
+        bedNumber: "GEN-105",
+        ward: "General Ward",
+        floor: "1st floor (Ward B)",
+        dailyRate: 800,
+        features: { hasOxygen: false, hasVentilator: false, isIsolation: false, hasMonitor: false },
+        status: "cleaning",
+      },
+      {
+        bedNumber: "GEN-106",
+        ward: "General Ward",
+        floor: "1st floor (Ward B)",
+        dailyRate: 800,
+        features: { hasOxygen: false, hasVentilator: false, isIsolation: false, hasMonitor: false },
+        status: "available",
+      },
+
+      // Pediatric Ward - 3rd Floor
+      {
+        bedNumber: "PED-301",
+        ward: "Pediatric Ward",
+        floor: "3rd floor (Maternal & Child)",
+        dailyRate: 1200,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: false, hasMonitor: true },
+        status: "available",
+      },
+      {
+        bedNumber: "PED-302",
+        ward: "Pediatric Ward",
+        floor: "3rd floor (Maternal & Child)",
+        dailyRate: 1200,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: false, hasMonitor: true },
+        status: "available",
+      },
+
+      // Private Deluxe Room - 4th Floor
+      {
+        bedNumber: "PVT-201",
+        ward: "Private Deluxe Room",
+        floor: "4th floor (Executive block)",
+        dailyRate: 3500,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: true, hasMonitor: true },
+        status: "available",
+      },
+      {
+        bedNumber: "PVT-202",
+        ward: "Private Deluxe Room",
+        floor: "4th floor (Executive block)",
+        dailyRate: 3500,
+        features: { hasOxygen: true, hasVentilator: false, isIsolation: true, hasMonitor: true },
+        status: "available",
+      },
+    ];
+
+    await Bed.insertMany(bedsData);
 
     console.log("\n========================================================");
     console.log("Database seeded successfully with Indian healthcare data!");

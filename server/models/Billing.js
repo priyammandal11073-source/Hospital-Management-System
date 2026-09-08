@@ -28,7 +28,10 @@ const billingSchema = new mongoose.Schema(
     appointment: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Appointment",
-      required: [true, "Appointment is required"],
+    },
+    bed: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Bed",
     },
     itemizedCharges: {
       type: [itemizedChargeSchema],

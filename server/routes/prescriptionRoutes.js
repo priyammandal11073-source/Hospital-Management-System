@@ -13,13 +13,13 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(protect, createPrescription)
+  .post(protect, restrictTo("doctor"), createPrescription)
   .get(protect, getAllPrescriptions);
 
 router
   .route("/:id")
   .get(protect, getPrescriptionById)
-  .put(protect, updatePrescription)
+  .put(protect, restrictTo("doctor"), updatePrescription)
   .delete(protect, restrictTo("admin", "doctor"), deletePrescription);
 
 router.post("/:id/send-email", protect, sendPrescriptionEmail);

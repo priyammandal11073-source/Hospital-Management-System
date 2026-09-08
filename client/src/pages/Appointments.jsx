@@ -28,6 +28,7 @@ const statusClasses = {
 
 function Appointments() {
   const { user } = useAuth();
+  const isDoctor = user?.role === "doctor";
   const canDelete = ["admin", "receptionist"].includes(user?.role);
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -304,14 +305,16 @@ function Appointments() {
                     {appointment.reasonForVisit}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5 text-right">
-                    <button
-                      type="button"
-                      onClick={() => setRxAppointment(appointment)}
-                      className="mr-2 inline-flex items-center gap-1 rounded-lg bg-teal-50 border border-teal-200 px-2.5 py-1 text-xs font-semibold text-teal-700 hover:bg-teal-100 transition shadow-2xs"
-                      title="Write clinical prescription for this appointment"
-                    >
-                      <span>℞ Write Rx</span>
-                    </button>
+                    {isDoctor && (
+                      <button
+                        type="button"
+                        onClick={() => setRxAppointment(appointment)}
+                        className="mr-2 inline-flex items-center gap-1 rounded-lg bg-teal-50 border border-teal-200 px-2.5 py-1 text-xs font-semibold text-teal-700 hover:bg-teal-100 transition shadow-2xs"
+                        title="Write clinical prescription for this appointment"
+                      >
+                        <span>℞ Write Rx</span>
+                      </button>
+                    )}
                     <select
                       aria-label={`Change status for ${appointment.patient?.name || "appointment"}`}
                       className="mr-2 rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-2xs outline-none focus:border-blue-500"

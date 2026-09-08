@@ -153,39 +153,33 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
     }
   };
 
-  const handleUpdateMedication = (index, field, value) => {
-    setMedications((prev) => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], [field]: value };
-      return updated;
-    });
-  };
-
   const handleRemoveMedication = (index) => {
-    if (medications.length <= 1) {
-      setErrorMsg("At least one medication is required on the prescription.");
-      return;
-    }
     setMedications((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // Lab test tag toggle
-  const toggleLabTest = (testName) => {
-    setLabTests((prev) =>
-      prev.includes(testName) ? prev.filter((t) => t !== testName) : [...prev, testName]
+  const handleUpdateMedication = (index, field, value) => {
+    setMedications((prev) =>
+      prev.map((med, i) => (i === index ? { ...med, [field]: value } : med))
     );
+  };
+
+  // Lab tests toggle
+  const toggleLabTest = (testName) => {
+    if (labTests.includes(testName)) {
+      setLabTests((prev) => prev.filter((t) => t !== testName));
+    } else {
+      setLabTests((prev) => [...prev, testName]);
+    }
   };
 
   const handleAddCustomLabTest = (e) => {
     e.preventDefault();
-    if (!customLabTest.trim()) return;
-    if (!labTests.includes(customLabTest.trim())) {
+    if (customLabTest.trim() && !labTests.includes(customLabTest.trim())) {
       setLabTests((prev) => [...prev, customLabTest.trim()]);
+      setCustomLabTest("");
     }
-    setCustomLabTest("");
   };
 
-  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
@@ -245,32 +239,32 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
   const selectedDoctorObj = doctors.find((d) => d._id === selectedDoctorId) || initialDoctor;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden animate-in fade-in duration-200">
+    <div className="bg-white rounded-2xl border border-slate-300 shadow-xl overflow-hidden animate-in fade-in duration-200">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/80 flex flex-wrap items-center justify-between gap-4">
+      <div className="px-6 py-5 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white font-black text-lg shadow-sm">
             ℞
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+            <h2 className="text-lg font-extrabold text-slate-900">
               {prescriptionToEdit ? "Edit clinical prescription" : "Generate digital prescription (Rx)"}
             </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium text-slate-600">
               Nivora Care Hospital • ABDM & NABH standard clinical e-prescription
             </p>
           </div>
         </div>
 
         {initialAppointment && (
-          <span className="text-xs px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 font-semibold">
+          <span className="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-900 border border-blue-200 font-bold">
             Linked to appointment: {initialAppointment.timeSlot || "Scheduled visit"}
           </span>
         )}
       </div>
 
       {errorMsg && (
-        <div className="mx-6 mt-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs font-semibold">
+        <div className="mx-6 mt-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
           {errorMsg}
         </div>
       )}
@@ -279,20 +273,20 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
         {/* 1. Patient & Doctor Selection */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
               Patient *
             </label>
             {initialPatient || initialAppointment?.patient ? (
-              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
-                <p className="text-sm font-bold text-slate-900 dark:text-white">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                <p className="text-sm font-extrabold text-slate-900">
                   {selectedPatientObj?.name || "Patient"}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-600 font-medium mt-0.5">
                   Age: {selectedPatientObj?.age || "—"} yrs • Gender: {selectedPatientObj?.gender || "—"}
                   {selectedPatientObj?.bloodGroup && ` • Blood: ${selectedPatientObj.bloodGroup}`}
                 </p>
                 {selectedPatientObj?.abhaId && (
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1">
+                  <p className="text-xs text-emerald-700 font-bold mt-1">
                     ABHA: {selectedPatientObj.abhaId}
                   </p>
                 )}
@@ -302,7 +296,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                 value={selectedPatientId}
                 onChange={(e) => setSelectedPatientId(e.target.value)}
                 required
-                className="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-slate-900 dark:text-white focus:border-teal-500 focus:outline-hidden"
+                className="w-full text-xs font-semibold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
               >
                 <option value="">Select patient</option>
                 {patients.map((p) => (
@@ -315,14 +309,14 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
               Consulting physician *
             </label>
             <select
               value={selectedDoctorId}
               onChange={(e) => setSelectedDoctorId(e.target.value)}
               required
-              className="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-slate-900 dark:text-white focus:border-teal-500 focus:outline-hidden"
+              className="w-full text-xs font-semibold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
             >
               <option value="">Select doctor</option>
               {doctors.map((d) => (
@@ -332,7 +326,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
               ))}
             </select>
             {selectedDoctorObj && (
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+              <p className="text-[11px] font-medium text-slate-600 mt-1">
                 Department: {selectedDoctorObj.department} • Ref: Dr-{selectedDoctorObj._id?.toString().slice(-6).toUpperCase()}
               </p>
             )}
@@ -340,13 +334,13 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
         </div>
 
         {/* 2. Patient Clinical Vitals */}
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-3">
+        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">
             Patient clinical vitals (recorded at triage / OPD)
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <div>
-              <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+              <label className="text-[11px] font-bold text-slate-700 block mb-1">
                 Blood pressure
               </label>
               <input
@@ -354,11 +348,11 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                 placeholder="120/80 mmHg"
                 value={vitals.bloodPressure}
                 onChange={(e) => setVitals({ ...vitals, bloodPressure: e.target.value })}
-                className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-slate-900 dark:text-white"
+                className="w-full text-xs font-semibold rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
               />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+              <label className="text-[11px] font-bold text-slate-700 block mb-1">
                 Pulse rate
               </label>
               <input
@@ -366,11 +360,11 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                 placeholder="72 bpm"
                 value={vitals.pulseRate}
                 onChange={(e) => setVitals({ ...vitals, pulseRate: e.target.value })}
-                className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-slate-900 dark:text-white"
+                className="w-full text-xs font-semibold rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
               />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+              <label className="text-[11px] font-bold text-slate-700 block mb-1">
                 Temperature
               </label>
               <input
@@ -378,11 +372,11 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                 placeholder="98.6 °F"
                 value={vitals.temperature}
                 onChange={(e) => setVitals({ ...vitals, temperature: e.target.value })}
-                className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-slate-900 dark:text-white"
+                className="w-full text-xs font-semibold rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
               />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+              <label className="text-[11px] font-bold text-slate-700 block mb-1">
                 Weight
               </label>
               <input
@@ -390,11 +384,11 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                 placeholder="68 kg"
                 value={vitals.weight}
                 onChange={(e) => setVitals({ ...vitals, weight: e.target.value })}
-                className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-slate-900 dark:text-white"
+                className="w-full text-xs font-semibold rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
               />
             </div>
             <div>
-              <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+              <label className="text-[11px] font-bold text-slate-700 block mb-1">
                 SpO2 (Oxygen)
               </label>
               <input
@@ -402,7 +396,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                 placeholder="98%"
                 value={vitals.spo2}
                 onChange={(e) => setVitals({ ...vitals, spo2: e.target.value })}
-                className="w-full text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 py-1.5 text-slate-900 dark:text-white"
+                className="w-full text-xs font-semibold rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
               />
             </div>
           </div>
@@ -412,10 +406,10 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
         <div className="space-y-3">
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
                 Provisional diagnosis *
               </label>
-              <span className="text-[11px] text-slate-400">Quick suggestions below</span>
+              <span className="text-[11px] font-medium text-slate-500">Quick suggestions below</span>
             </div>
             <input
               type="text"
@@ -423,7 +417,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
               placeholder="e.g. Primary Hypertension with Mild Tachycardia"
               value={diagnosis}
               onChange={(e) => setDiagnosis(e.target.value)}
-              className="w-full text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-slate-900 dark:text-white focus:border-teal-500 focus:outline-hidden"
+              className="w-full text-xs font-medium rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
             />
             {/* Quick diagnosis chips */}
             <div className="flex flex-wrap gap-1.5 mt-2">
@@ -432,7 +426,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                   key={i}
                   type="button"
                   onClick={() => setDiagnosis(d)}
-                  className="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-teal-50 hover:text-teal-700 dark:hover:bg-teal-950/60 dark:hover:text-teal-300 transition-colors"
+                  className="text-[11px] font-semibold px-2.5 py-1 rounded-md bg-slate-100 border border-slate-200 text-slate-700 hover:bg-teal-50 hover:text-teal-900 hover:border-teal-200 transition-colors"
                 >
                   + {d}
                 </button>
@@ -441,7 +435,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
               Symptoms reported (comma-separated)
             </label>
             <input
@@ -449,7 +443,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
               placeholder="e.g. Occasional dizziness, Morning headache, Palpitations"
               value={symptomsInput}
               onChange={(e) => setSymptomsInput(e.target.value)}
-              className="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2 text-slate-900 dark:text-white focus:border-teal-500 focus:outline-hidden"
+              className="w-full text-xs font-medium rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
             />
           </div>
         </div>
@@ -458,23 +452,23 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-teal-600 dark:text-teal-400">℞</span>
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <span className="text-xl font-black text-teal-700">℞</span>
+              <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                 Prescribed medications ({medications.length}) *
               </label>
             </div>
             <button
               type="button"
               onClick={() => handleAddMedication()}
-              className="inline-flex items-center gap-1 text-xs font-bold text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300"
+              className="inline-flex items-center gap-1 text-xs font-bold text-teal-700 hover:text-teal-900 bg-teal-50 border border-teal-200 px-3 py-1 rounded-lg"
             >
               + Add medicine row
             </button>
           </div>
 
           {/* Quick preset medicines */}
-          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1.5">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1.5">
               1-Click popular medicines in India:
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -483,7 +477,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                   key={idx}
                   type="button"
                   onClick={() => handleAddMedication(preset)}
-                  className="text-[11px] px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-teal-500 hover:text-teal-600 dark:hover:text-teal-400 transition-colors shadow-2xs font-medium"
+                  className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 hover:border-teal-500 hover:text-teal-900 hover:bg-teal-50 transition-colors shadow-2xs"
                 >
                   + {preset.name.split(" ")[0]} ({preset.frequency})
                 </button>
@@ -496,17 +490,17 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
             {medications.map((med, index) => (
               <div
                 key={index}
-                className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 shadow-2xs"
+                className="p-4 rounded-xl bg-white border border-slate-300 space-y-3 shadow-xs"
               >
-                <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-                  <span className="text-xs font-bold text-teal-600 dark:text-teal-400">
+                <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                  <span className="text-xs font-black text-teal-800">
                     Medicine #{index + 1}
                   </span>
                   {medications.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemoveMedication(index)}
-                      className="text-xs text-rose-600 hover:text-rose-700 font-medium"
+                      className="text-xs font-bold text-rose-600 hover:text-rose-800"
                     >
                       Remove
                     </button>
@@ -516,7 +510,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
                   {/* Name */}
                   <div className="md:col-span-4">
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
                       Medicine name & strength *
                     </label>
                     <input
@@ -525,13 +519,13 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                       placeholder="e.g. Telmisartan 40mg (Telma 40)"
                       value={med.name}
                       onChange={(e) => handleUpdateMedication(index, "name", e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-slate-900 dark:text-white"
+                      className="w-full font-medium rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
                     />
                   </div>
 
                   {/* Dosage */}
                   <div className="md:col-span-2">
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
                       Dosage
                     </label>
                     <input
@@ -539,13 +533,13 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                       placeholder="1 tablet"
                       value={med.dosage}
                       onChange={(e) => handleUpdateMedication(index, "dosage", e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-slate-900 dark:text-white"
+                      className="w-full font-medium rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
                     />
                   </div>
 
                   {/* Frequency */}
                   <div className="md:col-span-3">
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
                       Frequency
                     </label>
                     <input
@@ -553,7 +547,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                       placeholder="1-0-1"
                       value={med.frequency}
                       onChange={(e) => handleUpdateMedication(index, "frequency", e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-slate-900 dark:text-white font-bold text-teal-600 dark:text-teal-400"
+                      className="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-teal-800 font-extrabold focus:border-teal-600 focus:outline-hidden"
                     />
                     {/* Shortcut chips */}
                     <div className="flex flex-wrap gap-1 mt-1.5">
@@ -562,10 +556,10 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                           key={freq}
                           type="button"
                           onClick={() => handleUpdateMedication(index, "frequency", freq)}
-                          className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                          className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${
                             med.frequency === freq
-                              ? "bg-teal-600 text-white"
-                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+                              ? "bg-teal-700 text-white"
+                              : "bg-slate-100 border border-slate-200 text-slate-700 hover:bg-slate-200"
                           }`}
                         >
                           {freq}
@@ -576,13 +570,13 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
 
                   {/* Timing */}
                   <div className="md:col-span-3">
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
                       Timing
                     </label>
                     <select
                       value={med.timing}
                       onChange={(e) => handleUpdateMedication(index, "timing", e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-slate-900 dark:text-white"
+                      className="w-full font-medium rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
                     >
                       <option value="After food">After food</option>
                       <option value="Before food">Before food</option>
@@ -596,7 +590,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
                   {/* Duration */}
                   <div className="md:col-span-3">
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
                       Duration
                     </label>
                     <input
@@ -604,13 +598,13 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                       placeholder="5 days"
                       value={med.duration}
                       onChange={(e) => handleUpdateMedication(index, "duration", e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-slate-900 dark:text-white"
+                      className="w-full font-medium rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
                     />
                   </div>
 
                   {/* Special Instructions */}
                   <div className="md:col-span-9">
-                    <label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 block mb-1">
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">
                       Special instructions (optional)
                     </label>
                     <input
@@ -618,7 +612,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                       placeholder="e.g. Take with warm water at bedtime; do not crush tablet"
                       value={med.instructions}
                       onChange={(e) => handleUpdateMedication(index, "instructions", e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2.5 py-1.5 text-slate-900 dark:text-white"
+                      className="w-full font-medium rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
                     />
                   </div>
                 </div>
@@ -628,8 +622,8 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
         </div>
 
         {/* 5. Recommended Diagnostic & Lab Tests */}
-        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-800 space-y-3">
-          <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+          <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
             Recommended diagnostic / pathology tests
           </label>
           <div className="flex flex-wrap gap-2">
@@ -640,10 +634,10 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                   key={idx}
                   type="button"
                   onClick={() => toggleLabTest(test)}
-                  className={`text-xs px-2.5 py-1 rounded-lg border transition-colors ${
+                  className={`text-xs px-3 py-1 rounded-lg border transition-colors ${
                     isSelected
-                      ? "bg-teal-600 border-teal-600 text-white font-semibold"
-                      : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-teal-500"
+                      ? "bg-teal-700 border-teal-700 text-white font-bold"
+                      : "bg-white border-slate-300 text-slate-700 hover:border-teal-500 font-semibold"
                   }`}
                 >
                   {isSelected ? "✓ " : "+ "}
@@ -660,12 +654,12 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
               placeholder="Or add custom test name (e.g. Serum Vitamin D3)"
               value={customLabTest}
               onChange={(e) => setCustomLabTest(e.target.value)}
-              className="flex-1 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-1.5 text-slate-900 dark:text-white"
+              className="flex-1 text-xs font-medium rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
             />
             <button
               type="button"
               onClick={handleAddCustomLabTest}
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-300"
+              className="px-3.5 py-1.5 text-xs font-bold rounded-lg bg-slate-200 text-slate-800 hover:bg-slate-300 transition-colors"
             >
               Add test
             </button>
@@ -675,7 +669,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
         {/* 6. Clinical Advice & Follow-Up */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
               Dietary & lifestyle advice
             </label>
             <textarea
@@ -683,33 +677,33 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
               placeholder="e.g. Low sodium diet (<2g/day). Engage in 30 mins brisk walking. Avoid oily foods. Hydrate well."
               value={advice}
               onChange={(e) => setAdvice(e.target.value)}
-              className="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-3 text-slate-900 dark:text-white focus:border-teal-500 focus:outline-hidden"
+              className="w-full text-xs font-medium rounded-xl border border-slate-300 bg-white p-3 text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
               Next follow-up consultation
             </label>
             <input
               type="date"
               value={followUpDate}
               onChange={(e) => setFollowUpDate(e.target.value)}
-              className="w-full text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2.5 text-slate-900 dark:text-white focus:border-teal-500 focus:outline-hidden"
+              className="w-full text-xs font-semibold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
             />
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-[11px] text-slate-600 font-medium mt-1">
               Leaves follow-up date printed on the letterhead for patient scheduling.
             </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-slate-200">
           <button
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="px-4 py-2 text-xs font-semibold rounded-xl border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors"
           >
             Cancel
           </button>

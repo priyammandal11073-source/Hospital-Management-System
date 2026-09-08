@@ -11,6 +11,7 @@ import Login from "./pages/Login.jsx";
 import Patients from "./pages/Patients.jsx";
 import Reports from "./pages/Reports.jsx";
 import Prescriptions from "./pages/Prescriptions.jsx";
+import Beds from "./pages/Beds.jsx";
 import BookAppointment from "./pages/patient/BookAppointment.jsx";
 import MyAppointments from "./pages/patient/MyAppointments.jsx";
 import MyBillings from "./pages/patient/MyBillings.jsx";
@@ -47,6 +48,7 @@ function App() {
           <Route path="/appointments" element={<Appointments />} />
           <Route path="/billing" element={<Billing />} />
           <Route path="/prescriptions" element={<Prescriptions />} />
+          <Route path="/beds" element={<Beds />} />
           <Route path="/reports" element={<Reports />} />
         </Route>
       </Route>
