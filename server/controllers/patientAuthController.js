@@ -70,7 +70,8 @@ export const loginPatient = async (req, res) => {
 
     const token = createToken(patient);
 
-    const { password: pwd, ...patientInfo } = patient._doc;
+    const patientInfo = patient.toObject();
+    delete patientInfo.password;
 
     return res.status(200).json({
       token,

@@ -72,21 +72,31 @@ git clone https://github.com/priyammandal11073-source/Hospital-Management-System
 cd Hospital-Management-System
 ```
 
-### 2. Install dependencies (client + server separately)
+### 2. Install dependencies
+
+You can install all dependencies from the root directory:
 
 ```bash
-# Backend
-cd server
+npm install
+npm run install:all
+```
+
+Or individually:
+
+```bash
+# Root
 npm install
 
+# Backend
+cd server && npm install
+
 # Frontend
-cd ../client
-npm install
+cd ../client && npm install
 ```
 
 ### 3. Set up environment variables
 
-Create a `.env` file in both `server/` and `client/` (see `.env.example` files below).
+Ensure `.env` exists in both `server/` and `client/` (see `.env.example` files):
 
 **server/.env:**
 ```
@@ -95,28 +105,46 @@ MONGO_URI=mongodb://127.0.0.1:27017/hospital-db
 JWT_SECRET=super-secret-key-change-this-in-production
 ```
 
+> **Note on MongoDB**: If you do not have a local MongoDB service running, you can create a free MongoDB Atlas cluster and set `MONGO_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/hospital-db`.
+
 **client/.env:**
 ```
 VITE_API_BASE_URL=http://localhost:5000
 ```
 
-### 4. Run the backend
+### 4. Seed sample test accounts (Optional)
+
+Once MongoDB is running or connected via Atlas, run the seed script to populate sample accounts, appointments, and doctors:
 
 ```bash
-cd server
-npm run dev   # or: npm start
+npm run seed
 ```
 
-The API will be available at `http://localhost:5000`. Health check: `GET /api/health`.
+**Seed Credentials:**
+- **Admin**: `admin@hospital.com` / `admin123`
+- **Doctor**: `doctor@hospital.com` / `doctor123`
+- **Receptionist**: `receptionist@hospital.com` / `receptionist123`
+- **Patient**: `john@example.com` / `patient123`
 
-### 5. Run the frontend
+### 5. Run the application
+
+To run both backend and frontend concurrently from the root directory:
 
 ```bash
-cd client
-npm run dev   # Vite dev server (proxy forwards /api to http://localhost:5000)
+npm run dev
 ```
 
-Open `http://localhost:5173` in your browser. Log in with registered credentials or visit `/login`.
+Or run them individually:
+
+```bash
+# Backend (http://localhost:5000)
+npm run server
+
+# Frontend (http://localhost:5173)
+npm run client
+```
+
+Open `http://localhost:5173` in your browser.
 
 ---
 

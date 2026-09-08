@@ -111,6 +111,7 @@ export const getAllBillings = async (req, res) => {
 
     const billings = await Billing.find(filter)
       .populate("patient", "name contactNumber")
+      .populate("appointment", "appointmentDate timeSlot status reasonForVisit")
       .sort({ createdAt: -1 });
 
     return res.status(200).json({ billings });

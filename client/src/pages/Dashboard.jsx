@@ -73,7 +73,9 @@ function Dashboard() {
         .sort((first, second) => new Date(second.appointmentDate) - new Date(first.appointmentDate))
         .slice(0, 5),
       todayAppointments: appointments.filter(
-        (appointment) => appointment.appointmentDate.slice(0, 10) === today
+        (appointment) =>
+          appointment.appointmentDate &&
+          String(appointment.appointmentDate).slice(0, 10) === today
       ),
     };
   }, [dashboardData]);

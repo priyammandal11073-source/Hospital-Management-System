@@ -10,8 +10,11 @@ import patientRoutes from "./routes/patientRoutes.js";
 import patientAuthRoutes from "./routes/patientAuthRoutes.js";
 import patientPortalRoutes from "./routes/patientPortalRoutes.js";
 
-// Load variables from server/.env before reading process.env.
-dotenv.config();
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, ".env"), override: true });
 
 const app = express();
 const PORT = process.env.PORT || 5000;

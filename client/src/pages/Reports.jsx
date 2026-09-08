@@ -22,7 +22,7 @@ function SummaryCard({ label, value }) {
   return (
     <article className="rounded-lg bg-white p-5 shadow-sm">
       <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className="mt-2 text-3xl font-bold text-slate-800">₹{value.toFixed(2)}</p>
+      <p className="mt-2 text-3xl font-bold text-slate-800">₹{Number(value || 0).toFixed(2)}</p>
     </article>
   );
 }
