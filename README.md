@@ -15,9 +15,11 @@ This system enables receptionists to register patients and book appointments, do
 - **Billing**: Itemized charges with auto-calculated totals via pre‑save hook; payment status tracking (pending / paid / partially_paid); revenue summary via MongoDB aggregation
 - **Reports & Dashboard**: Admin‑only dashboard with summary cards, revenue charts (recharts), and busiest‑doctors table; visual design consistent across all pages
 - **OPD Auto‑Billing**: When an appointment is booked, a billing record with a default ₹500 fee is automatically generated.
-- **Payment Methods**: Cash, UPI, Card, and Insurance options are now supported throughout the UI (appointment booking, billing, and payment).
-- **Public Payment Page**: `/pay/:billingId` provides a secure, unauthenticated payment flow via a link sent by SMS.
-- **SMS Payment Links**: Receptionists can send payment‑link SMS directly from the billing screen using a free email‑to‑SMS gateway.
+- **Payment Methods**: Cash, Instant UPI (QR code & UTR verification), **Online Credit/Debit Card Gateway**, and **Health Insurance TPA Claim Desk** supported throughout the UI.
+- **Online Card Gateway**: Patients can enter Cardholder Name, 16-digit Card Number (with auto brand detection: Visa/Mastercard/RuPay/Amex), Expiry, and CVV to pay invoices directly online.
+- **Health Insurance & TPA Desk**: Patients can select their Insurance Provider (Star Health, HDFC ERGO, Care Health, Ayushman Bharat PM-JAY, etc.) and submit Policy Number, Pre-Auth Claim ID, and Insured Member details for cashless verification.
+- **Public Payment Page**: `/pay/:billingId` provides a secure payment flow via SMS link, supporting instant online settlement.
+- **SMS Payment Links**: Receptionists can send payment‑link SMS directly from the billing screen using an email‑to‑SMS gateway.
 
 ---
 

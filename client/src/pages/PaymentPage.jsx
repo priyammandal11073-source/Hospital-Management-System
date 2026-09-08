@@ -1,24 +1,16 @@
 /**
- * PaymentPage – public page accessible via SMS payment link.
+ * PaymentPage – public page accessible via SMS payment link & patient portal.
  * Route: /pay/:billingId
  *
- * Patients can view their invoice and pay via any supported method
- * WITHOUT logging in. The billing record is fetched via a public
- * endpoint (we reuse getBillingById, which is protect() – so for
- * the public SMS link we expose a separate unprotected route
- * GET /api/billing/:id/public).
- *
- * For now (MVP) we load the billing using the patient's patient_token
- * if present, otherwise we fetch from the existing protected route
- * using the hms_token fallback.  The page is fully functional for
- * logged-in patients; for unauthenticated access from the SMS link
- * the patient is prompted to log in first (keeping all existing auth
- * guards intact).
+ * Patients can view their invoice and pay online directly via UPI, Card Gateway,
+ * or submit Insurance TPA details without hassle.
  */
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import UpiPaymentBox from "../components/UpiPaymentBox.jsx";
+import CardPaymentBox from "../components/CardPaymentBox.jsx";
+import InsurancePaymentBox from "../components/InsurancePaymentBox.jsx";
 import PaymentMethodSelect from "../components/PaymentMethodSelect.jsx";
 import { getBillingById, payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
 
@@ -72,14 +64,9 @@ function PaymentPage() {
     setSuccessMsg("");
     try {
       let updated;
-      if (paymentMethod === "upi") {
-        // UpiPaymentBox handles its own UPI flow; this handler is for cash/card/insurance
-        return;
-      }
       if (isPatient) {
-        // Patient pays via patient-portal endpoint
         const res = await payMyBillingUpi(billingId, {
-          upiTransactionId: undefined,
+          paymentMethod,
         });
         updated = res.billing;
       } else {
@@ -98,9 +85,9 @@ function PaymentPage() {
     }
   };
 
-  const handleUpiSuccess = (updatedBilling) => {
+  const handlePaymentSuccess = (updatedBilling) => {
     setBilling(updatedBilling);
-    setSuccessMsg("Payment verified and invoice marked as PAID!");
+    setSuccessMsg("Payment / Claim update recorded successfully!");
   };
 
   // ── Loading ────────────────────────────────────────────────────────────────
@@ -185,7 +172,7 @@ function PaymentPage() {
             <h1 className="text-lg font-extrabold text-teal-700 tracking-tight">
               Nivora Care Hospital
             </h1>
-            <p className="text-xs text-slate-500">Secure Online Payment</p>
+            <p className="text-xs text-slate-500">Secure Online Payment Gateway</p>
           </div>
           <span
             className={`text-xs font-bold border px-2.5 py-0.5 rounded-full ${STATUS_COLORS[billing.paymentStatus] || STATUS_COLORS.pending}`}
@@ -264,42 +251,48 @@ function PaymentPage() {
         {/* ── Payment Section ── */}
         {!isPaid ? (
           <section className="rounded-2xl bg-white shadow-md p-6 space-y-5">
-            <h2 className="text-base font-bold text-slate-900">Choose Payment Method</h2>
+            <h2 className="text-base font-bold text-slate-900">Select Payment Method</h2>
 
             <PaymentMethodSelect
               value={paymentMethod}
               onChange={setPaymentMethod}
             />
 
-            {/* UPI flow */}
+            {/* UPI Payment Flow */}
             {paymentMethod === "upi" && (
               <UpiPaymentBox
                 billing={billing}
-                onPaymentSuccess={handleUpiSuccess}
+                onPaymentSuccess={handlePaymentSuccess}
                 isPatient={isPatient}
               />
             )}
 
-            {/* Cash / Card / Insurance */}
-            {paymentMethod !== "upi" && (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-3">
-                {paymentMethod === "cash" && (
-                  <p className="text-sm text-slate-700">
-                    💵 Please visit the hospital billing counter to pay in cash. Your invoice will be marked as paid once payment is received.
-                  </p>
-                )}
-                {paymentMethod === "card" && (
-                  <p className="text-sm text-slate-700">
-                    💳 Our billing staff will process your card payment at the counter. Kindly carry your card when visiting.
-                  </p>
-                )}
-                {paymentMethod === "insurance" && (
-                  <p className="text-sm text-slate-700">
-                    🏥 Our insurance desk will assist with your claim. Please bring your health card and policy documents.
-                  </p>
-                )}
+            {/* Online Card Payment Gateway */}
+            {paymentMethod === "card" && (
+              <CardPaymentBox
+                billing={billing}
+                onPaymentSuccess={handlePaymentSuccess}
+                isPatient={isPatient}
+              />
+            )}
 
-                {/* Staff-only instant mark paid (patients must visit counter for non-UPI) */}
+            {/* Health Insurance & TPA Desk */}
+            {paymentMethod === "insurance" && (
+              <InsurancePaymentBox
+                billing={billing}
+                onPaymentSuccess={handlePaymentSuccess}
+                isPatient={isPatient}
+              />
+            )}
+
+            {/* Cash Payment Instructions */}
+            {paymentMethod === "cash" && (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 space-y-3">
+                <p className="text-sm text-slate-700">
+                  💵 Please visit the hospital billing counter to pay in cash. Your invoice will be marked as paid once payment is received at the reception desk.
+                </p>
+
+                {/* Staff-only instant mark paid */}
                 {!isPatient && (
                   <button
                     type="button"
@@ -307,14 +300,8 @@ function PaymentPage() {
                     onClick={handleMarkPaid}
                     className="w-full rounded-xl bg-teal-600 px-4 py-3 font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition"
                   >
-                    {isMarkingPaid ? "Recording…" : `Mark as Paid (${paymentMethod.toUpperCase()})`}
+                    {isMarkingPaid ? "Recording…" : "Mark as Paid (CASH)"}
                   </button>
-                )}
-
-                {isPatient && paymentMethod !== "upi" && (
-                  <p className="text-xs text-slate-500 italic">
-                    For non-UPI payments, please visit the hospital billing counter. Staff will update your payment status.
-                  </p>
                 )}
 
                 {errorMsg && (
@@ -335,9 +322,30 @@ function PaymentPage() {
             </p>
             {billing.upiTransactionId && (
               <p className="text-xs text-slate-500">
-                UTR / Ref: <code className="font-mono font-bold text-emerald-700">{billing.upiTransactionId}</code>
+                UPI Reference UTR: <code className="font-mono font-bold text-emerald-700">{billing.upiTransactionId}</code>
               </p>
             )}
+            {billing.cardDetails?.transactionRef && (
+              <p className="text-xs text-slate-500">
+                Card Transaction Ref: <code className="font-mono font-bold text-emerald-700">{billing.cardDetails.transactionRef}</code> ({billing.cardDetails.cardBrand} ending in •••• {billing.cardDetails.cardLast4})
+              </p>
+            )}
+          </section>
+        )}
+
+        {/* Display Insurance TPA submission status if partially paid via insurance */}
+        {billing.paymentStatus === "partially_paid" && billing.insuranceDetails && (
+          <section className="rounded-2xl bg-blue-50 border border-blue-200 shadow-md p-6 space-y-2 text-xs text-blue-950">
+            <div className="flex items-center justify-between font-bold text-sm">
+              <span>🏥 Insurance Claim Submission Status</span>
+              <span className="px-2 py-0.5 rounded bg-blue-100 border border-blue-300 uppercase text-[10px]">
+                {billing.insuranceDetails.status.replace("_", " ")}
+              </span>
+            </div>
+            <p><strong>Provider:</strong> {billing.insuranceDetails.providerName}</p>
+            <p><strong>Policy No:</strong> {billing.insuranceDetails.policyNumber}</p>
+            <p><strong>Claim Ref ID:</strong> {billing.insuranceDetails.claimId}</p>
+            <p><strong>Insured Member:</strong> {billing.insuranceDetails.insuredMemberName}</p>
           </section>
         )}
 

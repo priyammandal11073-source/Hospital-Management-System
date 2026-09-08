@@ -18,6 +18,32 @@ const itemizedChargeSchema = new mongoose.Schema(
   }
 );
 
+const cardDetailsSchema = new mongoose.Schema(
+  {
+    cardLast4: { type: String, trim: true },
+    cardBrand: { type: String, trim: true, default: "Visa" },
+    transactionRef: { type: String, trim: true },
+  },
+  { _id: false }
+);
+
+const insuranceDetailsSchema = new mongoose.Schema(
+  {
+    providerName: { type: String, trim: true, default: "" },
+    policyNumber: { type: String, trim: true, default: "" },
+    claimId: { type: String, trim: true, default: "" },
+    insuredMemberName: { type: String, trim: true, default: "" },
+    contactNumber: { type: String, trim: true, default: "" },
+    notes: { type: String, trim: true, default: "" },
+    status: {
+      type: String,
+      enum: ["pending_verification", "approved", "rejected"],
+      default: "pending_verification",
+    },
+  },
+  { _id: false }
+);
+
 const billingSchema = new mongoose.Schema(
   {
     patient: {
@@ -67,6 +93,14 @@ const billingSchema = new mongoose.Schema(
     upiPayerVpa: {
       type: String,
       trim: true,
+    },
+    cardDetails: {
+      type: cardDetailsSchema,
+      default: null,
+    },
+    insuranceDetails: {
+      type: insuranceDetailsSchema,
+      default: null,
     },
   },
   {

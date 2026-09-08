@@ -156,7 +156,7 @@ export const getBillingById = async (req, res) => {
 // PATCH /api/billing/:id/payment
 export const updatePaymentStatus = async (req, res) => {
   try {
-    const { paymentStatus, paymentDate, paymentMethod, upiTransactionId, upiPayerVpa } = req.body;
+    const { paymentStatus, paymentDate, paymentMethod, upiTransactionId, upiPayerVpa, cardDetails, insuranceDetails } = req.body;
 
     if (!isValidBillingId(req.params.id)) {
       return res.status(400).json({ message: "Invalid billing ID" });
@@ -199,11 +199,20 @@ export const updatePaymentStatus = async (req, res) => {
       updates.upiPayerVpa = String(upiPayerVpa).trim();
     }
 
+    if (cardDetails) {
+      updates.cardDetails = cardDetails;
+    }
+
+    if (insuranceDetails) {
+      updates.insuranceDetails = insuranceDetails;
+    }
+
     const billing = await Billing.findByIdAndUpdate(req.params.id, updates, {
       new: true,
       runValidators: true,
     })
       .populate("patient", "name contactNumber email age gender address")
+      .populate("bed", "bedNumber ward floor dailyRate")
       .populate({
         path: "appointment",
         select: "appointmentDate timeSlot status reasonForVisit doctor",

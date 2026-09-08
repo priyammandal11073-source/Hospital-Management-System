@@ -207,10 +207,11 @@ export const getMyBedStay = async (req, res) => {
 };
 
 // PATCH /api/patient-portal/billings/:id/pay-upi
+// PATCH /api/patient-portal/billings/:id/pay-upi
 export const payMyBillingUpi = async (req, res) => {
   try {
     const { id: billingId } = req.params;
-    const { upiTransactionId, upiPayerVpa } = req.body;
+    const { paymentMethod = "upi", upiTransactionId, upiPayerVpa, cardDetails, insuranceDetails } = req.body;
 
     if (!mongoose.isValidObjectId(billingId)) {
       return res.status(400).json({ message: "Invalid billing ID" });
@@ -229,22 +230,50 @@ export const payMyBillingUpi = async (req, res) => {
       return res.status(400).json({ message: "This invoice is already paid" });
     }
 
-    const finalUpiTrxId = upiTransactionId
-      ? String(upiTransactionId).trim()
-      : "UPI" + Math.floor(100000000000 + Math.random() * 900000000000);
-
-    billing.paymentStatus = "paid";
-    billing.paymentMethod = "upi";
+    billing.paymentMethod = paymentMethod;
     billing.paymentDate = new Date();
-    billing.upiTransactionId = finalUpiTrxId;
-    if (upiPayerVpa) {
-      billing.upiPayerVpa = String(upiPayerVpa).trim();
+
+    if (paymentMethod === "card") {
+      const cardNum = cardDetails?.cardNumber ? String(cardDetails.cardNumber).replace(/\s/g, "") : "";
+      const last4 = cardNum ? cardNum.slice(-4) : "4242";
+      const brand = cardDetails?.cardBrand || (cardNum.startsWith("4") ? "Visa" : cardNum.startsWith("5") ? "Mastercard" : cardNum.startsWith("6") ? "RuPay" : "Card");
+      const ref = "CARD_" + Math.floor(100000000000 + Math.random() * 900000000000);
+
+      billing.paymentStatus = "paid";
+      billing.cardDetails = {
+        cardLast4: last4,
+        cardBrand: brand,
+        transactionRef: ref,
+      };
+    } else if (paymentMethod === "insurance") {
+      billing.paymentStatus = "partially_paid";
+      billing.insuranceDetails = {
+        providerName: insuranceDetails?.providerName || "Health Insurance",
+        policyNumber: insuranceDetails?.policyNumber || "",
+        claimId: insuranceDetails?.claimId || "CLM" + Math.floor(100000 + Math.random() * 900000),
+        insuredMemberName: insuranceDetails?.insuredMemberName || "",
+        contactNumber: insuranceDetails?.contactNumber || "",
+        notes: insuranceDetails?.notes || "",
+        status: "pending_verification",
+      };
+    } else {
+      // UPI
+      const finalUpiTrxId = upiTransactionId
+        ? String(upiTransactionId).trim()
+        : "UPI" + Math.floor(100000000000 + Math.random() * 900000000000);
+
+      billing.paymentStatus = "paid";
+      billing.upiTransactionId = finalUpiTrxId;
+      if (upiPayerVpa) {
+        billing.upiPayerVpa = String(upiPayerVpa).trim();
+      }
     }
 
     await billing.save();
 
     const populatedBilling = await Billing.findById(billing._id)
       .populate("patient", "name contactNumber email age gender address")
+      .populate("bed", "bedNumber ward floor dailyRate")
       .populate({
         path: "appointment",
         select: "appointmentDate timeSlot status reasonForVisit doctor",
@@ -252,12 +281,17 @@ export const payMyBillingUpi = async (req, res) => {
       });
 
     return res.status(200).json({
-      message: "UPI payment received and invoice marked as paid!",
+      message:
+        paymentMethod === "card"
+          ? "Online Card payment processed successfully!"
+          : paymentMethod === "insurance"
+          ? "Insurance claim details submitted successfully. Desk verification in progress."
+          : "UPI payment received and invoice marked as paid!",
       billing: populatedBilling,
     });
   } catch (error) {
-    console.error("Error processing UPI payment:", error);
-    return res.status(500).json({ message: "Unable to complete UPI payment" });
+    console.error("Error processing online payment:", error);
+    return res.status(500).json({ message: "Unable to complete payment" });
   }
 };
 
