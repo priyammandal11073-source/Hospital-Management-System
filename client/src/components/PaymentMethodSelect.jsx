@@ -5,10 +5,16 @@
 
 const METHODS = [
   {
+    value: "upi",
+    label: "Instant UPI & QR Code",
+    icon: "📲",
+    description: "GPay · PhonePe · Paytm · BHIM QR",
+  },
+  {
     value: "razorpay",
-    label: "Razorpay Online Gateway",
+    label: "Razorpay Gateway",
     icon: "💳",
-    description: "UPI · Cards · NetBanking · Wallets",
+    description: "Cards · NetBanking · Wallets · EMI",
     featured: true,
   },
   {
@@ -19,7 +25,7 @@ const METHODS = [
   },
   {
     value: "cash",
-    label: "Cash",
+    label: "Cash Desk",
     icon: "💵",
     description: "Counter cash payment at desk",
   },
@@ -39,7 +45,7 @@ function PaymentMethodSelect({ value, onChange, label = "Payment Method", disabl
       {label && (
         <p className="text-sm font-semibold text-slate-700">{label}</p>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {METHODS.map((method) => {
           const isSelected = value === method.value;
           return (

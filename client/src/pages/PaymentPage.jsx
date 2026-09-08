@@ -269,16 +269,26 @@ function PaymentPage() {
               onChange={setPaymentMethod}
             />
 
-            {/* 1. All Online/Digital Payments -> Razorpay Payment Gateway */}
-            {paymentMethod !== "insurance" && paymentMethod !== "cash" && (
-              <RazorpayPaymentBox
+            {/* 1. Instant UPI & QR Code */}
+            {paymentMethod === "upi" && (
+              <UpiPaymentBox
                 billing={billing}
                 onPaymentSuccess={handlePaymentSuccess}
                 isPatient={isPatient}
               />
             )}
 
-            {/* 2. Health Insurance & TPA Desk */}
+            {/* 2. Razorpay Gateway (Cards, NetBanking, Wallets) */}
+            {paymentMethod === "razorpay" && (
+              <RazorpayPaymentBox
+                billing={billing}
+                onPaymentSuccess={handlePaymentSuccess}
+                isPatient={isPatient}
+                autoOpen={true}
+              />
+            )}
+
+            {/* 3. Health Insurance & TPA Desk */}
             {paymentMethod === "insurance" && (
               <InsurancePaymentBox
                 billing={billing}
