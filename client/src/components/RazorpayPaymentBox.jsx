@@ -53,7 +53,7 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient }) {
 
       if (window.Razorpay && scriptOK) {
         const options = {
-          key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_1DP5AxB243BScq",
+          key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TZavagxglGTRZp",
           amount: orderData.amount,
           currency: orderData.currency || "INR",
           name: "Nivora Care Hospital",

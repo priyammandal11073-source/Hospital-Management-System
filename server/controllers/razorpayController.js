@@ -36,7 +36,7 @@ export const createOrder = async (req, res) => {
     }
 
     const razorpay = getRazorpayInstance();
-    const keyId = process.env.RAZORPAY_KEY_ID || "rzp_test_1DP5AxB243BScq";
+    const keyId = process.env.RAZORPAY_KEY_ID || "rzp_test_TZavagxglGTRZp";
 
     if (razorpay) {
       // Real Razorpay API Order Creation
