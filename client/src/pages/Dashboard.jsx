@@ -28,6 +28,8 @@ import {
   updateNursingTaskStatus,
   updateDoctorOrderStatus,
   getDoctorDashboardData,
+  getAdminTelemetry,
+  getGlobalAdminSearch,
 } from "../services/api.js";
 
 const formatDate = (date) =>
@@ -92,32 +94,26 @@ function MetricCard({ label, value, icon, gradient, badge, badgeColor, to, onCli
    1. ADMIN EXECUTIVE PORTAL DASHBOARD
    ========================================================================= */
 function AdminDashboard({ user, refreshKey, onTriggerRefresh }) {
-  const [data, setData] = useState(null);
+  const [telemetry, setTelemetry] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Global Search Modal State
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState("all");
+  const [searchResults, setSearchResults] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     let active = true;
     const fetchAdminData = async () => {
       setIsLoading(true);
+      setError("");
       try {
-        const [patientData, doctorData, appointmentData, pendingBillingData] = await Promise.all([
-          getPatients("", 1, 1),
-          getDoctors(),
-          getAppointments(),
-          getBillings({ paymentStatus: "pending" }),
-        ]);
-
+        const data = await getAdminTelemetry();
         if (active) {
-          setData({
-            totalPatients: patientData.pagination?.totalPatients || 0,
-            totalDoctors: doctorData.doctors.length,
-            appointments: appointmentData.appointments,
-            pendingBills: pendingBillingData.billings.length,
-            pendingPatientBookings: appointmentData.appointments.filter(
-              (a) => a.status === "pending" && a.bookedBy === "patient"
-            ).length,
-          });
+          setTelemetry(data);
         }
       } catch (err) {
         if (active) setError(err.response?.data?.message || "Failed to load admin telemetry.");
@@ -129,185 +125,653 @@ function AdminDashboard({ user, refreshKey, onTriggerRefresh }) {
     return () => { active = false; };
   }, [refreshKey]);
 
-  const { recentAppointments, todayAppointments } = useMemo(() => {
-    const appointments = data?.appointments || [];
-    const today = new Date().toISOString().slice(0, 10);
-    return {
-      recentAppointments: [...appointments]
-        .sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate))
-        .slice(0, 5),
-      todayAppointments: appointments.filter(
-        (a) => a.appointmentDate && String(a.appointmentDate).slice(0, 10) === today
-      ),
+  // Global search shortcut (Ctrl+K or Cmd+K)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        setShowSearchModal((prev) => !prev);
+      }
     };
-  }, [data]);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleGlobalSearch = async (e) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setIsSearching(true);
+    try {
+      const res = await getGlobalAdminSearch(searchQuery.trim(), searchType);
+      setSearchResults(res.results || {});
+    } catch (err) {
+      console.error("Global search failed:", err);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const bedCensus = telemetry?.bedCensus || {
+    totalBeds: 0,
+    occupiedBeds: 0,
+    availableBeds: 0,
+    cleaningBeds: 0,
+    maintenanceBeds: 0,
+    occupancyPercentage: 0,
+    icuOccupancy: 0,
+    icuOccupied: 0,
+    icuTotal: 0,
+    emergencyOccupied: 0,
+    emergencyTotal: 0,
+    generalOccupied: 0,
+    generalTotal: 0,
+  };
+
+  const recentAppointments = telemetry?.recentAppointments || [];
+  const todayAppointments = telemetry?.todayAppointments || [];
+  const recentActivity = telemetry?.recentActivity || [];
 
   if (isLoading) return <LoadingSpinner label="Loading Executive Operations..." />;
   if (error) return <ErrorMessage message={error} />;
 
   return (
     <div className="space-y-6">
-      {/* Admin Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-800 via-indigo-800 to-slate-900 p-6 sm:p-8 text-white shadow-lg">
-        <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
-            <span className="h-2 w-2 rounded-full bg-purple-400 animate-pulse"></span>
-            <span>Administrator executive command</span>
-            <span className="opacity-60">•</span>
-            <span>Full system clearance</span>
+      {/* ================= 1. EXECUTIVE HERO BANNER ================= */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-6 sm:p-8 text-white shadow-xl">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
+              <span className="h-2 w-2 rounded-full bg-purple-400 animate-pulse"></span>
+              <span>Administrator Executive Command Center</span>
+              <span className="opacity-60">•</span>
+              <span>Hospital Clearance Level 3</span>
+            </div>
+            <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
+              Nivora Care Operations & Governance
+            </h1>
+            <p className="mt-2 text-sm text-purple-100/90 leading-relaxed">
+              Institutional oversight for {user?.name || "Administrator"}. Monitor live inpatient bed census, emergency department triage, surgical suites, workforce shifts, and revenue settlements.
+            </p>
           </div>
-          <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
-            Hospital Operations & Governance Center
-          </h1>
-          <p className="mt-2 text-sm text-purple-100/90 leading-relaxed">
-            Welcome back, {user?.name}. Oversee clinical specialties, patient admissions, appointment volume, and institutional financial settlements.
-          </p>
+
+          {/* Quick Search Trigger & Shortcuts */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <button
+              onClick={() => setShowSearchModal(true)}
+              className="group flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-semibold text-white backdrop-blur-md hover:bg-white/20 transition shadow-sm"
+              title="Global Hospital Search"
+            >
+              <svg className="h-4 w-4 text-purple-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span>Search hospital records...</span>
+              <kbd className="hidden sm:inline-block rounded bg-white/20 px-1.5 py-0.5 text-[10px] font-mono text-white/80">
+                Ctrl K
+              </kbd>
+            </button>
+
+            <Link
+              to="/admin/calendar"
+              className="flex items-center gap-1.5 rounded-xl bg-purple-500/30 border border-purple-400/40 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-purple-500/40 transition"
+            >
+              <span>📅</span>
+              <span>Central Calendar</span>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Admin Metrics */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      {/* ================= 2. 12-METRIC EXECUTIVE KPI GRID ================= */}
+      <div className="grid gap-3.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
         <MetricCard
-          label="Total patients"
-          value={data.totalPatients}
+          label="Total Registered Patients"
+          value={telemetry?.totalPatients || 0}
           gradient="from-blue-600 to-cyan-600"
-          badge="Registered records"
+          badge="Permanent Registry"
           badgeColor="bg-blue-50 text-blue-700"
-          icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
+          to="/patients"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>}
         />
         <MetricCard
-          label="Specialist doctors"
-          value={data.totalDoctors}
+          label="Specialist Doctors"
+          value={telemetry?.activeDoctors || 0}
           gradient="from-indigo-600 to-purple-600"
-          badge="Active practitioners"
+          badge="Consultants"
           badgeColor="bg-indigo-50 text-indigo-700"
-          icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>}
+          to="/doctors"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>}
         />
         <MetricCard
-          label="Today consultations"
-          value={todayAppointments.length}
+          label="Nursing Workforce"
+          value={telemetry?.activeNurses || 0}
+          gradient="from-teal-600 to-cyan-600"
+          badge="Active on Duty"
+          badgeColor="bg-teal-50 text-teal-700"
+          to="/admin/staff"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
+        />
+        <MetricCard
+          label="Today Consultations"
+          value={telemetry?.todayConsultations || 0}
           gradient="from-emerald-500 to-teal-600"
-          badge="Scheduled today"
+          badge="Scheduled OPD"
           badgeColor="bg-emerald-50 text-emerald-700"
-          icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
+          to="/appointments"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>}
         />
         <MetricCard
-          label="Pending invoices"
-          value={data.pendingBills}
-          gradient="from-amber-500 to-orange-600"
-          badge="Awaiting settlement"
-          badgeColor="bg-amber-50 text-amber-700"
-          icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>}
+          label="Inpatient Bed Census"
+          value={`${bedCensus.occupancyPercentage}%`}
+          gradient="from-purple-600 to-pink-600"
+          badge={`${bedCensus.occupiedBeds}/${bedCensus.totalBeds} Beds Occupied`}
+          badgeColor="bg-purple-50 text-purple-700"
+          to="/admin/admissions"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>}
         />
         <MetricCard
-          label="Review queue"
-          value={data.pendingPatientBookings}
-          gradient="from-rose-500 to-red-600"
-          badge="Self-booked patients"
+          label="ICU Bed Load"
+          value={`${bedCensus.icuOccupancy}%`}
+          gradient="from-rose-600 to-red-600"
+          badge={`${bedCensus.icuOccupied}/${bedCensus.icuTotal} ICU Occupied`}
+          badgeColor={bedCensus.icuOccupancy > 80 ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-700"}
+          to="/beds"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>}
+        />
+        <MetricCard
+          label="Emergency Trauma Bay"
+          value={`${bedCensus.emergencyOccupied}/${bedCensus.emergencyTotal}`}
+          gradient="from-rose-500 to-amber-600"
+          badge="Active ER Cases"
           badgeColor="bg-rose-50 text-rose-700"
-          icon={<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
+          to="/admin/emergency"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>}
+        />
+        <MetricCard
+          label="Today OT Surgeries"
+          value={telemetry?.todaySurgeriesCount || 0}
+          gradient="from-indigo-600 to-blue-700"
+          badge="Surgical Suites"
+          badgeColor="bg-blue-50 text-blue-700"
+          to="/admin/operating-theatre"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879a3 3 0 11-4.242-4.242L10.758 4.88a3 3 0 014.242 4.242L12.12 12z" /></svg>}
+        />
+        <MetricCard
+          label="Pending Invoices"
+          value={telemetry?.pendingBills || 0}
+          gradient="from-amber-500 to-orange-600"
+          badge="Awaiting Settlement"
+          badgeColor="bg-amber-50 text-amber-700"
+          to="/billing"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>}
+        />
+        <MetricCard
+          label="Today Revenue Collected"
+          value={`₹${(telemetry?.todayRevenue || 0).toLocaleString("en-IN")}`}
+          gradient="from-emerald-600 to-green-700"
+          badge="Cashier Receipts"
+          badgeColor="bg-emerald-50 text-emerald-700"
+          to="/admin/revenue"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+        />
+        <MetricCard
+          label="Pending Lab Reports"
+          value={telemetry?.pendingLabs || 0}
+          gradient="from-blue-500 to-indigo-600"
+          badge={telemetry?.criticalLabs > 0 ? `${telemetry.criticalLabs} Urgent` : "Diagnostics"}
+          badgeColor={telemetry?.criticalLabs > 0 ? "bg-rose-100 text-rose-800 font-bold" : "bg-blue-50 text-blue-700"}
+          to="/lab-reports"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>}
+        />
+        <MetricCard
+          label="Review Queue"
+          value={telemetry?.pendingPatientBookings || 0}
+          gradient="from-purple-500 to-violet-600"
+          badge="Self-Booked Visits"
+          badgeColor="bg-purple-50 text-purple-700"
+          to="/appointments"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
         />
       </div>
 
-      {/* Admin Quick Action Hub */}
+      {/* ================= 3. BED OCCUPANCY & WARD CENSUS METERS ================= */}
+      <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-100 pb-4">
+          <div>
+            <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <span className="flex h-2.5 w-2.5 rounded-full bg-purple-600"></span>
+              Real-Time Inpatient Census & Ward Utilization
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">Live hospital bed tracking across ICU, Emergency, and Inpatient units</p>
+          </div>
+          <Link to="/admin/admissions" className="text-xs font-bold text-purple-600 hover:underline">
+            Manage Inpatient Admissions →
+          </Link>
+        </div>
+
+        {/* Total Bed Bar */}
+        <div className="mt-5 space-y-2">
+          <div className="flex justify-between text-xs font-semibold text-slate-700">
+            <span>Hospital Bed Utilization: {bedCensus.occupancyPercentage}% Occupied</span>
+            <span className="text-slate-500 font-mono">
+              {bedCensus.occupiedBeds} occupied / {bedCensus.availableBeds} available / {bedCensus.totalBeds} total
+            </span>
+          </div>
+          <div className="h-3.5 w-full rounded-full bg-slate-100 overflow-hidden flex">
+            <div
+              className="bg-purple-600 h-full transition-all duration-500"
+              style={{ width: `${bedCensus.occupancyPercentage}%` }}
+              title={`Occupied: ${bedCensus.occupiedBeds}`}
+            />
+            <div
+              className="bg-amber-400 h-full transition-all duration-500"
+              style={{ width: `${bedCensus.totalBeds > 0 ? (bedCensus.cleaningBeds / bedCensus.totalBeds) * 100 : 0}%` }}
+              title={`Cleaning: ${bedCensus.cleaningBeds}`}
+            />
+            <div
+              className="bg-slate-300 h-full transition-all duration-500"
+              style={{ width: `${bedCensus.totalBeds > 0 ? (bedCensus.maintenanceBeds / bedCensus.totalBeds) * 100 : 0}%` }}
+              title={`Maintenance: ${bedCensus.maintenanceBeds}`}
+            />
+          </div>
+          <div className="flex flex-wrap items-center gap-4 text-[11px] text-slate-500 pt-1">
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-purple-600"></span> Occupied ({bedCensus.occupiedBeds})</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-emerald-500"></span> Vacant & Ready ({bedCensus.availableBeds})</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-400"></span> Housekeeping ({bedCensus.cleaningBeds})</span>
+            <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-slate-400"></span> Maintenance ({bedCensus.maintenanceBeds})</span>
+          </div>
+        </div>
+
+        {/* Ward Breakdown Meters */}
+        <div className="mt-6 grid gap-4 sm:grid-cols-3 pt-4 border-t border-slate-100">
+          <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-800">
+              <span>ICU & Critical Care</span>
+              <span className={bedCensus.icuOccupancy > 80 ? "text-rose-600 font-extrabold animate-pulse" : "text-purple-700"}>
+                {bedCensus.icuOccupancy}%
+              </span>
+            </div>
+            <div className="mt-2 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+              <div
+                className={`h-full rounded-full ${bedCensus.icuOccupancy > 80 ? "bg-rose-600" : "bg-purple-600"}`}
+                style={{ width: `${bedCensus.icuOccupancy}%` }}
+              />
+            </div>
+            <p className="mt-2 text-[11px] text-slate-500">
+              {bedCensus.icuOccupied} beds in use out of {bedCensus.icuTotal}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-800">
+              <span>Emergency Bay</span>
+              <span className="text-rose-700 font-extrabold">
+                {bedCensus.emergencyTotal > 0 ? Math.round((bedCensus.emergencyOccupied / bedCensus.emergencyTotal) * 100) : 0}%
+              </span>
+            </div>
+            <div className="mt-2 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-rose-600"
+                style={{ width: `${bedCensus.emergencyTotal > 0 ? (bedCensus.emergencyOccupied / bedCensus.emergencyTotal) * 100 : 0}%` }}
+              />
+            </div>
+            <p className="mt-2 text-[11px] text-slate-500">
+              {bedCensus.emergencyOccupied} beds in use out of {bedCensus.emergencyTotal}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-800">
+              <span>General & Specialty Wards</span>
+              <span className="text-blue-700 font-extrabold">
+                {bedCensus.generalTotal > 0 ? Math.round((bedCensus.generalOccupied / bedCensus.generalTotal) * 100) : 0}%
+              </span>
+            </div>
+            <div className="mt-2 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-blue-600"
+                style={{ width: `${bedCensus.generalTotal > 0 ? (bedCensus.generalOccupied / bedCensus.generalTotal) * 100 : 0}%` }}
+              />
+            </div>
+            <p className="mt-2 text-[11px] text-slate-500">
+              {bedCensus.generalOccupied} beds in use out of {bedCensus.generalTotal}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ================= 4. 12-CARD OPERATIONS HUB ================= */}
       <section className="rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
-            <h2 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2">
               <span className="flex h-2 w-2 rounded-full bg-purple-500"></span>
-              Admin operations hub
+              Hospital Executive Operations Hub
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">Direct 1-click management of all hospital infrastructure</p>
+            <p className="text-xs text-slate-400 mt-0.5">1-click direct management across all medical & operational facilities</p>
           </div>
           <span className="rounded-full bg-purple-50 px-2.5 py-1 text-[11px] font-semibold text-purple-700 ring-1 ring-purple-500/20">
-            Full access
+            Full Clearance
           </span>
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
           <Link to="/patients" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-blue-400 hover:bg-white hover:shadow-md">
             <span className="text-2xl">👥</span>
             <span className="mt-1.5 text-xs font-bold text-slate-800">Patients</span>
-            <span className="text-[10px] text-slate-500">Admit & manage</span>
+            <span className="text-[10px] text-slate-500">Master registry</span>
+          </Link>
+          <Link to="/admin/admissions" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-purple-400 hover:bg-white hover:shadow-md">
+            <span className="text-2xl">🛏️</span>
+            <span className="mt-1.5 text-xs font-bold text-slate-800">Admissions</span>
+            <span className="text-[10px] text-slate-500">Inpatient census</span>
           </Link>
           <Link to="/doctors" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-indigo-400 hover:bg-white hover:shadow-md">
             <span className="text-2xl">🩺</span>
             <span className="mt-1.5 text-xs font-bold text-slate-800">Specialists</span>
-            <span className="text-[10px] text-slate-500">Roster & shifts</span>
+            <span className="text-[10px] text-slate-500">Doctor directory</span>
           </Link>
           <Link to="/appointments" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-emerald-400 hover:bg-white hover:shadow-md">
             <span className="text-2xl">📅</span>
             <span className="mt-1.5 text-xs font-bold text-slate-800">Appointments</span>
-            <span className="text-[10px] text-slate-500">Hospital queue</span>
+            <span className="text-[10px] text-slate-500">OPD queue</span>
+          </Link>
+          <Link to="/admin/operating-theatre" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-pink-400 hover:bg-white hover:shadow-md">
+            <span className="text-2xl">🏥</span>
+            <span className="mt-1.5 text-xs font-bold text-slate-800">Operating Theatre</span>
+            <span className="text-[10px] text-slate-500">Surgeries & OT</span>
+          </Link>
+          <Link to="/admin/emergency" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-rose-400 hover:bg-white hover:shadow-md">
+            <span className="text-2xl">🚨</span>
+            <span className="mt-1.5 text-xs font-bold text-slate-800">Emergency & ER</span>
+            <span className="text-[10px] text-slate-500">24/7 Trauma desk</span>
           </Link>
           <Link to="/billing" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-amber-400 hover:bg-white hover:shadow-md">
             <span className="text-2xl">💳</span>
-            <span className="mt-1.5 text-xs font-bold text-slate-800">Invoices</span>
-            <span className="text-[10px] text-slate-500">Accounts & cash</span>
+            <span className="mt-1.5 text-xs font-bold text-slate-800">Billing & Cash</span>
+            <span className="text-[10px] text-slate-500">Settlements</span>
           </Link>
-          <Link to="/reports" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-purple-400 hover:bg-white hover:shadow-md">
-            <span className="text-2xl">📊</span>
-            <span className="mt-1.5 text-xs font-bold text-slate-800">Analytics</span>
-            <span className="text-[10px] text-slate-500">Financial reports</span>
+          <Link to="/admin/revenue" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-teal-400 hover:bg-white hover:shadow-md">
+            <span className="text-2xl">📈</span>
+            <span className="mt-1.5 text-xs font-bold text-slate-800">Revenue</span>
+            <span className="text-[10px] text-slate-500">Financial telemetry</span>
           </Link>
-          <a href="/patient/login" target="_blank" rel="noreferrer" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-cyan-400 hover:bg-white hover:shadow-md">
-            <span className="text-2xl">🌐</span>
-            <span className="mt-1.5 text-xs font-bold text-slate-800">Patient portal</span>
-            <span className="text-[10px] text-slate-500">Live preview ↗</span>
-          </a>
+          <Link to="/admin/departments" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-purple-400 hover:bg-white hover:shadow-md">
+            <span className="text-2xl">🏢</span>
+            <span className="mt-1.5 text-xs font-bold text-slate-800">Departments</span>
+            <span className="text-[10px] text-slate-500">Clinical divisions</span>
+          </Link>
+          <Link to="/admin/staff" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-cyan-400 hover:bg-white hover:shadow-md">
+            <span className="text-2xl">🧑‍💼</span>
+            <span className="mt-1.5 text-xs font-bold text-slate-800">Staff & HR</span>
+            <span className="text-[10px] text-slate-500">Workforce roster</span>
+          </Link>
+          <Link to="/admin/attendance" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-indigo-400 hover:bg-white hover:shadow-md">
+            <span className="text-2xl">🕒</span>
+            <span className="mt-1.5 text-xs font-bold text-slate-800">Attendance</span>
+            <span className="text-[10px] text-slate-500">Shifts & leaves</span>
+          </Link>
+          <Link to="/admin/inventory" className="flex flex-col items-center rounded-xl border border-slate-200/80 bg-slate-50/70 p-3 text-center transition hover:-translate-y-0.5 hover:border-rose-400 hover:bg-white hover:shadow-md">
+            <span className="text-2xl">💊</span>
+            <span className="mt-1.5 text-xs font-bold text-slate-800">Pharmacy</span>
+            <span className="text-[10px] text-slate-500">Medications SKU</span>
+          </Link>
         </div>
       </section>
 
-      {/* Admin Appointments List */}
+      {/* ================= 5. DUAL STREAM WIDGETS ================= */}
       <div className="grid gap-6 xl:grid-cols-2">
+        {/* Left Stream: Consultations / Outpatients */}
         <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <h2 className="text-base font-bold text-slate-800">Recent hospital consultations</h2>
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">Latest {recentAppointments.length}</span>
+            <div>
+              <h2 className="text-base font-bold text-slate-800">Hospital Consultations</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Today&apos;s active and recent consultation records</p>
+            </div>
+            <Link to="/appointments" className="text-xs font-bold text-purple-600 hover:underline">
+              View All ({todayAppointments.length} Today) →
+            </Link>
           </div>
-          <ul className="mt-4 divide-y divide-slate-100">
-            {recentAppointments.map((a) => (
-              <li key={a._id} className="flex items-center justify-between py-3.5 hover:bg-slate-50/60 rounded-xl px-2 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-bold text-xs ring-1 ring-blue-500/20">
-                    {a.patient?.name ? a.patient.name.charAt(0).toUpperCase() : "P"}
+          <ul className="mt-4 divide-y divide-slate-100 max-h-[360px] overflow-y-auto pr-1">
+            {todayAppointments.length === 0 && recentAppointments.length === 0 ? (
+              <li className="py-8 text-center text-xs text-slate-400">No recent consultations recorded.</li>
+            ) : (
+              (todayAppointments.length > 0 ? todayAppointments : recentAppointments).map((a) => (
+                <li key={a._id} className="flex items-center justify-between py-3 hover:bg-slate-50/60 rounded-xl px-2 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-700 font-bold text-xs ring-1 ring-purple-500/20">
+                      {a.patient?.name ? a.patient.name.charAt(0).toUpperCase() : "P"}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800 text-xs">{a.patient?.name}</p>
+                      <p className="text-[11px] text-slate-500">
+                        Dr. {a.doctor?.name} • <span className="capitalize">{a.doctor?.specialization || "Consultant"}</span>
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-slate-800">{a.patient?.name}</p>
-                    <p className="text-xs text-slate-500">Dr. {a.doctor?.name} • {a.doctor?.specialization}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      {a.timeSlot || formatDate(a.appointmentDate)}
+                    </span>
+                    <span className="rounded-full bg-blue-50 text-blue-700 px-2.5 py-0.5 text-[10px] font-semibold capitalize ring-1 ring-blue-500/20">
+                      {a.status}
+                    </span>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">{formatDate(a.appointmentDate)}</span>
-                  <span className="rounded-full bg-blue-50 text-blue-700 px-2.5 py-0.5 text-[10px] font-semibold capitalize ring-1 ring-blue-500/20">{a.status}</span>
-                </div>
-              </li>
-            ))}
+                </li>
+              ))
+            )}
           </ul>
         </section>
 
+        {/* Right Stream: Live System Audit Activity */}
         <section className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <h2 className="text-base font-bold text-slate-800">Today&apos;s appointments</h2>
-            <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-500/20">{todayAppointments.length} active</span>
+            <div>
+              <h2 className="text-base font-bold text-slate-800">System Activity Stream</h2>
+              <p className="text-xs text-slate-400 mt-0.5">Real-time immutable audit trail events</p>
+            </div>
+            <Link to="/admin/audit-logs" className="text-xs font-bold text-purple-600 hover:underline">
+              Full Audit Ledger →
+            </Link>
           </div>
-          <ul className="mt-4 divide-y divide-slate-100">
-            {todayAppointments.map((a) => (
-              <li key={a._id} className="flex items-center justify-between py-3.5 hover:bg-slate-50/60 rounded-xl px-2 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs ring-1 ring-emerald-500/20">
-                    {a.timeSlot ? a.timeSlot.slice(0, 5) : "AM"}
+          <ul className="mt-4 divide-y divide-slate-100 max-h-[360px] overflow-y-auto pr-1">
+            {recentActivity.length === 0 ? (
+              <li className="py-8 text-center text-xs text-slate-400">No recorded audit activities.</li>
+            ) : (
+              recentActivity.map((log) => (
+                <li key={log._id} className="py-3 px-2 hover:bg-slate-50/60 rounded-xl transition">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-800 text-xs">{log.action}</span>
+                    <span className="font-mono text-[10px] text-slate-400">
+                      {new Date(log.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
                   </div>
-                  <div>
-                    <p className="font-semibold text-slate-800">{a.patient?.name}</p>
-                    <p className="text-xs text-slate-500">Dr. {a.doctor?.name}</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5 truncate">{log.details}</p>
+                  <div className="mt-1 flex items-center gap-2 text-[10px]">
+                    <span className="font-semibold text-purple-700">{log.userName}</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="uppercase text-slate-400">{log.module}</span>
                   </div>
-                </div>
-                <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">{a.timeSlot}</span>
-              </li>
-            ))}
+                </li>
+              ))
+            )}
           </ul>
         </section>
       </div>
+
+      {/* ================= 6. GLOBAL ADMIN SEARCH MODAL ================= */}
+      {showSearchModal && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/70 p-4 pt-16 backdrop-blur-xs">
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden">
+            {/* Search Input Bar */}
+            <form onSubmit={handleGlobalSearch} className="flex items-center border-b border-slate-200 px-4 py-3 bg-slate-50/50">
+              <svg className="h-5 w-5 text-slate-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                autoFocus
+                placeholder="Search patients, doctors, staff, invoices, beds across hospital..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="flex-1 bg-transparent text-sm text-slate-800 focus:outline-none placeholder-slate-400"
+              />
+              <button
+                type="button"
+                onClick={() => setShowSearchModal(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-200/60 hover:text-slate-600"
+              >
+                ✕
+              </button>
+            </form>
+
+            {/* Entity Filters */}
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-100 text-xs bg-white">
+              <span className="text-slate-400 font-semibold">Scope:</span>
+              {["all", "patients", "doctors", "staff", "invoices", "appointments", "beds"].map((st) => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setSearchType(st)}
+                  className={`rounded-md px-2 py-0.5 capitalize font-semibold transition ${
+                    searchType === st ? "bg-purple-600 text-white" : "text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+
+            {/* Results Body */}
+            <div className="p-4 max-h-[420px] overflow-y-auto space-y-4">
+              {isSearching ? (
+                <div className="py-12 text-center text-xs text-slate-400">Searching hospital records...</div>
+              ) : !searchResults ? (
+                <div className="py-8 text-center text-xs text-slate-400">
+                  Type a patient name, UHID, doctor, or invoice number and press Enter.
+                </div>
+              ) : (
+                <>
+                  {/* Patients */}
+                  {searchResults.patients?.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-purple-700 mb-2">
+                        Patients ({searchResults.patients.length})
+                      </h3>
+                      <div className="space-y-1">
+                        {searchResults.patients.map((p) => (
+                          <Link
+                            key={p._id}
+                            to="/patients"
+                            onClick={() => setShowSearchModal(false)}
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-purple-50/60 transition text-xs"
+                          >
+                            <span className="font-bold text-slate-800">{p.name}</span>
+                            <span className="text-slate-400 font-mono">{p.contactNumber || p.email}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Doctors */}
+                  {searchResults.doctors?.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-700 mb-2">
+                        Doctors ({searchResults.doctors.length})
+                      </h3>
+                      <div className="space-y-1">
+                        {searchResults.doctors.map((d) => (
+                          <Link
+                            key={d._id}
+                            to="/doctors"
+                            onClick={() => setShowSearchModal(false)}
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-indigo-50/60 transition text-xs"
+                          >
+                            <span className="font-bold text-slate-800">Dr. {d.name}</span>
+                            <span className="text-slate-400">{d.specialization} • {d.department}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Staff */}
+                  {searchResults.staff?.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-teal-700 mb-2">
+                        Workforce ({searchResults.staff.length})
+                      </h3>
+                      <div className="space-y-1">
+                        {searchResults.staff.map((s) => (
+                          <Link
+                            key={s._id}
+                            to="/admin/staff"
+                            onClick={() => setShowSearchModal(false)}
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-teal-50/60 transition text-xs"
+                          >
+                            <span className="font-bold text-slate-800">{s.name}</span>
+                            <span className="capitalize text-slate-400">{s.role} • {s.department}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Invoices */}
+                  {searchResults.invoices?.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-amber-700 mb-2">
+                        Invoices ({searchResults.invoices.length})
+                      </h3>
+                      <div className="space-y-1">
+                        {searchResults.invoices.map((inv) => (
+                          <Link
+                            key={inv._id}
+                            to="/billing"
+                            onClick={() => setShowSearchModal(false)}
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-amber-50/60 transition text-xs"
+                          >
+                            <span className="font-mono font-bold text-slate-800">{inv.invoiceNumber || inv._id}</span>
+                            <span className="text-emerald-700 font-bold font-mono">₹{inv.totalAmount}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Beds */}
+                  {searchResults.beds?.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-blue-700 mb-2">
+                        Beds ({searchResults.beds.length})
+                      </h3>
+                      <div className="space-y-1">
+                        {searchResults.beds.map((b) => (
+                          <Link
+                            key={b._id}
+                            to="/beds"
+                            onClick={() => setShowSearchModal(false)}
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-blue-50/60 transition text-xs"
+                          >
+                            <span className="font-bold text-slate-800">Bed {b.bedNumber} ({b.wardType})</span>
+                            <span className="capitalize text-slate-400">{b.status}</span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="bg-slate-50 px-4 py-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+              <span>Press <kbd className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200">ESC</kbd> to close</span>
+              <span>Hospital Global Registry</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

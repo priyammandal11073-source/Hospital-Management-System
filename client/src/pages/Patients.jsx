@@ -25,6 +25,12 @@ function Patients() {
   const [vitalsPatient, setVitalsPatient] = useState(null);
   const [patientVitalsList, setPatientVitalsList] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [view360Patient, setView360Patient] = useState(null);
+
+  // Administrative Filters
+  const [bloodGroupFilter, setBloodGroupFilter] = useState("All");
+  const [genderFilter, setGenderFilter] = useState("All");
+  const [admissionFilter, setAdmissionFilter] = useState("All");
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
@@ -104,36 +110,87 @@ function Patients() {
     }
   };
 
+  const displayPatients = patients.filter((p) => {
+    const matchBlood = bloodGroupFilter === "All" || p.bloodGroup === bloodGroupFilter;
+    const matchGender = genderFilter === "All" || p.gender?.toLowerCase() === genderFilter.toLowerCase();
+    const matchAdmission = admissionFilter === "All"
+      ? true
+      : admissionFilter === "admitted"
+      ? p.isAdmitted
+      : !p.isAdmitted;
+    return matchBlood && matchGender && matchAdmission;
+  });
+
   return (
     <section>
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">
-            {isDoctor ? "My Assigned Patients" : "Patients"}
+            {isDoctor ? "My Assigned Patients" : "Patients Directory"}
           </h1>
           <p className="mt-1 text-sm text-slate-600">
             {isDoctor
               ? `Patients under the clinical care and consultation of Dr. ${user?.name?.replace(/^Dr\.\s*/i, "") || "Doctor"}.`
-              : "Manage hospital patient records."}
+              : "Institutional master patient index, digital health records, and admission status."}
           </p>
         </div>
         <button
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-700 transition shadow-sm"
           onClick={openAddForm}
           type="button"
         >
-          + Add patient
+          + Add New Patient
         </button>
       </div>
 
-      <input
-        aria-label="Search patients by name, mobile, or ABHA ID"
-        className="mb-5 w-full max-w-md rounded-md border border-slate-300 px-3 py-2 text-sm shadow-2xs"
-        onChange={handleSearchChange}
-        placeholder="Search patients by name, mobile (+91), or ABHA ID..."
-        type="search"
-        value={searchInput}
-      />
+      {/* Filter and Search Bar */}
+      <div className="mb-4 rounded-xl bg-white p-3 ring-1 ring-slate-200/80 shadow-2xs flex flex-wrap items-center gap-3">
+        <input
+          aria-label="Search patients by name, mobile, or ABHA ID"
+          className="flex-1 min-w-[240px] rounded-lg border border-slate-200 bg-slate-50/50 px-3 py-1.5 text-xs text-slate-800 focus:bg-white focus:border-purple-500 focus:outline-none"
+          onChange={handleSearchChange}
+          placeholder="Search by name, mobile (+91), or ABHA ID..."
+          type="search"
+          value={searchInput}
+        />
+
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-slate-400 font-semibold text-[11px]">Blood:</span>
+          <select
+            value={bloodGroupFilter}
+            onChange={(e) => setBloodGroupFilter(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 focus:outline-none"
+          >
+            <option value="All">All Blood</option>
+            {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map((bg) => (
+              <option key={bg} value={bg}>{bg}</option>
+            ))}
+          </select>
+
+          <span className="text-slate-400 font-semibold text-[11px]">Gender:</span>
+          <select
+            value={genderFilter}
+            onChange={(e) => setGenderFilter(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 focus:outline-none"
+          >
+            <option value="All">All Genders</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+
+          <span className="text-slate-400 font-semibold text-[11px]">Admission:</span>
+          <select
+            value={admissionFilter}
+            onChange={(e) => setAdmissionFilter(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-700 focus:outline-none"
+          >
+            <option value="All">All Care Types</option>
+            <option value="admitted">Inpatient (Admitted)</option>
+            <option value="outpatient">Outpatient (OPD)</option>
+          </select>
+        </div>
+      </div>
 
       {error && (
         <p className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
@@ -141,28 +198,29 @@ function Patients() {
         </p>
       )}
 
-      <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl bg-white shadow-xs ring-1 ring-slate-200/80">
         {isLoading ? (
-          <p className="p-6 text-center text-slate-600">Loading patients...</p>
-        ) : patients.length === 0 ? (
-          <p className="p-6 text-center text-slate-600">No patients found.</p>
+          <p className="p-6 text-center text-slate-600 text-xs">Loading hospital patients...</p>
+        ) : displayPatients.length === 0 ? (
+          <p className="p-6 text-center text-slate-600 text-xs">No patients match the specified criteria.</p>
         ) : (
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50 text-left text-xs font-semibold text-slate-500">
+          <table className="min-w-full divide-y divide-slate-200 text-xs">
+            <thead className="bg-slate-50 text-left font-bold text-slate-500 uppercase tracking-wider">
               <tr>
-                <th className="px-4 py-3">Name & ABHA ID</th>
-                <th className="px-4 py-3">Age / gender</th>
+                <th className="px-4 py-3">Patient & ABHA ID</th>
+                <th className="px-4 py-3">Demographics</th>
                 <th className="px-4 py-3">Contact</th>
-                <th className="px-4 py-3">Blood group</th>
+                <th className="px-4 py-3">Blood Group</th>
+                <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-              {patients.map((patient) => (
+            <tbody className="divide-y divide-slate-100 text-slate-700">
+              {displayPatients.map((patient) => (
                 <tr key={patient._id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-bold text-xs ring-1 ring-blue-500/20 flex-shrink-0">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-700 font-bold text-xs ring-1 ring-purple-500/20 flex-shrink-0">
                         {patient.name ? patient.name.charAt(0).toUpperCase() : "P"}
                       </div>
                       <div>
@@ -193,7 +251,26 @@ function Patients() {
                       {patient.bloodGroup || "—"}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    {patient.isAdmitted ? (
+                      <span className="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700 ring-1 ring-purple-500/20">
+                        🛏️ Inpatient
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+                        OPD Walk-in
+                      </span>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-1.5">
+                    <button
+                      onClick={() => setView360Patient(patient)}
+                      className="rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-700 hover:bg-purple-100 transition shadow-2xs"
+                      title="Patient 360 Comprehensive View"
+                      type="button"
+                    >
+                      👁️ 360 View
+                    </button>
                     <button
                       aria-label={`Vitals for ${patient.name}`}
                       className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
@@ -219,12 +296,12 @@ function Patients() {
                         title="Admit patient to bed"
                         type="button"
                       >
-                        🛏️ Admit bed
+                        🛏️ Admit
                       </button>
                     )}
                     <button
                       aria-label={`Edit ${patient.name}`}
-                      className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
+                      className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-2xs"
                       onClick={() => openEditForm(patient)}
                       title="Edit patient"
                       type="button"
@@ -239,7 +316,7 @@ function Patients() {
                         title="Delete patient"
                         type="button"
                       >
-                        🗑 Delete
+                        🗑
                       </button>
                     )}
                   </td>
@@ -344,6 +421,129 @@ function Patients() {
                   setPatientVitalsList(res.vitals || []);
                 }}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Patient 360 Overview Modal */}
+      {view360Patient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-5 bg-gradient-to-r from-purple-800 to-indigo-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/20 text-lg font-black uppercase text-white shadow-inner">
+                  {view360Patient.name ? view360Patient.name.charAt(0) : "P"}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                    <span>{view360Patient.name}</span>
+                    {view360Patient.abhaId && (
+                      <span className="rounded bg-sky-400/30 px-2 py-0.5 text-[10px] font-mono text-sky-200 ring-1 ring-sky-300/40">
+                        ABHA: {view360Patient.abhaId}
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-xs text-purple-200 mt-0.5">
+                    {view360Patient.age} yrs • <span className="capitalize">{view360Patient.gender}</span> • Blood Group: <span className="font-bold text-rose-300">{view360Patient.bloodGroup || "Not recorded"}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setView360Patient(null)}
+                className="h-8 w-8 rounded-full bg-white/15 hover:bg-white/25 text-white flex items-center justify-center font-bold text-sm transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-5 text-xs">
+              {/* Demographics & Contact Card */}
+              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 space-y-2">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider text-purple-700">
+                  Demographics & Contact Information
+                </h4>
+                <div className="grid grid-cols-2 gap-3 pt-1 text-slate-700">
+                  <div>
+                    <span className="text-slate-400 font-semibold block">Registered Phone:</span>
+                    <span className="font-mono font-medium">{view360Patient.contactNumber || "—"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-semibold block">Email Address:</span>
+                    <span>{view360Patient.email || "No email on record"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-semibold block">Residential Address:</span>
+                    <span>{view360Patient.address || "New Delhi, India"}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-semibold block">Emergency Contact:</span>
+                    <span className="font-mono">{view360Patient.emergencyContact || "—"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Clinical & Care Status */}
+              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4 space-y-2">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider text-purple-700">
+                  Inpatient Care & Medical Flags
+                </h4>
+                <div className="grid grid-cols-2 gap-3 pt-1 text-slate-700">
+                  <div>
+                    <span className="text-slate-400 font-semibold block">Admission Status:</span>
+                    <span className="font-bold">
+                      {view360Patient.isAdmitted ? (
+                        <span className="text-purple-700">🛏️ Currently Inpatient (Admitted)</span>
+                      ) : (
+                        <span className="text-slate-600">Outpatient (Ambulatory)</span>
+                      )}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-semibold block">Documented Allergies:</span>
+                    <span className="font-medium text-rose-700">
+                      {view360Patient.allergies?.length > 0 ? view360Patient.allergies.join(", ") : "None reported (NKDA)"}
+                    </span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-slate-400 font-semibold block">Medical History / Chronic Conditions:</span>
+                    <span>{view360Patient.medicalHistory || "No chronic illnesses documented."}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    const p = view360Patient;
+                    setView360Patient(null);
+                    setVitalsPatient(p);
+                    try {
+                      const res = await getPatientVitals(p._id);
+                      setPatientVitalsList(res.vitals || []);
+                    } catch (err) {
+                      setPatientVitalsList([]);
+                    }
+                  }}
+                  className="rounded-xl bg-teal-600 px-3.5 py-2 font-bold text-white hover:bg-teal-700 transition"
+                >
+                  📊 Open Vitals Log
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const p = view360Patient;
+                    setView360Patient(null);
+                    openEditForm(p);
+                  }}
+                  className="rounded-xl bg-purple-600 px-3.5 py-2 font-bold text-white hover:bg-purple-700 transition"
+                >
+                  ✎ Edit Patient Record
+                </button>
+              </div>
             </div>
           </div>
         </div>

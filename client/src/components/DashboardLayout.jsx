@@ -161,7 +161,7 @@ function DashboardLayout() {
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
       <div className="flex flex-1 flex-col md:flex-row">
         {/* Modern Dark Sidebar with Role-Specific Navigation */}
-        <aside className="w-full border-r border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 text-white md:min-h-[calc(100vh-65px)] md:w-64 flex flex-col justify-between">
+        <aside className="w-full border-r border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 text-white md:h-[calc(100vh-65px)] md:w-64 md:sticky md:top-[65px] flex flex-col justify-between overflow-y-auto">
           <div>
             {/* Sidebar Section Title */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
@@ -558,6 +558,160 @@ function DashboardLayout() {
                     <span>Hospital Feedback</span>
                   </NavLink>
                 </>
+              ) : role === "admin" || role === "super_admin" ? (
+                <>
+                  {/* Category 1: Operations & Command */}
+                  <div className="px-2 pt-1 pb-1 text-[10px] font-bold uppercase tracking-wider text-purple-400">
+                    Command & Governance
+                  </div>
+                  <NavLink className={navLinkClass} to="/dashboard">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    <span>Executive dashboard</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/departments">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Departments</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/calendar">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Master calendar</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/settings">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Hospital settings</span>
+                  </NavLink>
+
+                  {/* Category 2: Clinical & Inpatients */}
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-purple-400">
+                    Clinical Operations
+                  </div>
+                  <NavLink className={navLinkClass} to="/patients">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>Patients directory</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/admissions">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span>Inpatient census</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/doctors">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                    <span>Specialist doctors</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/appointments">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    <span>Appointments</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/operating-theatre">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879a3 3 0 11-4.242-4.242L10.758 4.88a3 3 0 014.242 4.242L12.12 12z" />
+                    </svg>
+                    <span>Operating theatre (OT)</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/emergency">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span>Emergency & trauma</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/beds">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span>Beds & wards map</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/prescriptions">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Prescriptions directory</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/lab-reports">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                    <span>Lab & diagnostics</span>
+                  </NavLink>
+
+                  {/* Category 3: Workforce & HR */}
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-purple-400">
+                    Human Resources
+                  </div>
+                  <NavLink className={navLinkClass} to="/admin/staff">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <span>Staff directory</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/attendance">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Attendance & shifts</span>
+                  </NavLink>
+
+                  {/* Category 4: Finance & Logistics */}
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-purple-400">
+                    Finance & Logistics
+                  </div>
+                  <NavLink className={navLinkClass} to="/billing">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span>Billing & invoices</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/revenue">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Revenue analytics</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/inventory">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Pharmacy inventory</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/equipment">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                    </svg>
+                    <span>Biomedical equipment</span>
+                  </NavLink>
+
+                  {/* Category 5: Governance & Security */}
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-purple-400">
+                    Governance & Logs
+                  </div>
+                  <NavLink className={navLinkClass} to="/reports">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span>Reports & analytics</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/admin/audit-logs">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>System audit logs</span>
+                  </NavLink>
+                </>
               ) : (
                 <>
                   <NavLink className={navLinkClass} to="/dashboard">
@@ -567,9 +721,7 @@ function DashboardLayout() {
                     <span>
                       {role === "doctor"
                         ? "Clinical dashboard"
-                        : role === "receptionist"
-                        ? "Reception desk"
-                        : "Executive dashboard"}
+                        : "Reception desk"}
                     </span>
                   </NavLink>
 
@@ -579,19 +731,17 @@ function DashboardLayout() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
                     <span>
-                      {role === "doctor" ? "My patients" : role === "receptionist" ? "Patient admissions" : "Patients directory"}
+                      {role === "doctor" ? "My patients" : "Patient admissions"}
                     </span>
                   </NavLink>
 
-                  {/* Doctors / Schedule: Admin views all, Doctor views own schedule */}
-                  {(role === "admin" || role === "doctor") && (
+                  {/* Doctors / Schedule: Doctor views own schedule */}
+                  {role === "doctor" && (
                     <NavLink className={navLinkClass} to="/doctors">
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
-                      <span>
-                        {role === "doctor" ? "My schedule & availability" : "Specialist doctors"}
-                      </span>
+                      <span>My schedule & availability</span>
                     </NavLink>
                   )}
 
@@ -603,21 +753,17 @@ function DashboardLayout() {
                     <span>
                       {role === "doctor"
                         ? "My consultations"
-                        : role === "receptionist"
-                        ? "OPD scheduling"
-                        : "Appointments"}
+                        : "OPD scheduling"}
                     </span>
                   </NavLink>
 
-                  {/* Billing: Admin & Receptionist */}
-                  {(role === "admin" || role === "receptionist") && (
+                  {/* Billing: Receptionist */}
+                  {role === "receptionist" && (
                     <NavLink className={navLinkClass} to="/billing">
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                       </svg>
-                      <span>
-                        {role === "receptionist" ? "Cashier & billing" : "Billing & invoices"}
-                      </span>
+                      <span>Cashier & billing</span>
                     </NavLink>
                   )}
 
@@ -631,8 +777,8 @@ function DashboardLayout() {
                     </span>
                   </NavLink>
 
-                  {/* Beds & Ward Management: Receptionist & Admin */}
-                  {(role === "receptionist" || role === "admin") && (
+                  {/* Beds & Ward Management: Receptionist */}
+                  {role === "receptionist" && (
                     <NavLink className={navLinkClass} to="/beds">
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -648,16 +794,6 @@ function DashboardLayout() {
                     </svg>
                     <span>Lab & diagnostics</span>
                   </NavLink>
-
-                  {/* Reports: Admin Only */}
-                  {role === "admin" && (
-                    <NavLink className={navLinkClass} to="/reports">
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                      <span>Reports & analytics</span>
-                    </NavLink>
-                  )}
                 </>
               )}
             </nav>

@@ -24,13 +24,60 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Role is required"],
       enum: {
-        values: ["admin", "doctor", "receptionist", "nurse", "patient"],
-        message: "Role must be admin, doctor, receptionist, nurse, or patient",
+        values: [
+          "admin",
+          "super_admin",
+          "operations_admin",
+          "finance_admin",
+          "clinical_admin",
+          "hr_admin",
+          "doctor",
+          "nurse",
+          "receptionist",
+          "pharmacist",
+          "lab_technician",
+          "accountant",
+          "patient",
+        ],
+        message: "Invalid user role",
       },
+    },
+    employeeId: {
+      type: String,
+      trim: true,
+      sparse: true,
+    },
+    designation: {
+      type: String,
+      trim: true,
+      default: "Hospital Staff",
+    },
+    department: {
+      type: String,
+      trim: true,
+      default: "General Administration",
+    },
+    contactNumber: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "on_leave", "suspended"],
+      default: "active",
+    },
+    joiningDate: {
+      type: Date,
+      default: Date.now,
     },
     doctor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Doctor",
+    },
+    permissions: {
+      type: [String],
+      default: [],
     },
   },
   {

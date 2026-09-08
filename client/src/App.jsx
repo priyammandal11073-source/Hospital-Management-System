@@ -55,6 +55,18 @@ import PatientProfilePage from "./pages/patient/PatientProfilePage.jsx";
 import HelpSupportPage from "./pages/patient/HelpSupportPage.jsx";
 import PatientFeedbackPage from "./pages/patient/PatientFeedbackPage.jsx";
 import PatientNotificationsPage from "./pages/patient/PatientNotificationsPage.jsx";
+import StaffManagementPage from "./pages/admin/StaffManagementPage.jsx";
+import DepartmentsPage from "./pages/admin/DepartmentsPage.jsx";
+import HospitalCalendarPage from "./pages/admin/HospitalCalendarPage.jsx";
+import AdmissionsManagementPage from "./pages/admin/AdmissionsManagementPage.jsx";
+import RevenueAnalyticsPage from "./pages/admin/RevenueAnalyticsPage.jsx";
+import InventoryPharmacyPage from "./pages/admin/InventoryPharmacyPage.jsx";
+import EquipmentMaintenancePage from "./pages/admin/EquipmentMaintenancePage.jsx";
+import StaffAttendanceShiftsPage from "./pages/admin/StaffAttendanceShiftsPage.jsx";
+import EmergencyOperationsPage from "./pages/admin/EmergencyOperationsPage.jsx";
+import OperatingTheatrePage from "./pages/admin/OperatingTheatrePage.jsx";
+import AuditLogPage from "./pages/admin/AuditLogPage.jsx";
+import HospitalSettingsPage from "./pages/admin/HospitalSettingsPage.jsx";
 
 function App() {
   return (
@@ -127,6 +139,20 @@ function App() {
           <Route path="/doctor/critical-labs" element={<CriticalLabResultsPage />} />
           <Route path="/doctor/follow-ups" element={<DoctorFollowUpsPage />} />
           <Route path="/specialist-directory" element={<SpecialistDirectoryPage />} />
+
+          {/* Hospital Administrator Operations Routes */}
+          <Route path="/admin/staff" element={<StaffManagementPage />} />
+          <Route path="/admin/departments" element={<DepartmentsPage />} />
+          <Route path="/admin/calendar" element={<HospitalCalendarPage />} />
+          <Route path="/admin/admissions" element={<AdmissionsManagementPage />} />
+          <Route path="/admin/revenue" element={<RevenueAnalyticsPage />} />
+          <Route path="/admin/inventory" element={<InventoryPharmacyPage />} />
+          <Route path="/admin/equipment" element={<EquipmentMaintenancePage />} />
+          <Route path="/admin/attendance" element={<StaffAttendanceShiftsPage />} />
+          <Route path="/admin/emergency" element={<EmergencyOperationsPage />} />
+          <Route path="/admin/operating-theatre" element={<OperatingTheatrePage />} />
+          <Route path="/admin/audit-logs" element={<AuditLogPage />} />
+          <Route path="/admin/settings" element={<HospitalSettingsPage />} />
         </Route>
       </Route>
       {/* Fallback — render 404 instead of blindly redirecting to /dashboard (which then bounces to /login for unauthed users) */}
