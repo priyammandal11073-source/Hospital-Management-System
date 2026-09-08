@@ -129,6 +129,11 @@ export const login = async (req, res) => {
     return res.status(401).json({ message: "Invalid email or password" });
   } catch (error) {
     console.error("Login error:", error.message);
-    return res.status(500).json({ message: "Unable to log in" });
+    if (error.name === "MongooseServerSelectionError" || error.message?.includes("SSL alert number 80") || error.message?.includes("whitelisted")) {
+      return res.status(503).json({
+        message: "Database connection failed: MongoDB Atlas blocked connection from this IP. Please add 0.0.0.0/0 to your MongoDB Atlas Network Access IP whitelist.",
+      });
+    }
+    return res.status(500).json({ message: "Unable to log in: " + (error.message || "Internal server error") });
   }
 };
