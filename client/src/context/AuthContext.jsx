@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { loginUser } from "../services/api.js";
+import { loginPatient, loginUser } from "../services/api.js";
 
 const AuthContext = createContext(null);
 
@@ -13,8 +13,8 @@ export function AuthProvider({ children }) {
 
   // Restore a previously saved session after a browser refresh.
   useEffect(() => {
-    const savedToken = localStorage.getItem(TOKEN_KEY);
-    const savedUser = localStorage.getItem(USER_KEY);
+    const savedToken = localStorage.getItem(TOKEN_KEY) || localStorage.getItem("patient_token");
+    const savedUser = localStorage.getItem(USER_KEY) || localStorage.getItem("patient_user");
 
     if (savedToken) {
       setToken(savedToken);
@@ -22,9 +22,12 @@ export function AuthProvider({ children }) {
 
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser));
+        const parsed = JSON.parse(savedUser);
+        if (!parsed.role && parsed.email) {
+          parsed.role = "patient";
+        }
+        setUser(parsed);
       } catch {
-        // Remove malformed storage rather than leaving the app in a bad state.
         localStorage.removeItem(USER_KEY);
       }
     }
@@ -32,7 +35,19 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, portalType = "staff") => {
+    if (portalType === "patient") {
+      const { token: patientToken, patient } = await loginPatient(email, password);
+      const userPayload = { ...patient, role: "patient" };
+      localStorage.setItem(TOKEN_KEY, patientToken);
+      localStorage.setItem(USER_KEY, JSON.stringify(userPayload));
+      localStorage.setItem("patient_token", patientToken);
+      localStorage.setItem("patient_user", JSON.stringify(userPayload));
+      setToken(patientToken);
+      setUser(userPayload);
+      return userPayload;
+    }
+
     const { token: newToken, user: loggedInUser } = await loginUser(email, password);
 
     localStorage.setItem(TOKEN_KEY, newToken);
@@ -46,6 +61,8 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem("patient_token");
+    localStorage.removeItem("patient_user");
     setToken(null);
     setUser(null);
   };

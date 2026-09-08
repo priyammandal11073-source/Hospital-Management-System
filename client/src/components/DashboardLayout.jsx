@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import HospitalLogo from "./HospitalLogo.jsx";
 
@@ -9,12 +9,57 @@ const navLinkClass = ({ isActive }) =>
       : "text-slate-400 hover:bg-slate-800/80 hover:text-white"
   }`;
 
+const PORTAL_CONFIG = {
+  admin: {
+    label: "Admin Portal",
+    title: "Executive Hospital Administration",
+    badge: "👑 Administrator Portal",
+    badgeClass: "bg-purple-50 text-purple-700 ring-purple-500/30",
+    avatarGrad: "from-purple-600 to-indigo-600",
+    tagColor: "text-purple-600",
+    roleDesc: "Level 3 Executive Access",
+  },
+  doctor: {
+    label: "Doctor Portal",
+    title: "Doctor Clinical Workspace",
+    badge: "🩺 Doctor Consultation Desk",
+    badgeClass: "bg-emerald-50 text-emerald-700 ring-emerald-500/30",
+    avatarGrad: "from-emerald-600 to-teal-600",
+    tagColor: "text-emerald-600",
+    roleDesc: "Medical Specialist",
+  },
+  receptionist: {
+    label: "Front Desk Portal",
+    title: "Front Desk Admissions & Cashier",
+    badge: "📋 Front Office & Check-in",
+    badgeClass: "bg-amber-50 text-amber-700 ring-amber-500/30",
+    avatarGrad: "from-amber-600 to-orange-600",
+    tagColor: "text-amber-600",
+    roleDesc: "Admissions Executive",
+  },
+  patient: {
+    label: "Patient Care Portal",
+    title: "Personal Patient Health Portal",
+    badge: "🏥 Patient Care Portal",
+    badgeClass: "bg-cyan-50 text-cyan-700 ring-cyan-500/30",
+    avatarGrad: "from-cyan-600 to-blue-600",
+    tagColor: "text-cyan-600",
+    roleDesc: "Self-Service Health Hub",
+  },
+};
+
 function DashboardLayout() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const role = user?.role || "admin";
+  const config = PORTAL_CONFIG[role] || PORTAL_CONFIG.admin;
 
   const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const handleSwitchPortal = () => {
     logout();
     navigate("/login");
   };
@@ -31,18 +76,31 @@ function DashboardLayout() {
       {/* ================= TOP HOSPITAL BRANDING HEADER ================= */}
       <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          {/* Hospital Logo & Brand Title */}
+          {/* Hospital Logo & Portal Specific Badge */}
           <div className="flex items-center gap-4">
             <HospitalLogo variant="full" />
             <span className="hidden h-7 w-px bg-slate-200 md:inline-block" />
-            <span className="hidden rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-500/30 md:inline-flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Live Portal
+            <span className={`hidden md:inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ring-1 ${config.badgeClass}`}>
+              <span className="h-2 w-2 rounded-full bg-current animate-pulse"></span>
+              {config.badge}
             </span>
           </div>
 
-          {/* Right Section: 24/7 Emergency, Date, User Info, Logout */}
-          <div className="flex flex-wrap items-center gap-3 sm:gap-5">
+          {/* Right Section: Switch Portal, Hotline, Profile, Logout */}
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+            {/* Switch Portal Button */}
+            <button
+              onClick={handleSwitchPortal}
+              title="Switch to another portal type"
+              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100/90 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-200 hover:text-slate-900 transition shadow-2xs"
+              type="button"
+            >
+              <svg className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              <span>Switch Portal</span>
+            </button>
+
             {/* Emergency Hotline Pill */}
             <div className="hidden lg:flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-300/60 shadow-xs">
               <span className="relative flex h-2 w-2">
@@ -51,8 +109,6 @@ function DashboardLayout() {
               </span>
               <span className="font-bold">24/7 Emergency:</span>
               <span className="font-mono text-rose-800">108</span>
-              <span className="text-rose-300">|</span>
-              <span className="font-mono text-rose-800">+91 98765 43210</span>
             </div>
 
             {/* Current Date Badge */}
@@ -65,15 +121,15 @@ function DashboardLayout() {
 
             {/* User Profile Card */}
             <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-1.5 shadow-2xs">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-xs font-bold text-white uppercase shadow-sm">
-                {user?.name ? user.name.charAt(0) : "S"}
+              <div className={`flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr ${config.avatarGrad} text-xs font-bold text-white uppercase shadow-sm`}>
+                {user?.name ? user.name.charAt(0) : "U"}
               </div>
               <div className="text-left">
-                <p className="text-xs font-bold text-slate-800 leading-tight">{user?.name || "Staff Member"}</p>
+                <p className="text-xs font-bold text-slate-800 leading-tight">{user?.name || "User"}</p>
                 <div className="flex items-center gap-1">
                   <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-blue-600">
-                    {user?.role || "Staff"}
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${config.tagColor}`}>
+                    {config.roleDesc}
                   </span>
                 </div>
               </div>
@@ -97,71 +153,119 @@ function DashboardLayout() {
 
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
       <div className="flex flex-1 flex-col md:flex-row">
-        {/* Modern Dark Sidebar */}
+        {/* Modern Dark Sidebar with Role-Specific Navigation */}
         <aside className="w-full border-r border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 text-white md:min-h-[calc(100vh-65px)] md:w-64 flex flex-col justify-between">
           <div>
             {/* Sidebar Section Title */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                Staff Navigation
+                {config.label}
               </span>
-              <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[9px] font-mono text-slate-400">
-                v2.4
+              <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[9px] font-mono text-slate-400 uppercase">
+                {role}
               </span>
             </div>
 
-            {/* Navigation Links with Medical Icons */}
-            <nav className="space-y-1.5" aria-label="Main navigation">
-              {/* Dashboard */}
+            {/* Dynamic Navigation Links based on Role */}
+            <nav className="space-y-1.5" aria-label="Portal navigation">
+              {/* Dashboard for all roles */}
               <NavLink className={navLinkClass} to="/dashboard">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                 </svg>
-                <span>Dashboard</span>
+                <span>
+                  {role === "doctor"
+                    ? "Clinical Dashboard"
+                    : role === "receptionist"
+                    ? "Reception Desk"
+                    : role === "patient"
+                    ? "My Health Hub"
+                    : "Executive Dashboard"}
+                </span>
               </NavLink>
 
-              {/* Patients */}
-              <NavLink className={navLinkClass} to="/patients">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-                <span>Patients</span>
-              </NavLink>
+              {/* Patient portal specific navigation */}
+              {role === "patient" ? (
+                <>
+                  <NavLink className={navLinkClass} to="/patient/appointments/book">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Book Specialist Visit</span>
+                  </NavLink>
 
-              {/* Doctors (Admin Only) */}
-              {isAdmin && (
-                <NavLink className={navLinkClass} to="/doctors">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                  <span>Doctors</span>
-                </NavLink>
-              )}
+                  <NavLink className={navLinkClass} to="/patient/appointments">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>My Scheduled Visits</span>
+                  </NavLink>
 
-              {/* Appointments */}
-              <NavLink className={navLinkClass} to="/appointments">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <span>Appointments</span>
-              </NavLink>
+                  <NavLink className={navLinkClass} to="/patient/billings">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span>My Invoices & Receipts</span>
+                  </NavLink>
+                </>
+              ) : (
+                <>
+                  {/* Staff Navigation: Patients */}
+                  <NavLink className={navLinkClass} to="/patients">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <span>
+                      {role === "receptionist" ? "Patient Admissions" : "Patients Directory"}
+                    </span>
+                  </NavLink>
 
-              {/* Billing */}
-              <NavLink className={navLinkClass} to="/billing">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-                <span>Billing & Invoices</span>
-              </NavLink>
+                  {/* Doctors: Admin and Doctor can view specialist directory */}
+                  {(role === "admin" || role === "doctor") && (
+                    <NavLink className={navLinkClass} to="/doctors">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      <span>Specialist Doctors</span>
+                    </NavLink>
+                  )}
 
-              {/* Reports (Admin Only) */}
-              {isAdmin && (
-                <NavLink className={navLinkClass} to="/reports">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  <span>Reports & Analytics</span>
-                </NavLink>
+                  {/* Appointments */}
+                  <NavLink className={navLinkClass} to="/appointments">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>
+                      {role === "doctor"
+                        ? "Clinical Consultations"
+                        : role === "receptionist"
+                        ? "OPD Scheduling"
+                        : "Appointments"}
+                    </span>
+                  </NavLink>
+
+                  {/* Billing: Admin and Receptionist */}
+                  {(role === "admin" || role === "receptionist") && (
+                    <NavLink className={navLinkClass} to="/billing">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
+                      <span>
+                        {role === "receptionist" ? "Cashier & Billing" : "Billing & Invoices"}
+                      </span>
+                    </NavLink>
+                  )}
+
+                  {/* Reports: Admin Only */}
+                  {role === "admin" && (
+                    <NavLink className={navLinkClass} to="/reports">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      <span>Reports & Analytics</span>
+                    </NavLink>
+                  )}
+                </>
               )}
             </nav>
           </div>
