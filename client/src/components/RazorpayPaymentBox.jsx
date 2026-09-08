@@ -38,10 +38,10 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient }) {
     setIsProcessing(true);
 
     try {
-      // 1. Create Razorpay order from backend API
+      // 1. Create Razorpay order parameters from backend API
       const orderData = await createRazorpayOrder(billing._id);
       
-      if (!orderData || !orderData.orderId) {
+      if (!orderData || !orderData.amount) {
         throw new Error("Failed to initialize Razorpay payment order.");
       }
 
@@ -58,7 +58,7 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient }) {
           currency: orderData.currency || "INR",
           name: "Nivora Care Hospital",
           description: `Hospital Invoice INV-${billing._id?.toString().slice(-6).toUpperCase()}`,
-          order_id: orderData.orderId,
+          ...(orderData.orderId ? { order_id: orderData.orderId } : {}),
           image: "https://cdn.razorpay.com/static/assets/logo/rzp.png",
           prefill: {
             name: orderData.patientDetails?.name || billing.patient?.name || "Patient",

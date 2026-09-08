@@ -65,12 +65,10 @@ export const createOrder = async (req, res) => {
         },
       });
     } else {
-      // Test Mode Order Creation fallback
-      const mockOrderId = `order_${Math.random().toString(36).substring(2, 14)}`;
-
+      // Standard Client-Side Test Checkout (order_id omitted so Razorpay SDK handles transaction in test mode without 400 error)
       return res.status(200).json({
         success: true,
-        orderId: mockOrderId,
+        orderId: null,
         amount: amountInPaise,
         currency: "INR",
         keyId,
