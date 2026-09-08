@@ -243,19 +243,21 @@ export const getFrontDeskWorkQueue = async (req, res) => {
         .limit(10);
 
       for (const bill of unpaidBills) {
+        const invoiceNum = String(bill._id || "").slice(-6).toUpperCase();
+        const amountStr = Number(bill.totalAmount || 0).toFixed(2);
         queueItems.push({
           id: `bill-${bill._id}`,
           originalId: bill._id,
           category: "payment",
           patient: bill.patient?.name || "Patient",
           contactNumber: bill.patient?.contactNumber,
-          task: `Settle Invoice #${bill._id.slice(-6).toUpperCase()} • ₹${bill.totalAmount.toFixed(2)}`,
+          task: `Settle Invoice #${invoiceNum} • ₹${amountStr}`,
           dateTime: bill.createdAt,
           priority: "Normal",
           status: "Pending",
           actionType: "collect_payment",
           actionLink: `/billing`,
-          metadata: { billingId: bill._id, amount: bill.totalAmount },
+          metadata: { billingId: bill._id, amount: bill.totalAmount || 0 },
         });
       }
     }
