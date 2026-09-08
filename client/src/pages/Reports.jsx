@@ -139,31 +139,45 @@ function Reports() {
         </div>
       </section>
 
-      <section className="mt-8 rounded-lg bg-white p-5 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-800">Appointments per Doctor</h2>
+      <section className="mt-8 rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <h2 className="text-base font-bold text-slate-800">Appointments per Doctor</h2>
+          </div>
+          <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+            {doctorsByAppointmentCount.length} Specialists
+          </span>
+        </div>
+
         {doctorsByAppointmentCount.length === 0 ? (
           <p className="mt-4 text-sm text-slate-600">No doctors found.</p>
         ) : (
-          <div className="mt-4 overflow-x-auto">
-            <table className="min-w-full text-left text-sm">
-              <thead className="border-b text-xs uppercase text-slate-500">
-                <tr>
-                  <th className="pb-3 pr-4">Doctor</th>
-                  <th className="pb-3 pr-4">Specialization</th>
-                  <th className="pb-3 text-right">Appointments</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {doctorsByAppointmentCount.map((doctor) => (
-                  <tr key={doctor.id}>
-                    <td className="py-3 pr-4 font-medium">Dr. {doctor.name}</td>
-                    <td className="py-3 pr-4">{doctor.specialization}</td>
-                    <td className="py-3 text-right">{doctor.appointments}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ul className="mt-4 divide-y divide-slate-100">
+            {doctorsByAppointmentCount.map((doctor) => (
+              <li
+                key={doctor.id}
+                className="flex items-center justify-between py-3.5 hover:bg-slate-50/60 rounded-xl px-2 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700 font-bold text-xs ring-1 ring-indigo-500/20 flex-shrink-0">
+                    Dr
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800">Dr. {doctor.name}</p>
+                    <p className="text-xs text-slate-500">{doctor.specialization}</p>
+                  </div>
+                </div>
+                <span className="rounded-lg bg-blue-50 text-blue-700 ring-1 ring-blue-500/20 px-3 py-1 text-xs font-mono font-bold">
+                  {doctor.appointments} Consultations
+                </span>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </section>

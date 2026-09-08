@@ -181,25 +181,46 @@ function Billing() {
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
               {billings.map((billing) => (
-                <tr key={billing._id}>
-                  <td className="px-4 py-3 font-medium">{billing.patient?.name || "Unknown patient"}</td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    {formatDate(billing.appointment?.appointmentDate)}
+                <tr key={billing._id} className="hover:bg-slate-50/60 transition-colors">
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700 font-bold text-xs ring-1 ring-amber-500/20 flex-shrink-0">
+                        INV
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800">{billing.patient?.name || "Unknown patient"}</p>
+                        <p className="text-xs text-slate-500">
+                          #{billing._id.toString().slice(-6).toUpperCase()} • Dr. {billing.appointment?.doctor?.name || "Hospital Specialist"}
+                        </p>
+                      </div>
+                    </div>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3">₹{billing.totalAmount.toFixed(2)}</td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      {formatDate(billing.appointment?.appointmentDate)}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="text-sm font-extrabold text-slate-900">
+                      ₹{billing.totalAmount.toFixed(2)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3.5">
                     <span
-                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ring-1 ${
                         paymentStatusClasses[billing.paymentStatus]
                       }`}
                     >
+                      <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
                       {billing.paymentStatus.replace("_", " ")}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3">{formatDate(billing.paymentDate)}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right space-x-2">
+                  <td className="whitespace-nowrap px-4 py-3.5 text-xs text-slate-500 font-mono">
+                    {formatDate(billing.paymentDate)}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
                     <button
-                      className="rounded-md bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition"
+                      className="rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
                       onClick={() => setSelectedInvoice(billing)}
                       type="button"
                     >
@@ -207,7 +228,7 @@ function Billing() {
                     </button>
                     {billing.paymentStatus !== "paid" && (
                       <button
-                        className="rounded-md bg-green-600 px-3 py-1 text-xs font-medium text-white hover:bg-green-700"
+                        className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition shadow-2xs"
                         onClick={() => {
                           setPaymentBilling(billing);
                           setPaymentMethod("cash");

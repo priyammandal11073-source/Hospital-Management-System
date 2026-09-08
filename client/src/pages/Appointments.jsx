@@ -234,34 +234,68 @@ function Appointments() {
               {appointments
                 .filter((a) => !filters.bookedBy || a.bookedBy === filters.bookedBy)
                 .map((appointment) => (
-                <tr key={appointment._id} className={appointment.bookedBy === "patient" && appointment.status === "pending" ? "bg-amber-50" : ""}>
-                  <td className="px-4 py-3 font-medium">
-                    {appointment.patient?.name || "Unknown patient"}
-                    {appointment.bookedBy === "patient" && (
-                      <span className="ml-2 inline-flex rounded bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">Patient-booked</span>
-                    )}
+                <tr
+                  key={appointment._id}
+                  className={`hover:bg-slate-50/60 transition-colors ${
+                    appointment.bookedBy === "patient" && appointment.status === "pending" ? "bg-amber-50/60" : ""
+                  }`}
+                >
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-bold text-xs ring-1 ring-blue-500/20 flex-shrink-0">
+                        {appointment.patient?.name ? appointment.patient.name.charAt(0).toUpperCase() : "P"}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800">{appointment.patient?.name || "Unknown patient"}</p>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
+                          <span>{appointment.patient?.contactNumber || "No phone"}</span>
+                          {appointment.bookedBy === "patient" && (
+                            <span className="inline-flex rounded-full bg-purple-50 px-2 py-0.2 text-[10px] font-semibold text-purple-700 ring-1 ring-purple-500/20">
+                              Portal Booked
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-4 py-3">{appointment.doctor?.name || "Unknown doctor"}</td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    {new Date(appointment.appointmentDate).toLocaleDateString()}
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold ring-1 ring-indigo-500/20">
+                        🩺
+                      </div>
+                      <div>
+                        <p className="font-semibold text-slate-800">Dr. {appointment.doctor?.name || "Unknown doctor"}</p>
+                        <p className="text-xs text-slate-500">{appointment.doctor?.specialization || "Specialist"}</p>
+                      </div>
+                    </div>
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3">{appointment.timeSlot}</td>
-                  <td className="px-4 py-3">
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      {new Date(appointment.appointmentDate).toLocaleDateString()}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      {appointment.timeSlot}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3.5">
                     <span
-                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ring-1 ${
                         statusClasses[appointment.status]
                       }`}
                     >
+                      <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
                       {appointment.status}
                     </span>
                   </td>
-                  <td className="max-w-48 truncate px-4 py-3" title={appointment.reasonForVisit}>
+                  <td className="max-w-48 truncate px-4 py-3.5 text-xs text-slate-600" title={appointment.reasonForVisit}>
                     {appointment.reasonForVisit}
                   </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                  <td className="whitespace-nowrap px-4 py-3.5 text-right">
                     <select
                       aria-label={`Change status for ${appointment.patient?.name || "appointment"}`}
-                      className="mr-2 rounded border border-slate-300 px-2 py-1 text-xs"
+                      className="mr-2 rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-2xs outline-none focus:border-blue-500"
                       disabled={updatingId === appointment._id}
                       onChange={(event) => handleStatusChange(appointment._id, event.target.value)}
                       value={appointment.status}
@@ -275,7 +309,7 @@ function Appointments() {
                     {canDelete && (
                       <button
                         aria-label="Delete appointment"
-                        className="rounded p-2 text-red-600 hover:bg-red-50"
+                        className="rounded-lg border border-red-200 bg-red-50 p-1.5 text-xs text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs"
                         onClick={() => handleDelete(appointment)}
                         title="Delete appointment"
                         type="button"

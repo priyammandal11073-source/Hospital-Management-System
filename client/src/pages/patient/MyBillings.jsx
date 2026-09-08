@@ -23,38 +23,60 @@ function MyBillings() {
     <section>
       <h1 className="text-2xl font-semibold text-slate-800">My Bills</h1>
       <p className="mt-1 text-sm text-slate-600">View and print your medical invoices.</p>
-      <div className="mt-4 overflow-x-auto rounded-lg bg-white shadow-sm">
-        {billings.length === 0 ? <p className="p-6 text-center text-slate-600">No bills found.</p> : (
-          <table className="min-w-full divide-y divide-slate-200 text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
-              <tr>
-                <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3">Appointment</th>
-                <th className="px-4 py-3">Total</th>
-                <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {billings.map((b) => (
-                <tr key={b._id}>
-                  <td className="px-4 py-3">{new Date(b.createdAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-3">{b.appointment ? `${new Date(b.appointment.appointmentDate).toLocaleDateString()} ${b.appointment.timeSlot}` : "—"}</td>
-                  <td className="px-4 py-3 font-medium">₹{b.totalAmount?.toFixed(2)}</td>
-                  <td className="px-4 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusClasses[b.paymentStatus]}`}>{b.paymentStatus?.replace("_", " ")}</span></td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => setSelectedInvoice(b)}
-                      type="button"
-                      className="rounded-md bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition"
-                    >
-                      📄 View / Print
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="mt-6 rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80">
+        {billings.length === 0 ? (
+          <div className="py-12 text-center">
+            <svg className="mx-auto h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <p className="mt-2 text-sm text-slate-500">No billing records found.</p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-slate-100">
+            {billings.map((b) => (
+              <li
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 hover:bg-slate-50/60 rounded-xl px-2 transition-colors"
+                key={b._id}
+              >
+                {/* Left side: Badge + Invoice Number + Subtitle */}
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700 font-bold text-xs ring-1 ring-amber-500/20 flex-shrink-0">
+                    INV
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-800">
+                      Invoice #{b._id.toString().slice(-6).toUpperCase()}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {new Date(b.createdAt).toLocaleDateString()} • {b.appointment ? `Consultation (${b.appointment.timeSlot})` : "Hospital Services"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right side: Amount + Status Badge + View/Print Button */}
+                <div className="flex flex-wrap items-center gap-3 self-end sm:self-auto">
+                  <span className="text-sm font-extrabold text-slate-900">
+                    ₹{b.totalAmount?.toFixed(2)}
+                  </span>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ring-1 ${
+                      statusClasses[b.paymentStatus] || "bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
+                    {b.paymentStatus?.replace("_", " ")}
+                  </span>
+                  <button
+                    onClick={() => setSelectedInvoice(b)}
+                    type="button"
+                    className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
+                  >
+                    📄 View / Print
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 

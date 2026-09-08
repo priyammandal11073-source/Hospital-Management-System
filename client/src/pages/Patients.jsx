@@ -142,30 +142,51 @@ function Patients() {
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
               {patients.map((patient) => (
-                <tr key={patient._id}>
-                  <td className="whitespace-nowrap px-4 py-3 font-medium">{patient.name}</td>
-                  <td className="px-4 py-3">{patient.age}</td>
-                  <td className="px-4 py-3">{patient.gender}</td>
-                  <td className="px-4 py-3">{patient.contactNumber}</td>
-                  <td className="px-4 py-3">{patient.bloodGroup || "—"}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-right">
+                <tr key={patient._id} className="hover:bg-slate-50/60 transition-colors">
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-bold text-xs ring-1 ring-blue-500/20 flex-shrink-0">
+                        {patient.name ? patient.name.charAt(0).toUpperCase() : "P"}
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800">{patient.name}</p>
+                        <p className="text-xs text-slate-500">{patient.email || "No email registered"}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                      {patient.age} yrs • {patient.gender}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      {patient.contactNumber || "—"}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-700 ring-1 ring-rose-300/60">
+                      {patient.bloodGroup || "—"}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
                     <button
                       aria-label={`Edit ${patient.name}`}
-                      className="mr-2 rounded p-2 text-blue-600 hover:bg-blue-50"
+                      className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
                       onClick={() => openEditForm(patient)}
                       title="Edit patient"
                       type="button"
                     >
-                      ✎
+                      ✎ Edit
                     </button>
                     <button
                       aria-label={`Delete ${patient.name}`}
-                      className="rounded p-2 text-red-600 hover:bg-red-50"
+                      className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs"
                       onClick={() => handleDelete(patient)}
                       title="Delete patient"
                       type="button"
                     >
-                      🗑
+                      🗑 Delete
                     </button>
                   </td>
                 </tr>

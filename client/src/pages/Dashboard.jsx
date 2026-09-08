@@ -373,53 +373,42 @@ function Dashboard() {
               <p className="mt-2 text-sm text-slate-500">No appointments recorded yet.</p>
             </div>
           ) : (
-            <div className="mt-4 overflow-x-auto">
-              <table className="min-w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    <th className="pb-3 pr-4">Patient</th>
-                    <th className="pb-3 pr-4">Doctor</th>
-                    <th className="pb-3 pr-4">Date</th>
-                    <th className="pb-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {recentAppointments.map((appointment) => (
-                    <tr key={appointment._id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center gap-2.5">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
-                            {appointment.patient?.name ? appointment.patient.name.charAt(0) : "P"}
-                          </div>
-                          <span className="font-semibold text-slate-800">
-                            {appointment.patient?.name || "Unknown patient"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 pr-4 font-medium text-slate-600">
-                        Dr. {appointment.doctor?.name || "Unknown doctor"}
-                      </td>
-                      <td className="py-3 pr-4 text-slate-500">
-                        {formatDate(appointment.appointmentDate)}
-                      </td>
-                      <td className="py-3">
-                        <span
-                          className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold capitalize ${
-                            appointment.status === "completed"
-                              ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
-                              : appointment.status === "cancelled"
-                              ? "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
-                              : "bg-blue-50 text-blue-700 ring-1 ring-blue-600/20"
-                          }`}
-                        >
-                          {appointment.status || "scheduled"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <ul className="mt-4 divide-y divide-slate-100">
+              {recentAppointments.map((appointment) => (
+                <li
+                  className="flex items-center justify-between py-3.5 hover:bg-slate-50/60 rounded-xl px-2 transition-colors"
+                  key={appointment._id}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-bold text-xs ring-1 ring-blue-500/20 flex-shrink-0">
+                      {appointment.patient?.name ? appointment.patient.name.charAt(0).toUpperCase() : "P"}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-slate-800">{appointment.patient?.name || "Unknown patient"}</p>
+                      <p className="text-xs text-slate-500">
+                        Consultation with <span className="font-medium text-slate-700">Dr. {appointment.doctor?.name || "Doctor"}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      {formatDate(appointment.appointmentDate)}
+                    </span>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-semibold capitalize ${
+                        appointment.status === "completed"
+                          ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600/20"
+                          : appointment.status === "cancelled"
+                          ? "bg-rose-50 text-rose-700 ring-1 ring-rose-600/20"
+                          : "bg-blue-50 text-blue-700 ring-1 ring-blue-600/20"
+                      }`}
+                    >
+                      {appointment.status || "scheduled"}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </section>
 

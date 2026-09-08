@@ -146,19 +146,43 @@ function Doctors() {
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
               {doctors.map((doctor) => (
-                <tr key={doctor._id}>
-                  <td className="whitespace-nowrap px-4 py-3 font-medium">{doctor.name}</td>
-                  <td className="px-4 py-3">{doctor.specialization}</td>
-                  <td className="px-4 py-3">{doctor.department}</td>
-                  <td className="px-4 py-3">{doctor.contactNumber}</td>
-                  <td className="px-4 py-3">
-                    {doctor.yearsOfExperience ?? 0} years
+                <tr key={doctor._id} className="hover:bg-slate-50/60 transition-colors">
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-700 font-bold text-xs ring-1 ring-indigo-500/20 flex-shrink-0">
+                        Dr
+                      </div>
+                      <div>
+                        <p className="font-bold text-slate-800">Dr. {doctor.name}</p>
+                        <p className="text-xs text-slate-500">{doctor.email || "Hospital Specialist"}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-500/20">
+                      {doctor.specialization}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                      {doctor.department}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      {doctor.contactNumber || "—"}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3.5">
+                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      {doctor.yearsOfExperience ?? 0} yrs exp
+                    </span>
                   </td>
                   {isAdmin && (
-                    <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
                       <button
                         aria-label={`Edit Dr. ${doctor.name}`}
-                        className="mr-2 rounded p-2 text-blue-600 hover:bg-blue-50"
+                        className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
                         onClick={() => {
                           setSelectedDoctor(doctor);
                           setIsFormOpen(true);
@@ -166,16 +190,16 @@ function Doctors() {
                         title="Edit doctor"
                         type="button"
                       >
-                        ✎
+                        ✎ Edit
                       </button>
                       <button
                         aria-label={`Delete Dr. ${doctor.name}`}
-                        className="rounded p-2 text-red-600 hover:bg-red-50"
+                        className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs"
                         onClick={() => handleDelete(doctor)}
                         title="Delete doctor"
                         type="button"
                       >
-                        🗑
+                        🗑 Delete
                       </button>
                     </td>
                   )}
