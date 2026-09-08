@@ -19,7 +19,7 @@ router.get("/summary", protect, restrictTo("admin"), getRevenueSummary);
 
 router
   .route("/:id")
-  .get(protect, getBillingById);
+  .get(getBillingById);
 
 router.patch("/:id/payment", protect, updatePaymentStatus);
 router.post("/:id/send-email", protect, sendBillingEmail);

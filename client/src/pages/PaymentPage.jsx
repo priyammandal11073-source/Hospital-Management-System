@@ -238,7 +238,23 @@ function PaymentPage() {
     );
   }
 
-  if (!billing) return null;
+  if (!billing) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full rounded-2xl bg-white shadow-xl p-8 text-center space-y-4">
+          <div className="text-4xl">📄</div>
+          <h1 className="text-xl font-bold text-slate-900">Invoice Unavailable</h1>
+          <p className="text-slate-600 text-sm">The requested invoice parameters could not be loaded.</p>
+          <button
+            onClick={() => navigate(-1)}
+            className="rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-teal-700 transition"
+          >
+            Return Back
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const invoiceNumber = `INV-${billing._id?.toString().slice(-6).toUpperCase()}`;
   const isPaid = billing.paymentStatus === "paid";
