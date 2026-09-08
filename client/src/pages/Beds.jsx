@@ -2,7 +2,9 @@ import { useEffect, useState, useMemo } from "react";
 import AllocateBedModal from "../components/AllocateBedModal.jsx";
 import TransferBedModal from "../components/TransferBedModal.jsx";
 import DischargeBedModal from "../components/DischargeBedModal.jsx";
-import { getBeds, getBedSummary, updateBedStatus } from "../services/api.js";
+import CreateBedModal from "../components/CreateBedModal.jsx";
+import { getBeds, getBedSummary, updateBedStatus, deleteBed } from "../services/api.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const WARDS = [
   "All wards",
@@ -32,6 +34,9 @@ const formatDate = (date) =>
     : "—";
 
 function Beds() {
+  const { user } = useAuth();
+  const isReceptionist = user?.role === "receptionist";
+
   const [beds, setBeds] = useState([]);
   const [summary, setSummary] = useState(null);
   const [selectedWard, setSelectedWard] = useState("All wards");
@@ -41,6 +46,7 @@ function Beds() {
   const [error, setError] = useState("");
 
   // Modal states
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [allocatingBed, setAllocatingBed] = useState(null);
   const [transferringBed, setTransferringBed] = useState(null);
   const [dischargingBed, setDischargingBed] = useState(null);
@@ -85,6 +91,18 @@ function Beds() {
     }
   };
 
+  const handleDeleteBed = async (bed) => {
+    if (!window.confirm(`Are you sure you want to remove bed ${bed.bedNumber} from ${bed.ward}?`)) {
+      return;
+    }
+    try {
+      await deleteBed(bed._id);
+      fetchBedsData();
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to delete bed");
+    }
+  };
+
   const wardCounts = useMemo(() => {
     if (!summary?.wards) return {};
     const map = {};
@@ -93,6 +111,21 @@ function Beds() {
     });
     return map;
   }, [summary]);
+
+  if (!isReceptionist) {
+    return (
+      <div className="p-8 text-center bg-white rounded-2xl border border-slate-200 shadow-sm space-y-4 max-w-xl mx-auto mt-12">
+        <div className="text-4xl">🔒</div>
+        <h2 className="text-xl font-extrabold text-slate-900">Access Restricted</h2>
+        <p className="text-sm font-medium text-slate-600">
+          Ward and bed allocation management is restricted exclusively to Receptionists.
+        </p>
+        <p className="text-xs text-slate-500">
+          If you require bed assignment or patient transfer, please contact the hospital reception desk.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -107,16 +140,25 @@ function Beds() {
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={fetchBedsData}
-          className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 hover:text-slate-900 transition-colors shadow-2xs self-start sm:self-auto"
-        >
-          <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          <span>Refresh occupancy</span>
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={() => setIsCreateOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-teal-600 hover:bg-teal-700 text-white transition-colors shadow-sm"
+          >
+            <span>+ Add new bed</span>
+          </button>
+          <button
+            type="button"
+            onClick={fetchBedsData}
+            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 hover:text-slate-900 transition-colors shadow-2xs"
+          >
+            <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Refresh occupancy</span>
+          </button>
+        </div>
       </div>
 
       {/* Occupancy Analytics & Stats */}
@@ -323,11 +365,22 @@ function Beds() {
                       </p>
                     </div>
 
-                    <div className="text-right">
+                    <div className="text-right flex flex-col items-end">
                       <span className="text-sm font-extrabold text-slate-900">
                         ₹{bed.dailyRate?.toLocaleString("en-IN")}
                       </span>
                       <span className="text-[10px] font-medium text-slate-500 block">per day</span>
+
+                      {!isOccupied && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteBed(bed)}
+                          className="mt-1 text-[11px] text-rose-500 hover:text-rose-700 font-bold"
+                          title="Remove bed"
+                        >
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -462,6 +515,17 @@ function Beds() {
             );
           })}
         </div>
+      )}
+
+      {/* Create Bed Modal */}
+      {isCreateOpen && (
+        <CreateBedModal
+          onClose={() => setIsCreateOpen(false)}
+          onSuccess={() => {
+            setIsCreateOpen(false);
+            fetchBedsData();
+          }}
+        />
       )}
 
       {/* Allocate Modal */}

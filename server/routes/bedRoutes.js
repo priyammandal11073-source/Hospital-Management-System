@@ -14,22 +14,25 @@ import { protect, restrictTo } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+// Enforce authentication & receptionist-only access across all bed & ward management routes
+router.use(protect, restrictTo("receptionist"));
+
 router
   .route("/")
-  .get(protect, getAllBeds)
-  .post(protect, restrictTo("admin"), createBed);
+  .get(getAllBeds)
+  .post(createBed);
 
 // Specific route /summary must come before /:id parameter route
-router.get("/summary", protect, getBedSummary);
+router.get("/summary", getBedSummary);
 
 router
   .route("/:id")
-  .get(protect, getBedById)
-  .delete(protect, restrictTo("admin"), deleteBed);
+  .get(getBedById)
+  .delete(deleteBed);
 
-router.post("/:id/allocate", protect, allocateBed);
-router.post("/:id/transfer", protect, transferBed);
-router.post("/:id/discharge", protect, dischargeBed);
-router.patch("/:id/status", protect, updateBedStatus);
+router.post("/:id/allocate", allocateBed);
+router.post("/:id/transfer", transferBed);
+router.post("/:id/discharge", dischargeBed);
+router.patch("/:id/status", updateBedStatus);
 
 export default router;

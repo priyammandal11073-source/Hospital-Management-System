@@ -158,7 +158,7 @@ Open `http://localhost:5173` in your browser.
 |------|-------------|
 | **Admin** | Full access: manage users, patients, doctors, appointments, billing, and reports. Can create/update/delete any record. |
 | **Doctor** | View own appointments and patient details; update appointment status (pending → confirmed → completed); view own profile. All CRUD operations are restricted to admin only — doctors can only read. |
-| **Receptionist** | Register patients, book appointments, view patient lists, process billing, mark payments as paid. Cannot create doctors or manage other staff. |
+| **Receptionist** | Register patients, book appointments, view patient lists, process billing, mark payments as paid, and **exclusive management of Ward & Bed allocations** (create beds, admit patients, ward transfers, patient discharge & room tariff invoicing, bed maintenance). Cannot create doctors or manage staff. |
 
 All role-based permissions are enforced independently at the **backend** (middleware `protect` + `restrictTo`). Frontend UI visibility (hiding buttons/links) is treated as UX only — the API always checks permissions.
 

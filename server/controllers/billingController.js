@@ -113,6 +113,7 @@ export const getAllBillings = async (req, res) => {
 
     const billings = await Billing.find(filter)
       .populate("patient", "name contactNumber email age gender address")
+      .populate("bed", "bedNumber ward floor dailyRate")
       .populate({
         path: "appointment",
         select: "appointmentDate timeSlot status reasonForVisit doctor",
@@ -135,6 +136,7 @@ export const getBillingById = async (req, res) => {
 
     const billing = await Billing.findById(req.params.id)
       .populate("patient", "name contactNumber email age gender address")
+      .populate("bed", "bedNumber ward floor dailyRate")
       .populate({
         path: "appointment",
         select: "appointmentDate timeSlot status reasonForVisit doctor",

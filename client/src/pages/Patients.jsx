@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
 import PatientForm from "../components/PatientForm.jsx";
+import AllocateBedModal from "../components/AllocateBedModal.jsx";
 import { deletePatient, getPatients } from "../services/api.js";
+import { useAuth } from "../context/AuthContext.jsx";
 
 function Patients() {
+  const { user } = useAuth();
+  const isReceptionist = user?.role === "receptionist";
+
   const [patients, setPatients] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [searchInput, setSearchInput] = useState("");
@@ -12,6 +17,7 @@ function Patients() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [admittingPatient, setAdmittingPatient] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   useEffect(() => {
@@ -176,6 +182,17 @@ function Patients() {
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
+                    {isReceptionist && (
+                      <button
+                        aria-label={`Admit ${patient.name} to bed`}
+                        className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
+                        onClick={() => setAdmittingPatient(patient)}
+                        title="Admit patient to bed"
+                        type="button"
+                      >
+                        🛏️ Admit bed
+                      </button>
+                    )}
                     <button
                       aria-label={`Edit ${patient.name}`}
                       className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
@@ -254,6 +271,18 @@ function Patients() {
             />
           </div>
         </div>
+      )}
+
+      {admittingPatient && (
+        <AllocateBedModal
+          initialPatient={admittingPatient}
+          onClose={() => setAdmittingPatient(null)}
+          onSuccess={() => {
+            alert(`Patient ${admittingPatient.name} successfully admitted to bed.`);
+            setAdmittingPatient(null);
+            setRefreshKey((k) => k + 1);
+          }}
+        />
       )}
     </section>
   );

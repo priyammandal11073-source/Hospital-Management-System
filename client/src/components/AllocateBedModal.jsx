@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { getPatients, getDoctors, allocateBed } from "../services/api.js";
+import { getPatients, getDoctors, getBeds, allocateBed } from "../services/api.js";
 
 const ADMISSION_REASONS = [
   "Acute chest discomfort & cardiac telemetry",
@@ -11,11 +11,13 @@ const ADMISSION_REASONS = [
   "Acute neurological evaluation",
 ];
 
-function AllocateBedModal({ bed, initialPatient, onClose, onSuccess }) {
+function AllocateBedModal({ bed, initialPatient, availableBeds: passedBeds, onClose, onSuccess }) {
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [availableBeds, setAvailableBeds] = useState(passedBeds || []);
   const [loadingLookups, setLoadingLookups] = useState(true);
 
+  const [selectedBedId, setSelectedBedId] = useState(bed?._id || "");
   const [selectedPatientId, setSelectedPatientId] = useState(initialPatient?._id || "");
   const [selectedDoctorId, setSelectedDoctorId] = useState("");
   const [admissionReason, setAdmissionReason] = useState("");
@@ -30,28 +32,40 @@ function AllocateBedModal({ bed, initialPatient, onClose, onSuccess }) {
     const fetchLookups = async () => {
       try {
         setLoadingLookups(true);
-        const [patientsRes, doctorsRes] = await Promise.all([
-          getPatients("", 1, 100),
-          getDoctors(),
-        ]);
+        const fetchTasks = [getPatients("", 1, 100), getDoctors()];
+        if (!bed && (!passedBeds || passedBeds.length === 0)) {
+          fetchTasks.push(getBeds({ status: "available" }));
+        }
+
+        const results = await Promise.all(fetchTasks);
+        const patientsRes = results[0];
+        const doctorsRes = results[1];
+        const bedsRes = results[2];
+
         setPatients(patientsRes.patients || []);
         const doctorList = doctorsRes.doctors || doctorsRes || [];
         setDoctors(doctorList);
 
+        if (bedsRes?.beds) {
+          setAvailableBeds(bedsRes.beds);
+          if (!selectedBedId && bedsRes.beds.length > 0) {
+            setSelectedBedId(bedsRes.beds[0]._id);
+          }
+        }
+
         if (doctorList.length > 0) {
+          let docId = doctorList[0]._id;
           const userJson = localStorage.getItem("hms_user");
           if (userJson) {
             try {
               const user = JSON.parse(userJson);
               const matched = doctorList.find((d) => d.email === user.email);
-              if (matched) setSelectedDoctorId(matched._id);
+              if (matched) docId = matched._id;
             } catch (e) {
               // ignore
             }
           }
-          if (!selectedDoctorId && doctorList[0]?._id) {
-            setSelectedDoctorId(doctorList[0]._id);
-          }
+          setSelectedDoctorId(docId);
         }
       } catch (err) {
         console.error("Error fetching lookups:", err);
@@ -62,10 +76,17 @@ function AllocateBedModal({ bed, initialPatient, onClose, onSuccess }) {
     fetchLookups();
   }, []);
 
+  const activeBed = bed || availableBeds.find((b) => b._id === selectedBedId);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
 
+    const targetBedId = bed?._id || selectedBedId;
+    if (!targetBedId) {
+      setErrorMsg("Please select a bed to admit the patient to.");
+      return;
+    }
     if (!selectedPatientId) {
       setErrorMsg("Please select a patient to admit.");
       return;
@@ -81,7 +102,7 @@ function AllocateBedModal({ bed, initialPatient, onClose, onSuccess }) {
 
     setIsSubmitting(true);
     try {
-      const res = await allocateBed(bed._id, {
+      const res = await allocateBed(targetBedId, {
         patient: selectedPatientId,
         attendingDoctor: selectedDoctorId,
         admissionReason: admissionReason.trim(),
@@ -110,10 +131,12 @@ function AllocateBedModal({ bed, initialPatient, onClose, onSuccess }) {
             </div>
             <div>
               <h2 className="text-base font-extrabold text-slate-900">
-                Admit patient to {bed.bedNumber}
+                {activeBed ? `Admit patient to ${activeBed.bedNumber}` : "Admit patient to bed"}
               </h2>
               <p className="text-xs font-medium text-slate-600">
-                {bed.ward} • {bed.floor} • Daily rate: ₹{bed.dailyRate?.toLocaleString("en-IN")}/day
+                {activeBed
+                  ? `${activeBed.ward} • ${activeBed.floor} • Daily rate: ₹${activeBed.dailyRate?.toLocaleString("en-IN")}/day`
+                  : "Select an available bed and assign attending physician"}
               </p>
             </div>
           </div>
@@ -134,30 +157,62 @@ function AllocateBedModal({ bed, initialPatient, onClose, onSuccess }) {
             </div>
           )}
 
+          {/* Bed Picker if not pre-provided */}
+          {!bed && (
+            <div>
+              <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+                Select Available Bed *
+              </label>
+              {availableBeds.length === 0 ? (
+                <p className="p-3 text-xs font-bold text-rose-800 bg-rose-50 rounded-xl border border-rose-200">
+                  No available beds found in any ward. Please clean or discharge beds first.
+                </p>
+              ) : (
+                <select
+                  value={selectedBedId}
+                  onChange={(e) => setSelectedBedId(e.target.value)}
+                  required
+                  className="w-full text-xs font-semibold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-emerald-600 focus:outline-hidden"
+                >
+                  <option value="">Select available bed</option>
+                  {availableBeds.map((b) => (
+                    <option key={b._id} value={b._id}>
+                      {b.bedNumber} — {b.ward} ({b.floor}) [₹{b.dailyRate}/day]
+                      {b.features?.hasVentilator ? " • Ventilator" : ""}
+                      {b.features?.hasOxygen ? " • Oxygen" : ""}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
+
           {/* Bed Amenities Pill Bar */}
-          <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-            <span className="font-bold text-slate-700">Bed features:</span>
-            {bed.features?.hasOxygen && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-800 border border-sky-200 font-bold">
-                🫁 Piped oxygen
-              </span>
-            )}
-            {bed.features?.hasVentilator && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-800 border border-purple-200 font-bold">
-                ⚡ Ventilator ready
-              </span>
-            )}
-            {bed.features?.hasMonitor && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-200 font-bold">
-                📟 Multipara monitor
-              </span>
-            )}
-            {bed.features?.isIsolation && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-bold">
-                🚪 Negative pressure isolation
-              </span>
-            )}
-          </div>
+          {activeBed && (
+            <div className="flex flex-wrap items-center gap-2 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
+              <span className="font-bold text-slate-700">Bed features:</span>
+              {activeBed.features?.hasOxygen && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-sky-50 text-sky-800 border border-sky-200 font-bold">
+                  🫁 Piped oxygen
+                </span>
+              )}
+              {activeBed.features?.hasVentilator && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-purple-50 text-purple-800 border border-purple-200 font-bold">
+                  ⚡ Ventilator ready
+                </span>
+              )}
+              {activeBed.features?.hasMonitor && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-teal-50 text-teal-800 border border-teal-200 font-bold">
+                  📟 Multipara monitor
+                </span>
+              )}
+              {activeBed.features?.isIsolation && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-bold">
+                  🚪 Isolation room
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Patient Selection */}
           <div>
