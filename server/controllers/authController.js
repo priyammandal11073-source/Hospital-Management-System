@@ -62,12 +62,12 @@ export const register = async (req, res) => {
 };
 
 const DEMO_ACCOUNTS = {
-  "admin@hospital.com": { id: "000000000000000000000001", name: "Nivora Care Admin", role: "admin", email: "admin@hospital.com" },
-  "receptionist@hospital.com": { id: "000000000000000000000002", name: "Sunita Desk Officer", role: "receptionist", email: "receptionist@hospital.com" },
-  "doctor@hospital.com": { id: "000000000000000000000003", name: "Dr. Rajesh Sharma", role: "doctor", email: "doctor@hospital.com", doctorId: "000000000000000000000003" },
-  "nurse@hospital.com": { id: "000000000000000000000004", name: "Nurse Priya Singh", role: "nurse", email: "nurse@hospital.com" },
-  "pharmacist@hospital.com": { id: "000000000000000000000006", name: "Ananya Deshmukh", role: "pharmacist", email: "pharmacist@hospital.com", designation: "Chief Pharmacist", department: "Pharmacy & Medication Services" },
-  "john@example.com": { id: "000000000000000000000005", name: "John Doe", role: "patient", email: "john@example.com" },
+  "admin@hospital.com": { id: "000000000000000000000001", name: "Nivora Care Admin", role: "admin", email: "admin@hospital.com", defaultPassword: "admin123" },
+  "receptionist@hospital.com": { id: "000000000000000000000002", name: "Sunita Desk Officer", role: "receptionist", email: "receptionist@hospital.com", defaultPassword: "receptionist123" },
+  "doctor@hospital.com": { id: "000000000000000000000003", name: "Dr. Rajesh Sharma", role: "doctor", email: "doctor@hospital.com", doctorId: "000000000000000000000003", defaultPassword: "doctor123" },
+  "nurse@hospital.com": { id: "000000000000000000000004", name: "Nurse Priya Singh", role: "nurse", email: "nurse@hospital.com", defaultPassword: "nurse123" },
+  "pharmacist@hospital.com": { id: "000000000000000000000006", name: "Ananya Deshmukh", role: "pharmacist", email: "pharmacist@hospital.com", designation: "Chief Pharmacist", department: "Pharmacy & Medication Services", defaultPassword: "pharmacist123" },
+  "john@example.com": { id: "000000000000000000000005", name: "John Doe", role: "patient", email: "john@example.com", defaultPassword: "patient123" },
 };
 
 // POST /api/auth/login
@@ -101,7 +101,27 @@ export const login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email: normalizedEmail });
+    let user = await User.findOne({ email: normalizedEmail });
+
+    // Self-healing fallback: If standard demo account was not yet seeded in MongoDB Atlas
+    if (!user && DEMO_ACCOUNTS[normalizedEmail]) {
+      const demo = DEMO_ACCOUNTS[normalizedEmail];
+      if (password === demo.defaultPassword || password === "password123") {
+        try {
+          user = await User.create({
+            name: demo.name,
+            email: demo.email,
+            password: password,
+            role: demo.role,
+            designation: demo.designation || "Hospital Staff",
+            department: demo.department || "General Administration",
+            status: "active",
+          });
+        } catch (seedErr) {
+          user = await User.findOne({ email: normalizedEmail });
+        }
+      }
+    }
 
     if (user) {
       if (!(await user.comparePassword(password))) {

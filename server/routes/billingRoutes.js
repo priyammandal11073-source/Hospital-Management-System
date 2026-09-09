@@ -18,8 +18,9 @@ router
   .post(protect, restrictTo("admin", "receptionist"), createBilling)
   .get(protect, getAllBillings);
 
-// These routes must be declared before /:id, otherwise "summary" or "analytics" is treated as an ID.
+// These routes must be declared before /:id, otherwise "summary", "revenue-summary", or "analytics" is treated as an ID.
 router.get("/summary", protect, restrictTo("admin"), getRevenueSummary);
+router.get("/revenue-summary", protect, restrictTo("admin"), getRevenueSummary);
 router.get("/analytics", protect, getRevenueAnalytics);
 
 router

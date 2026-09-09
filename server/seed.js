@@ -94,6 +94,16 @@ const seedDatabase = async () => {
       role: "nurse",
     });
 
+    const pharmacistUser = await User.create({
+      name: "Ananya Deshmukh",
+      email: "pharmacist@hospital.com",
+      password: "pharmacist123",
+      role: "pharmacist",
+      designation: "Chief Pharmacist",
+      department: "Pharmacy & Medication Services",
+      status: "active",
+    });
+
     // 2. Create Doctors
     console.log("Creating doctor profiles...");
     const doctor1 = await Doctor.create({
@@ -938,6 +948,7 @@ const seedDatabase = async () => {
     console.log("  2. Doctor:       doctor@hospital.com      / doctor123");
     console.log("  3. Receptionist: receptionist@hospital.com / receptionist123");
     console.log("  4. Nurse:        nurse@hospital.com       / nurse123");
+    console.log("  5. Pharmacist:   pharmacist@hospital.com  / pharmacist123");
     console.log("\nPatient Portal Login (http://localhost:5173/patient/login):");
     console.log("  1. Patient:      john@example.com         / patient123 (Rahul Sharma)");
     console.log("  2. Patient:      alice@example.com        / patient123 (Priya Patel)");

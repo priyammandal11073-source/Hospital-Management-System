@@ -1,14 +1,16 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { usePatientAuth } from "../../context/PatientAuthContext.jsx";
 import HospitalLogo from "../../components/HospitalLogo.jsx";
 
 function PatientLogin() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, loading, login } = usePatientAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState(location.state?.message || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (loading) {
@@ -26,9 +28,20 @@ function PatientLogin() {
     return <Navigate to="/patient/dashboard" replace />;
   }
 
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    if (successMessage) setSuccessMessage("");
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    if (successMessage) setSuccessMessage("");
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (successMessage) setSuccessMessage("");
     setIsSubmitting(true);
     try {
       await login(email, password);
@@ -60,6 +73,15 @@ function PatientLogin() {
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {successMessage && (
+            <div className="flex items-center gap-2.5 rounded-xl border border-emerald-800/60 bg-emerald-950/70 p-3 text-xs font-medium text-emerald-300 shadow-sm" role="status">
+              <svg className="h-4 w-4 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="flex-1">{successMessage}</span>
+            </div>
+          )}
+
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-300" htmlFor="p-email">
               Patient email address
@@ -70,7 +92,7 @@ function PatientLogin() {
               required
               placeholder="patient@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               className="w-full rounded-xl border border-slate-700/80 bg-slate-800/80 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
               autoComplete="email"
             />
@@ -86,7 +108,7 @@ function PatientLogin() {
               required
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               className="w-full rounded-xl border border-slate-700/80 bg-slate-800/80 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
               autoComplete="current-password"
             />
@@ -125,6 +147,7 @@ function PatientLogin() {
             <button
               type="button"
               onClick={() => {
+                if (successMessage) setSuccessMessage("");
                 setEmail("john@example.com");
                 setPassword("patient123");
               }}
