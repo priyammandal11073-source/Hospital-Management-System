@@ -231,6 +231,34 @@ export const getNurseDashboardMetrics = async (req, res) => {
 // 2. GET /api/nurse/inpatients
 export const getInpatientsWithCare = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoInpatients = [
+        {
+          bedId: "bed_101",
+          bedNumber: "BED-ICU-01",
+          ward: "Intensive Care Unit (ICU)",
+          floor: "2nd Floor",
+          admittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+          admissionReason: "Post-op CABG Recovery",
+          riskLevel: "Critical",
+          patient: { _id: "pat_1", name: "Ramesh Patel", age: 58, gender: "Male", bloodGroup: "B+" },
+          attendingDoctor: { name: "Dr. Sarah Jenkins", specialization: "Cardiology" },
+        },
+        {
+          bedId: "bed_102",
+          bedNumber: "BED-GW-04",
+          ward: "General Ward (Male)",
+          floor: "1st Floor",
+          admittedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+          admissionReason: "Acute Gastroenteritis with dehydration",
+          riskLevel: "Stable",
+          patient: { _id: "pat_2", name: "Anand Kulkarni", age: 34, gender: "Male", bloodGroup: "O+" },
+          attendingDoctor: { name: "Dr. Rajesh Sharma", specialization: "General Medicine" },
+        },
+      ];
+      return res.status(200).json({ success: true, inpatients: demoInpatients, isOfflineDemo: true });
+    }
+
     const { ward, search, riskLevel } = req.query;
 
     const filter = { status: "occupied", "currentAdmission.patient": { $exists: true, $ne: null } };
@@ -383,6 +411,14 @@ export const getClinicalPatientProfile = async (req, res) => {
 // 4. Tasks: GET, POST, PATCH
 export const getNursingTasks = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoTasks = [
+        { _id: "task_1", taskType: "Record Vitals", title: "Q2H Blood Pressure & SpO2 Check", priority: "Urgent", status: "Pending", dueTime: new Date(Date.now() + 30 * 60 * 1000), patient: { name: "Ramesh Patel", age: 58, gender: "Male" } },
+        { _id: "task_2", taskType: "Medication Admin", title: "IV Infusion Saline 500ml", priority: "Routine", status: "In Progress", dueTime: new Date(Date.now() + 60 * 60 * 1000), patient: { name: "Anand Kulkarni", age: 34, gender: "Male" } },
+      ];
+      return res.status(200).json({ success: true, tasks: demoTasks, isOfflineDemo: true });
+    }
+
     const { patientId, status, priority } = req.query;
     const filter = {};
 

@@ -66,6 +66,7 @@ const DEMO_ACCOUNTS = {
   "receptionist@hospital.com": { id: "000000000000000000000002", name: "Sunita Desk Officer", role: "receptionist", email: "receptionist@hospital.com" },
   "doctor@hospital.com": { id: "000000000000000000000003", name: "Dr. Rajesh Sharma", role: "doctor", email: "doctor@hospital.com", doctorId: "000000000000000000000003" },
   "nurse@hospital.com": { id: "000000000000000000000004", name: "Nurse Priya Singh", role: "nurse", email: "nurse@hospital.com" },
+  "pharmacist@hospital.com": { id: "000000000000000000000006", name: "Ananya Deshmukh", role: "pharmacist", email: "pharmacist@hospital.com", designation: "Chief Pharmacist", department: "Pharmacy & Medication Services" },
   "john@example.com": { id: "000000000000000000000005", name: "John Doe", role: "patient", email: "john@example.com" },
 };
 

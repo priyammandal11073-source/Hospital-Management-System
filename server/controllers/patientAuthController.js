@@ -65,7 +65,7 @@ export const loginPatient = async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     if (mongoose.connection.readyState !== 1) {
-      if (normalizedEmail === "john@example.com") {
+      if (normalizedEmail === "john@example.com" || normalizedEmail === "patient@hospital.com") {
         const token = jwt.sign(
           { id: "000000000000000000000005", type: "patient", role: "patient" },
           process.env.JWT_SECRET || "super-secret-key-hospital-management-system-2026",
@@ -76,7 +76,7 @@ export const loginPatient = async (req, res) => {
           patient: {
             _id: "000000000000000000000005",
             name: "John Doe",
-            email: "john@example.com",
+            email: normalizedEmail,
             age: 35,
             gender: "Male",
             contactNumber: "9876543210",

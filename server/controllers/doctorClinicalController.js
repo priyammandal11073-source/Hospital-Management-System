@@ -662,6 +662,14 @@ export const getDoctorPatientProfile = async (req, res) => {
  */
 export const getDoctorOrders = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoOrders = [
+        { _id: "ord_101", doctorName: "Dr. Sarah Jenkins", orderType: "Medication", description: "Administer IV Ceftriaxone 1g stat", priority: "Stat", status: "Active", patient: { name: "Anjali Sharma", age: 48, gender: "Female" }, createdAt: new Date() },
+        { _id: "ord_102", doctorName: "Dr. Sarah Jenkins", orderType: "Nursing Care", description: "Strict I/O fluid monitoring every 2 hours", priority: "Urgent", status: "In Progress", patient: { name: "Rajesh Gupta", age: 62, gender: "Male" }, createdAt: new Date() },
+      ];
+      return res.status(200).json({ success: true, data: demoOrders, isOfflineDemo: true });
+    }
+
     const doctor = await resolveDoctorForUser(req.user);
     const filter = {};
     if (doctor) {
@@ -849,6 +857,14 @@ export const updateReferralStatus = async (req, res) => {
  */
 export const getCriticalLabResults = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoLabs = [
+        { _id: "lab_crit_1", testName: "Serum Potassium", category: "Biochemistry", isCritical: true, summaryConclusion: "Critical hyperkalemia (6.8 mEq/L) - Immediate ECG advised", patient: { name: "Ramesh Patel", age: 54, gender: "Male" }, testDate: new Date(), status: "Completed" },
+        { _id: "lab_crit_2", testName: "Cardiac Troponin-I", category: "Cardiology", isCritical: true, summaryConclusion: "Elevated Troponin-I (1.8 ng/mL) - Acute Coronary Syndrome", patient: { name: "Meena Nair", age: 67, gender: "Female" }, testDate: new Date(), status: "Completed" },
+      ];
+      return res.status(200).json({ success: true, data: demoLabs, isOfflineDemo: true });
+    }
+
     const doctor = await resolveDoctorForUser(req.user);
     const filter = {
       $or: [

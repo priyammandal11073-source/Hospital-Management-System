@@ -164,6 +164,39 @@ const prescriptionSchema = new mongoose.Schema(
       default: "Active",
       index: true,
     },
+    dispensingStatus: {
+      type: String,
+      enum: [
+        "pending",
+        "processing",
+        "ready",
+        "dispensed",
+        "partially_dispensed",
+        "on_hold",
+        "cancelled",
+      ],
+      default: "pending",
+      index: true,
+    },
+    dispensedAt: {
+      type: Date,
+    },
+    dispensedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    dispensedByName: {
+      type: String,
+      default: "",
+    },
+    pharmacyReceiptNumber: {
+      type: String,
+      default: "",
+    },
+    pharmacyNotes: {
+      type: String,
+      default: "",
+    },
     allergyWarningAcknowledged: {
       type: Boolean,
       default: false,

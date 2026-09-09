@@ -84,6 +84,23 @@ const PORTAL_TYPES = [
       </svg>
     ),
   },
+  {
+    id: "pharmacist",
+    role: "pharmacist",
+    authType: "staff",
+    title: "Pharmacy Portal",
+    subtitle: "Pharmacy & medication management",
+    badge: "Pharmacy operations",
+    badgeColor: "bg-orange-500/20 text-orange-300 ring-orange-500/30",
+    iconBg: "bg-orange-600/20 text-orange-400 border-orange-500/30",
+    defaultEmail: "pharmacist@hospital.com",
+    defaultPass: "pharmacist123",
+    icon: (
+      <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+    ),
+  },
 ];
 
 function Login() {
@@ -174,7 +191,7 @@ function Login() {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 max-w-4xl mx-auto">
               {PORTAL_TYPES.map((portal) => (
                 <button
                   key={portal.id}
@@ -182,12 +199,17 @@ function Login() {
                   onClick={() => handlePortalSelect(portal)}
                   className="group relative flex flex-col items-center justify-center p-6 rounded-2xl border border-slate-800/80 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-600 hover:shadow-2xl hover:shadow-black/60 hover:-translate-y-1.5 transition-all duration-200 cursor-pointer text-center"
                 >
-                  <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border ${portal.iconBg} mb-5 transition-transform duration-200 group-hover:scale-110 shadow-lg shadow-black/30`}>
+                  <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border ${portal.iconBg} mb-4 transition-transform duration-200 group-hover:scale-110 shadow-lg shadow-black/30`}>
                     {portal.icon}
                   </div>
                   <h3 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors">
                     {portal.title}
                   </h3>
+                  {portal.subtitle && (
+                    <p className="mt-1 text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
+                      {portal.subtitle}
+                    </p>
+                  )}
                 </button>
               ))}
             </div>

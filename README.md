@@ -232,6 +232,15 @@ The following sections provide exhaustive information about the Hospital Managem
 - **Public Payment Page**: Implemented in `client/src/pages/PaymentPage.jsx` and served by the backend route `GET /pay/:billingId`. This page is accessible without authentication and allows patients to settle their bills using any supported method.
 - **SMS Payment Links**: Receptionists can trigger an SMS containing a direct payment link from the billing view. The endpoint `POST /api/billing/:id/send-sms` in `billingController.js` uses `services/smsService.js`, which leverages Nodemailer to send an email to the carrier’s email‑to‑SMS gateway (e.g., `1234567890@sms.vodafone.in`).
 
+### Reusable UI Component Library (`client/src/components/ui/`)
+Pulled and standardized from the repository design system:
+- **`Button.jsx`**: Reusable button with variants (`primary`, `secondary`, `danger`, `success`, `outline`, `link`) and responsive sizes (`sm`, `md`, `lg`).
+- **`Badge.jsx`**: Clinical status badge with status tags (`pending`, `confirmed`, `completed`, `cancelled`, `paid`, `pending_paid`, `partially_paid`, `on_hold`, `active`, `quarantined`, `urgent`, `normal`).
+- **`Card.jsx`**: Structured card container with header actions and custom styling.
+- **`Input.jsx`**: Styled form text and number input with label support, focus rings, and validation error messages.
+- **`Modal.jsx`**: Accessible modal overlay with backdrop blur, keyboard ESC dismissal, header, and action footers.
+- **`index.js`**: Barrel export for streamlined imports across any portal page (`import { Button, Badge, Card, Input, Modal } from "../components/ui"`).
+
 ### UI Components Overview
 - **`PaymentMethodSelect.jsx`**: A reusable card‑style selector that displays icons for each payment option. Integrated into `AppointmentForm.jsx`, `BookAppointment.jsx`, and `Billing.jsx`.
 - **`UpiPaymentBox.jsx`**: Renders a QR code using `react-qr-code` for UPI transactions and handles the submission of the transaction ID.
@@ -258,18 +267,18 @@ The following sections provide exhaustive information about the Hospital Managem
 - **HTTPS**: For secure payment handling, deploy behind an HTTPS reverse proxy (e.g., Nginx) and ensure JWT cookies are set with `secure` and `httpOnly` flags.
 
 ### Testing Strategy
-- **Unit Tests**: Backend route handlers can be tested with Jest and Supertest. Example: test that `POST /api/appointments` creates both an appointment and a billing record.
-- **Integration Tests**: Use Cypress to simulate a user booking an appointment, receiving the SMS link (mocked), and completing payment via the public page.
-- **Manual QA**: Verify that:
-  1. Booking an appointment auto‑creates a billing entry.
-  2. Payment method selection updates the billing record correctly.
-  3. SMS link contains a valid URL (`${CLIENT_URL}/pay/${billingId}`).
-  4. The public payment page processes payments without authentication.
+- **Backend Diagnostic Health Suite**: Run `node scratch/verify_all_portals_backend.js` to run integration tests verifying all 6 portals, RBAC barriers, and centralized error envelopes.
+- **Client Production Build**: Run `npm run build` in `client` to verify zero bundling or syntax errors.
 
 ---
 
-## License
+## 👥 Author
 
-MIT License – see `LICENSE` file for details.
+**Priyam Mandal** — Nivora Care Hospital Management System. Built as a full-stack web application using React, Node.js, Express, and MongoDB.
 
 ---
+
+## 📜 License
+
+This project is for educational and healthcare management demonstration purposes.
+

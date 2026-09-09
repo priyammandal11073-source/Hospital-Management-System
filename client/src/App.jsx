@@ -80,6 +80,23 @@ import ReceptionReportsPage from "./pages/reception/ReceptionReportsPage.jsx";
 import FrontDeskWorkQueuePage from "./pages/reception/FrontDeskWorkQueuePage.jsx";
 import RefundsManagementPage from "./pages/reception/RefundsManagementPage.jsx";
 
+// Pharmacy & Dispensing Pages
+import PharmacyQueuePage from "./pages/pharmacy/PharmacyQueuePage.jsx";
+import PrescriptionDispensePage from "./pages/pharmacy/PrescriptionDispensePage.jsx";
+import PrescriptionHistoryPage from "./pages/pharmacy/PrescriptionHistoryPage.jsx";
+import MedicineInventoryPage from "./pages/pharmacy/MedicineInventoryPage.jsx";
+import StockManagementPage from "./pages/pharmacy/StockManagementPage.jsx";
+import BatchManagementPage from "./pages/pharmacy/BatchManagementPage.jsx";
+import ExpiryManagementPage from "./pages/pharmacy/ExpiryManagementPage.jsx";
+import LowStockAlertsPage from "./pages/pharmacy/LowStockAlertsPage.jsx";
+import SuppliersManagementPage from "./pages/pharmacy/SuppliersManagementPage.jsx";
+import PurchaseOrdersPage from "./pages/pharmacy/PurchaseOrdersPage.jsx";
+import PharmacyReturnsPage from "./pages/pharmacy/PharmacyReturnsPage.jsx";
+import PharmacyPatientsPage from "./pages/pharmacy/PharmacyPatientsPage.jsx";
+import PharmacyBillingPage from "./pages/pharmacy/PharmacyBillingPage.jsx";
+import PharmacyAnalyticsPage from "./pages/pharmacy/PharmacyAnalyticsPage.jsx";
+import PharmacyStaffPage from "./pages/pharmacy/PharmacyStaffPage.jsx";
+
 function App() {
   return (
     <Routes>
@@ -177,6 +194,31 @@ function App() {
           <Route path="/reception/reports" element={<ReceptionReportsPage />} />
           <Route path="/reception/work-queue" element={<FrontDeskWorkQueuePage />} />
           <Route path="/reception/refunds" element={<RefundsManagementPage />} />
+
+          {/* Pharmacy & Dispensing Operations Routes */}
+          <Route path="/pharmacy/queue" element={<PharmacyQueuePage />} />
+          <Route path="/pharmacy/dispense" element={<PrescriptionDispensePage />} />
+          <Route path="/pharmacy/dispense/:id" element={<PrescriptionDispensePage />} />
+          <Route path="/pharmacy/prescriptions-history" element={<PrescriptionHistoryPage />} />
+          <Route path="/pharmacy/inventory" element={<MedicineInventoryPage />} />
+          <Route path="/pharmacy/stock" element={<StockManagementPage />} />
+          <Route path="/pharmacy/stock-ledger" element={<StockManagementPage />} />
+          <Route path="/pharmacy/batches" element={<BatchManagementPage />} />
+          <Route path="/pharmacy/expiry" element={<ExpiryManagementPage />} />
+          <Route path="/pharmacy/low-stock" element={<LowStockAlertsPage />} />
+          <Route path="/pharmacy/suppliers" element={<SuppliersManagementPage />} />
+          <Route path="/pharmacy/purchase-orders" element={<PurchaseOrdersPage />} />
+          <Route path="/pharmacy/stock-receiving" element={<PurchaseOrdersPage />} />
+          <Route path="/pharmacy/returns" element={<PharmacyReturnsPage />} />
+          <Route path="/pharmacy/patients" element={<PharmacyPatientsPage />} />
+          <Route path="/pharmacy/patient-history" element={<PharmacyPatientsPage />} />
+          <Route path="/pharmacy/billing" element={<PharmacyBillingPage />} />
+          <Route path="/pharmacy/receipts" element={<PharmacyBillingPage />} />
+          <Route path="/pharmacy/refunds" element={<PharmacyBillingPage />} />
+          <Route path="/pharmacy/analytics" element={<PharmacyAnalyticsPage />} />
+          <Route path="/pharmacy/reports" element={<PharmacyAnalyticsPage />} />
+          <Route path="/pharmacy/staff" element={<PharmacyStaffPage />} />
+          <Route path="/pharmacy/shifts" element={<PharmacyStaffPage />} />
         </Route>
       </Route>
       {/* Fallback — render 404 instead of blindly redirecting to /dashboard (which then bounces to /login for unauthed users) */}

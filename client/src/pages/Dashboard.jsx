@@ -7,6 +7,7 @@ import VitalsTracker from "../components/VitalsTracker.jsx";
 import NursingChecklistModal from "../components/NursingChecklistModal.jsx";
 import PatientClinicalProfileModal from "../components/nurse/PatientClinicalProfileModal.jsx";
 import DoctorPatientProfileModal from "../components/doctor/DoctorPatientProfileModal.jsx";
+import PharmacyDashboard from "./pharmacy/PharmacyDashboard.jsx";
 import {
   cancelMyAppointment,
   getAppointments,
@@ -2826,6 +2827,10 @@ function Dashboard() {
 
   if (role === "patient") {
     return <PatientPortalDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+  }
+
+  if (role === "pharmacist") {
+    return <PharmacyDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
   }
 
   // Default to Admin Executive Portal

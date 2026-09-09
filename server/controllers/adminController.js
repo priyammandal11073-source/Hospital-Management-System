@@ -289,6 +289,17 @@ export const getGlobalAdminSearch = async (req, res) => {
 // GET /api/admin/staff
 export const getStaffList = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoStaff = [
+        { _id: "000000000000000000000001", name: "Dr. Rajesh Sharma", email: "admin@hospital.com", role: "admin", department: "Executive Administration", designation: "Chief Medical Officer", employeeId: "EMP-ADM-1001", status: "active" },
+        { _id: "000000000000000000000002", name: "Dr. Sarah Jenkins", email: "doctor@hospital.com", role: "doctor", department: "Cardiology", designation: "Senior Consultant Cardiologist", employeeId: "EMP-DOC-2041", status: "active" },
+        { _id: "000000000000000000000003", name: "Sister Priya Nair", email: "nurse@hospital.com", role: "nurse", department: "Critical Care ICU", designation: "Charge Nurse", employeeId: "EMP-NUR-3022", status: "active" },
+        { _id: "000000000000000000000004", name: "Sunil Verma", email: "receptionist@hospital.com", role: "receptionist", department: "Front Office", designation: "Front Desk Executive", employeeId: "EMP-REC-4019", status: "active" },
+        { _id: "000000000000000000000006", name: "Ananya Deshmukh", email: "pharmacist@hospital.com", role: "pharmacist", department: "Pharmacy", designation: "Chief Pharmacist", employeeId: "EMP-PHAR-6001", status: "active" },
+      ];
+      return res.status(200).json({ success: true, staff: demoStaff, isOfflineDemo: true });
+    }
+
     const { role, department, status, search } = req.query;
     const filter = { role: { $ne: "patient" } };
 
@@ -411,6 +422,20 @@ export const updateStaffMember = async (req, res) => {
 // GET /api/admin/departments
 export const getDepartments = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const defaultDepts = [
+        { _id: "dept_card", name: "Cardiology", code: "CARD", location: "Block A", floor: "1st Floor", operatingHours: "24/7 Service" },
+        { _id: "dept_gmed", name: "General Medicine", code: "GMED", location: "Block A", floor: "Ground Floor", operatingHours: "08:00 AM - 08:00 PM" },
+        { _id: "dept_pedi", name: "Pediatrics", code: "PEDI", location: "Block B", floor: "1st Floor", operatingHours: "08:00 AM - 06:00 PM" },
+        { _id: "dept_neur", name: "Neurology", code: "NEUR", location: "Block A", floor: "2nd Floor", operatingHours: "09:00 AM - 05:00 PM" },
+        { _id: "dept_orth", name: "Orthopedics", code: "ORTH", location: "Block B", floor: "Ground Floor", operatingHours: "09:00 AM - 05:00 PM" },
+        { _id: "dept_emer", name: "Emergency & Trauma", code: "EMER", location: "Emergency Wing", floor: "Ground Floor", operatingHours: "24 Hours Continuous" },
+        { _id: "dept_path", name: "Pathology & Lab", code: "PATH", location: "Diagnostics Wing", floor: "2nd Floor", operatingHours: "24/7 Lab Processing" },
+        { _id: "dept_phar", name: "Pharmacy", code: "PHAR", location: "Central OPD", floor: "Ground Floor", operatingHours: "24 Hours Available" },
+      ];
+      return res.status(200).json({ success: true, departments: defaultDepts, isOfflineDemo: true });
+    }
+
     let departments = await Department.find().populate("headOfDepartment", "name specialization").sort({ name: 1 });
 
     // Seed default departments if none exist
