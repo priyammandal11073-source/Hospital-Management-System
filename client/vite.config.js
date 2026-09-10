@@ -9,4 +9,16 @@ export default defineConfig({
       "/api": "http://localhost:5000",
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-charts": ["recharts"],
+          "vendor-utils": ["axios", "qrcode"],
+        },
+      },
+    },
+  },
 });

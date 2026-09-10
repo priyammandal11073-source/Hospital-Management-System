@@ -8,6 +8,10 @@ import Notification from "../models/Notification.js";
 import AuditLog from "../models/AuditLog.js";
 import DeskHandover from "../models/DeskHandover.js";
 import FrontDeskTask from "../models/FrontDeskTask.js";
+import DiagnosticOrder from "../models/DiagnosticOrder.js";
+import DiagnosticTest from "../models/DiagnosticTest.js";
+import Equipment from "../models/Equipment.js";
+import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
 
 // Helper: log audit action
 const logReceptionistAudit = async (req, action, details = "") => {
@@ -211,24 +215,28 @@ export const getFrontDeskWorkQueue = async (req, res) => {
       })
         .populate("patient", "name contactNumber")
         .populate("doctor", "name specialization department")
+        .populate("diagnosticOrder", "testName orderNumber assignedRoom priority")
         .sort({ timeSlot: 1 })
         .limit(10);
 
       for (const app of pendingCheckins) {
+        const isDiag = app.isDiagnostic || Boolean(app.diagnosticOrder);
         queueItems.push({
           id: `checkin-${app._id}`,
           originalId: app._id,
           category: "waiting_checkin",
           patient: app.patient?.name || "Patient",
           contactNumber: app.patient?.contactNumber,
-          task: `Arrival Check-In: Dr. ${app.doctor?.name || "Doctor"} (${app.timeSlot})`,
+          task: isDiag
+            ? `Diagnostic Check-In: ${app.diagnosticOrder?.testName || app.reasonForVisit} (${app.timeSlot})`
+            : `Arrival Check-In: Dr. ${app.doctor?.name || "Doctor"} (${app.timeSlot})`,
           dateTime: app.appointmentDate,
           timeSlot: app.timeSlot,
           priority: app.priority || "Normal",
           status: "Pending",
-          actionType: "check_in",
+          actionType: isDiag ? "check_in_diagnostic" : "check_in",
           actionLink: `/reception/waiting-room`,
-          metadata: { appointmentId: app._id },
+          metadata: { appointmentId: app._id, diagnosticOrderId: app.diagnosticOrder?._id },
         });
       }
     }
@@ -372,26 +380,53 @@ export const checkInPatient = async (req, res) => {
       return res.status(400).json({ message: "Invalid appointment ID" });
     }
 
-    const appointment = await Appointment.findById(id)
+    let appointment = await Appointment.findById(id)
       .populate("patient", "name contactNumber")
       .populate("doctor", "name specialization department");
 
+    // If ID is not an Appointment, check if it's a DiagnosticOrder
     if (!appointment) {
-      return res.status(404).json({ message: "Appointment not found" });
+      const diagOrder = await DiagnosticOrder.findById(id).populate("patient", "name contactNumber");
+      if (diagOrder) {
+        const checkedInOrder = await diagnosticSyncService.onPatientCheckedIn({
+          orderId: diagOrder._id,
+          userContext: {
+            userId: req.user?._id,
+            userName: req.user?.name,
+            role: req.user?.role,
+          },
+        });
+
+        const tokenNumber = `DX-${String(Math.floor(100 + Math.random() * 900))}`;
+        await logReceptionistAudit(
+          req,
+          "DIAGNOSTIC_CHECK_IN",
+          `Checked in ${diagOrder.patientName} for diagnostic test ${diagOrder.testName} (Status: Patient Ready, Token: ${tokenNumber})`
+        );
+
+        return res.status(200).json({
+          success: true,
+          message: "Patient checked in for diagnostic test (Patient Ready)",
+          tokenNumber,
+          order: checkedInOrder,
+        });
+      }
+
+      return res.status(404).json({ message: "Appointment or Diagnostic Order not found" });
     }
 
-    // Generate OPD Token
+    // Generate OPD or Diagnostic Token
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
     const checkedInCount = await Appointment.countDocuments({
-      doctor: appointment.doctor._id,
+      ...(appointment.doctor ? { doctor: appointment.doctor._id } : {}),
       appointmentDate: { $gte: todayStart, $lte: todayEnd },
       status: { $in: ["checked_in", "waiting", "in_consultation", "completed"] },
     });
 
-    const deptCode = (appointment.doctor?.department || "OPD").substring(0, 3).toUpperCase();
+    const deptCode = (appointment.doctor?.department || (appointment.isDiagnostic ? "DIAG" : "OPD")).substring(0, 3).toUpperCase();
     const tokenSeq = String(checkedInCount + 1).padStart(3, "0");
     const tokenNumber = `${deptCode}-${tokenSeq}`;
 
@@ -401,10 +436,27 @@ export const checkInPatient = async (req, res) => {
     appointment.queueNumber = checkedInCount + 1;
     await appointment.save();
 
+    // If this is a diagnostic appointment, synchronize DiagnosticOrder to "Patient Ready"
+    if (appointment.isDiagnostic || appointment.diagnosticOrder) {
+      try {
+        await diagnosticSyncService.onPatientCheckedIn({
+          appointmentId: appointment._id,
+          orderId: appointment.diagnosticOrder,
+          userContext: {
+            userId: req.user?._id,
+            userName: req.user?.name,
+            role: req.user?.role,
+          },
+        });
+      } catch (syncErr) {
+        console.error("Diagnostic sync check-in error:", syncErr.message);
+      }
+    }
+
     await logReceptionistAudit(
       req,
       "PATIENT_CHECK_IN",
-      `Checked in ${appointment.patient?.name} for Dr. ${appointment.doctor?.name} (Token: ${tokenNumber})`
+      `Checked in ${appointment.patient?.name} for ${appointment.doctor?.name || "Diagnostic Department"} (Token: ${tokenNumber})`
     );
 
     return res.status(200).json({
@@ -417,6 +469,118 @@ export const checkInPatient = async (req, res) => {
   } catch (error) {
     console.error("Check-in error:", error);
     return res.status(500).json({ message: "Failed to check in patient" });
+  }
+};
+
+// ── 4B. WALK-IN DIAGNOSTIC CREATION & IMMEDIATE CHECK-IN ─────────────────────
+// POST /api/receptionist/walk-in-diagnostic
+export const createWalkInDiagnostic = async (req, res) => {
+  try {
+    const {
+      patientId,
+      testId,
+      timeSlot = "10:30 AM",
+      priority = "Routine",
+      notes = "",
+      assignedEquipment,
+      assignedRoom,
+      doctorId,
+    } = req.body;
+
+    if (!patientId || !testId) {
+      return res.status(400).json({ message: "Patient and Diagnostic Test are required" });
+    }
+
+    const [patient, test] = await Promise.all([
+      Patient.findById(patientId),
+      DiagnosticTest.findById(testId),
+    ]);
+
+    if (!patient) return res.status(404).json({ message: "Patient not found" });
+    if (!test) return res.status(404).json({ message: "Diagnostic test not found" });
+
+    // Conflict & equipment status check
+    if (assignedEquipment) {
+      const equip = await Equipment.findById(assignedEquipment);
+      if (equip && (equip.status === "Maintenance" || equip.status === "Out of Service")) {
+        return res.status(409).json({
+          message: `Equipment '${equip.name}' is currently in '${equip.status}' status. Cannot schedule walk-in test.`,
+        });
+      }
+    }
+
+    let doctor = null;
+    if (doctorId && mongoose.isValidObjectId(doctorId)) {
+      doctor = await Doctor.findById(doctorId);
+    }
+
+    const orderNumber = `DIAG-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
+    const order = await DiagnosticOrder.create({
+      orderNumber,
+      patient: patient._id,
+      patientName: patient.name,
+      patientIdStr: patient.patientId || patient.abhaId,
+      doctor: doctor?._id || null,
+      doctorName: doctor ? `Dr. ${doctor.name}` : "Walk-in Desk Staff",
+      department: doctor?.department || "Diagnostic Services",
+      test: test._id,
+      testCode: test.testCode,
+      testName: test.testName,
+      diagnosticDepartment: test.department,
+      category: test.category,
+      modality: test.modality,
+      clinicalIndication: "Walk-in patient request registered at Reception",
+      priority,
+      price: test.price,
+      assignedEquipment: assignedEquipment || undefined,
+      assignedRoom: assignedRoom || (test.department === "Pathology" ? "Phlebotomy Station 1" : "Radiology Suite 1"),
+      notes,
+    });
+
+    // 1. Central sync on request created (Itemized Billing, Nursing tasks if inpatient, Notifications)
+    await diagnosticSyncService.onDiagnosticRequestCreated(order, {
+      userId: req.user?._id,
+      userName: req.user?.name,
+      role: "receptionist",
+    });
+
+    // 2. Schedule for today
+    const now = new Date();
+    const scheduledRes = await diagnosticSyncService.onDiagnosticScheduled({
+      orderId: order._id,
+      scheduledDate: now,
+      timeSlot,
+      equipmentId: assignedEquipment,
+      roomId: assignedRoom,
+      userContext: {
+        userId: req.user?._id,
+        userName: req.user?.name,
+        role: "receptionist",
+      },
+    });
+
+    // 3. Check in immediately
+    const checkedInOrder = await diagnosticSyncService.onPatientCheckedIn({
+      orderId: order._id,
+      userContext: {
+        userId: req.user?._id,
+        userName: req.user?.name,
+        role: "receptionist",
+      },
+    });
+
+    const tokenNumber = `DX-${String(Math.floor(100 + Math.random() * 900))}`;
+
+    return res.status(201).json({
+      success: true,
+      message: "Walk-in diagnostic order registered & patient checked in (Patient Ready)",
+      order: checkedInOrder,
+      appointment: scheduledRes.appointment,
+      tokenNumber,
+    });
+  } catch (error) {
+    console.error("Walk-in diagnostic error:", error);
+    return res.status(500).json({ message: error.message || "Failed to create walk-in diagnostic" });
   }
 };
 

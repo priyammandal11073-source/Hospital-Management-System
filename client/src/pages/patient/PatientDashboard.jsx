@@ -43,7 +43,7 @@ function PatientDashboard() {
     );
   }
 
-  const { profile, stats, nextAppointment, activePrescription, latestLabReport, activeBedStay, alerts } = data || {};
+  const { profile, stats, nextAppointment, activePrescription, latestLabReport, activeBedStay, alerts, upcomingDiagnostics } = data || {};
 
   return (
     <section className="space-y-6">
@@ -142,106 +142,106 @@ function PatientDashboard() {
       )}
 
       {/* ================= 6 INTERACTIVE KPI STAT CARDS ================= */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {/* Card 1: Upcoming Appointments */}
         <div
           onClick={() => navigate("/patient/appointments")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-blue-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-blue-300 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Upcoming Visits</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 text-sm group-hover:scale-110 transition-transform">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Upcoming Visits</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
               📅
             </div>
           </div>
-          <div className="mt-3">
-            <p className="text-3xl font-extrabold text-blue-700">{stats?.upcomingAppointments || 0}</p>
-            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">Scheduled consultations</p>
+          <div className="mt-2.5 sm:mt-3">
+            <p className="text-2xl sm:text-3xl font-extrabold text-blue-700">{stats?.upcomingAppointments || 0}</p>
+            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">Scheduled visits</p>
           </div>
         </div>
 
         {/* Card 2: Active Prescriptions */}
         <div
           onClick={() => navigate("/patient/medicines")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-teal-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-teal-300 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Active Medicines</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-teal-50 text-teal-600 text-sm group-hover:scale-110 transition-transform">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Active Medicines</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-teal-50 text-teal-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
               💊
             </div>
           </div>
-          <div className="mt-3">
-            <p className="text-3xl font-extrabold text-teal-700">{stats?.activePrescriptions || 0}</p>
-            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">Daily dosage routines</p>
+          <div className="mt-2.5 sm:mt-3">
+            <p className="text-2xl sm:text-3xl font-extrabold text-teal-700">{stats?.activePrescriptions || 0}</p>
+            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">Daily dosages</p>
           </div>
         </div>
 
         {/* Card 3: Lab Reports */}
         <div
           onClick={() => navigate("/patient/lab-reports")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-purple-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-purple-300 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Lab Reports</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-600 text-sm group-hover:scale-110 transition-transform">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Lab Reports</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
               🔬
             </div>
           </div>
-          <div className="mt-3">
-            <p className="text-3xl font-extrabold text-purple-700">{stats?.labReportsCount || 0}</p>
-            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">Verified diagnostics</p>
+          <div className="mt-2.5 sm:mt-3">
+            <p className="text-2xl sm:text-3xl font-extrabold text-purple-700">{stats?.labReportsCount || 0}</p>
+            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">Verified reports</p>
           </div>
         </div>
 
         {/* Card 4: Invoices & Receipts */}
         <div
           onClick={() => navigate("/patient/billings")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-amber-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-amber-300 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Pending Bills</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 text-sm group-hover:scale-110 transition-transform">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Pending Bills</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
               🧾
             </div>
           </div>
-          <div className="mt-3">
-            <p className="text-3xl font-extrabold text-amber-700">{stats?.pendingBills || 0}</p>
-            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">₹{stats?.pendingAmount?.toFixed(2) || "0.00"} due</p>
+          <div className="mt-2.5 sm:mt-3">
+            <p className="text-2xl sm:text-3xl font-extrabold text-amber-700">{stats?.pendingBills || 0}</p>
+            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">₹{stats?.pendingAmount?.toFixed(2) || "0.00"} due</p>
           </div>
         </div>
 
         {/* Card 5: Admissions */}
         <div
           onClick={() => navigate("/patient/admissions")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-indigo-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-indigo-300 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Inpatient Stays</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 text-sm group-hover:scale-110 transition-transform">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Inpatient Stays</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
               🛏️
             </div>
           </div>
-          <div className="mt-3">
-            <p className="text-3xl font-extrabold text-indigo-700">{activeBedStay ? "1 Active" : "0 Active"}</p>
-            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">Bed accommodations</p>
+          <div className="mt-2.5 sm:mt-3">
+            <p className="text-2xl sm:text-3xl font-extrabold text-indigo-700">{activeBedStay ? "1 Active" : "0 Active"}</p>
+            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">Bed stays</p>
           </div>
         </div>
 
         {/* Card 6: Completed Consultations */}
         <div
           onClick={() => navigate("/patient/consultations")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-emerald-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-emerald-300 flex flex-col justify-between"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Past Visits</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 text-sm group-hover:scale-110 transition-transform">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Past Visits</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
               🩺
             </div>
           </div>
-          <div className="mt-3">
-            <p className="text-3xl font-extrabold text-emerald-700">{stats?.completedConsultations || 0}</p>
-            <p className="text-[11px] font-semibold text-slate-400 mt-0.5">Consultation summaries</p>
+          <div className="mt-2.5 sm:mt-3">
+            <p className="text-2xl sm:text-3xl font-extrabold text-emerald-700">{stats?.completedConsultations || 0}</p>
+            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">Summaries</p>
           </div>
         </div>
       </div>
@@ -287,16 +287,16 @@ function PatientDashboard() {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 self-end md:self-center">
+            <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 self-start sm:self-auto md:self-center">
               <Link
                 to="/patient/appointments"
-                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
+                className="min-h-[44px] inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs text-center"
               >
                 Reschedule / Cancel
               </Link>
               <Link
                 to="/patient/appointments"
-                className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition shadow-2xs"
+                className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-blue-700 transition shadow-2xs text-center"
               >
                 View Visit Pass →
               </Link>
@@ -314,6 +314,77 @@ function PatientDashboard() {
             >
               📅 Book Specialist Visit
             </Link>
+          </div>
+        </div>
+      )}
+
+      {/* ================= UPCOMING DIAGNOSTIC PROCEDURES & SCANS ================= */}
+      {upcomingDiagnostics && upcomingDiagnostics.length > 0 && (
+        <div className="rounded-3xl border border-cyan-200 bg-gradient-to-r from-cyan-50/70 via-sky-50/50 to-white p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-cyan-600 text-white font-bold text-sm">
+                🔬
+              </span>
+              <div>
+                <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-900">
+                  Upcoming Diagnostic Procedures & Tests ({upcomingDiagnostics.length})
+                </h3>
+                <p className="text-xs text-slate-500">Scheduled pathology investigations & radiology imaging studies</p>
+              </div>
+            </div>
+            <Link
+              to="/patient/lab-reports"
+              className="text-xs font-bold text-cyan-700 hover:text-cyan-900 hover:underline"
+            >
+              Diagnostic History →
+            </Link>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {upcomingDiagnostics.map((dx) => (
+              <div
+                key={dx._id}
+                className="rounded-2xl border border-cyan-200/80 bg-white p-4 shadow-2xs space-y-2 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-1">
+                    <span className="font-extrabold text-sm text-slate-900 leading-snug">{dx.testName}</span>
+                    <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase shrink-0 ${
+                      dx.status === "Patient Ready"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : dx.status === "Scheduled"
+                        ? "bg-blue-100 text-blue-800"
+                        : "bg-slate-100 text-slate-700"
+                    }`}>
+                      {dx.status}
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    <strong className="text-cyan-700 font-semibold">{dx.modality || dx.diagnosticDepartment}</strong> • {dx.orderNumber}
+                  </p>
+
+                  <div className="mt-2 text-xs text-slate-600 space-y-0.5 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <p>
+                      📅 <strong className="font-mono text-slate-800">
+                        {dx.scheduledDate ? new Date(dx.scheduledDate).toLocaleDateString() : "Pending Scheduling"}
+                      </strong> {dx.scheduledTimeSlot ? `at ${dx.scheduledTimeSlot}` : ""}
+                    </p>
+                    <p>
+                      📍 Room: <strong className="text-slate-800">{dx.assignedRoom || "Central Diagnostic Dept"}</strong>
+                    </p>
+                  </div>
+                </div>
+
+                {dx.preparationInstructions && (
+                  <div className="rounded-xl bg-amber-50 border border-amber-200 p-2 text-[11px] text-amber-900">
+                    <span className="font-bold block text-[10px] uppercase text-amber-700">⚠️ Prep Instructions:</span>
+                    <p className="line-clamp-2">{dx.preparationInstructions}</p>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}

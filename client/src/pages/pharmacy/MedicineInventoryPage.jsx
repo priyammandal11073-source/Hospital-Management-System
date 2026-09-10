@@ -133,7 +133,7 @@ export default function MedicineInventoryPage() {
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 shadow-sm transition"
+            className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 shadow-sm transition"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
@@ -174,7 +174,7 @@ export default function MedicineInventoryPage() {
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold capitalize transition whitespace-nowrap ${
+              className={`min-h-[44px] rounded-xl px-3.5 py-2 text-xs font-bold capitalize transition whitespace-nowrap inline-flex items-center justify-center ${
                 selectedCategory === cat
                   ? "bg-slate-900 text-white shadow-xs"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -191,9 +191,9 @@ export default function MedicineInventoryPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search brand, generic, category..."
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-xs focus:border-amber-500 focus:bg-white focus:outline-none"
+            className="w-full min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-xs focus:border-amber-500 focus:bg-white focus:outline-none"
           />
-          <svg className="absolute left-2.5 top-2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
@@ -212,42 +212,34 @@ export default function MedicineInventoryPage() {
             <p className="text-xs text-slate-400 mt-1">Try another search or add a new drug formulation.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
-                <tr>
-                  <th className="px-4 py-3">Medicine & Strength</th>
-                  <th className="px-4 py-3">Generic Name</th>
-                  <th className="px-4 py-3">Category</th>
-                  <th className="px-4 py-3">Stock Level</th>
-                  <th className="px-4 py-3">Unit Price</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredMedicines.map((med) => {
-                  const stock = med.currentStock || 0;
-                  const reorder = med.reorderLevel || 20;
-                  const isLow = stock <= reorder;
-                  const isOut = stock === 0;
+          <div>
+            {/* Mobile Stacked Cards View */}
+            <div className="block md:hidden divide-y divide-slate-100">
+              {filteredMedicines.map((med) => {
+                const stock = med.currentStock || 0;
+                const reorder = med.reorderLevel || 20;
+                const isLow = stock <= reorder;
+                const isOut = stock === 0;
 
-                  return (
-                    <tr key={med._id} className="hover:bg-slate-50/70 transition">
-                      <td className="px-4 py-3.5">
-                        <div className="font-bold text-slate-900">{med.name}</div>
-                        <div className="text-[11px] text-slate-500">
+                return (
+                  <div key={med._id} className="p-4 space-y-3 hover:bg-slate-50/70 transition">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h3 className="font-bold text-slate-900 text-sm">{med.name}</h3>
+                        <p className="text-[11px] text-slate-500">
                           {med.dosageForm || "Tablet"} • {med.strength || "Standard"} • {med.manufacturer || "Cipla"}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3.5 font-medium text-slate-600">
-                        {med.genericName || "—"}
-                      </td>
-                      <td className="px-4 py-3.5">
-                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
-                          {med.category || "General"}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3.5">
+                        </p>
+                        {med.genericName && (
+                          <p className="text-xs text-slate-600 font-medium mt-0.5">{med.genericName}</p>
+                        )}
+                      </div>
+                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-semibold text-slate-700 shrink-0">
+                        {med.category || "General"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1">
+                      <div>
                         <div className="flex items-center gap-2">
                           <span className={`font-mono font-bold ${
                             isOut ? "text-red-600" : isLow ? "text-amber-600" : "text-slate-800"
@@ -268,30 +260,115 @@ export default function MedicineInventoryPage() {
                             style={{ width: `${Math.min(100, (stock / (reorder * 2)) * 100)}%` }}
                           />
                         </div>
-                      </td>
-                      <td className="px-4 py-3.5 font-bold text-slate-900 font-mono">
+                      </div>
+
+                      <span className="font-black text-slate-900 font-mono text-sm">
                         ₹{(med.unitPrice || 0).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3.5 text-right whitespace-nowrap space-x-1.5">
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEdit(med)}
-                          className="rounded-lg border border-slate-200 bg-white hover:bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 transition"
-                        >
-                          Edit
-                        </button>
-                        <Link
-                          to={`/pharmacy/batches?medicine=${encodeURIComponent(med.name)}`}
-                          className="rounded-lg bg-slate-100 hover:bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 transition"
-                        >
-                          Batches
-                        </Link>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(med)}
+                        className="flex-1 min-h-[44px] rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition flex items-center justify-center"
+                      >
+                        Edit Details
+                      </button>
+                      <Link
+                        to={`/pharmacy/batches?medicine=${encodeURIComponent(med.name)}`}
+                        className="flex-1 min-h-[44px] rounded-xl bg-slate-100 hover:bg-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition flex items-center justify-center"
+                      >
+                        View Batches
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th className="px-4 py-3">Medicine & Strength</th>
+                    <th className="px-4 py-3">Generic Name</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="px-4 py-3">Stock Level</th>
+                    <th className="px-4 py-3">Unit Price</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredMedicines.map((med) => {
+                    const stock = med.currentStock || 0;
+                    const reorder = med.reorderLevel || 20;
+                    const isLow = stock <= reorder;
+                    const isOut = stock === 0;
+
+                    return (
+                      <tr key={med._id} className="hover:bg-slate-50/70 transition">
+                        <td className="px-4 py-3.5">
+                          <div className="font-bold text-slate-900">{med.name}</div>
+                          <div className="text-[11px] text-slate-500">
+                            {med.dosageForm || "Tablet"} • {med.strength || "Standard"} • {med.manufacturer || "Cipla"}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5 font-medium text-slate-600">
+                          {med.genericName || "—"}
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700">
+                            {med.category || "General"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className={`font-mono font-bold ${
+                              isOut ? "text-red-600" : isLow ? "text-amber-600" : "text-slate-800"
+                            }`}>
+                              {stock} units
+                            </span>
+                            {isOut ? (
+                              <span className="rounded-full bg-red-100 px-2 py-0.5 text-[9px] font-bold text-red-700">Out</span>
+                            ) : isLow ? (
+                              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-bold text-amber-800">Low</span>
+                            ) : null}
+                          </div>
+                          <div className="mt-1 h-1 w-24 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${
+                                isOut ? "bg-red-500" : isLow ? "bg-amber-500" : "bg-emerald-500"
+                              }`}
+                              style={{ width: `${Math.min(100, (stock / (reorder * 2)) * 100)}%` }}
+                            />
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5 font-bold text-slate-900 font-mono">
+                          ₹{(med.unitPrice || 0).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3.5 text-right whitespace-nowrap space-x-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenEdit(med)}
+                            className="rounded-lg border border-slate-200 bg-white hover:bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 transition"
+                          >
+                            Edit
+                          </button>
+                          <Link
+                            to={`/pharmacy/batches?medicine=${encodeURIComponent(med.name)}`}
+                            className="rounded-lg bg-slate-100 hover:bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-700 transition"
+                          >
+                            Batches
+                          </Link>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
@@ -299,7 +376,7 @@ export default function MedicineInventoryPage() {
       {/* Add / Edit Medicine Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl animate-in fade-in duration-150">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl modal-viewport overflow-y-auto animate-in fade-in duration-150">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-slate-900">
                 {editingMedicine ? `Edit: ${editingMedicine.name}` : "Add Medicine to Formulary"}
@@ -307,14 +384,14 @@ export default function MedicineInventoryPage() {
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                className="text-slate-400 hover:text-slate-600 font-bold p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="mt-4 space-y-3.5 text-xs">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Brand / Trade Name</label>
                   <input
@@ -323,7 +400,7 @@ export default function MedicineInventoryPage() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                     placeholder="e.g. Augmentin 625"
-                    className="w-full rounded-xl border border-slate-200 p-2.5 focus:border-amber-500 focus:outline-none"
+                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -334,18 +411,18 @@ export default function MedicineInventoryPage() {
                     onChange={(e) => setFormData({ ...formData, genericName: e.target.value })}
                     required
                     placeholder="e.g. Amoxicillin + Clavulanate"
-                    className="w-full rounded-xl border border-slate-200 p-2.5 focus:border-amber-500 focus:outline-none"
+                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Category</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 p-2.5 focus:border-amber-500 focus:outline-none"
+                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
                   >
                     <option value="Antibiotics">Antibiotics</option>
                     <option value="Analgesics">Analgesics</option>
@@ -362,7 +439,7 @@ export default function MedicineInventoryPage() {
                   <select
                     value={formData.dosageForm}
                     onChange={(e) => setFormData({ ...formData, dosageForm: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 p-2.5 focus:border-amber-500 focus:outline-none"
+                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
                   >
                     <option value="Tablet">Tablet</option>
                     <option value="Capsule">Capsule</option>
@@ -379,12 +456,12 @@ export default function MedicineInventoryPage() {
                     value={formData.strength}
                     onChange={(e) => setFormData({ ...formData, strength: e.target.value })}
                     placeholder="e.g. 500mg"
-                    className="w-full rounded-xl border border-slate-200 p-2.5 focus:border-amber-500 focus:outline-none"
+                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Unit Price (₹)</label>
                   <input
@@ -393,7 +470,7 @@ export default function MedicineInventoryPage() {
                     value={formData.unitPrice}
                     onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) || 0 })}
                     required
-                    className="w-full rounded-xl border border-slate-200 p-2.5 focus:border-amber-500 focus:outline-none"
+                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -403,7 +480,7 @@ export default function MedicineInventoryPage() {
                     value={formData.currentStock}
                     onChange={(e) => setFormData({ ...formData, currentStock: parseInt(e.target.value) || 0 })}
                     required
-                    className="w-full rounded-xl border border-slate-200 p-2.5 focus:border-amber-500 focus:outline-none"
+                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
                   />
                 </div>
                 <div>
@@ -413,23 +490,23 @@ export default function MedicineInventoryPage() {
                     value={formData.reorderLevel}
                     onChange={(e) => setFormData({ ...formData, reorderLevel: parseInt(e.target.value) || 0 })}
                     required
-                    className="w-full rounded-xl border border-slate-200 p-2.5 focus:border-amber-500 focus:outline-none"
+                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="rounded-xl border border-slate-200 px-4 py-2 font-bold text-slate-600 hover:bg-slate-100"
+                  className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-200 px-5 py-2.5 font-bold text-slate-600 hover:bg-slate-100 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-xl bg-amber-500 px-5 py-2 font-bold text-slate-950 hover:bg-amber-400 shadow-sm"
+                  className="w-full sm:w-auto min-h-[44px] rounded-xl bg-amber-500 px-6 py-2.5 font-bold text-slate-950 hover:bg-amber-400 shadow-sm transition"
                 >
                   {isSubmitting ? "Saving..." : editingMedicine ? "Update Formulary" : "Save Medicine"}
                 </button>

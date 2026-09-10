@@ -135,7 +135,7 @@ export default function VitalSignsPage() {
           <select
             value={selectedPatientId}
             onChange={(e) => setSelectedPatientId(e.target.value)}
-            className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs font-semibold text-slate-800 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs font-semibold text-slate-800 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
           >
             {inpatients.map((item) => (
               <option key={item.patient._id} value={item.patient._id}>
@@ -191,7 +191,7 @@ export default function VitalSignsPage() {
                   placeholder="e.g. 120"
                   value={formData.bloodPressureSys}
                   onChange={(e) => setFormData({ ...formData, bloodPressureSys: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                 />
               </div>
               <div>
@@ -201,7 +201,7 @@ export default function VitalSignsPage() {
                   placeholder="e.g. 80"
                   value={formData.bloodPressureDia}
                   onChange={(e) => setFormData({ ...formData, bloodPressureDia: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                 />
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function VitalSignsPage() {
                   placeholder="e.g. 74"
                   value={formData.heartRate}
                   onChange={(e) => setFormData({ ...formData, heartRate: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                 />
               </div>
               <div>
@@ -225,7 +225,7 @@ export default function VitalSignsPage() {
                   placeholder="e.g. 98"
                   value={formData.spo2}
                   onChange={(e) => setFormData({ ...formData, spo2: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                 />
               </div>
             </div>
@@ -240,7 +240,7 @@ export default function VitalSignsPage() {
                   placeholder="e.g. 98.6"
                   value={formData.temperature}
                   onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                 />
               </div>
               <div>
@@ -250,7 +250,7 @@ export default function VitalSignsPage() {
                   placeholder="e.g. 16"
                   value={formData.respiratoryRate}
                   onChange={(e) => setFormData({ ...formData, respiratoryRate: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                 />
               </div>
             </div>
@@ -264,7 +264,7 @@ export default function VitalSignsPage() {
                   placeholder="e.g. 110"
                   value={formData.bloodSugar}
                   onChange={(e) => setFormData({ ...formData, bloodSugar: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                 />
               </div>
               <div>
@@ -272,7 +272,7 @@ export default function VitalSignsPage() {
                 <select
                   value={formData.sugarType}
                   onChange={(e) => setFormData({ ...formData, sugarType: e.target.value })}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
                 >
                   <option value="random">Random</option>
                   <option value="fasting">Fasting</option>
@@ -310,13 +310,13 @@ export default function VitalSignsPage() {
                 placeholder="Patient response, oxygen titration, pain location..."
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                className="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                className="w-full min-h-[60px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
               ></textarea>
             </div>
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold py-2.5 text-xs transition shadow-2xs"
+              className="w-full min-h-[44px] rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold py-3 text-xs transition shadow-2xs"
             >
               Save Vital Signs
             </button>
@@ -360,7 +360,7 @@ export default function VitalSignsPage() {
             </div>
           </div>
 
-          {/* Longitudinal Flowsheet Table */}
+          {/* Longitudinal Flowsheet Table / Mobile Cards */}
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs">
             <h3 className="text-sm font-bold text-slate-800 mb-3">Longitudinal Bedside Flowsheet</h3>
 
@@ -371,49 +371,116 @@ export default function VitalSignsPage() {
                 No vital readings logged for this patient yet. Use the form on the left to record the first measurement.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-700">
-                  <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
-                    <tr>
-                      <th className="px-3 py-2.5">Date & Time</th>
-                      <th className="px-3 py-2.5">BP</th>
-                      <th className="px-3 py-2.5">Pulse</th>
-                      <th className="px-3 py-2.5">SpO2</th>
-                      <th className="px-3 py-2.5">Temp</th>
-                      <th className="px-3 py-2.5">Sugar</th>
-                      <th className="px-3 py-2.5">Resp</th>
-                      <th className="px-3 py-2.5">Pain</th>
-                      <th className="px-3 py-2.5">Recorded By</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {vitalsHistory.map((v) => (
-                      <tr key={v._id} className="hover:bg-slate-50/80 transition">
-                        <td className="px-3 py-2.5 font-mono text-[11px] whitespace-nowrap">
+              <>
+                {/* Mobile View: Stacked Vitals Cards */}
+                <div className="block md:hidden space-y-3">
+                  {vitalsHistory.map((v) => (
+                    <div key={v._id} className="p-3.5 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs font-bold text-slate-800">
                           {new Date(v.recordedAt).toLocaleString("en-IN", {
                             day: "2-digit",
                             month: "short",
                             hour: "2-digit",
                             minute: "2-digit",
                           })}
-                        </td>
-                        <td className="px-3 py-2.5 font-semibold">
-                          {v.bloodPressureSys ? `${v.bloodPressureSys}/${v.bloodPressureDia || ""}` : "—"}
-                        </td>
-                        <td className="px-3 py-2.5">{v.heartRate ? `${v.heartRate} bpm` : "—"}</td>
-                        <td className={`px-3 py-2.5 font-bold ${v.spo2 && v.spo2 <= 92 ? "text-rose-600" : "text-emerald-700"}`}>
-                          {v.spo2 ? `${v.spo2}%` : "—"}
-                        </td>
-                        <td className="px-3 py-2.5">{v.temperature ? `${v.temperature} °F` : "—"}</td>
-                        <td className="px-3 py-2.5">{v.bloodSugar ? `${v.bloodSugar} mg/dL` : "—"}</td>
-                        <td className="px-3 py-2.5">{v.respiratoryRate ? `${v.respiratoryRate}/min` : "—"}</td>
-                        <td className="px-3 py-2.5 font-bold text-indigo-700">{v.painScore ?? "—"}</td>
-                        <td className="px-3 py-2.5 text-slate-500">{v.recorderName || v.recordedBy}</td>
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-medium">
+                          {v.recorderName || v.recordedBy}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-200/60">
+                        <div>
+                          <span className="text-slate-400 text-[10px] block">BP</span>
+                          <span className="font-semibold text-slate-800">
+                            {v.bloodPressureSys ? `${v.bloodPressureSys}/${v.bloodPressureDia || ""}` : "—"} mmHg
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 text-[10px] block">Pulse</span>
+                          <span className="font-semibold text-slate-800">
+                            {v.heartRate ? `${v.heartRate} bpm` : "—"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 text-[10px] block">SpO2</span>
+                          <span className={`font-bold ${v.spo2 && v.spo2 <= 92 ? "text-rose-600" : "text-emerald-700"}`}>
+                            {v.spo2 ? `${v.spo2}%` : "—"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 text-[10px] block">Temperature</span>
+                          <span className="font-semibold text-slate-800">
+                            {v.temperature ? `${v.temperature} °F` : "—"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 text-[10px] block">Blood Sugar</span>
+                          <span className="font-semibold text-slate-800">
+                            {v.bloodSugar ? `${v.bloodSugar} mg/dL` : "—"}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 text-[10px] block">Pain Score</span>
+                          <span className="font-bold text-indigo-700">
+                            {v.painScore ?? "—"} / 10
+                          </span>
+                        </div>
+                      </div>
+                      {v.notes && (
+                        <p className="text-[11px] text-slate-600 bg-white p-2 rounded-lg border border-slate-200/60 mt-1">
+                          <span className="font-semibold text-slate-700">Note:</span> {v.notes}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop View: Full Flowsheet Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full text-left text-xs text-slate-700">
+                    <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                      <tr>
+                        <th className="px-3 py-2.5">Date & Time</th>
+                        <th className="px-3 py-2.5">BP</th>
+                        <th className="px-3 py-2.5">Pulse</th>
+                        <th className="px-3 py-2.5">SpO2</th>
+                        <th className="px-3 py-2.5">Temp</th>
+                        <th className="px-3 py-2.5">Sugar</th>
+                        <th className="px-3 py-2.5">Resp</th>
+                        <th className="px-3 py-2.5">Pain</th>
+                        <th className="px-3 py-2.5">Recorded By</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {vitalsHistory.map((v) => (
+                        <tr key={v._id} className="hover:bg-slate-50/80 transition">
+                          <td className="px-3 py-2.5 font-mono text-[11px] whitespace-nowrap">
+                            {new Date(v.recordedAt).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </td>
+                          <td className="px-3 py-2.5 font-semibold">
+                            {v.bloodPressureSys ? `${v.bloodPressureSys}/${v.bloodPressureDia || ""}` : "—"}
+                          </td>
+                          <td className="px-3 py-2.5">{v.heartRate ? `${v.heartRate} bpm` : "—"}</td>
+                          <td className={`px-3 py-2.5 font-bold ${v.spo2 && v.spo2 <= 92 ? "text-rose-600" : "text-emerald-700"}`}>
+                            {v.spo2 ? `${v.spo2}%` : "—"}
+                          </td>
+                          <td className="px-3 py-2.5">{v.temperature ? `${v.temperature} °F` : "—"}</td>
+                          <td className="px-3 py-2.5">{v.bloodSugar ? `${v.bloodSugar} mg/dL` : "—"}</td>
+                          <td className="px-3 py-2.5">{v.respiratoryRate ? `${v.respiratoryRate}/min` : "—"}</td>
+                          <td className="px-3 py-2.5 font-bold text-indigo-700">{v.painScore ?? "—"}</td>
+                          <td className="px-3 py-2.5 text-slate-500">{v.recorderName || v.recordedBy}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         </div>

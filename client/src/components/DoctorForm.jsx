@@ -101,10 +101,10 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Name *
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
             name="name"
             onChange={handleChange}
             placeholder="e.g. Rajesh Sharma"
@@ -112,10 +112,10 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
             value={formData.name}
           />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Specialization *
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
             name="specialization"
             onChange={handleChange}
             placeholder="e.g. Cardiology"
@@ -123,10 +123,10 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
             value={formData.specialization}
           />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Department *
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
             name="department"
             onChange={handleChange}
             placeholder="e.g. OPD & Cardiac Sciences"
@@ -134,14 +134,14 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
             value={formData.department}
           />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Contact number *
-          <div className="relative mt-1 flex rounded-md shadow-sm">
-            <span className="inline-flex items-center rounded-l-md border border-r-0 border-slate-300 bg-slate-50 px-3 text-sm text-slate-500">
+          <div className="relative mt-1 flex rounded-xl shadow-2xs">
+            <span className="inline-flex min-h-[44px] items-center rounded-l-xl border border-r-0 border-slate-300 bg-slate-50 px-3.5 text-sm text-slate-500">
               +91
             </span>
             <input
-              className="w-full rounded-r-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+              className="w-full min-h-[44px] rounded-r-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
               name="contactNumber"
               onChange={handleChange}
               placeholder="98765 43210"
@@ -151,10 +151,10 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
             />
           </div>
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Email *
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
             name="email"
             onChange={handleChange}
             placeholder="dr.rajesh@hospital.com"
@@ -163,10 +163,10 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
             value={formData.email}
           />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Years of experience
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
             min="0"
             name="yearsOfExperience"
             onChange={handleChange}
@@ -178,11 +178,15 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
       </div>
 
       <fieldset>
-        <legend className="text-sm font-medium text-slate-700">Available days</legend>
+        <legend className="text-xs font-bold text-slate-800 uppercase tracking-wider">Available days</legend>
         <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {weekDays.map((day) => (
-            <label className="flex items-center gap-2 text-sm text-slate-700" key={day}>
+            <label
+              className="flex min-h-[44px] items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 cursor-pointer hover:bg-teal-50/50 transition"
+              key={day}
+            >
               <input
+                className="h-4 w-4 text-teal-600 rounded"
                 checked={formData.availableDays.includes(day)}
                 onChange={() => toggleDay(day)}
                 type="checkbox"
@@ -193,10 +197,10 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
         </div>
       </fieldset>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
         Available time slots
         <input
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+          className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
           name="availableTimeSlots"
           onChange={handleChange}
           placeholder="e.g. 09:00-12:00, 14:00-17:00"
@@ -205,21 +209,21 @@ function DoctorForm({ doctor, onCancel, onSuccess }) {
       </label>
 
       {error && (
-        <p className="rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
+        <p className="rounded-xl bg-red-50 border border-red-200 p-3.5 text-xs font-bold text-red-700" role="alert">
           {error}
         </p>
       )}
 
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
         <button
-          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
           onClick={onCancel}
           type="button"
         >
           Cancel
         </button>
         <button
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:bg-blue-400"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition shadow-2xs"
           disabled={isSubmitting}
           type="submit"
         >

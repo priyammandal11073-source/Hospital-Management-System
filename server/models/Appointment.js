@@ -10,7 +10,36 @@ const appointmentSchema = new mongoose.Schema(
     doctor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Doctor",
-      required: [true, "Doctor is required"],
+      required: [
+        function () {
+          return !this.isDiagnostic;
+        },
+        "Doctor is required for non-diagnostic appointments",
+      ],
+    },
+    diagnosticOrder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DiagnosticOrder",
+    },
+    isDiagnostic: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    modality: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    equipment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Equipment",
+      index: true,
+    },
+    room: {
+      type: String,
+      trim: true,
+      default: "",
     },
     appointmentDate: {
       type: Date,
@@ -76,7 +105,7 @@ const appointmentSchema = new mongoose.Schema(
     appointmentType: {
       type: String,
       enum: {
-        values: ["opd", "walk_in", "follow_up", "emergency", "teleconsultation"],
+        values: ["opd", "walk_in", "follow_up", "emergency", "teleconsultation", "diagnostic"],
         message: "Invalid appointment type",
       },
       default: "opd",
@@ -122,10 +151,29 @@ appointmentSchema.index(
   {
     unique: true,
     partialFilterExpression: {
+      isDiagnostic: { $eq: false },
       status: { $in: ["pending", "confirmed"] },
     },
   }
 );
+
+// Equipment conflict index for diagnostic bookings (partialFilterExpression covers sparseness)
+appointmentSchema.index(
+  { equipment: 1, appointmentDate: 1, timeSlot: 1 },
+  {
+    partialFilterExpression: {
+      isDiagnostic: { $eq: true },
+      status: { $in: ["pending", "confirmed", "waiting", "checked_in"] },
+    },
+  }
+);
+
+// Compound query indexes for doctor consultation queues, patient history, and front desk work queue
+appointmentSchema.index({ patient: 1, appointmentDate: -1, status: 1 });
+appointmentSchema.index({ doctor: 1, appointmentDate: 1, status: 1 });
+appointmentSchema.index({ status: 1, appointmentDate: 1 });
+appointmentSchema.index({ tokenNumber: 1 }, { sparse: true });
+appointmentSchema.index({ diagnosticOrder: 1 }, { sparse: true });
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);
 

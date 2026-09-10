@@ -4,6 +4,7 @@ import {
   getConsultationBundle,
   concludeConsultation,
   getSpecialistDirectory,
+  getDiagnosticTests,
 } from "../../services/api.js";
 import DoctorPatientProfileModal from "../../components/doctor/DoctorPatientProfileModal.jsx";
 
@@ -84,9 +85,12 @@ export default function ConsultationWorkspace() {
   const [allergyWarning, setAllergyWarning] = useState(null);
   const [allergyAcknowledged, setAllergyAcknowledged] = useState(false);
 
-  // Lab Orders state
+  // Lab & Diagnostic Orders state
   const [labOrders, setLabOrders] = useState([]);
   const [customLab, setCustomLab] = useState({ testName: "", category: "General Lab", notes: "" });
+  const [diagnosticCatalog, setDiagnosticCatalog] = useState([]);
+  const [diagSearchQuery, setDiagSearchQuery] = useState("");
+  const [diagModalityFilter, setDiagModalityFilter] = useState("All");
 
   // Referral state
   const [referralEnabled, setReferralEnabled] = useState(false);
@@ -102,6 +106,7 @@ export default function ConsultationWorkspace() {
   useEffect(() => {
     loadBundle();
     loadSpecialists();
+    loadDiagnosticCatalog();
   }, [appointmentId]);
 
   const loadBundle = async () => {
@@ -111,15 +116,11 @@ export default function ConsultationWorkspace() {
       const res = await getConsultationBundle(appointmentId);
       if (res.success && res.data) {
         setBundle(res.data);
-        const apt = res.data.appointment;
-        setChiefComplaint(apt?.reasonForVisit || "");
-        if (apt?.diagnosis) setDiagnosis(apt.diagnosis);
-        if (apt?.clinicalSummary) setTreatmentPlan(apt.clinicalSummary);
-        if (apt?.followUpDate) {
-          setFollowUpDate(new Date(apt.followUpDate).toISOString().split("T")[0]);
+        if (res.data.appointment?.reasonForVisit) {
+          setChiefComplaint(res.data.appointment.reasonForVisit);
         }
-        if (apt?.followUpInstructions) {
-          setFollowUpInstructions(apt.followUpInstructions);
+        if (res.data.appointment?.diagnosis) {
+          setDiagnosis(res.data.appointment.diagnosis);
         }
       } else {
         setError("Unable to load consultation bundle.");
@@ -139,6 +140,17 @@ export default function ConsultationWorkspace() {
       }
     } catch (e) {
       console.error("Failed to load specialists directory", e);
+    }
+  };
+
+  const loadDiagnosticCatalog = async () => {
+    try {
+      const res = await getDiagnosticTests({ limit: 100 });
+      if (res.success && res.data) {
+        setDiagnosticCatalog(res.data);
+      }
+    } catch (e) {
+      console.error("Failed to load diagnostic catalog", e);
     }
   };
 
@@ -631,27 +643,98 @@ export default function ConsultationWorkspace() {
                     Diagnostic Lab & Imaging Orders
                   </h2>
                 </div>
-                <span className="text-[11px] text-cyan-700 font-semibold">{labOrders.length} tests ordered</span>
+                <span className="text-[11px] text-cyan-700 font-semibold">{labOrders.length} tests selected</span>
               </div>
 
-              <div>
-                <p className="text-xs font-bold text-slate-700 mb-2">Select Recommended Investigations:</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {COMMON_LAB_TESTS.map((lab, idx) => {
-                    const isSelected = labOrders.some((l) => l.testName === lab.testName);
+              {/* Modality Filter Pills & Live Search */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-1 overflow-x-auto pb-1">
+                    {["All", "Pathology", "X-Ray", "CT Scan", "MRI", "Ultrasound", "ECG"].map((mod) => (
+                      <button
+                        key={mod}
+                        type="button"
+                        onClick={() => setDiagModalityFilter(mod)}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition whitespace-nowrap ${
+                          diagModalityFilter === mod
+                            ? "bg-cyan-600 text-white shadow-xs"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        {mod}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={diagSearchQuery}
+                    onChange={(e) => setDiagSearchQuery(e.target.value)}
+                    placeholder="Search diagnostic catalog..."
+                    className="text-xs rounded-xl border border-slate-200 px-3 py-1.5 bg-slate-50 w-full sm:w-64 focus:outline-cyan-500"
+                  />
+                </div>
+
+                {/* Filtered Tests Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1 bg-slate-50/50 rounded-xl border border-slate-100">
+                  {(diagnosticCatalog.length > 0
+                    ? diagnosticCatalog.filter((t) => {
+                        const matchesMod =
+                          diagModalityFilter === "All" ||
+                          t.department === diagModalityFilter ||
+                          t.modality === diagModalityFilter ||
+                          (diagModalityFilter === "Pathology" && t.department === "Pathology");
+                        const matchesQuery =
+                          !diagSearchQuery ||
+                          t.testName.toLowerCase().includes(diagSearchQuery.toLowerCase()) ||
+                          t.testCode.toLowerCase().includes(diagSearchQuery.toLowerCase()) ||
+                          t.category.toLowerCase().includes(diagSearchQuery.toLowerCase());
+                        return matchesMod && matchesQuery;
+                      })
+                    : COMMON_LAB_TESTS
+                  ).slice(0, 24).map((test, idx) => {
+                    const isSelected = labOrders.some(
+                      (l) => l.testName === test.testName || (test._id && l.testId === test._id)
+                    );
                     return (
                       <button
-                        key={idx}
+                        key={test._id || idx}
                         type="button"
-                        onClick={() => handleToggleLabOrder(lab)}
-                        className={`p-2.5 rounded-xl border text-left text-xs transition flex items-center justify-between ${
+                        onClick={() => {
+                          if (isSelected) {
+                            setLabOrders(labOrders.filter((l) => l.testName !== test.testName && l.testId !== test._id));
+                          } else {
+                            setLabOrders([
+                              ...labOrders,
+                              {
+                                testId: test._id,
+                                testName: test.testName,
+                                testCode: test.testCode,
+                                category: test.category || test.department || "Diagnostics",
+                                department: test.department,
+                                modality: test.modality,
+                                price: test.price,
+                                priority: "Routine",
+                                notes: "",
+                              },
+                            ]);
+                          }
+                        }}
+                        className={`p-2 rounded-xl border text-left text-xs transition flex flex-col justify-between ${
                           isSelected
-                            ? "border-cyan-500 bg-cyan-50/70 text-cyan-900 font-bold shadow-2xs"
+                            ? "border-cyan-500 bg-cyan-50 text-cyan-900 font-bold shadow-xs"
                             : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
                         }`}
                       >
-                        <span>{lab.testName}</span>
-                        <span className="text-xs">{isSelected ? "✓" : "+"}</span>
+                        <div className="flex items-start justify-between gap-1 w-full">
+                          <span className="truncate">{test.testName}</span>
+                          <span className="text-xs shrink-0">{isSelected ? "✓" : "+"}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1 w-full">
+                          <span className="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
+                            {test.modality || test.department || "Lab"}
+                          </span>
+                          {test.price ? <span className="font-semibold text-cyan-700">₹{test.price}</span> : null}
+                        </div>
                       </button>
                     );
                   })}
@@ -682,9 +765,10 @@ export default function ConsultationWorkspace() {
                   {labOrders.map((lab, i) => (
                     <span
                       key={i}
-                      className="px-3 py-1 rounded-lg bg-cyan-50 text-cyan-800 border border-cyan-200 text-xs font-semibold flex items-center gap-2"
+                      className="px-3 py-1.5 rounded-lg bg-cyan-50 text-cyan-800 border border-cyan-200 text-xs font-semibold flex items-center gap-2"
                     >
                       <span>🧪 {lab.testName}</span>
+                      {lab.price ? <span className="text-[10px] text-cyan-600">₹{lab.price}</span> : null}
                       <button
                         type="button"
                         onClick={() => handleRemoveLabOrder(i)}
@@ -998,6 +1082,55 @@ export default function ConsultationWorkspace() {
               </div>
             ) : (
               <p className="text-xs text-slate-400 italic">No previous lab investigations recorded.</p>
+            )}
+          </div>
+
+          {/* Diagnostic Imaging & Pathology Studies */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                🔬 Diagnostic Studies ({bundle?.diagnosticOrders?.length || 0})
+              </h3>
+            </div>
+
+            {bundle?.diagnosticOrders?.length > 0 ? (
+              <div className="space-y-2 max-h-56 overflow-y-auto">
+                {bundle.diagnosticOrders.map((d) => (
+                  <div key={d._id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-800 truncate">{d.testName}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                        d.status === "Finalized"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : d.isCritical
+                          ? "bg-rose-100 text-rose-800"
+                          : "bg-cyan-100 text-cyan-800"
+                      }`}>
+                        {d.status}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] text-slate-500">
+                      <span>{d.modality} • {d.orderNumber}</span>
+                      <span>{new Date(d.requestedDate || d.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    {d.report && (
+                      <div className="pt-1 flex items-center justify-between">
+                        <span className="text-[10px] text-emerald-700 font-semibold">Report Signed</span>
+                        <a
+                          href={`/diagnostics/reports/${typeof d.report === "object" ? d.report._id : d.report}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] text-cyan-700 hover:underline font-bold"
+                        >
+                          View Official Report ↗
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-400 italic">No previous diagnostic investigations.</p>
             )}
           </div>
         </div>

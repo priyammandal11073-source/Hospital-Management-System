@@ -11,6 +11,9 @@ const createToken = (user, doctorId = null) => {
 
   const payload = {
     id: user._id,
+    _id: user._id,
+    name: user.name,
+    email: user.email,
     role: user.role,
     type: user.role === "patient" ? "patient" : "staff",
   };

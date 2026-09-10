@@ -4,6 +4,7 @@ import Appointment from "../models/Appointment.js";
 import Billing from "../models/Billing.js";
 import Patient from "../models/Patient.js";
 import { sendPaymentLinkSms } from "../services/smsService.js";
+import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
 
 const paymentStatuses = ["pending", "paid", "partially_paid"];
 const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque", "razorpay"];
@@ -111,7 +112,11 @@ export const getAllBillings = async (req, res) => {
       if (end) filter.createdAt.$lte = end;
     }
 
-    const billings = await Billing.find(filter)
+    const page = req.query.page ? Math.max(1, parseInt(req.query.page, 10)) : null;
+    const limit = req.query.limit ? Math.min(200, Math.max(1, parseInt(req.query.limit, 10))) : (page ? 50 : 200);
+    const skip = page ? (page - 1) * limit : 0;
+
+    let query = Billing.find(filter)
       .populate("patient", "name contactNumber email age gender address")
       .populate("bed", "bedNumber ward floor dailyRate")
       .populate({
@@ -121,6 +126,21 @@ export const getAllBillings = async (req, res) => {
       })
       .sort({ createdAt: -1 });
 
+    if (page) {
+      const [billings, totalCount] = await Promise.all([
+        query.skip(skip).limit(limit),
+        Billing.countDocuments(filter),
+      ]);
+      return res.status(200).json({
+        billings,
+        totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      });
+    }
+
+    const billings = await query.limit(limit);
     return res.status(200).json({ billings });
   } catch (error) {
     return sendDatabaseError(error, res);
@@ -237,6 +257,17 @@ export const updatePaymentStatus = async (req, res) => {
 
     if (!billing) {
       return res.status(404).json({ message: "Billing record not found" });
+    }
+
+    // Two-way synchronization with Diagnostic Services
+    try {
+      await diagnosticSyncService.onBillingPaymentReceived(billing, {
+        userId: req.user?._id || req.user?.id,
+        userName: req.user?.name || "Billing Staff",
+        role: req.user?.role || "billing",
+      });
+    } catch (syncErr) {
+      console.error("Diagnostic payment sync error:", syncErr.message);
     }
 
     return res.status(200).json({

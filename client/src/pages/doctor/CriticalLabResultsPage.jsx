@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   getCriticalLabResults,
   acknowledgeCriticalLabResult,
+  downloadDiagnosticReportPdfBlob,
 } from "../../services/api.js";
 
 export default function CriticalLabResultsPage() {
@@ -123,19 +124,40 @@ export default function CriticalLabResultsPage() {
                     }`}>
                       {rep.doctorReviewStatus === "reviewed" ? "✓ Clinically Reviewed" : "Needs Doctor Review"}
                     </span>
-                    {rep.doctorReviewStatus !== "reviewed" && (
+                    {rep.doctorReviewStatus !== "reviewed" ? (
                       <button
                         onClick={() => setSelectedReport(rep)}
                         className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-xs"
                       >
                         Acknowledge & Sign Review
                       </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const blob = await downloadDiagnosticReportPdfBlob(rep._id);
+                            const url = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+                            const link = document.createElement("a");
+                            link.href = url;
+                            link.setAttribute("download", `${rep.reportNumber || "Report"}.pdf`);
+                            document.body.appendChild(link);
+                            link.click();
+                            link.parentNode.removeChild(link);
+                          } catch (e) {
+                            alert("Failed to download PDF report.");
+                          }
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center gap-1.5"
+                      >
+                        📄 Download PDF
+                      </button>
                     )}
                   </div>
                 </div>
 
                 {/* Parameters table */}
-                {rep.testResults && rep.testResults.length > 0 && (
+                {((rep.testResults && rep.testResults.length > 0) || rep.criticalDetails?.parameter) && (
                   <div className="overflow-x-auto border border-slate-200 rounded-xl">
                     <table className="w-full text-xs text-left">
                       <thead className="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold border-b border-slate-200">
@@ -147,26 +169,39 @@ export default function CriticalLabResultsPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        {rep.testResults.map((param, i) => (
-                          <tr
-                            key={i}
-                            className={param.status === "critical" ? "bg-rose-50/50 font-semibold" : ""}
-                          >
-                            <td className="px-3 py-2 text-slate-800">{param.parameter}</td>
-                            <td className={`px-3 py-2 ${param.status === "critical" ? "text-rose-700 font-extrabold" : "text-slate-700"}`}>
-                              {param.result} {param.unit}
-                            </td>
-                            <td className="px-3 py-2 text-slate-500">{param.referenceRange}</td>
+                        {rep.testResults && rep.testResults.length > 0 ? (
+                          rep.testResults.map((param, i) => (
+                            <tr
+                              key={i}
+                              className={param.status === "critical" ? "bg-rose-50/50 font-semibold" : ""}
+                            >
+                              <td className="px-3 py-2 text-slate-800">{param.parameter}</td>
+                              <td className={`px-3 py-2 ${param.status === "critical" ? "text-rose-700 font-extrabold" : "text-slate-700"}`}>
+                                {param.result} {param.unit}
+                              </td>
+                              <td className="px-3 py-2 text-slate-500">{param.referenceRange}</td>
+                              <td className="px-3 py-2">
+                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                  param.status === "critical" ? "bg-rose-100 text-rose-800 border border-rose-300" :
+                                  param.status === "high" ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700"
+                                }`}>
+                                  {param.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr className="bg-rose-50/60 font-semibold">
+                            <td className="px-3 py-2 text-slate-900 font-bold">{rep.criticalDetails?.parameter}</td>
+                            <td className="px-3 py-2 text-rose-700 font-extrabold text-sm">{rep.criticalDetails?.detectedValue}</td>
+                            <td className="px-3 py-2 text-slate-600">{rep.criticalDetails?.normalRange}</td>
                             <td className="px-3 py-2">
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                param.status === "critical" ? "bg-rose-100 text-rose-800 border border-rose-300" :
-                                param.status === "high" ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700"
-                              }`}>
-                                {param.status}
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-rose-100 text-rose-800 border border-rose-300">
+                                CRITICAL STAT
                               </span>
                             </td>
                           </tr>
-                        ))}
+                        )}
                       </tbody>
                     </table>
                   </div>

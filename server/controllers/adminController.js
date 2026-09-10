@@ -16,6 +16,7 @@ import StaffAttendance from "../models/StaffAttendance.js";
 import StaffLeave from "../models/StaffLeave.js";
 import ProcedureSchedule from "../models/ProcedureSchedule.js";
 import HospitalSetting from "../models/HospitalSetting.js";
+import DiagnosticOrder from "../models/DiagnosticOrder.js";
 
 // Helper to record immutable audit events
 export const logAuditEvent = async ({ user, action, module, recordId, details, req }) => {
@@ -98,6 +99,9 @@ export const getAdminTelemetry = async (req, res) => {
       recentAppointments,
       todayAppointments,
       pendingPatientBookings,
+      diagnosticTestsToday,
+      pendingDiagnostics,
+      criticalDiagnosticAlerts,
     ] = await Promise.all([
       Patient.countDocuments(),
       Doctor.countDocuments(),
@@ -138,6 +142,9 @@ export const getAdminTelemetry = async (req, res) => {
         .sort({ appointmentDate: 1 })
         .limit(8),
       Appointment.countDocuments({ status: "pending" }),
+      DiagnosticOrder.countDocuments({ createdAt: { $gte: todayStart, $lte: todayEnd } }),
+      DiagnosticOrder.countDocuments({ status: { $in: ["Requested", "Scheduled", "Patient Ready", "Sample Collected", "In Progress"] } }),
+      DiagnosticOrder.countDocuments({ isCritical: true, "criticalDetails.escalationStatus": { $ne: "Resolved" } }),
     ]);
 
     // Calculate today's revenue
@@ -184,6 +191,11 @@ export const getAdminTelemetry = async (req, res) => {
       todayRevenue,
       pendingLabs,
       criticalLabs,
+      diagnosticSummary: {
+        testsToday: diagnosticTestsToday,
+        pending: pendingDiagnostics,
+        criticalAlerts: criticalDiagnosticAlerts,
+      },
       todaySurgeriesCount: otProceduresToday,
       pendingPatientBookings,
       recentAppointments,

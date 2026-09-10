@@ -19,25 +19,38 @@ const Modal = ({
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose]);
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-950/65 backdrop-blur-xs animate-fadeIn">
       <div
         className={`
-          bg-white rounded-xl shadow-2xl w-full mx-auto border border-slate-200
-          overflow-hidden transform transition-all 
+          bg-white rounded-2xl shadow-2xl w-full mx-auto border border-slate-200
+          max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2.5rem)] flex flex-col
+          overflow-hidden transform transition-all
           ${className}
         `}
       >
         {title && (
-          <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50">
-            <h3 className="font-semibold text-lg text-slate-900">{title}</h3>
+          <div className="flex items-center justify-between border-b border-slate-200 px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50/90 flex-shrink-0">
+            <h3 className="font-bold text-base sm:text-lg text-slate-900 truncate pr-2">{title}</h3>
             {onClose && (
               <button
                 type="button"
                 onClick={onClose}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-md transition-colors"
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-200/60 transition-colors touch-target flex items-center justify-center cursor-pointer"
                 aria-label="Close modal"
               >
                 ✕
@@ -45,13 +58,13 @@ const Modal = ({
             )}
           </div>
         )}
-        <div className="p-6">{children}</div>
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">{children}</div>
         {!hideCancel && onClose && (
-          <div className="border-t border-slate-100 px-6 py-3 bg-slate-50 flex justify-end">
+          <div className="border-t border-slate-100 px-4 sm:px-6 py-3 bg-slate-50 flex justify-end flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 transition-colors"
+              className="rounded-xl border border-slate-300 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors touch-target cursor-pointer"
             >
               {cancelText}
             </button>

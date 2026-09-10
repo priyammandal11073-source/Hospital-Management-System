@@ -158,7 +158,7 @@ function MyAppointments() {
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`rounded-lg px-3.5 py-1.5 text-xs font-bold transition-all ${
+            className={`min-h-[44px] rounded-xl px-4 py-2 text-xs font-bold transition-all flex items-center justify-center ${
               activeTab === tab.key
                 ? "bg-slate-900 text-white shadow-xs"
                 : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
@@ -263,14 +263,14 @@ function MyAppointments() {
                   </div>
 
                   {/* Right: Actions */}
-                  <div className="flex flex-wrap items-center gap-2 self-end md:self-center">
+                  <div className="flex flex-wrap items-center gap-2 w-full md:w-auto self-start md:self-center pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
                     {/* Teleconsult action if applicable */}
                     {a.appointmentType === "teleconsult" && ["pending", "confirmed"].includes(a.status) && (
                       <a
                         href={`https://meet.google.com/new`}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-xl bg-purple-50 text-purple-700 border border-purple-200 px-3 py-1.5 text-xs font-bold hover:bg-purple-100 transition shadow-2xs"
+                        className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-purple-50 text-purple-700 border border-purple-200 px-3.5 py-2 text-xs font-bold hover:bg-purple-100 transition shadow-2xs"
                       >
                         🎥 Teleconsult Room
                       </a>
@@ -280,7 +280,7 @@ function MyAppointments() {
                     {["pending", "confirmed"].includes(a.status) && (
                       <button
                         onClick={() => openRescheduleModal(a)}
-                        className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
+                        className="min-h-[44px] inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
                       >
                         🔄 Reschedule
                       </button>
@@ -291,7 +291,7 @@ function MyAppointments() {
                       <button
                         disabled={cancelling === a._id}
                         onClick={() => handleCancel(a._id)}
-                        className="rounded-xl bg-rose-50 text-rose-700 border border-rose-200 px-3 py-1.5 text-xs font-bold hover:bg-rose-600 hover:text-white transition shadow-2xs disabled:opacity-50"
+                        className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-rose-50 text-rose-700 border border-rose-200 px-3.5 py-2 text-xs font-bold hover:bg-rose-600 hover:text-white transition shadow-2xs disabled:opacity-50"
                       >
                         {cancelling === a._id ? "Cancelling..." : "Cancel"}
                       </button>
@@ -300,7 +300,7 @@ function MyAppointments() {
                     {a.status === "completed" && (
                       <Link
                         to="/patient/consultations"
-                        className="rounded-xl bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1.5 text-xs font-bold hover:bg-blue-100 transition shadow-2xs"
+                        className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-blue-50 text-blue-700 border border-blue-200 px-3.5 py-2 text-xs font-bold hover:bg-blue-100 transition shadow-2xs"
                       >
                         View Summary →
                       </Link>
@@ -316,21 +316,21 @@ function MyAppointments() {
       {/* ================= RESCHEDULE MODAL ================= */}
       {rescheduleAppt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-200">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-200 modal-viewport overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-extrabold text-slate-900">
                 Reschedule Doctor Visit
               </h3>
               <button
                 onClick={() => setRescheduleAppt(null)}
-                className="text-slate-400 hover:text-slate-600 font-bold p-1"
+                className="text-slate-400 hover:text-slate-600 font-bold p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
               >
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleRescheduleSubmit} className="mt-4 space-y-4">
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 text-xs">
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 text-xs">
                 <p className="font-bold text-slate-800">
                   Doctor: Dr. {rescheduleAppt.doctor?.name}
                 </p>
@@ -341,7 +341,7 @@ function MyAppointments() {
               </div>
 
               {rescheduleError && (
-                <div className="p-3 bg-rose-50 text-rose-700 text-xs font-semibold rounded-xl border border-rose-200">
+                <div className="p-3.5 bg-rose-50 text-rose-700 text-xs font-semibold rounded-xl border border-rose-200">
                   {rescheduleError}
                 </div>
               )}
@@ -356,7 +356,7 @@ function MyAppointments() {
                   min={new Date().toISOString().split("T")[0]}
                   value={newDate}
                   onChange={(e) => setNewDate(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                  className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-teal-600 focus:outline-hidden"
                 />
               </div>
 
@@ -367,7 +367,7 @@ function MyAppointments() {
                 <select
                   value={newTimeSlot}
                   onChange={(e) => setNewTimeSlot(e.target.value)}
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                  className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-teal-600 focus:outline-hidden"
                 >
                   {TIME_SLOTS.map((slot) => (
                     <option key={slot} value={slot}>
@@ -386,22 +386,22 @@ function MyAppointments() {
                   value={rescheduleReason}
                   onChange={(e) => setRescheduleReason(e.target.value)}
                   placeholder="e.g. Work schedule conflict"
-                  className="mt-1 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                  className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm text-slate-800 focus:border-teal-600 focus:outline-hidden"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setRescheduleAppt(null)}
-                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+                  className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={rescheduling}
-                  className="rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-700 transition disabled:opacity-50"
+                  className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-700 transition disabled:opacity-50 shadow-2xs"
                 >
                   {rescheduling ? "Updating..." : "Confirm Reschedule"}
                 </button>

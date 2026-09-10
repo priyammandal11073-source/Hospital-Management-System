@@ -93,7 +93,7 @@ function PatientLogin() {
               placeholder="patient@example.com"
               value={email}
               onChange={handleEmailChange}
-              className="w-full rounded-xl border border-slate-700/80 bg-slate-800/80 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
+              className="w-full rounded-xl border border-slate-700/80 bg-slate-800/80 px-4 py-2.5 min-h-[44px] text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
               autoComplete="email"
             />
           </div>
@@ -109,7 +109,7 @@ function PatientLogin() {
               placeholder="••••••••"
               value={password}
               onChange={handlePasswordChange}
-              className="w-full rounded-xl border border-slate-700/80 bg-slate-800/80 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
+              className="w-full rounded-xl border border-slate-700/80 bg-slate-800/80 px-4 py-2.5 min-h-[44px] text-sm text-white placeholder-slate-500 outline-none transition focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20"
               autoComplete="current-password"
             />
           </div>
@@ -124,7 +124,7 @@ function PatientLogin() {
           )}
 
           <button
-            className="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-500/25 transition-all duration-200 hover:from-cyan-500 hover:to-blue-500 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 py-2.5 min-h-[44px] text-sm font-bold text-white shadow-lg shadow-cyan-500/25 transition-all duration-200 hover:from-cyan-500 hover:to-blue-500 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer touch-target flex items-center justify-center"
             disabled={isSubmitting}
             type="submit"
           >

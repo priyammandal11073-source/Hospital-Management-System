@@ -449,7 +449,7 @@ function BookAppointment() {
               <button
                 type="button"
                 onClick={() => setQuickDate(0)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition ${
+                className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold border transition inline-flex items-center justify-center ${
                   form.appointmentDate === getDateOffsetStr(0)
                     ? "bg-teal-700 text-white border-teal-700 shadow-sm"
                     : "bg-white text-slate-700 border-slate-200 hover:border-teal-400"
@@ -460,7 +460,7 @@ function BookAppointment() {
               <button
                 type="button"
                 onClick={() => setQuickDate(1)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition ${
+                className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold border transition inline-flex items-center justify-center ${
                   form.appointmentDate === getDateOffsetStr(1)
                     ? "bg-teal-700 text-white border-teal-700 shadow-sm"
                     : "bg-white text-slate-700 border-slate-200 hover:border-teal-400"
@@ -471,7 +471,7 @@ function BookAppointment() {
               <button
                 type="button"
                 onClick={() => setQuickDate(2)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition ${
+                className={`min-h-[44px] px-4 py-2 rounded-xl text-xs font-bold border transition inline-flex items-center justify-center ${
                   form.appointmentDate === getDateOffsetStr(2)
                     ? "bg-teal-700 text-white border-teal-700 shadow-sm"
                     : "bg-white text-slate-700 border-slate-200 hover:border-teal-400"
@@ -488,7 +488,7 @@ function BookAppointment() {
                   required
                   value={form.appointmentDate}
                   onChange={handleChange}
-                  className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-800 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
+                  className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2 text-xs font-semibold text-slate-800 focus:border-teal-600 focus:outline-none focus:ring-1 focus:ring-teal-600"
                 />
               </div>
             </div>
@@ -524,7 +524,7 @@ function BookAppointment() {
                 <span className="text-[11px] font-bold text-amber-700 flex items-center gap-1 mb-1.5">
                   🌅 Morning (09:00 AM – 12:00 PM)
                 </span>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                   {TIME_SLOTS.morning.map((slot) => {
                     const isSelected = form.timeSlot === slot;
                     return (
@@ -532,7 +532,7 @@ function BookAppointment() {
                         key={slot}
                         type="button"
                         onClick={() => handleSelectTimeSlot(slot)}
-                        className={`py-2 px-1 rounded-xl text-xs font-bold border text-center transition-all ${
+                        className={`min-h-[44px] py-2 px-1 rounded-xl text-xs font-bold border text-center transition-all inline-flex items-center justify-center ${
                           isSelected
                             ? "border-teal-600 bg-teal-700 text-white shadow-md ring-2 ring-teal-600/20"
                             : "border-slate-200 bg-white text-slate-700 hover:border-teal-400 hover:bg-teal-50/40"
@@ -550,7 +550,7 @@ function BookAppointment() {
                 <span className="text-[11px] font-bold text-sky-700 flex items-center gap-1 mb-1.5">
                   ☀️ Afternoon (02:00 PM – 05:00 PM)
                 </span>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                   {TIME_SLOTS.afternoon.map((slot) => {
                     const isSelected = form.timeSlot === slot;
                     return (
@@ -558,7 +558,7 @@ function BookAppointment() {
                         key={slot}
                         type="button"
                         onClick={() => handleSelectTimeSlot(slot)}
-                        className={`py-2 px-1 rounded-xl text-xs font-bold border text-center transition-all ${
+                        className={`min-h-[44px] py-2 px-1 rounded-xl text-xs font-bold border text-center transition-all inline-flex items-center justify-center ${
                           isSelected
                             ? "border-teal-600 bg-teal-700 text-white shadow-md ring-2 ring-teal-600/20"
                             : "border-slate-200 bg-white text-slate-700 hover:border-teal-400 hover:bg-teal-50/40"
@@ -576,7 +576,7 @@ function BookAppointment() {
                 <span className="text-[11px] font-bold text-indigo-700 flex items-center gap-1 mb-1.5">
                   🌙 Evening (05:00 PM – 07:00 PM)
                 </span>
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                   {TIME_SLOTS.evening.map((slot) => {
                     const isSelected = form.timeSlot === slot;
                     return (
@@ -584,7 +584,7 @@ function BookAppointment() {
                         key={slot}
                         type="button"
                         onClick={() => handleSelectTimeSlot(slot)}
-                        className={`py-2 px-1 rounded-xl text-xs font-bold border text-center transition-all ${
+                        className={`min-h-[44px] py-2 px-1 rounded-xl text-xs font-bold border text-center transition-all inline-flex items-center justify-center ${
                           isSelected
                             ? "border-teal-600 bg-teal-700 text-white shadow-md ring-2 ring-teal-600/20"
                             : "border-slate-200 bg-white text-slate-700 hover:border-teal-400 hover:bg-teal-50/40"

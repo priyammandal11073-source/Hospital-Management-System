@@ -222,125 +222,223 @@ function Billing() {
         </p>
       )}
 
-      <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
-        {isLoading ? (
-          <p className="p-6 text-center text-slate-600">Loading billing records...</p>
-        ) : billings.length === 0 ? (
-          <p className="p-6 text-center text-slate-600">No billing records found.</p>
-        ) : (
-          <table className="min-w-full divide-y divide-slate-200">
-            <thead className="bg-slate-50 text-left text-xs font-semibold text-slate-500">
-              <tr>
-                <th className="px-4 py-3">Patient</th>
-                <th className="px-4 py-3">Appointment date</th>
-                <th className="px-4 py-3">Total amount</th>
-                <th className="px-4 py-3">Payment status</th>
-                <th className="px-4 py-3">Payment date</th>
-                <th className="px-4 py-3 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
-              {billings.map((billing) => (
-                <tr key={billing._id} className="hover:bg-slate-50/60 transition-colors">
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700 font-bold text-xs ring-1 ring-amber-500/20 flex-shrink-0">
-                        INV
-                      </div>
-                      <div>
-                        <p className="font-bold text-slate-800">{billing.patient?.name || "Unknown patient"}</p>
-                        <p className="text-xs text-slate-500">
-                          #{billing._id.toString().slice(-6).toUpperCase()} • Dr. {billing.appointment?.doctor?.name || "Hospital Specialist"}
-                        </p>
-                      </div>
+      {isLoading ? (
+        <div className="rounded-2xl bg-white p-8 text-center text-slate-600 text-xs shadow-xs ring-1 ring-slate-200/80">
+          <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-r-transparent mb-2"></div>
+          <p>Loading billing records...</p>
+        </div>
+      ) : billings.length === 0 ? (
+        <div className="rounded-2xl bg-white p-8 text-center text-slate-600 text-xs shadow-xs ring-1 ring-slate-200/80">
+          No billing records found.
+        </div>
+      ) : (
+        <>
+          {/* Mobile Stacked Card View (< md) */}
+          <div className="block md:hidden space-y-3">
+            {billings.map((billing) => (
+              <div
+                key={billing._id}
+                className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs space-y-3"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700 font-black text-xs ring-1 ring-amber-500/20 flex-shrink-0">
+                      INV
                     </div>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3.5">
-                    <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
-                      {formatDate(billing.appointment?.appointmentDate)}
-                    </span>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3.5">
-                    <span className="text-sm font-extrabold text-slate-900">
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-sm leading-tight">
+                        {billing.patient?.name || "Unknown patient"}
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        #{billing._id.toString().slice(-6).toUpperCase()} • Dr. {billing.appointment?.doctor?.name || "Specialist"}
+                      </p>
+                    </div>
+                  </div>
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ring-1 ${
+                      paymentStatusClasses[billing.paymentStatus]
+                    }`}
+                  >
+                    {paymentStatusLabels[billing.paymentStatus] || billing.paymentStatus}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Total Amount</span>
+                    <span className="text-base font-black text-slate-900 font-mono">
                       ₹{billing.totalAmount.toFixed(2)}
                     </span>
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
-                        paymentStatusClasses[billing.paymentStatus]
-                      }`}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
-                      {paymentStatusLabels[billing.paymentStatus] || billing.paymentStatus}
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Appt Date</span>
+                    <span className="font-mono text-xs font-semibold text-slate-700">
+                      {formatDate(billing.appointment?.appointmentDate)}
                     </span>
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3.5 text-xs text-slate-500 font-mono">
-                    {formatDate(billing.paymentDate)}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
-                    <button
-                      className="rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
-                      onClick={() => setSelectedInvoice(billing)}
-                      type="button"
-                    >
-                      📄 Invoice
-                    </button>
-                    {billing.paymentStatus !== "paid" && (
-                      canManageBilling ? (
-                        <>
-                          <button
-                            className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition shadow-2xs"
-                            onClick={() => {
-                              setPaymentBilling(billing);
-                              setPaymentMethod("cash");
-                            }}
-                            type="button"
-                          >
-                            Mark as paid
-                          </button>
-                          <button
-                            className="rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition shadow-2xs"
-                            onClick={() => {
-                              setSmsBilling(billing);
-                              setSmsPhone(billing.patient?.contactNumber || "");
-                              setSmsResult("");
-                            }}
-                            type="button"
-                          >
-                            📲 Send SMS link
-                          </button>
-                        </>
-                      ) : (
-                        <span className="text-xs text-amber-600 font-medium px-2 py-1 bg-amber-50 rounded-md border border-amber-200">
-                          Unsettled
-                        </span>
-                      )
-                    )}
-                  </td>
+                  </div>
+                  {billing.paymentDate && (
+                    <div className="col-span-2 pt-1 border-t border-slate-200/60">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">Paid On</span>
+                      <span className="font-mono text-xs text-emerald-700 font-semibold">{formatDate(billing.paymentDate)}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile Touch-Friendly Action Buttons */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                  <button
+                    className="rounded-xl bg-blue-50 border border-blue-200 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
+                    onClick={() => setSelectedInvoice(billing)}
+                    type="button"
+                  >
+                    📄 Invoice
+                  </button>
+                  {billing.paymentStatus !== "paid" && canManageBilling && (
+                    <>
+                      <button
+                        className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
+                        onClick={() => {
+                          setPaymentBilling(billing);
+                          setPaymentMethod("cash");
+                        }}
+                        type="button"
+                      >
+                        ✓ Mark Paid
+                      </button>
+                      <button
+                        className="col-span-2 sm:col-span-1 rounded-xl bg-violet-50 border border-violet-200 px-3 py-2 text-xs font-bold text-violet-700 hover:bg-violet-100 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
+                        onClick={() => {
+                          setSmsBilling(billing);
+                          setSmsPhone(billing.patient?.contactNumber || "");
+                          setSmsResult("");
+                        }}
+                        type="button"
+                      >
+                        📲 SMS Link
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View (>= md) */}
+          <div className="hidden md:block overflow-x-auto rounded-xl bg-white shadow-xs ring-1 ring-slate-200/80">
+            <table className="min-w-full divide-y divide-slate-200">
+              <thead className="bg-slate-50 text-left text-xs font-semibold text-slate-500">
+                <tr>
+                  <th className="px-4 py-3">Patient</th>
+                  <th className="px-4 py-3">Appointment date</th>
+                  <th className="px-4 py-3">Total amount</th>
+                  <th className="px-4 py-3">Payment status</th>
+                  <th className="px-4 py-3">Payment date</th>
+                  <th className="px-4 py-3 text-right">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+                {billings.map((billing) => (
+                  <tr key={billing._id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="px-4 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700 font-bold text-xs ring-1 ring-amber-500/20 flex-shrink-0">
+                          INV
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-800">{billing.patient?.name || "Unknown patient"}</p>
+                          <p className="text-xs text-slate-500">
+                            #{billing._id.toString().slice(-6).toUpperCase()} • Dr. {billing.appointment?.doctor?.name || "Hospital Specialist"}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3.5">
+                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                        {formatDate(billing.appointment?.appointmentDate)}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3.5">
+                      <span className="text-sm font-extrabold text-slate-900">
+                        ₹{billing.totalAmount.toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
+                          paymentStatusClasses[billing.paymentStatus]
+                        }`}
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
+                        {paymentStatusLabels[billing.paymentStatus] || billing.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3.5 text-xs text-slate-500 font-mono">
+                      {formatDate(billing.paymentDate)}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
+                      <button
+                        className="rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
+                        onClick={() => setSelectedInvoice(billing)}
+                        type="button"
+                      >
+                        📄 Invoice
+                      </button>
+                      {billing.paymentStatus !== "paid" && (
+                        canManageBilling ? (
+                          <>
+                            <button
+                              className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition shadow-2xs"
+                              onClick={() => {
+                                setPaymentBilling(billing);
+                                setPaymentMethod("cash");
+                              }}
+                              type="button"
+                            >
+                              Mark as paid
+                            </button>
+                            <button
+                              className="rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition shadow-2xs"
+                              onClick={() => {
+                                setSmsBilling(billing);
+                                setSmsPhone(billing.patient?.contactNumber || "");
+                                setSmsResult("");
+                              }}
+                              type="button"
+                            >
+                              📲 Send SMS link
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-xs text-amber-600 font-medium px-2 py-1 bg-amber-50 rounded-md border border-amber-200">
+                            Unsettled
+                          </span>
+                        )
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       {isFormOpen && (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-2.5 sm:p-4 backdrop-blur-xs"
           role="dialog"
         >
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white p-6 shadow-xl">
+          <div className="modal-viewport w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-2xl border border-slate-200">
             <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-slate-800">Create bill</h2>
+              <h2 className="text-xl font-bold text-slate-800">Generate Patient Bill</h2>
               <button
                 aria-label="Close form"
-                className="rounded p-1 text-xl text-slate-500 hover:bg-slate-100"
+                className="rounded-lg p-1.5 text-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition touch-target flex items-center justify-center cursor-pointer"
                 onClick={() => setIsFormOpen(false)}
                 type="button"
               >
-                ×
+                ✕
               </button>
             </div>
             <BillingForm onCancel={() => setIsFormOpen(false)} onSuccess={handleBillingSuccess} />

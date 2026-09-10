@@ -11,6 +11,9 @@ import Doctor from "../models/Doctor.js";
 import ClinicalNote from "../models/ClinicalNote.js";
 import Referral from "../models/Referral.js";
 import Feedback from "../models/Feedback.js";
+import DiagnosticReport from "../models/DiagnosticReport.js";
+import DiagnosticOrder from "../models/DiagnosticOrder.js";
+import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
 
 const OPD_FEE = Number(process.env.OPD_FEE || 500);
 
@@ -390,6 +393,17 @@ export const payMyBillingUpi = async (req, res) => {
 
     await billing.save();
 
+    // Two-way synchronization with Diagnostic Services
+    try {
+      await diagnosticSyncService.onBillingPaymentReceived(billing, {
+        userId: req.patient?.id,
+        userName: req.patient?.name || "Patient",
+        role: "patient",
+      });
+    } catch (syncErr) {
+      console.error("Patient portal diagnostic payment sync error:", syncErr.message);
+    }
+
     const populatedBilling = await Billing.findById(billing._id)
       .populate("patient", "name contactNumber email age gender address")
       .populate("bed", "bedNumber ward floor dailyRate")
@@ -511,14 +525,40 @@ export const getMyLabReports = async (req, res) => {
       });
     }
 
-    const reports = await LabReport.find({
-      patient: req.patient.id,
-      isSharedWithPatient: true,
-    })
-      .populate("doctor", "name specialization department")
-      .sort({ createdAt: -1 });
+    const [reports, diagReports] = await Promise.all([
+      LabReport.find({
+        patient: req.patient.id,
+        isSharedWithPatient: true,
+      })
+        .populate("doctor", "name specialization department")
+        .sort({ createdAt: -1 }),
+      DiagnosticReport.find({
+        patient: req.patient.id,
+        status: { $in: ["Finalized", "Approved"] },
+      }).sort({ createdAt: -1 }),
+    ]);
 
-    return res.status(200).json({ reports });
+    const formattedDiagReports = diagReports.map((dr) => ({
+      _id: dr._id,
+      reportNumber: dr.reportNumber,
+      testName: dr.testName,
+      category: dr.category || dr.department,
+      status: "completed",
+      testDate: dr.reportDate || dr.createdAt,
+      doctor: { name: dr.doctorName || dr.specialistName || "Consultant" },
+      summaryConclusion: dr.summaryConclusion,
+      attachmentUrl: dr.attachedFiles?.[0]?.secureUrl,
+      attachmentName: dr.attachedFiles?.[0]?.originalName,
+      isDiagnosticReport: true,
+      department: dr.department,
+      testResults: dr.testResults,
+      radiologyStudy: dr.radiologyStudy,
+      digitalSignature: dr.digitalSignature,
+    }));
+
+    const combinedReports = [...formattedDiagReports, ...reports];
+
+    return res.status(200).json({ reports: combinedReports });
   } catch (error) {
     return res.status(500).json({ message: "Unable to fetch lab reports" });
   }
@@ -533,11 +573,22 @@ export const getMyLabReportById = async (req, res) => {
       isSharedWithPatient: true,
     }).populate("doctor", "name specialization department");
 
-    if (!report) {
+    if (report) {
+      return res.status(200).json({ report });
+    }
+
+    // Check DiagnosticReport
+    const diagReport = await DiagnosticReport.findOne({
+      _id: req.params.id,
+      patient: req.patient.id,
+      status: { $in: ["Finalized", "Approved"] },
+    });
+
+    if (!diagReport) {
       return res.status(404).json({ message: "Lab report not found or not shared" });
     }
 
-    return res.status(200).json({ report });
+    return res.status(200).json({ report: diagReport });
   } catch (error) {
     return res.status(500).json({ message: "Unable to fetch lab report" });
   }
@@ -682,6 +733,7 @@ export const getPatientDashboardSummary = async (req, res) => {
         latestLabReport: demoLatestLab,
         activeBedStay: null,
         bedStay: null,
+        upcomingDiagnostics: [],
         recentConsultation: null,
         latestVitals: {
           bloodPressure: "120/80",
@@ -720,6 +772,7 @@ export const getPatientDashboardSummary = async (req, res) => {
       latestLabReport,
       bedStay,
       latestVitals,
+      upcomingDiagnostics,
     ] = await Promise.all([
       Patient.findById(patientId).select("-password"),
       Appointment.countDocuments({
@@ -769,6 +822,10 @@ export const getPatientDashboardSummary = async (req, res) => {
         status: "occupied",
       }).populate("currentAdmission.attendingDoctor", "name specialization department contactNumber"),
       Vitals.findOne({ patient: patientId }).sort({ recordedAt: -1 }),
+      DiagnosticOrder.find({
+        patient: patientId,
+        status: { $in: ["Requested", "Scheduled", "Patient Ready", "In Progress", "Procedure Started", "Sample Collected"] },
+      }).sort({ scheduledDate: 1, requestedDate: 1 }).limit(10),
     ]);
 
     const unpaidBills = billings.filter((b) => b.paymentStatus !== "paid");
@@ -807,6 +864,20 @@ export const getPatientDashboardSummary = async (req, res) => {
       }
     }
 
+    // Check if any upcoming diagnostic test has fasting / prep instructions
+    upcomingDiagnostics.forEach((dx) => {
+      if (dx.preparationInstructions) {
+        alerts.push({
+          type: "diagnostic_prep",
+          severity: "info",
+          title: `Preparation for ${dx.testName}`,
+          message: `${dx.preparationInstructions} (Scheduled: ${
+            dx.scheduledDate ? new Date(dx.scheduledDate).toLocaleDateString() : "Pending"
+          } ${dx.scheduledTimeSlot || ""})`,
+        });
+      }
+    });
+
     return res.status(200).json({
       success: true,
       profile: patient,
@@ -815,6 +886,7 @@ export const getPatientDashboardSummary = async (req, res) => {
         completedConsultations: completedCount,
         activePrescriptions: activePrescriptionsCount,
         labReportsCount: pendingLabsCount,
+        pendingDiagnosticsCount: upcomingDiagnostics.length,
         pendingBills: unpaidBills.length,
         pendingAmount: unpaidAmount,
         unreadNotifications,
@@ -824,6 +896,7 @@ export const getPatientDashboardSummary = async (req, res) => {
         completedVisits: completedCount,
         activePrescriptions: activePrescriptionsCount,
         pendingLabReports: pendingLabsCount,
+        pendingDiagnostics: upcomingDiagnostics.length,
         outstandingBillsCount: unpaidBills.length,
         outstandingBillsAmount: unpaidAmount,
         unreadNotifications,
@@ -837,6 +910,7 @@ export const getPatientDashboardSummary = async (req, res) => {
       recentConsultation,
       latestVitals,
       alerts,
+      upcomingDiagnostics,
     });
   } catch (error) {
     console.error("Dashboard summary error:", error);

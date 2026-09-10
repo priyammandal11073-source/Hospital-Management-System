@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import HospitalLogo from "./HospitalLogo.jsx";
 import NotificationBell from "./NotificationBell.jsx";
@@ -58,20 +59,84 @@ const PORTAL_CONFIG = {
   },
   pharmacist: {
     label: "Pharmacy portal",
-    title: "Pharmacy & medication management",
+    title: "Pharmacy operations",
     badge: "💊 Pharmacy operations",
     badgeClass: "bg-orange-50 text-orange-700 ring-orange-500/30",
     avatarGrad: "from-orange-600 to-amber-600",
     tagColor: "text-orange-600",
     roleDesc: "Medication & inventory specialist",
   },
+  diagnostic_admin: {
+    label: "Diagnostic services",
+    title: "Diagnostic services & imaging center",
+    badge: "🔬 Diagnostic command center",
+    badgeClass: "bg-indigo-50 text-indigo-700 ring-indigo-500/30",
+    avatarGrad: "from-indigo-600 to-purple-600",
+    tagColor: "text-indigo-600",
+    roleDesc: "Diagnostic Administrator",
+  },
+  pathologist: {
+    label: "Pathology desk",
+    title: "Pathology & laboratory medicine",
+    badge: "🔬 Consultant pathologist",
+    badgeClass: "bg-purple-50 text-purple-700 ring-purple-500/30",
+    avatarGrad: "from-purple-600 to-pink-600",
+    tagColor: "text-purple-600",
+    roleDesc: "Senior Consultant Pathologist",
+  },
+  radiologist: {
+    label: "Radiology desk",
+    title: "Medical imaging & radiology",
+    badge: "🩻 Consultant radiologist",
+    badgeClass: "bg-blue-50 text-blue-700 ring-blue-500/30",
+    avatarGrad: "from-blue-600 to-cyan-600",
+    tagColor: "text-blue-600",
+    roleDesc: "Senior Consultant Radiologist",
+  },
+  lab_technician: {
+    label: "Laboratory bench",
+    title: "Phlebotomy & clinical laboratory",
+    badge: "🧪 Senior lab technician",
+    badgeClass: "bg-teal-50 text-teal-700 ring-teal-500/30",
+    avatarGrad: "from-teal-600 to-emerald-600",
+    tagColor: "text-teal-600",
+    roleDesc: "Clinical Laboratory Technologist",
+  },
+  radiology_technician: {
+    label: "Radiology station",
+    title: "Imaging modality station",
+    badge: "☢️ Radiology technologist",
+    badgeClass: "bg-sky-50 text-sky-700 ring-sky-500/30",
+    avatarGrad: "from-sky-600 to-indigo-600",
+    tagColor: "text-sky-600",
+    roleDesc: "Radiology Technologist",
+  },
 };
 
 function DashboardLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, logout } = useAuth();
   const role = user?.role || "admin";
   const config = PORTAL_CONFIG[role] || PORTAL_CONFIG.admin;
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Auto-close sliding drawer when route changes
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   const handleLogout = () => {
     logout();
@@ -88,29 +153,47 @@ function DashboardLayout() {
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
       {/* ================= MODERN TOP HEADER BAR ================= */}
-      <header className="sticky top-0 z-40 border-b border-slate-200/90 bg-white/95 px-4 sm:px-6 lg:px-8 py-3 backdrop-blur-md shadow-2xs">
-        <div className="flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 border-b border-slate-200/90 bg-white/95 px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 backdrop-blur-md shadow-2xs">
+        <div className="flex items-center justify-between gap-2 max-w-full">
           {/* Brand Logo & Active Workspace Badge */}
-          <div className="flex items-center gap-4">
-            <Link to="/dashboard" className="transition hover:opacity-95 cursor-pointer" title="Home page">
-              <HospitalLogo variant="full" />
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-shrink">
+            {/* Mobile Hamburger Drawer Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setMobileOpen((prev) => !prev)}
+              className="inline-flex lg:hidden items-center justify-center p-1.5 sm:p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer touch-target flex-shrink-0"
+              aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={mobileOpen}
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {mobileOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+
+            <Link to="/dashboard" className="transition hover:opacity-95 cursor-pointer flex-shrink-0" title="Home page">
+              <HospitalLogo variant="full" className="hidden sm:flex" />
+              <HospitalLogo variant="icon" className="sm:hidden" />
             </Link>
 
-            <div className="hidden md:flex items-center gap-2 border-l border-slate-200 pl-4">
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${config.badgeClass}`}>
+            <div className="hidden xl:flex items-center gap-2 border-l border-slate-200 pl-3">
+              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 truncate max-w-[240px] ${config.badgeClass}`}>
                 {role === "doctor" && user?.name
-                  ? `🩺 Dr. ${user.name.replace(/^Dr\.\s*/i, "")} consultation desk`
+                  ? `🩺 Dr. ${user.name.replace(/^Dr\.\s*/i, "")}`
                   : config.badge}
               </span>
             </div>
           </div>
 
-          {/* Center/Right Status & User Profile */}
-          <div className="flex items-center gap-3">
+          {/* Center/Right Status & User Profile - ALWAYS STAYS IN VIEW */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
             {/* Quick Switch Portal Button */}
             <Link
               to="/login"
-              className="hidden sm:inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-2xs"
+              className="hidden lg:inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-2xs flex-shrink-0"
               title="Switch to another portal"
             >
               <span>⇄</span>
@@ -118,14 +201,14 @@ function DashboardLayout() {
             </Link>
 
             {/* Emergency Hotline Pill */}
-            <div className="hidden lg:flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200/80 px-3 py-1 text-xs font-semibold text-rose-700">
+            <div className="hidden 2xl:flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200/80 px-3 py-1 text-xs font-semibold text-rose-700 flex-shrink-0">
               <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
               <span className="font-bold">24/7 Emergency:</span>
               <span className="font-mono text-rose-800 font-bold">108 / 112</span>
             </div>
 
             {/* Current Date Badge */}
-            <div className="hidden xl:flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+            <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full flex-shrink-0">
               <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -133,32 +216,31 @@ function DashboardLayout() {
             </div>
 
             {/* Real-time Notification Bell */}
-            <NotificationBell isPatient={false} />
+            <div className="flex-shrink-0">
+              <NotificationBell isPatient={false} />
+            </div>
 
             {/* User Profile Card */}
-            <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-1.5 shadow-2xs">
-              <div className={`flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr ${config.avatarGrad} text-xs font-bold text-white uppercase shadow-sm`}>
+            <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50/80 p-1 sm:px-2.5 sm:py-1 shadow-2xs flex-shrink-0">
+              <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-tr ${config.avatarGrad} text-xs font-bold text-white uppercase shadow-sm flex-shrink-0`}>
                 {user?.name ? user.name.charAt(0) : "U"}
               </div>
-              <div className="text-left">
-                <p className="text-xs font-bold text-slate-800 leading-tight">{user?.name || "User"}</p>
-                <div className="flex items-center gap-1">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                  <span className={`text-[10px] font-semibold ${config.tagColor}`}>
-                    {config.roleDesc}
-                  </span>
-                </div>
+              <div className="text-left hidden lg:block">
+                <p className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[110px]">{user?.name || "User"}</p>
+                <span className={`text-[10px] font-semibold block ${config.tagColor}`}>
+                  {config.roleDesc}
+                </span>
               </div>
             </div>
 
-            {/* Logout Button */}
+            {/* Logout Button - FIXED & GUARANTEED VISIBLE */}
             <button
               onClick={handleLogout}
-              className="group flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition-all duration-150 hover:bg-red-600 hover:text-white ring-1 ring-red-200 hover:ring-red-600 shadow-xs"
+              className="flex-shrink-0 group flex items-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-600 px-2 sm:px-2.5 py-1.5 text-xs font-bold text-rose-600 hover:text-white transition-all duration-150 ring-1 ring-rose-200 hover:ring-rose-600 shadow-xs touch-target cursor-pointer"
               type="button"
               title="Sign Out"
             >
-              <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               <span className="hidden sm:inline">Logout</span>
@@ -168,9 +250,47 @@ function DashboardLayout() {
       </header>
 
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
-      <div className="flex flex-1 flex-col md:flex-row">
-        {/* Modern Dark Sidebar with Role-Specific Navigation */}
-        <aside className="w-full border-r border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 text-white md:h-[calc(100vh-65px)] md:w-64 md:sticky md:top-[65px] flex flex-col justify-between overflow-y-auto">
+      <div className="flex flex-1 flex-col lg:flex-row relative">
+        {/* Mobile Frosted Backdrop Overlay */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs lg:hidden animate-backdrop-fade"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Sliding Navigation Sidebar (Drawer on mobile/tablet, Docked sticky on desktop) */}
+        <aside
+          onClick={(e) => {
+            if (e.target.closest("a")) setMobileOpen(false);
+          }}
+          className={`
+            border-r border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 text-white flex flex-col justify-between overflow-y-auto
+            ${
+              mobileOpen
+                ? "fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full shadow-2xl animate-drawer-in flex"
+                : "hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px]"
+            }
+          `}
+          aria-label="Portal navigation sidebar"
+        >
+          {/* Mobile Drawer Header with Close Button */}
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3 lg:hidden">
+            <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
+              <HospitalLogo variant="full" isDark={true} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition touch-target flex items-center justify-center"
+              aria-label="Close menu"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           <div>
             {/* Sidebar Section Title */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
@@ -411,12 +531,6 @@ function DashboardLayout() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                     <span>Specialist Directory</span>
-                  </NavLink>
-                  <NavLink className={navLinkClass} to="/billing">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                    </svg>
-                    <span>Billing Records (View)</span>
                   </NavLink>
                 </>
               ) : role === "patient" ? (
@@ -1037,6 +1151,143 @@ function DashboardLayout() {
                     <span>Shifts</span>
                   </NavLink>
                 </>
+              ) : ["diagnostic_admin", "pathologist", "radiologist", "lab_technician", "radiology_technician"].includes(role) ? (
+                <>
+                  {/* Category 1: Overview & Analytics */}
+                  <NavLink className={navLinkClass} to="/dashboard">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                    </svg>
+                    <span>Diagnostic Command Hub</span>
+                  </NavLink>
+
+                  {/* Category 2: Requests & Scheduling */}
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                    Requests & Scheduling
+                  </div>
+                  <NavLink className={navLinkClass} to="/diagnostic/requests">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span>Test Requests</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/appointments">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Appointment Bookings</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/walk-in">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                    <span>Walk-In Registration</span>
+                  </NavLink>
+
+                  {/* Category 3: Laboratory / Pathology */}
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                    Laboratory & Pathology
+                  </div>
+                  <NavLink className={navLinkClass} to="/diagnostic/samples">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                    <span>Sample Collection (Phlebotomy)</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/lab-workstation">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>Technician Workbench</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/catalog?department=Pathology">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Pathology Test Directory</span>
+                  </NavLink>
+
+                  {/* Category 4: Radiology & Medical Imaging */}
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                    Radiology & Imaging
+                  </div>
+                  <NavLink className={navLinkClass} to="/diagnostic/radiology">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                    </svg>
+                    <span>Imaging Worklist & Viewer</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/catalog?department=Radiology">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Radiology Modality Catalog</span>
+                  </NavLink>
+
+                  {/* Category 5: Reports & Verification */}
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                    Reports & Verification
+                  </div>
+                  <NavLink className={navLinkClass} to="/diagnostic/specialist-review">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>Specialist Review & Sign-Off</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/reports">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Finalized Diagnostic Reports</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/print-center">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    <span>Print Center & Film Bureau</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/critical-alerts">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>Critical Alert Desk</span>
+                  </NavLink>
+
+                  {/* Category 6: Operations & Governance */}
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-400">
+                    Operations & Governance
+                  </div>
+                  <NavLink className={navLinkClass} to="/diagnostic/catalog">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                    <span>Master Test Catalog</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/equipment">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                    </svg>
+                    <span>Biomedical Equipment</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/inventory">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    <span>Reagents & Supplies</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/billing">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
+                    <span>Diagnostic Billing</span>
+                  </NavLink>
+                  <NavLink className={navLinkClass} to="/diagnostic/audit-logs">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                    <span>NABH Quality Logs</span>
+                  </NavLink>
+                </>
               ) : (
                 <>
                   <NavLink className={navLinkClass} to="/dashboard">
@@ -1125,11 +1376,23 @@ function DashboardLayout() {
             <p className="mt-1 text-[11px] text-slate-400 leading-tight">
               Ayushman Bharat (ABDM) connected
             </p>
+            <div className="mt-3 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-rose-950/40 border border-rose-800/60 px-3 py-2 text-xs font-bold text-rose-300 hover:bg-rose-600 hover:text-white transition shadow-sm cursor-pointer touch-target"
+              >
+                <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Sign Out ({role})</span>
+              </button>
+            </div>
           </div>
         </aside>
 
         {/* Main Content Pane */}
-        <main className="flex-1 bg-slate-50/70 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 min-w-0 bg-slate-50/70 p-3 sm:p-5 lg:p-8 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

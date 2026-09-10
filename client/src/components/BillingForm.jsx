@@ -105,10 +105,10 @@ function BillingForm({ onCancel, onSuccess }) {
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
         Completed appointment *
         <select
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+          className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:border-teal-600 focus:outline-hidden"
           onChange={(event) => setAppointmentId(event.target.value)}
           required
           value={appointmentId}
@@ -123,18 +123,18 @@ function BillingForm({ onCancel, onSuccess }) {
       </label>
 
       {selectedAppointment && (
-        <div className="rounded-md bg-slate-50 p-4 text-sm text-slate-700">
-          <span className="font-medium">Patient: </span>
+        <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 text-xs text-slate-700">
+          <span className="font-bold text-slate-900">Patient: </span>
           {selectedAppointment.patient?.name || "Unknown patient"}
-          {selectedAppointment.patient?.contactNumber && ` — ${selectedAppointment.patient.contactNumber}`}
+          {selectedAppointment.patient?.contactNumber && ` — 📞 ${selectedAppointment.patient.contactNumber}`}
         </div>
       )}
 
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="font-medium text-slate-800">Itemized charges</h3>
+          <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Itemized charges</h3>
           <button
-            className="rounded-md border border-blue-600 px-3 py-1 text-sm font-medium text-blue-600 hover:bg-blue-50"
+            className="min-h-[36px] rounded-xl border border-teal-600 px-3.5 py-1.5 text-xs font-bold text-teal-700 hover:bg-teal-50 transition"
             onClick={() => setCharges((currentCharges) => [...currentCharges, { ...emptyCharge }])}
             type="button"
           >
@@ -144,27 +144,27 @@ function BillingForm({ onCancel, onSuccess }) {
 
         <div className="space-y-3">
           {charges.map((charge, index) => (
-            <div className="grid gap-2 sm:grid-cols-[1fr_10rem_auto]" key={index}>
+            <div className="grid gap-2 grid-cols-1 sm:grid-cols-[1fr_10rem_auto]" key={index}>
               <input
                 aria-label={`Charge ${index + 1} description`}
-                className="rounded-md border border-slate-300 px-3 py-2"
+                className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
                 onChange={(event) => updateCharge(index, "description", event.target.value)}
                 placeholder="Description"
                 value={charge.description}
               />
               <input
                 aria-label={`Charge ${index + 1} cost`}
-                className="rounded-md border border-slate-300 px-3 py-2"
+                className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
                 min="0"
                 onChange={(event) => updateCharge(index, "cost", event.target.value)}
-                placeholder="Cost"
+                placeholder="Cost (₹)"
                 step="0.01"
                 type="number"
                 value={charge.cost}
               />
               <button
                 aria-label={`Remove charge ${index + 1}`}
-                className="rounded-md px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                className="min-h-[44px] rounded-xl border border-red-200 sm:border-0 px-3.5 py-2 text-xs font-bold text-red-600 hover:bg-red-50 transition"
                 onClick={() => removeCharge(index)}
                 type="button"
               >
@@ -174,27 +174,27 @@ function BillingForm({ onCancel, onSuccess }) {
           ))}
         </div>
 
-        <p className="mt-4 text-right text-lg font-semibold text-slate-800">
+        <p className="mt-4 text-right text-base sm:text-lg font-bold text-slate-900 font-mono">
           Estimated total: ₹{total.toFixed(2)}
         </p>
       </div>
 
       {error && (
-        <p className="rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
+        <p className="rounded-xl bg-red-50 border border-red-200 p-3.5 text-xs font-bold text-red-700" role="alert">
           {error}
         </p>
       )}
 
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
         <button
-          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
           onClick={onCancel}
           type="button"
         >
           Cancel
         </button>
         <button
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:bg-blue-400"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition shadow-2xs"
           disabled={isSubmitting}
           type="submit"
         >

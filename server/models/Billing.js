@@ -85,6 +85,10 @@ const billingSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Bed",
     },
+    diagnosticOrder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DiagnosticOrder",
+    },
     itemizedCharges: {
       type: [itemizedChargeSchema],
       default: [],
@@ -182,6 +186,13 @@ billingSchema.pre("validate", function calculateTotalAmount() {
     0
   );
 });
+
+// Compound indexes for fast patient billing history, payment status queries, and references
+billingSchema.index({ patient: 1, paymentStatus: 1, createdAt: -1 });
+billingSchema.index({ paymentStatus: 1, createdAt: -1 });
+billingSchema.index({ invoiceNumber: 1 }, { unique: true, sparse: true });
+billingSchema.index({ appointment: 1 }, { sparse: true });
+billingSchema.index({ diagnosticOrder: 1 }, { sparse: true });
 
 const Billing = mongoose.model("Billing", billingSchema);
 

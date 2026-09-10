@@ -15,7 +15,7 @@ export const protect = (req, res, next) => {
     if (decoded.type === "patient" || !decoded.role) {
       return res.status(403).json({ message: "Access denied: Staff credentials required" });
     }
-    req.user = decoded;
+    req.user = { ...decoded, _id: decoded._id || decoded.id, id: decoded.id || decoded._id };
     return next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid or expired authentication token" });
@@ -28,7 +28,8 @@ export const optionalProtect = (req, res, next) => {
   if (authorizationHeader?.startsWith("Bearer ")) {
     const token = authorizationHeader.split(" ")[1];
     try {
-      req.user = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = { ...decoded, _id: decoded._id || decoded.id, id: decoded.id || decoded._id };
     } catch {
       // Ignore token verification errors for optional auth
     }
@@ -69,6 +70,30 @@ export const protectPatient = (req, res, next) => {
 
     // Attach patient info to req.patient (not req.user, to keep distinct from staff auth)
     req.patient = decoded;
+    return next();
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid or expired authentication token" });
+  }
+};
+
+// Allows either staff or patient to access a shared resource (e.g. medical file streaming).
+// Checks the token, populates either req.patient or req.user.
+export const protectStaffOrPatient = (req, res, next) => {
+  const authorizationHeader = req.headers.authorization;
+
+  if (!authorizationHeader?.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Authentication token is required" });
+  }
+
+  const token = authorizationHeader.split(" ")[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.type === "patient") {
+      req.patient = decoded;
+    } else {
+      req.user = { ...decoded, _id: decoded._id || decoded.id, id: decoded.id || decoded._id };
+    }
     return next();
   } catch (error) {
     return res.status(401).json({ message: "Invalid or expired authentication token" });

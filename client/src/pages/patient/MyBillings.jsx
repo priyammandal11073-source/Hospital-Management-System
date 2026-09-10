@@ -54,33 +54,37 @@ function MyBillings() {
                 </div>
 
                 {/* Right side: Amount + Status Badge + View/Print Button */}
-                <div className="flex flex-wrap items-center gap-3 self-end sm:self-auto">
-                  <span className="text-sm font-extrabold text-slate-900">
-                    ₹{b.totalAmount?.toFixed(2)}
-                  </span>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ring-1 ${
-                      statusClasses[b.paymentStatus] || "bg-slate-100 text-slate-700"
-                    }`}
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
-                    {b.paymentStatus?.replace("_", " ")}
-                  </span>
-                  <button
-                    onClick={() => setSelectedInvoice(b)}
-                    type="button"
-                    className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
-                  >
-                    📄 View / print
-                  </button>
-                  {b.paymentStatus !== "paid" && (
-                    <a
-                      href={`/pay/${b._id}`}
-                      className="rounded-lg bg-teal-600 px-3 py-1 text-xs font-semibold text-white hover:bg-teal-700 transition shadow-2xs"
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto self-start sm:self-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 justify-between sm:justify-end">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm sm:text-base font-black text-slate-900 font-mono">
+                      ₹{b.totalAmount?.toFixed(2)}
+                    </span>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ring-1 ${
+                        statusClasses[b.paymentStatus] || "bg-slate-100 text-slate-700"
+                      }`}
                     >
-                      💳 Pay Now
-                    </a>
-                  )}
+                      <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
+                      {b.paymentStatus?.replace("_", " ")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setSelectedInvoice(b)}
+                      type="button"
+                      className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-blue-50 border border-blue-200 px-3.5 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
+                    >
+                      📄 View / print
+                    </button>
+                    {b.paymentStatus !== "paid" && (
+                      <a
+                        href={`/pay/${b._id}`}
+                        className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-teal-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-teal-700 transition shadow-2xs"
+                      >
+                        💳 Pay Now
+                      </a>
+                    )}
+                  </div>
                 </div>
               </li>
             ))}

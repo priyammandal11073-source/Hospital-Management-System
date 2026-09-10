@@ -89,7 +89,6 @@ const PORTAL_TYPES = [
     role: "pharmacist",
     authType: "staff",
     title: "Pharmacy Portal",
-    subtitle: "Pharmacy & medication management",
     badge: "Pharmacy operations",
     badgeColor: "bg-orange-500/20 text-orange-300 ring-orange-500/30",
     iconBg: "bg-orange-600/20 text-orange-400 border-orange-500/30",
@@ -98,6 +97,30 @@ const PORTAL_TYPES = [
     icon: (
       <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+      </svg>
+    ),
+  },
+  {
+    id: "diagnostic",
+    role: "diagnostic_admin",
+    authType: "staff",
+    title: "Diagnostic Services",
+    subtitle: "Pathology & Radiology",
+    badge: "Pathology & Radiology",
+    badgeColor: "bg-indigo-500/20 text-indigo-300 ring-indigo-500/30",
+    iconBg: "bg-indigo-600/20 text-indigo-400 border-indigo-500/30",
+    defaultEmail: "diagnostics@hospital.com",
+    defaultPass: "diagnostic123",
+    subRoles: [
+      { name: "Administrator", email: "diagnostics@hospital.com", pass: "diagnostic123", role: "diagnostic_admin" },
+      { name: "Pathologist", email: "pathologist@hospital.com", pass: "pathologist123", role: "pathologist" },
+      { name: "Radiologist", email: "radiologist@hospital.com", pass: "radiologist123", role: "radiologist" },
+      { name: "Lab Tech", email: "labtech@hospital.com", pass: "labtech123", role: "lab_technician" },
+      { name: "Rad Tech", email: "radtech@hospital.com", pass: "radtech123", role: "radiology_technician" },
+    ],
+    icon: (
+      <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
       </svg>
     ),
   },
@@ -169,7 +192,7 @@ function Login() {
   };
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center overflow-x-hidden">
+    <main className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-6 sm:py-10 px-3 sm:px-6 lg:px-8 flex flex-col justify-center items-center overflow-x-hidden">
       {/* Background Decorative Blur Orbs */}
       <div className="pointer-events-none absolute -top-40 -left-40 h-96 w-96 rounded-full bg-blue-600/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-indigo-600/10 blur-3xl" />
@@ -179,39 +202,46 @@ function Login() {
         {step === 1 && (
           <div className="w-full max-w-5xl mx-auto">
             {/* Top Header & Branding */}
-            <div className="text-center mb-10">
+            <div className="text-center mb-6 sm:mb-10">
               <Link to="/" onClick={() => setStep(1)} className="inline-flex transition hover:opacity-95 cursor-pointer" title="Home page">
                 <HospitalLogo variant="full" isDark={true} className="justify-center" />
               </Link>
-              <h1 className="mt-4 text-2xl sm:text-3xl font-black text-white tracking-tight">
+              <h1 className="mt-3 sm:mt-4 text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
                 Unified healthcare access gateway
               </h1>
-              <p className="mt-2 text-sm text-slate-400 max-w-md mx-auto">
+              <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
                 Select your portal type to continue to sign in
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-5 max-w-4xl mx-auto">
-              {PORTAL_TYPES.map((portal) => (
-                <button
-                  key={portal.id}
-                  type="button"
-                  onClick={() => handlePortalSelect(portal)}
-                  className="group relative flex flex-col items-center justify-center p-6 rounded-2xl border border-slate-800/80 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-600 hover:shadow-2xl hover:shadow-black/60 hover:-translate-y-1.5 transition-all duration-200 cursor-pointer text-center"
-                >
-                  <div className={`flex h-16 w-16 items-center justify-center rounded-2xl border ${portal.iconBg} mb-4 transition-transform duration-200 group-hover:scale-110 shadow-lg shadow-black/30`}>
-                    {portal.icon}
-                  </div>
-                  <h3 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors">
-                    {portal.title}
-                  </h3>
-                  {portal.subtitle && (
-                    <p className="mt-1 text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
-                      {portal.subtitle}
-                    </p>
-                  )}
-                </button>
-              ))}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5 max-w-4xl mx-auto">
+              {PORTAL_TYPES.map((portal) => {
+                const isDiagnosticPortal = portal.id === "diagnostic";
+                return (
+                  <button
+                    key={portal.id}
+                    type="button"
+                    onClick={() => handlePortalSelect(portal)}
+                    className={`group relative flex flex-col items-center justify-center p-4 sm:p-6 rounded-2xl border border-slate-800/80 bg-slate-900/60 hover:bg-slate-900 hover:border-slate-600 hover:shadow-2xl hover:shadow-black/60 hover:-translate-y-1.5 transition-all duration-200 cursor-pointer text-center touch-target ${
+                      isDiagnosticPortal
+                        ? "sm:col-span-2 lg:col-span-1 lg:col-start-2 max-w-sm sm:max-w-md lg:max-w-none mx-auto w-full border-indigo-500/40 bg-indigo-950/20"
+                        : ""
+                    }`}
+                  >
+                    <div className={`flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border ${portal.iconBg} mb-3 sm:mb-4 transition-transform duration-200 group-hover:scale-110 shadow-lg shadow-black/30`}>
+                      {portal.icon}
+                    </div>
+                    <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-blue-400 transition-colors">
+                      {portal.title}
+                    </h3>
+                    {portal.subtitle && (
+                      <p className="mt-1 text-[11px] sm:text-xs text-slate-400 group-hover:text-slate-300 transition-colors">
+                        {portal.subtitle}
+                      </p>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -265,12 +295,42 @@ function Login() {
 
               {/* Form */}
               <form className="space-y-4" onSubmit={handleSubmit}>
+                {selectedPortal.subRoles && (
+                  <div className="rounded-xl border border-indigo-900/50 bg-indigo-950/20 p-3">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-indigo-300 mb-2">
+                      Select Diagnostic Staff Profile:
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedPortal.subRoles.map((sr) => {
+                        const isCurrent = email === sr.email;
+                        return (
+                          <button
+                            key={sr.role}
+                            type="button"
+                            onClick={() => {
+                              setEmail(sr.email);
+                              setPassword(sr.pass);
+                              setError("");
+                            }}
+                            className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition cursor-pointer ${
+                              isCurrent
+                                ? "bg-indigo-600 text-white shadow-sm ring-1 ring-indigo-400"
+                                : "bg-slate-800/90 text-slate-400 hover:bg-slate-700 hover:text-white"
+                            }`}
+                          >
+                            {sr.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label className="mb-1 block text-xs font-semibold text-slate-300" htmlFor="email">
                     {selectedPortal.role === "patient" ? "Patient email address" : "Staff email address"}
                   </label>
                   <input
-                    className="w-full rounded-xl border border-slate-700/80 bg-slate-800/80 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full rounded-xl border border-slate-700/80 bg-slate-800/80 px-4 py-2.5 min-h-[44px] text-sm text-white placeholder-slate-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                     id="email"
                     type="email"
                     value={email}
@@ -285,7 +345,7 @@ function Login() {
                     Password
                   </label>
                   <input
-                    className="w-full rounded-xl border border-slate-700/80 bg-slate-800/80 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full rounded-xl border border-slate-700/80 bg-slate-800/80 px-4 py-2.5 min-h-[44px] text-sm text-white placeholder-slate-500 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                     id="password"
                     type="password"
                     value={password}
@@ -307,7 +367,7 @@ function Login() {
                 <div className="pt-2 flex flex-col sm:flex-row gap-3">
                   {/* Regular Sign In Button */}
                   <button
-                    className="flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                    className="flex-1 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-2.5 min-h-[44px] text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all duration-200 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer touch-target flex items-center justify-center"
                     disabled={isSubmitting}
                     type="submit"
                   >
@@ -326,7 +386,7 @@ function Login() {
                     type="button"
                     disabled={isSubmitting}
                     onClick={() => handleInstantDemoLogin(selectedPortal)}
-                    className="rounded-xl border border-slate-700 bg-slate-800/90 px-4 py-2.5 text-xs font-bold text-slate-300 hover:border-blue-500/50 hover:bg-slate-700 hover:text-white transition cursor-pointer"
+                    className="rounded-xl border border-slate-700 bg-slate-800/90 px-4 py-2.5 min-h-[44px] text-xs font-bold text-slate-300 hover:border-blue-500/50 hover:bg-slate-700 hover:text-white transition cursor-pointer touch-target flex items-center justify-center"
                   >
                     ⚡ 1-click demo
                   </button>

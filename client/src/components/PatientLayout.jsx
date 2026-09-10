@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { usePatientAuth } from "../context/PatientAuthContext.jsx";
 import HospitalLogo from "./HospitalLogo.jsx";
@@ -13,9 +14,28 @@ const navLinkClass = ({ isActive }) =>
 
 function PatientLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { patient: patientAuthPatient, logout: patientLogout } = usePatientAuth();
   const { user: unifiedUser, logout: unifiedLogout } = useAuth();
   const patient = patientAuthPatient || (unifiedUser?.role === "patient" ? unifiedUser : null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Auto-close drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [location.pathname]);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   const handleLogout = () => {
     patientLogout();
@@ -31,38 +51,54 @@ function PatientLayout() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* ================= TOP HOSPITAL BRANDING HEADER ================= */}
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-sm px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5">
+        <div className="flex items-center justify-between gap-2 max-w-full">
           {/* Hospital Logo & Brand Title */}
-          <div className="flex items-center gap-4">
-            <Link to="/patient/dashboard" className="transition hover:opacity-95 cursor-pointer" title="Home page">
-              <HospitalLogo variant="full" />
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-shrink">
+            {/* Mobile Hamburger Drawer Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setMobileOpen((prev) => !prev)}
+              className="inline-flex lg:hidden items-center justify-center p-1.5 sm:p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer touch-target flex-shrink-0"
+              aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={mobileOpen}
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                {mobileOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+
+            <Link to="/patient/dashboard" className="transition hover:opacity-95 cursor-pointer flex-shrink-0" title="Home page">
+              <HospitalLogo variant="full" className="hidden sm:flex" />
+              <HospitalLogo variant="icon" className="sm:hidden" />
             </Link>
-            <span className="hidden h-7 w-px bg-slate-200 md:inline-block" />
-            <span className="hidden rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-500/30 md:inline-flex items-center gap-1.5">
+            <span className="hidden h-7 w-px bg-slate-200 xl:inline-block" />
+            <span className="hidden rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-500/30 xl:inline-flex items-center gap-1.5 flex-shrink-0">
               <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
               Patient care portal
             </span>
           </div>
 
-          {/* Right Section: 24/7 Emergency, Date, Notifications, Patient Profile, Logout */}
-          <div className="flex flex-wrap items-center gap-3 sm:gap-5">
+          {/* Right Section: 24/7 Emergency, Date, Notifications, Patient Profile, Logout - ALWAYS IN VIEW */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
             {/* Emergency Hotline Pill */}
-            <div className="hidden lg:flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-300/60 shadow-xs">
+            <div className="hidden 2xl:flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-300/60 shadow-xs flex-shrink-0">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
               </span>
               <span className="font-bold">24/7 Emergency:</span>
               <span className="font-mono text-rose-800 font-bold">108 / 112</span>
-              <span className="text-rose-300">|</span>
-              <span className="font-mono text-rose-800">+91 98765 43210</span>
             </div>
 
             {/* Current Date Badge */}
-            <div className="hidden xl:flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+            <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full flex-shrink-0">
               <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -70,32 +106,31 @@ function PatientLayout() {
             </div>
 
             {/* Notification Bell */}
-            <NotificationBell isPatient={true} />
+            <div className="flex-shrink-0">
+              <NotificationBell isPatient={true} />
+            </div>
 
             {/* Patient Profile Card */}
-            <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-slate-50/80 px-3 py-1.5 shadow-2xs">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-600 to-blue-600 text-xs font-bold text-white uppercase shadow-sm">
+            <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50/80 p-1 sm:px-2.5 sm:py-1 shadow-2xs flex-shrink-0">
+              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-600 to-blue-600 text-xs font-bold text-white uppercase shadow-sm flex-shrink-0">
                 {patient?.name ? patient.name.charAt(0) : "P"}
               </div>
-              <div className="text-left">
-                <p className="text-xs font-bold text-slate-800 leading-tight">{patient?.name || "Patient"}</p>
-                <div className="flex items-center gap-1">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-blue-500"></span>
-                  <span className="text-[10px] font-semibold text-blue-600">
-                    Patient
-                  </span>
-                </div>
+              <div className="text-left hidden lg:block">
+                <p className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[110px]">{patient?.name || "Patient"}</p>
+                <span className="text-[10px] font-semibold text-blue-600 block">
+                  Patient
+                </span>
               </div>
             </div>
 
-            {/* Logout Button */}
+            {/* Logout Button - FIXED & GUARANTEED VISIBLE */}
             <button
               onClick={handleLogout}
-              className="group flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition-all duration-150 hover:bg-red-600 hover:text-white ring-1 ring-red-200 hover:ring-red-600 shadow-xs"
+              className="flex-shrink-0 group flex items-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-600 px-2 sm:px-2.5 py-1.5 text-xs font-bold text-rose-600 hover:text-white transition-all duration-150 ring-1 ring-rose-200 hover:ring-rose-600 shadow-xs touch-target cursor-pointer"
               type="button"
               title="Sign Out"
             >
-              <svg className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               <span className="hidden sm:inline">Logout</span>
@@ -105,9 +140,47 @@ function PatientLayout() {
       </header>
 
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
-      <div className="flex flex-1 flex-col md:flex-row">
-        {/* Modern Dark Sidebar */}
-        <aside className="w-full border-r border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 text-white md:min-h-[calc(100vh-65px)] md:w-64 flex flex-col justify-between">
+      <div className="flex flex-1 flex-col lg:flex-row relative">
+        {/* Mobile Backdrop Overlay */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs lg:hidden animate-backdrop-fade"
+            onClick={() => setMobileOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+
+        {/* Sliding Navigation Sidebar */}
+        <aside
+          onClick={(e) => {
+            if (e.target.closest("a")) setMobileOpen(false);
+          }}
+          className={`
+            border-r border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 text-white flex flex-col justify-between overflow-y-auto
+            ${
+              mobileOpen
+                ? "fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full shadow-2xl animate-drawer-in flex"
+                : "hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:min-h-[calc(100vh-65px)] lg:sticky lg:top-[65px]"
+            }
+          `}
+          aria-label="Patient portal navigation"
+        >
+          {/* Mobile Drawer Header with Close Button */}
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3 lg:hidden">
+            <Link to="/patient/dashboard" onClick={() => setMobileOpen(false)}>
+              <HospitalLogo variant="full" isDark={true} />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition touch-target flex items-center justify-center"
+              aria-label="Close menu"
+            >
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
           <div>
             {/* Sidebar Section Title */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
@@ -287,11 +360,23 @@ function PatientLayout() {
               <span>NABH accredited</span>
               <span className="text-emerald-400 font-medium">ABDM compliant</span>
             </div>
+            <div className="mt-3 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-rose-950/40 border border-rose-800/60 px-3 py-2 text-xs font-bold text-rose-300 hover:bg-rose-600 hover:text-white transition shadow-sm cursor-pointer touch-target"
+              >
+                <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Sign Out (Patient)</span>
+              </button>
+            </div>
           </div>
         </aside>
 
         {/* Main Content Pane */}
-        <main className="flex-1 bg-slate-50/70 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 min-w-0 bg-slate-50/70 p-3 sm:p-5 lg:p-8 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

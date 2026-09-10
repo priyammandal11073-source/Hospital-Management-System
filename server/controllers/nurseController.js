@@ -11,6 +11,7 @@ import DoctorOrder from "../models/DoctorOrder.js";
 import IntakeOutput from "../models/IntakeOutput.js";
 import PatientTransfer from "../models/PatientTransfer.js";
 import NurseHandover from "../models/NurseHandover.js";
+import DiagnosticOrder from "../models/DiagnosticOrder.js";
 
 // Helper to determine clinical severity based on vitals and admission reason
 const assessPatientRisk = (vitals, bed) => {
@@ -368,10 +369,17 @@ export const getClinicalPatientProfile = async (req, res) => {
     // Doctor Orders
     const doctorOrders = await DoctorOrder.find({ patient: patient._id }).sort({ createdAt: -1 });
 
-    // Investigations / Lab Reports
-    const labReports = await LabReport.find({ patient: patient._id })
-      .populate("doctor", "name specialization")
-      .sort({ testDate: -1 });
+    // Investigations / Lab Reports & Diagnostic Orders
+    const [labReports, diagnosticOrders] = await Promise.all([
+      LabReport.find({ patient: patient._id })
+        .populate("doctor", "name specialization")
+        .sort({ testDate: -1 }),
+      DiagnosticOrder.find({ patient: patient._id })
+        .populate("doctor", "name specialization department")
+        .populate("report")
+        .populate("test")
+        .sort({ requestedDate: -1 }),
+    ]);
 
     // Intake & Output
     const intakeOutput = await IntakeOutput.find({ patient: patient._id }).sort({ date: -1, createdAt: -1 }).limit(30);
@@ -393,6 +401,7 @@ export const getClinicalPatientProfile = async (req, res) => {
       nursingNotes,
       doctorOrders,
       labReports,
+      diagnosticOrders,
       intakeOutput,
       tasks,
       transfers,

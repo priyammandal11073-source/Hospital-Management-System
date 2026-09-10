@@ -1,0 +1,3 @@
+# External Medical Object Storage Directory
+# Binary medical files (X-Rays, CT Scans, MRI, Ultrasounds, PDFs) are stored here outside MongoDB.
+# Files are accessed ONLY through authenticated and authorized streaming endpoints.

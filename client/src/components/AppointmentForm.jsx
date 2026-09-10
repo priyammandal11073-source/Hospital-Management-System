@@ -182,20 +182,20 @@ function AppointmentForm({ onCancel, onSuccess }) {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
         Search patient
         <input
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+          className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
           onChange={(event) => setPatientSearch(event.target.value)}
           placeholder="Search by name or contact number"
           value={patientSearch}
         />
       </label>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
         Patient *
         <select
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+          className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:border-teal-600 focus:outline-hidden"
           name="patient"
           onChange={handleChange}
           required
@@ -210,10 +210,10 @@ function AppointmentForm({ onCancel, onSuccess }) {
         </select>
       </label>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
         Doctor *
         <select
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+          className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:border-teal-600 focus:outline-hidden"
           name="doctor"
           onChange={handleChange}
           required
@@ -229,24 +229,24 @@ function AppointmentForm({ onCancel, onSuccess }) {
       </label>
 
       {selectedDoctor && (
-        <div className="rounded-md bg-blue-50 p-4 text-sm text-blue-900">
-          <p className="font-semibold">Dr. {selectedDoctor.name}'s availability</p>
+        <div className="rounded-xl bg-teal-50/70 border border-teal-200/80 p-4 text-xs text-teal-950">
+          <p className="font-bold text-sm text-teal-900">Dr. {selectedDoctor.name}'s availability</p>
           <p className="mt-1">
-            <span className="font-medium">Days: </span>
+            <span className="font-semibold text-teal-800">Days: </span>
             {selectedDoctor.availableDays?.join(", ") || "Not set"}
           </p>
           <p className="mt-1">
-            <span className="font-medium">Time slots: </span>
+            <span className="font-semibold text-teal-800">Time slots: </span>
             {selectedDoctor.availableTimeSlots?.join(", ") || "Not set"}
           </p>
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Appointment date *
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
             name="appointmentDate"
             onChange={handleChange}
             required
@@ -254,10 +254,10 @@ function AppointmentForm({ onCancel, onSuccess }) {
             value={formData.appointmentDate}
           />
         </label>
-        <label className="text-sm font-medium text-slate-700">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Time slot *
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
             list="doctor-time-slots"
             name="timeSlot"
             onChange={handleChange}
@@ -273,10 +273,10 @@ function AppointmentForm({ onCancel, onSuccess }) {
         </label>
       </div>
 
-      <label className="block text-sm font-medium text-slate-700">
+      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
         Reason for visit *
         <textarea
-          className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+          className="mt-1 w-full min-h-[72px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-hidden"
           name="reasonForVisit"
           onChange={handleChange}
           required
@@ -298,21 +298,21 @@ function AppointmentForm({ onCancel, onSuccess }) {
       </div>
 
       {error && (
-        <p className="rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
+        <p className="rounded-xl bg-red-50 border border-red-200 p-3.5 text-xs font-bold text-red-700" role="alert">
           {error}
         </p>
       )}
 
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
         <button
-          className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
           onClick={onCancel}
           type="button"
         >
           Cancel
         </button>
         <button
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:bg-blue-400"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition shadow-2xs"
           disabled={isSubmitting}
           type="submit"
         >

@@ -20,6 +20,7 @@ import doctorClinicalRoutes from "./routes/doctorClinicalRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import receptionistRoutes from "./routes/receptionistRoutes.js";
 import pharmacyRoutes from "./routes/pharmacyRoutes.js";
+import diagnosticRoutes from "./routes/diagnosticRoutes.js";
 import { notFoundHandler, errorHandler } from "./middleware/errorMiddleware.js";
 import mongoose from "mongoose";
 
@@ -54,6 +55,7 @@ app.use("/api/doctor-workspace", doctorClinicalRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/receptionist", receptionistRoutes);
 app.use("/api/pharmacy", pharmacyRoutes);
+app.use("/api/diagnostics", diagnosticRoutes);
 
 // Diagnostic health check reporting connectivity and portal readiness across all 6 portals
 app.get("/api/health", (req, res) => {
@@ -83,6 +85,7 @@ app.get("/api/health", (req, res) => {
       receptionistPortal: { status: "Operational", baseRoute: "/api/receptionist" },
       patientPortal: { status: "Operational", baseRoute: "/api/patient-portal" },
       pharmacyPortal: { status: "Operational", baseRoute: "/api/pharmacy" },
+      diagnosticPortal: { status: "Operational", baseRoute: "/api/diagnostics" },
     },
     systemMetrics: {
       memoryUsageMB: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),

@@ -8,6 +8,7 @@ import NursingChecklistModal from "../components/NursingChecklistModal.jsx";
 import PatientClinicalProfileModal from "../components/nurse/PatientClinicalProfileModal.jsx";
 import DoctorPatientProfileModal from "../components/doctor/DoctorPatientProfileModal.jsx";
 import PharmacyDashboard from "./pharmacy/PharmacyDashboard.jsx";
+import DiagnosticDashboard from "./diagnostic/DiagnosticDashboard.jsx";
 import {
   cancelMyAppointment,
   getAppointments,
@@ -334,6 +335,23 @@ function AdminDashboard({ user, refreshKey, onTriggerRefresh }) {
           badgeColor="bg-purple-50 text-purple-700"
           to="/appointments"
           icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
+        />
+        <MetricCard
+          label="Diagnostic Tests Today"
+          value={telemetry?.diagnosticSummary?.testsToday || 0}
+          gradient="from-cyan-600 to-teal-600"
+          badge={
+            telemetry?.diagnosticSummary?.criticalAlerts > 0
+              ? `${telemetry.diagnosticSummary.criticalAlerts} Critical STAT`
+              : `${telemetry?.diagnosticSummary?.pending || 0} In Progress`
+          }
+          badgeColor={
+            telemetry?.diagnosticSummary?.criticalAlerts > 0
+              ? "bg-rose-100 text-rose-800 font-bold animate-pulse"
+              : "bg-cyan-50 text-cyan-700 font-semibold"
+          }
+          to="/diagnostics"
+          icon={<svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>}
         />
       </div>
 
@@ -889,7 +907,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
             </div>
 
             <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Welcome, Dr. {doctor?.name || user?.name?.replace(/^Dr\.\s*/i, "")}
+              Welcome, {(doctor?.name || user?.name || "Doctor").startsWith("Dr.") ? (doctor?.name || user?.name) : `Dr. ${doctor?.name || user?.name}`}
             </h1>
 
             <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-emerald-100/90">
@@ -2831,6 +2849,24 @@ function Dashboard() {
 
   if (role === "pharmacist") {
     return <PharmacyDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+  }
+
+  if (
+    [
+      "diagnostic_admin",
+      "pathologist",
+      "radiologist",
+      "lab_technician",
+      "radiology_technician",
+    ].includes(role)
+  ) {
+    return (
+      <DiagnosticDashboard
+        user={user}
+        refreshKey={refreshKey}
+        onTriggerRefresh={handleTriggerRefresh}
+      />
+    );
   }
 
   // Default to Admin Executive Portal

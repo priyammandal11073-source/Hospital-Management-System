@@ -1,243 +1,270 @@
+import React, { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import DashboardLayout from "./components/DashboardLayout.jsx";
 import PatientLayout from "./components/PatientLayout.jsx";
 import PatientProtectedRoute from "./components/PatientProtectedRoute.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import Appointments from "./pages/Appointments.jsx";
-import Billing from "./pages/Billing.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-import Doctors from "./pages/Doctors.jsx";
-import Login from "./pages/Login.jsx";
-import Patients from "./pages/Patients.jsx";
-import PaymentPage from "./pages/PaymentPage.jsx";
-import Reports from "./pages/Reports.jsx";
-import Prescriptions from "./pages/Prescriptions.jsx";
-import Beds from "./pages/Beds.jsx";
-import LabReports from "./pages/LabReports.jsx";
-import MyPatients from "./pages/nurse/MyPatients.jsx";
-import PatientMonitoring from "./pages/nurse/PatientMonitoring.jsx";
-import VitalSignsPage from "./pages/nurse/VitalSignsPage.jsx";
-import NursingNotesPage from "./pages/nurse/NursingNotesPage.jsx";
-import NursingTasksPage from "./pages/nurse/NursingTasksPage.jsx";
-import MedicationsPage from "./pages/nurse/MedicationsPage.jsx";
-import IntakeOutputPage from "./pages/nurse/IntakeOutputPage.jsx";
-import DoctorOrdersPage from "./pages/nurse/DoctorOrdersPage.jsx";
-import PatientTransfersPage from "./pages/nurse/PatientTransfersPage.jsx";
-import AdmissionDischargePage from "./pages/nurse/AdmissionDischargePage.jsx";
-import MyShiftPage from "./pages/nurse/MyShiftPage.jsx";
-import NurseHandoverPage from "./pages/nurse/NurseHandoverPage.jsx";
-import ConsultationWorkspace from "./pages/doctor/ConsultationWorkspace.jsx";
-import DoctorWorkspaceOrdersPage from "./pages/doctor/DoctorOrdersPage.jsx";
-import DoctorReferralsPage from "./pages/doctor/DoctorReferralsPage.jsx";
-import CriticalLabResultsPage from "./pages/doctor/CriticalLabResultsPage.jsx";
-import DoctorFollowUpsPage from "./pages/doctor/DoctorFollowUpsPage.jsx";
-import SpecialistDirectoryPage from "./pages/doctor/SpecialistDirectoryPage.jsx";
-import BookAppointment from "./pages/patient/BookAppointment.jsx";
-import MyAppointments from "./pages/patient/MyAppointments.jsx";
-import MyBillings from "./pages/patient/MyBillings.jsx";
-import MyPrescriptions from "./pages/patient/MyPrescriptions.jsx";
-import MyVitals from "./pages/patient/MyVitals.jsx";
-import MyLabReports from "./pages/patient/MyLabReports.jsx";
-import PatientDashboard from "./pages/patient/PatientDashboard.jsx";
-import PatientLogin from "./pages/patient/PatientLogin.jsx";
-import PatientRegister from "./pages/patient/PatientRegister.jsx";
-import FindDoctorsPage from "./pages/patient/FindDoctorsPage.jsx";
-import MyMedicalRecords from "./pages/patient/MyMedicalRecords.jsx";
-import MyMedicalTimeline from "./pages/patient/MyMedicalTimeline.jsx";
-import MyMedicines from "./pages/patient/MyMedicines.jsx";
-import MyConsultations from "./pages/patient/MyConsultations.jsx";
-import MyReferrals from "./pages/patient/MyReferrals.jsx";
-import MyFollowUps from "./pages/patient/MyFollowUps.jsx";
-import MyAdmissions from "./pages/patient/MyAdmissions.jsx";
-import MyDocuments from "./pages/patient/MyDocuments.jsx";
-import PaymentHistory from "./pages/patient/PaymentHistory.jsx";
-import PatientProfilePage from "./pages/patient/PatientProfilePage.jsx";
-import HelpSupportPage from "./pages/patient/HelpSupportPage.jsx";
-import PatientFeedbackPage from "./pages/patient/PatientFeedbackPage.jsx";
-import PatientNotificationsPage from "./pages/patient/PatientNotificationsPage.jsx";
-import StaffManagementPage from "./pages/admin/StaffManagementPage.jsx";
-import DepartmentsPage from "./pages/admin/DepartmentsPage.jsx";
-import HospitalCalendarPage from "./pages/admin/HospitalCalendarPage.jsx";
-import AdmissionsManagementPage from "./pages/admin/AdmissionsManagementPage.jsx";
-import RevenueAnalyticsPage from "./pages/admin/RevenueAnalyticsPage.jsx";
-import InventoryPharmacyPage from "./pages/admin/InventoryPharmacyPage.jsx";
-import EquipmentMaintenancePage from "./pages/admin/EquipmentMaintenancePage.jsx";
-import StaffAttendanceShiftsPage from "./pages/admin/StaffAttendanceShiftsPage.jsx";
-import EmergencyOperationsPage from "./pages/admin/EmergencyOperationsPage.jsx";
-import OperatingTheatrePage from "./pages/admin/OperatingTheatrePage.jsx";
-import AuditLogPage from "./pages/admin/AuditLogPage.jsx";
-import HospitalSettingsPage from "./pages/admin/HospitalSettingsPage.jsx";
+import PageLoader from "./components/ui/PageLoader.jsx";
 
-// Receptionist & Front Desk Pages
-import WaitingRoomPage from "./pages/reception/WaitingRoomPage.jsx";
-import OPDCalendarPage from "./pages/reception/OPDCalendarPage.jsx";
-import OnlineBookingsPage from "./pages/reception/OnlineBookingsPage.jsx";
-import DischargeCoordinationPage from "./pages/reception/DischargeCoordinationPage.jsx";
-import EmergencyDeskPage from "./pages/reception/EmergencyDeskPage.jsx";
-import AppointmentRemindersPage from "./pages/reception/AppointmentRemindersPage.jsx";
-import DeskHandoverPage from "./pages/reception/DeskHandoverPage.jsx";
-import ReceptionReportsPage from "./pages/reception/ReceptionReportsPage.jsx";
-import FrontDeskWorkQueuePage from "./pages/reception/FrontDeskWorkQueuePage.jsx";
-import RefundsManagementPage from "./pages/reception/RefundsManagementPage.jsx";
+// Core Staff & Common Pages (Lazy Loaded)
+const Appointments = lazy(() => import("./pages/Appointments.jsx"));
+const Billing = lazy(() => import("./pages/Billing.jsx"));
+const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
+const Doctors = lazy(() => import("./pages/Doctors.jsx"));
+const Login = lazy(() => import("./pages/Login.jsx"));
+const Patients = lazy(() => import("./pages/Patients.jsx"));
+const PaymentPage = lazy(() => import("./pages/PaymentPage.jsx"));
+const Reports = lazy(() => import("./pages/Reports.jsx"));
+const Prescriptions = lazy(() => import("./pages/Prescriptions.jsx"));
+const Beds = lazy(() => import("./pages/Beds.jsx"));
+const LabReports = lazy(() => import("./pages/LabReports.jsx"));
 
-// Pharmacy & Dispensing Pages
-import PharmacyQueuePage from "./pages/pharmacy/PharmacyQueuePage.jsx";
-import PrescriptionDispensePage from "./pages/pharmacy/PrescriptionDispensePage.jsx";
-import PrescriptionHistoryPage from "./pages/pharmacy/PrescriptionHistoryPage.jsx";
-import MedicineInventoryPage from "./pages/pharmacy/MedicineInventoryPage.jsx";
-import StockManagementPage from "./pages/pharmacy/StockManagementPage.jsx";
-import BatchManagementPage from "./pages/pharmacy/BatchManagementPage.jsx";
-import ExpiryManagementPage from "./pages/pharmacy/ExpiryManagementPage.jsx";
-import LowStockAlertsPage from "./pages/pharmacy/LowStockAlertsPage.jsx";
-import SuppliersManagementPage from "./pages/pharmacy/SuppliersManagementPage.jsx";
-import PurchaseOrdersPage from "./pages/pharmacy/PurchaseOrdersPage.jsx";
-import PharmacyReturnsPage from "./pages/pharmacy/PharmacyReturnsPage.jsx";
-import PharmacyPatientsPage from "./pages/pharmacy/PharmacyPatientsPage.jsx";
-import PharmacyBillingPage from "./pages/pharmacy/PharmacyBillingPage.jsx";
-import PharmacyAnalyticsPage from "./pages/pharmacy/PharmacyAnalyticsPage.jsx";
-import PharmacyStaffPage from "./pages/pharmacy/PharmacyStaffPage.jsx";
+// Clinical Nursing Station Pages (Lazy Loaded)
+const MyPatients = lazy(() => import("./pages/nurse/MyPatients.jsx"));
+const PatientMonitoring = lazy(() => import("./pages/nurse/PatientMonitoring.jsx"));
+const VitalSignsPage = lazy(() => import("./pages/nurse/VitalSignsPage.jsx"));
+const NursingNotesPage = lazy(() => import("./pages/nurse/NursingNotesPage.jsx"));
+const NursingTasksPage = lazy(() => import("./pages/nurse/NursingTasksPage.jsx"));
+const MedicationsPage = lazy(() => import("./pages/nurse/MedicationsPage.jsx"));
+const IntakeOutputPage = lazy(() => import("./pages/nurse/IntakeOutputPage.jsx"));
+const DoctorOrdersPage = lazy(() => import("./pages/nurse/DoctorOrdersPage.jsx"));
+const PatientTransfersPage = lazy(() => import("./pages/nurse/PatientTransfersPage.jsx"));
+const AdmissionDischargePage = lazy(() => import("./pages/nurse/AdmissionDischargePage.jsx"));
+const MyShiftPage = lazy(() => import("./pages/nurse/MyShiftPage.jsx"));
+const NurseHandoverPage = lazy(() => import("./pages/nurse/NurseHandoverPage.jsx"));
+
+// Doctor Clinical Workspace Pages (Lazy Loaded)
+const ConsultationWorkspace = lazy(() => import("./pages/doctor/ConsultationWorkspace.jsx"));
+const DoctorWorkspaceOrdersPage = lazy(() => import("./pages/doctor/DoctorOrdersPage.jsx"));
+const DoctorReferralsPage = lazy(() => import("./pages/doctor/DoctorReferralsPage.jsx"));
+const CriticalLabResultsPage = lazy(() => import("./pages/doctor/CriticalLabResultsPage.jsx"));
+const DoctorFollowUpsPage = lazy(() => import("./pages/doctor/DoctorFollowUpsPage.jsx"));
+const SpecialistDirectoryPage = lazy(() => import("./pages/doctor/SpecialistDirectoryPage.jsx"));
+
+// Patient Self-Service Portal Pages (Lazy Loaded)
+const BookAppointment = lazy(() => import("./pages/patient/BookAppointment.jsx"));
+const MyAppointments = lazy(() => import("./pages/patient/MyAppointments.jsx"));
+const MyBillings = lazy(() => import("./pages/patient/MyBillings.jsx"));
+const MyPrescriptions = lazy(() => import("./pages/patient/MyPrescriptions.jsx"));
+const MyVitals = lazy(() => import("./pages/patient/MyVitals.jsx"));
+const MyLabReports = lazy(() => import("./pages/patient/MyLabReports.jsx"));
+const PatientDashboard = lazy(() => import("./pages/patient/PatientDashboard.jsx"));
+const PatientLogin = lazy(() => import("./pages/patient/PatientLogin.jsx"));
+const PatientRegister = lazy(() => import("./pages/patient/PatientRegister.jsx"));
+const FindDoctorsPage = lazy(() => import("./pages/patient/FindDoctorsPage.jsx"));
+const MyMedicalRecords = lazy(() => import("./pages/patient/MyMedicalRecords.jsx"));
+const MyMedicalTimeline = lazy(() => import("./pages/patient/MyMedicalTimeline.jsx"));
+const MyMedicines = lazy(() => import("./pages/patient/MyMedicines.jsx"));
+const MyConsultations = lazy(() => import("./pages/patient/MyConsultations.jsx"));
+const MyReferrals = lazy(() => import("./pages/patient/MyReferrals.jsx"));
+const MyFollowUps = lazy(() => import("./pages/patient/MyFollowUps.jsx"));
+const MyAdmissions = lazy(() => import("./pages/patient/MyAdmissions.jsx"));
+const MyDocuments = lazy(() => import("./pages/patient/MyDocuments.jsx"));
+const PaymentHistory = lazy(() => import("./pages/patient/PaymentHistory.jsx"));
+const PatientProfilePage = lazy(() => import("./pages/patient/PatientProfilePage.jsx"));
+const HelpSupportPage = lazy(() => import("./pages/patient/HelpSupportPage.jsx"));
+const PatientFeedbackPage = lazy(() => import("./pages/patient/PatientFeedbackPage.jsx"));
+const PatientNotificationsPage = lazy(() => import("./pages/patient/PatientNotificationsPage.jsx"));
+
+// Hospital Administrator Operations Pages (Lazy Loaded)
+const StaffManagementPage = lazy(() => import("./pages/admin/StaffManagementPage.jsx"));
+const DepartmentsPage = lazy(() => import("./pages/admin/DepartmentsPage.jsx"));
+const HospitalCalendarPage = lazy(() => import("./pages/admin/HospitalCalendarPage.jsx"));
+const AdmissionsManagementPage = lazy(() => import("./pages/admin/AdmissionsManagementPage.jsx"));
+const RevenueAnalyticsPage = lazy(() => import("./pages/admin/RevenueAnalyticsPage.jsx"));
+const InventoryPharmacyPage = lazy(() => import("./pages/admin/InventoryPharmacyPage.jsx"));
+const EquipmentMaintenancePage = lazy(() => import("./pages/admin/EquipmentMaintenancePage.jsx"));
+const StaffAttendanceShiftsPage = lazy(() => import("./pages/admin/StaffAttendanceShiftsPage.jsx"));
+const EmergencyOperationsPage = lazy(() => import("./pages/admin/EmergencyOperationsPage.jsx"));
+const OperatingTheatrePage = lazy(() => import("./pages/admin/OperatingTheatrePage.jsx"));
+const AuditLogPage = lazy(() => import("./pages/admin/AuditLogPage.jsx"));
+const HospitalSettingsPage = lazy(() => import("./pages/admin/HospitalSettingsPage.jsx"));
+
+// Receptionist & Front Desk Pages (Lazy Loaded)
+const WaitingRoomPage = lazy(() => import("./pages/reception/WaitingRoomPage.jsx"));
+const OPDCalendarPage = lazy(() => import("./pages/reception/OPDCalendarPage.jsx"));
+const OnlineBookingsPage = lazy(() => import("./pages/reception/OnlineBookingsPage.jsx"));
+const DischargeCoordinationPage = lazy(() => import("./pages/reception/DischargeCoordinationPage.jsx"));
+const EmergencyDeskPage = lazy(() => import("./pages/reception/EmergencyDeskPage.jsx"));
+const AppointmentRemindersPage = lazy(() => import("./pages/reception/AppointmentRemindersPage.jsx"));
+const DeskHandoverPage = lazy(() => import("./pages/reception/DeskHandoverPage.jsx"));
+const ReceptionReportsPage = lazy(() => import("./pages/reception/ReceptionReportsPage.jsx"));
+const FrontDeskWorkQueuePage = lazy(() => import("./pages/reception/FrontDeskWorkQueuePage.jsx"));
+const RefundsManagementPage = lazy(() => import("./pages/reception/RefundsManagementPage.jsx"));
+
+// Pharmacy & Dispensing Pages (Lazy Loaded)
+const PharmacyQueuePage = lazy(() => import("./pages/pharmacy/PharmacyQueuePage.jsx"));
+const PrescriptionDispensePage = lazy(() => import("./pages/pharmacy/PrescriptionDispensePage.jsx"));
+const PrescriptionHistoryPage = lazy(() => import("./pages/pharmacy/PrescriptionHistoryPage.jsx"));
+const MedicineInventoryPage = lazy(() => import("./pages/pharmacy/MedicineInventoryPage.jsx"));
+const StockManagementPage = lazy(() => import("./pages/pharmacy/StockManagementPage.jsx"));
+const BatchManagementPage = lazy(() => import("./pages/pharmacy/BatchManagementPage.jsx"));
+const ExpiryManagementPage = lazy(() => import("./pages/pharmacy/ExpiryManagementPage.jsx"));
+const LowStockAlertsPage = lazy(() => import("./pages/pharmacy/LowStockAlertsPage.jsx"));
+const SuppliersManagementPage = lazy(() => import("./pages/pharmacy/SuppliersManagementPage.jsx"));
+const PurchaseOrdersPage = lazy(() => import("./pages/pharmacy/PurchaseOrdersPage.jsx"));
+const PharmacyReturnsPage = lazy(() => import("./pages/pharmacy/PharmacyReturnsPage.jsx"));
+const PharmacyPatientsPage = lazy(() => import("./pages/pharmacy/PharmacyPatientsPage.jsx"));
+const PharmacyBillingPage = lazy(() => import("./pages/pharmacy/PharmacyBillingPage.jsx"));
+const PharmacyAnalyticsPage = lazy(() => import("./pages/pharmacy/PharmacyAnalyticsPage.jsx"));
+const PharmacyStaffPage = lazy(() => import("./pages/pharmacy/PharmacyStaffPage.jsx"));
+
+// Diagnostic Services (Pathology & Radiology) Pages (Lazy Loaded)
+const TestRequestsPage = lazy(() => import("./pages/diagnostic/TestRequestsPage.jsx"));
+const SampleCollectionPage = lazy(() => import("./pages/diagnostic/SampleCollectionPage.jsx"));
+const TechnicianWorkspacePage = lazy(() => import("./pages/diagnostic/TechnicianWorkspacePage.jsx"));
+const RadiologyImagingPage = lazy(() => import("./pages/diagnostic/RadiologyImagingPage.jsx"));
+const SpecialistReviewPage = lazy(() => import("./pages/diagnostic/SpecialistReviewPage.jsx"));
+const DiagnosticReportsPage = lazy(() => import("./pages/diagnostic/DiagnosticReportsPage.jsx"));
+const CriticalResultsPage = lazy(() => import("./pages/diagnostic/CriticalResultsPage.jsx"));
+const DiagnosticCatalogPage = lazy(() => import("./pages/diagnostic/DiagnosticCatalogPage.jsx"));
+const DiagnosticEquipmentPage = lazy(() => import("./pages/diagnostic/DiagnosticEquipmentPage.jsx"));
+const DiagnosticInventoryPage = lazy(() => import("./pages/diagnostic/DiagnosticInventoryPage.jsx"));
+const DiagnosticBillingPage = lazy(() => import("./pages/diagnostic/DiagnosticBillingPage.jsx"));
+const DiagnosticAuditLogsPage = lazy(() => import("./pages/diagnostic/DiagnosticAuditLogsPage.jsx"));
+const DiagnosticPrintCenterPage = lazy(() => import("./pages/diagnostic/DiagnosticPrintCenterPage.jsx"));
+const PathologyReportGeneratorPage = lazy(() => import("./pages/diagnostic/PathologyReportGeneratorPage.jsx"));
+const RadiologyStudyPage = lazy(() => import("./pages/diagnostic/RadiologyStudyPage.jsx"));
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/patient/login" element={<PatientLogin />} />
-      <Route path="/patient/register" element={<PatientRegister />} />
-      {/* Public payment link — no auth required, accessible via SMS */}
-      <Route path="/pay/:billingId" element={<PaymentPage />} />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/patient/login" element={<PatientLogin />} />
+        <Route path="/patient/register" element={<PatientRegister />} />
+        {/* Public payment link — no auth required, accessible via SMS */}
+        <Route path="/pay/:billingId" element={<PaymentPage />} />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-      {/* Patient branch — separate from staff, uses PatientAuthContext */}
-      <Route element={<PatientProtectedRoute />}>
-        <Route element={<PatientLayout />}>
-          <Route path="/patient/dashboard" element={<PatientDashboard />} />
-          <Route path="/patient/appointments" element={<MyAppointments />} />
-          <Route path="/patient/appointments/book" element={<BookAppointment />} />
-          <Route path="/patient/consultations" element={<MyConsultations />} />
-          <Route path="/patient/doctors" element={<FindDoctorsPage />} />
-          <Route path="/patient/records" element={<MyMedicalRecords />} />
-          <Route path="/patient/timeline" element={<MyMedicalTimeline />} />
-          <Route path="/patient/medicines" element={<MyMedicines />} />
-          <Route path="/patient/vitals" element={<MyVitals />} />
-          <Route path="/patient/lab-reports" element={<MyLabReports />} />
-          <Route path="/patient/billings" element={<MyBillings />} />
-          <Route path="/patient/payments" element={<PaymentHistory />} />
-          <Route path="/patient/prescriptions" element={<MyPrescriptions />} />
-          <Route path="/patient/referrals" element={<MyReferrals />} />
-          <Route path="/patient/follow-ups" element={<MyFollowUps />} />
-          <Route path="/patient/admissions" element={<MyAdmissions />} />
-          <Route path="/patient/documents" element={<MyDocuments />} />
-          <Route path="/patient/profile" element={<PatientProfilePage />} />
-          <Route path="/patient/support" element={<HelpSupportPage />} />
-          <Route path="/patient/feedback" element={<PatientFeedbackPage />} />
-          <Route path="/patient/notifications" element={<PatientNotificationsPage />} />
+        {/* Patient branch — separate from staff, uses PatientAuthContext */}
+        <Route element={<PatientProtectedRoute />}>
+          <Route element={<PatientLayout />}>
+            <Route path="/patient/dashboard" element={<PatientDashboard />} />
+            <Route path="/patient/appointments" element={<MyAppointments />} />
+            <Route path="/patient/appointments/book" element={<BookAppointment />} />
+            <Route path="/patient/consultations" element={<MyConsultations />} />
+            <Route path="/patient/doctors" element={<FindDoctorsPage />} />
+            <Route path="/patient/records" element={<MyMedicalRecords />} />
+            <Route path="/patient/timeline" element={<MyMedicalTimeline />} />
+            <Route path="/patient/medicines" element={<MyMedicines />} />
+            <Route path="/patient/vitals" element={<MyVitals />} />
+            <Route path="/patient/lab-reports" element={<MyLabReports />} />
+            <Route path="/patient/billings" element={<MyBillings />} />
+            <Route path="/patient/payments" element={<PaymentHistory />} />
+            <Route path="/patient/prescriptions" element={<MyPrescriptions />} />
+            <Route path="/patient/referrals" element={<MyReferrals />} />
+            <Route path="/patient/follow-ups" element={<MyFollowUps />} />
+            <Route path="/patient/admissions" element={<MyAdmissions />} />
+            <Route path="/patient/documents" element={<MyDocuments />} />
+            <Route path="/patient/profile" element={<PatientProfilePage />} />
+            <Route path="/patient/support" element={<HelpSupportPage />} />
+            <Route path="/patient/feedback" element={<PatientFeedbackPage />} />
+            <Route path="/patient/notifications" element={<PatientNotificationsPage />} />
+          </Route>
         </Route>
-      </Route>
 
-      {/* Staff branch — uses AuthContext */}
-      <Route element={<ProtectedRoute />}>
-        <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/patients" element={<Patients />} />
-          <Route path="/doctors" element={<Doctors />} />
-          <Route path="/appointments" element={<Appointments />} />
-          <Route path="/billing" element={<Billing />} />
-          <Route path="/prescriptions" element={<Prescriptions />} />
-          <Route path="/beds" element={<Beds />} />
-          <Route path="/lab-reports" element={<LabReports />} />
-          <Route path="/reports" element={<Reports />} />
+        {/* Staff branch — uses AuthContext */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/patients" element={<Patients />} />
+            <Route path="/doctors" element={<Doctors />} />
+            <Route path="/appointments" element={<Appointments />} />
+            <Route path="/billing" element={<Billing />} />
+            <Route path="/prescriptions" element={<Prescriptions />} />
+            <Route path="/beds" element={<Beds />} />
+            <Route path="/lab-reports" element={<LabReports />} />
+            <Route path="/reports" element={<Reports />} />
 
-          {/* Clinical Nursing Station Routes */}
-          <Route path="/nurse/patients" element={<MyPatients />} />
-          <Route path="/nurse/monitoring" element={<PatientMonitoring />} />
-          <Route path="/nurse/vitals" element={<VitalSignsPage />} />
-          <Route path="/nurse/notes" element={<NursingNotesPage />} />
-          <Route path="/nurse/tasks" element={<NursingTasksPage />} />
-          <Route path="/nurse/medications" element={<MedicationsPage />} />
-          <Route path="/nurse/intake-output" element={<IntakeOutputPage />} />
-          <Route path="/nurse/doctor-orders" element={<DoctorOrdersPage />} />
-          <Route path="/nurse/transfers" element={<PatientTransfersPage />} />
-          <Route path="/nurse/admission-discharge" element={<AdmissionDischargePage />} />
-          <Route path="/nurse/shift" element={<MyShiftPage />} />
-          <Route path="/nurse/handover" element={<NurseHandoverPage />} />
+            {/* Clinical Nursing Station Routes */}
+            <Route path="/nurse/patients" element={<MyPatients />} />
+            <Route path="/nurse/monitoring" element={<PatientMonitoring />} />
+            <Route path="/nurse/vitals" element={<VitalSignsPage />} />
+            <Route path="/nurse/notes" element={<NursingNotesPage />} />
+            <Route path="/nurse/tasks" element={<NursingTasksPage />} />
+            <Route path="/nurse/medications" element={<MedicationsPage />} />
+            <Route path="/nurse/intake-output" element={<IntakeOutputPage />} />
+            <Route path="/nurse/doctor-orders" element={<DoctorOrdersPage />} />
+            <Route path="/nurse/transfers" element={<PatientTransfersPage />} />
+            <Route path="/nurse/admission-discharge" element={<AdmissionDischargePage />} />
+            <Route path="/nurse/shift" element={<MyShiftPage />} />
+            <Route path="/nurse/handover" element={<NurseHandoverPage />} />
 
-          {/* Doctor Clinical Workspace Routes */}
-          <Route path="/doctor/consultation/:appointmentId" element={<ConsultationWorkspace />} />
-          <Route path="/doctor/orders" element={<DoctorWorkspaceOrdersPage />} />
-          <Route path="/doctor/referrals" element={<DoctorReferralsPage />} />
-          <Route path="/doctor/critical-labs" element={<CriticalLabResultsPage />} />
-          <Route path="/doctor/follow-ups" element={<DoctorFollowUpsPage />} />
-          <Route path="/specialist-directory" element={<SpecialistDirectoryPage />} />
+            {/* Doctor Clinical Workspace Routes */}
+            <Route path="/doctor/consultation/:appointmentId" element={<ConsultationWorkspace />} />
+            <Route path="/doctor/orders" element={<DoctorWorkspaceOrdersPage />} />
+            <Route path="/doctor/referrals" element={<DoctorReferralsPage />} />
+            <Route path="/doctor/critical-labs" element={<CriticalLabResultsPage />} />
+            <Route path="/doctor/follow-ups" element={<DoctorFollowUpsPage />} />
+            <Route path="/specialist-directory" element={<SpecialistDirectoryPage />} />
 
-          {/* Hospital Administrator Operations Routes */}
-          <Route path="/admin/staff" element={<StaffManagementPage />} />
-          <Route path="/admin/departments" element={<DepartmentsPage />} />
-          <Route path="/admin/calendar" element={<HospitalCalendarPage />} />
-          <Route path="/admin/admissions" element={<AdmissionsManagementPage />} />
-          <Route path="/admin/revenue" element={<RevenueAnalyticsPage />} />
-          <Route path="/admin/inventory" element={<InventoryPharmacyPage />} />
-          <Route path="/admin/equipment" element={<EquipmentMaintenancePage />} />
-          <Route path="/admin/attendance" element={<StaffAttendanceShiftsPage />} />
-          <Route path="/admin/emergency" element={<EmergencyOperationsPage />} />
-          <Route path="/admin/operating-theatre" element={<OperatingTheatrePage />} />
-          <Route path="/admin/audit-logs" element={<AuditLogPage />} />
-          <Route path="/admin/settings" element={<HospitalSettingsPage />} />
+            {/* Hospital Administrator Operations Routes */}
+            <Route path="/admin/staff" element={<StaffManagementPage />} />
+            <Route path="/admin/departments" element={<DepartmentsPage />} />
+            <Route path="/admin/calendar" element={<HospitalCalendarPage />} />
+            <Route path="/admin/admissions" element={<AdmissionsManagementPage />} />
+            <Route path="/admin/revenue" element={<RevenueAnalyticsPage />} />
+            <Route path="/admin/inventory" element={<InventoryPharmacyPage />} />
+            <Route path="/admin/equipment" element={<EquipmentMaintenancePage />} />
+            <Route path="/admin/attendance" element={<StaffAttendanceShiftsPage />} />
+            <Route path="/admin/emergency" element={<EmergencyOperationsPage />} />
+            <Route path="/admin/operating-theatre" element={<OperatingTheatrePage />} />
+            <Route path="/admin/audit-logs" element={<AuditLogPage />} />
+            <Route path="/admin/settings" element={<HospitalSettingsPage />} />
 
-          {/* Receptionist & Front Desk Operations Routes */}
-          <Route path="/reception/waiting-room" element={<WaitingRoomPage />} />
-          <Route path="/reception/calendar" element={<OPDCalendarPage />} />
-          <Route path="/reception/online-bookings" element={<OnlineBookingsPage />} />
-          <Route path="/reception/discharges" element={<DischargeCoordinationPage />} />
-          <Route path="/reception/emergency" element={<EmergencyDeskPage />} />
-          <Route path="/reception/reminders" element={<AppointmentRemindersPage />} />
-          <Route path="/reception/handover" element={<DeskHandoverPage />} />
-          <Route path="/reception/reports" element={<ReceptionReportsPage />} />
-          <Route path="/reception/work-queue" element={<FrontDeskWorkQueuePage />} />
-          <Route path="/reception/refunds" element={<RefundsManagementPage />} />
+            {/* Receptionist & Front Desk Operations Routes */}
+            <Route path="/reception/waiting-room" element={<WaitingRoomPage />} />
+            <Route path="/reception/calendar" element={<OPDCalendarPage />} />
+            <Route path="/reception/online-bookings" element={<OnlineBookingsPage />} />
+            <Route path="/reception/discharges" element={<DischargeCoordinationPage />} />
+            <Route path="/reception/emergency" element={<EmergencyDeskPage />} />
+            <Route path="/reception/reminders" element={<AppointmentRemindersPage />} />
+            <Route path="/reception/handover" element={<DeskHandoverPage />} />
+            <Route path="/reception/reports" element={<ReceptionReportsPage />} />
+            <Route path="/reception/work-queue" element={<FrontDeskWorkQueuePage />} />
+            <Route path="/reception/refunds" element={<RefundsManagementPage />} />
 
-          {/* Pharmacy & Dispensing Operations Routes */}
-          <Route path="/pharmacy/queue" element={<PharmacyQueuePage />} />
-          <Route path="/pharmacy/dispense" element={<PrescriptionDispensePage />} />
-          <Route path="/pharmacy/dispense/:id" element={<PrescriptionDispensePage />} />
-          <Route path="/pharmacy/prescriptions-history" element={<PrescriptionHistoryPage />} />
-          <Route path="/pharmacy/inventory" element={<MedicineInventoryPage />} />
-          <Route path="/pharmacy/stock" element={<StockManagementPage />} />
-          <Route path="/pharmacy/stock-ledger" element={<StockManagementPage />} />
-          <Route path="/pharmacy/batches" element={<BatchManagementPage />} />
-          <Route path="/pharmacy/expiry" element={<ExpiryManagementPage />} />
-          <Route path="/pharmacy/low-stock" element={<LowStockAlertsPage />} />
-          <Route path="/pharmacy/suppliers" element={<SuppliersManagementPage />} />
-          <Route path="/pharmacy/purchase-orders" element={<PurchaseOrdersPage />} />
-          <Route path="/pharmacy/stock-receiving" element={<PurchaseOrdersPage />} />
-          <Route path="/pharmacy/returns" element={<PharmacyReturnsPage />} />
-          <Route path="/pharmacy/patients" element={<PharmacyPatientsPage />} />
-          <Route path="/pharmacy/patient-history" element={<PharmacyPatientsPage />} />
-          <Route path="/pharmacy/billing" element={<PharmacyBillingPage />} />
-          <Route path="/pharmacy/receipts" element={<PharmacyBillingPage />} />
-          <Route path="/pharmacy/refunds" element={<PharmacyBillingPage />} />
-          <Route path="/pharmacy/analytics" element={<PharmacyAnalyticsPage />} />
-          <Route path="/pharmacy/reports" element={<PharmacyAnalyticsPage />} />
-          <Route path="/pharmacy/staff" element={<PharmacyStaffPage />} />
-          <Route path="/pharmacy/shifts" element={<PharmacyStaffPage />} />
+            {/* Pharmacy & Dispensing Operations Routes */}
+            <Route path="/pharmacy/queue" element={<PharmacyQueuePage />} />
+            <Route path="/pharmacy/dispense" element={<PrescriptionDispensePage />} />
+            <Route path="/pharmacy/dispense/:id" element={<PrescriptionDispensePage />} />
+            <Route path="/pharmacy/prescriptions-history" element={<PrescriptionHistoryPage />} />
+            <Route path="/pharmacy/inventory" element={<MedicineInventoryPage />} />
+            <Route path="/pharmacy/stock" element={<StockManagementPage />} />
+            <Route path="/pharmacy/batches" element={<BatchManagementPage />} />
+            <Route path="/pharmacy/expiry" element={<ExpiryManagementPage />} />
+            <Route path="/pharmacy/alerts" element={<LowStockAlertsPage />} />
+            <Route path="/pharmacy/suppliers" element={<SuppliersManagementPage />} />
+            <Route path="/pharmacy/purchase-orders" element={<PurchaseOrdersPage />} />
+            <Route path="/pharmacy/returns" element={<PharmacyReturnsPage />} />
+            <Route path="/pharmacy/patients" element={<PharmacyPatientsPage />} />
+            <Route path="/pharmacy/billing" element={<PharmacyBillingPage />} />
+            <Route path="/pharmacy/analytics" element={<PharmacyAnalyticsPage />} />
+            <Route path="/pharmacy/staff" element={<PharmacyStaffPage />} />
+
+            {/* Diagnostic Services (Pathology & Radiology) Routes */}
+            <Route path="/diagnostic/requests" element={<TestRequestsPage />} />
+            <Route path="/diagnostic/samples" element={<SampleCollectionPage />} />
+            <Route path="/diagnostic/workbench" element={<TechnicianWorkspacePage />} />
+            <Route path="/diagnostic/radiology" element={<RadiologyImagingPage />} />
+            <Route path="/diagnostic/review" element={<SpecialistReviewPage />} />
+            <Route path="/diagnostic/reports" element={<DiagnosticReportsPage />} />
+            <Route path="/diagnostic/critical" element={<CriticalResultsPage />} />
+            <Route path="/diagnostic/catalog" element={<DiagnosticCatalogPage />} />
+            <Route path="/diagnostic/equipment" element={<DiagnosticEquipmentPage />} />
+            <Route path="/diagnostic/inventory" element={<DiagnosticInventoryPage />} />
+            <Route path="/diagnostic/billing" element={<DiagnosticBillingPage />} />
+            <Route path="/diagnostic/audit" element={<DiagnosticAuditLogsPage />} />
+            <Route path="/diagnostic/print-center" element={<DiagnosticPrintCenterPage />} />
+            <Route path="/diagnostic/reports/new/:orderId" element={<PathologyReportGeneratorPage />} />
+            <Route path="/diagnostic/study/:studyId" element={<RadiologyStudyPage />} />
+          </Route>
         </Route>
-      </Route>
-      {/* Fallback — render 404 instead of blindly redirecting to /dashboard (which then bounces to /login for unauthed users) */}
-      <Route
-        path="*"
-        element={
-          <div className="p-8 text-center text-slate-600">
-            <p>404 — Page not found.</p>
-            <a href="/patient/login" className="mr-3 text-blue-600 hover:underline">
-              Patient login
-            </a>
-            |
-            <a href="/login" className="ml-3 text-blue-600 hover:underline">
-              Staff login
-            </a>
-          </div>
-        }
-      />
-    </Routes>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 }
 

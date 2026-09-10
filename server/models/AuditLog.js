@@ -33,6 +33,7 @@ const auditLogSchema = new mongoose.Schema(
         "billing",
         "beds",
         "laboratory",
+        "diagnostics",
         "prescriptions",
         "inventory",
         "equipment",

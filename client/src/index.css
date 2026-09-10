@@ -2,16 +2,205 @@
 @tailwind components;
 @tailwind utilities;
 
+/* =========================================================================
+   RESPONSIVE VIEWPORT & SAFE AREA INSETS (iPhones, Android, Tablets, Desktops)
+   ========================================================================= */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: #f1f5f9;
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  padding-top: var(--sat);
+  padding-bottom: var(--sab);
 }
 
+/* Momentum smooth touch scrolling for mobile/tablet */
+.overflow-x-auto,
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom sleek scrollbar for slide drawers, tables, and modal dialogs */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.6);
+}
+
+/* Thin Firefox scrollbar + global cursor lock */
+*,
+*::before,
+*::after {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+  /* Force arrow cursor on every element — overrides browser's cursor:auto I-beam */
+  cursor: default;
+}
+
+/* =========================================================================
+   GLOBAL CURSOR RULES
+   - Arrow on everything by default (already set above via *)
+   - Text cursor ONLY on editable/typeable elements
+   - Pointer on all clickable controls
+   ========================================================================= */
+
+/* Text cursor — only where the user can actually type */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not(:disabled),
+textarea:not(:disabled),
+[contenteditable="true"],
+[contenteditable=""] {
+  cursor: text;
+}
+
+/* Pointer — every clickable interactive control */
+a[href],
+button:not(:disabled),
+[role="button"]:not(:disabled),
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+[role="checkbox"],
+[role="radio"],
+[role="switch"],
+[role="link"],
+label[for],
+label:has(input[type="checkbox"]),
+label:has(input[type="radio"]),
+select:not(:disabled),
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+input[type="range"]:not(:disabled),
+input[type="file"]:not(:disabled),
+input[type="submit"]:not(:disabled),
+input[type="button"]:not(:disabled),
+input[type="reset"]:not(:disabled),
+summary,
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Disabled — not-allowed indicator */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+[aria-disabled="true"],
+.cursor-not-allowed,
+[disabled] {
+  cursor: not-allowed;
+}
+
+/* Tailwind cursor utilities — explicit overrides still honoured */
+.cursor-default    { cursor: default !important; }
+.cursor-text       { cursor: text !important; }
+.cursor-pointer    { cursor: pointer !important; }
+.cursor-grab       { cursor: grab !important; }
+.cursor-grabbing   { cursor: grabbing !important; }
+.cursor-col-resize { cursor: col-resize !important; }
+.cursor-row-resize { cursor: row-resize !important; }
+.cursor-zoom-in    { cursor: zoom-in !important; }
+.cursor-zoom-out   { cursor: zoom-out !important; }
+.cursor-crosshair  { cursor: crosshair !important; }
+.cursor-wait       { cursor: wait !important; }
+.cursor-move       { cursor: move !important; }
+
+
+
+/* =========================================================================
+   SLIDING NAVIGATION & DRAWER ANIMATIONS
+   ========================================================================= */
+@keyframes drawerSlideIn {
+  from {
+    transform: translate3d(-100%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes drawerBackdropFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-drawer-in {
+  animation: drawerSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform;
+}
+
+.animate-backdrop-fade {
+  animation: drawerBackdropFade 0.2s ease-out forwards;
+}
+
+/* =========================================================================
+   RESPONSIVE TOUCH & TABLE UTILITIES
+   ========================================================================= */
+@media (pointer: coarse) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+.table-responsive-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0.75rem;
+}
+
+/* Modal Viewport & Mobile Safe Sizing */
+.modal-viewport {
+  max-height: calc(100dvh - 2.5rem);
+  max-height: calc(100vh - 2.5rem);
+}
+
+@media (max-width: 640px) {
+  .modal-viewport {
+    max-height: calc(100dvh - 1rem);
+    max-height: calc(100vh - 1rem);
+  }
+}
+
+/* =========================================================================
+   MEDICAL BRAND PULSE & HEARTBEAT ANIMATIONS
+   ========================================================================= */
 @keyframes heartbeat {
   0%, 100% {
     transform: scale(1);
@@ -68,15 +257,153 @@ body {
   animation: beaconPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-
+/* =========================================================================
+   PRINT STYLES & CLINICAL HARDCOPY FORMATTING (SECTIONS 40, 45, 52)
+   ========================================================================= */
 @media print {
-  .no-print {
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 11pt !important;
+  }
+
+  /* Completely strip portal UI, sidebar, headers, buttons, overlays */
+  aside,
+  header,
+  nav,
+  footer,
+  .no-print,
+  button,
+  .btn,
+  [role="dialog"] > div > header,
+  .fixed.inset-0.bg-slate-900\/60,
+  .fixed.inset-0.bg-slate-950\/70 {
     display: none !important;
   }
 
+  /* Force modals and report sheets to fill standard paper dimensions */
+  .clinical-print-sheet,
+  .printable-report-container {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: #ffffff !important;
+  }
+
+  /* Dark Laser Imager Film Printing */
+  .film-print-dark {
+    display: block !important;
+    background: #000000 !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* =========================================================================
+     DEDICATED RADIOLOGY FILM SHEET PRINT ISOLATION
+     When printing-film-mode is active, completely eliminate underlying page
+     and print ONLY the calibrated black radiology laser sheet.
+     ========================================================================= */
+  body.printing-film-mode {
+    background: #000000 !important;
+    color: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body.printing-film-mode #root > div > *:not([role="dialog"]),
+  body.printing-film-mode main,
+  body.printing-film-mode aside,
+  body.printing-film-mode header,
+  body.printing-film-mode nav,
+  body.printing-film-mode footer,
+  body.printing-film-mode .no-print {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.printing-film-mode [role="dialog"] {
+    position: static !important;
+    inset: auto !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+
+  body.printing-film-mode [role="dialog"] > div {
+    position: static !important;
+    display: block !important;
+    max-height: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  body.printing-film-mode #radiology-film-canvas {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 8mm !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #000000 !important;
+    color: #ffffff !important;
+    box-sizing: border-box !important;
+    page-break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Table fidelity */
+  table {
+    page-break-inside: auto;
+    width: 100% !important;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tfoot {
+    display: table-footer-group;
+  }
+
   @page {
-    size: A4;
-    margin: 15mm;
+    size: A4 portrait;
+    margin: 10mm 12mm 10mm 12mm;
+  }
+
+  @page landscape-film {
+    size: A4 landscape;
+    margin: 8mm;
   }
 }
 

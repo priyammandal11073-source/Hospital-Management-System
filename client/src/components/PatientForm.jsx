@@ -142,7 +142,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
         <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Name *
           <input
-            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
             name="name"
             onChange={handleChange}
             placeholder="e.g. Rahul Sharma"
@@ -153,7 +153,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
         <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Age *
           <input
-            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
             min="0"
             name="age"
             onChange={handleChange}
@@ -165,7 +165,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
         <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Gender *
           <select
-            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 focus:border-teal-600 focus:outline-hidden"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-semibold text-slate-900 focus:border-teal-600 focus:outline-hidden"
             name="gender"
             onChange={handleChange}
             required
@@ -180,11 +180,11 @@ function PatientForm({ patient, onCancel, onSuccess }) {
         <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Contact number *
           <div className="relative mt-1 flex rounded-xl shadow-2xs">
-            <span className="inline-flex items-center rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 px-3 text-xs font-bold text-slate-600">
+            <span className="inline-flex min-h-[44px] items-center rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 px-3.5 text-xs font-bold text-slate-600">
               +91
             </span>
             <input
-              className="w-full rounded-r-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+              className="w-full min-h-[44px] rounded-r-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
               name="contactNumber"
               onChange={handleChange}
               placeholder="98765 43210"
@@ -197,7 +197,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
         <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Email
           <input
-            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
             name="email"
             onChange={handleChange}
             placeholder="rahul.sharma@example.com"
@@ -208,7 +208,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
         <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
           Blood group
           <select
-            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-900 focus:border-teal-600 focus:outline-hidden"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-semibold text-slate-900 focus:border-teal-600 focus:outline-hidden"
             name="bloodGroup"
             onChange={handleChange}
             value={formData.bloodGroup}
@@ -224,7 +224,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
         <label className="text-xs font-bold text-slate-800 uppercase tracking-wider sm:col-span-2">
           ABHA number (Ayushman Bharat, optional)
           <input
-            className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
             name="abhaId"
             onChange={handleChange}
             placeholder="e.g. 14-8891-2345-6789 or username@abdm"
@@ -236,7 +236,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
       <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
         Address
         <textarea
-          className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+          className="mt-1 w-full min-h-[72px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
           name="address"
           onChange={handleChange}
           placeholder="e.g. 123 M.G. Road, Indiranagar, Bengaluru, Karnataka - 560038"
@@ -248,7 +248,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
       <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
         Allergies
         <input
-          className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+          className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
           name="allergies"
           onChange={handleChange}
           placeholder="e.g. Penicillin, Peanuts"
@@ -259,7 +259,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
       <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
         Medical history
         <input
-          className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+          className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
           name="medicalHistory"
           onChange={handleChange}
           placeholder="e.g. Asthma, Diabetes"
@@ -273,16 +273,16 @@ function PatientForm({ patient, onCancel, onSuccess }) {
         </p>
       )}
 
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
         <button
-          className="rounded-xl border border-slate-300 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
           onClick={onCancel}
           type="button"
         >
           Cancel
         </button>
         <button
-          className="rounded-xl bg-teal-600 px-5 py-2 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition-colors shadow-2xs"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition-colors shadow-2xs"
           disabled={isSubmitting}
           type="submit"
         >

@@ -5,6 +5,7 @@ import {
   checkDuplicatePatient,
   checkInPatient,
   createWalkInAppointment,
+  createWalkInDiagnostic,
   getWaitingRoomQueue,
   updateWaitingRoomStatus,
   getDoctorAvailability,
@@ -37,6 +38,7 @@ router.get("/duplicate-check", checkDuplicatePatient);
 // Check-in & Walk-in
 router.post("/check-in/:id", checkInPatient);
 router.post("/walk-in", createWalkInAppointment);
+router.post("/walk-in-diagnostic", createWalkInDiagnostic);
 
 // Waiting Room & Queue Management
 router.get("/waiting-room", getWaitingRoomQueue);

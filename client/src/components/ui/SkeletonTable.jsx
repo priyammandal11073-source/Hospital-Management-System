@@ -1,0 +1,34 @@
+import React from "react";
+
+export default function SkeletonTable({ rows = 5, cols = 5, className = "" }) {
+  return (
+    <div className={`overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs ${className}`}>
+      {/* Skeleton Table Header */}
+      <div className="border-b border-slate-100 bg-slate-50/70 px-6 py-4 flex items-center justify-between gap-4">
+        <div className="h-4 w-40 rounded-md bg-slate-200 animate-pulse"></div>
+        <div className="flex gap-2">
+          <div className="h-7 w-24 rounded-lg bg-slate-200 animate-pulse"></div>
+          <div className="h-7 w-16 rounded-lg bg-slate-200 animate-pulse"></div>
+        </div>
+      </div>
+
+      {/* Skeleton Rows */}
+      <div className="divide-y divide-slate-100">
+        {Array.from({ length: rows }).map((_, rIdx) => (
+          <div key={rIdx} className="px-6 py-4 flex items-center gap-6 animate-pulse">
+            {Array.from({ length: cols }).map((_, cIdx) => (
+              <div
+                key={cIdx}
+                className="h-3.5 rounded bg-slate-200"
+                style={{
+                  width: cIdx === 0 ? "28%" : cIdx === cols - 1 ? "12%" : "18%",
+                  opacity: Math.max(0.4, 1 - cIdx * 0.12),
+                }}
+              ></div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -9,6 +9,10 @@ import DoctorOrder from "../models/DoctorOrder.js";
 import Referral from "../models/Referral.js";
 import ClinicalNote from "../models/ClinicalNote.js";
 import Notification from "../models/Notification.js";
+import DiagnosticOrder from "../models/DiagnosticOrder.js";
+import DiagnosticReport from "../models/DiagnosticReport.js";
+import DiagnosticTest from "../models/DiagnosticTest.js";
+import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
 import { resolveDoctorForUser } from "../utils/doctorHelper.js";
 
 // Helper: send error
@@ -297,27 +301,45 @@ export const getConsultationBundle = async (req, res) => {
     }
 
     // Parallel fetch of patient clinical history
-    const [vitalsHistory, activePrescriptions, labReports, clinicalNotes, previousAppointments] =
-      await Promise.all([
-        Vitals.find({ patient: patientId }).sort({ recordedAt: -1 }).limit(10).lean(),
-        Prescription.find({ patient: patientId, status: "Active" })
-          .sort({ createdAt: -1 })
-          .populate("doctor", "name specialization")
-          .lean(),
-        LabReport.find({ patient: patientId })
-          .sort({ testDate: -1, createdAt: -1 })
-          .limit(10)
-          .lean(),
-        ClinicalNote.find({ patient: patientId })
-          .sort({ createdAt: -1 })
-          .limit(10)
-          .lean(),
-        Appointment.find({ patient: patientId, _id: { $ne: appointment._id } })
-          .sort({ appointmentDate: -1 })
-          .limit(5)
-          .populate("doctor", "name specialization")
-          .lean(),
-      ]);
+    const [
+      vitalsHistory,
+      activePrescriptions,
+      labReports,
+      clinicalNotes,
+      previousAppointments,
+      diagnosticOrders,
+      diagnosticReports,
+    ] = await Promise.all([
+      Vitals.find({ patient: patientId }).sort({ recordedAt: -1 }).limit(10).lean(),
+      Prescription.find({ patient: patientId, status: "Active" })
+        .sort({ createdAt: -1 })
+        .populate("doctor", "name specialization")
+        .lean(),
+      LabReport.find({ patient: patientId })
+        .sort({ testDate: -1, createdAt: -1 })
+        .limit(10)
+        .lean(),
+      ClinicalNote.find({ patient: patientId })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean(),
+      Appointment.find({ patient: patientId, _id: { $ne: appointment._id } })
+        .sort({ appointmentDate: -1 })
+        .limit(5)
+        .populate("doctor", "name specialization")
+        .lean(),
+      DiagnosticOrder.find({ patient: patientId })
+        .sort({ createdAt: -1 })
+        .limit(15)
+        .populate("doctor", "name specialization")
+        .populate("report")
+        .lean(),
+      DiagnosticReport.find({ patient: patientId })
+        .sort({ updatedAt: -1 })
+        .limit(15)
+        .populate("doctor", "name specialization")
+        .lean(),
+    ]);
 
     // Extract active medications from active prescriptions
     const currentMedications = [];
@@ -346,6 +368,8 @@ export const getConsultationBundle = async (req, res) => {
         labReports,
         clinicalNotes,
         previousAppointments,
+        diagnosticOrders,
+        diagnosticReports,
       },
     });
   } catch (error) {
@@ -440,14 +464,76 @@ export const concludeConsultation = async (req, res) => {
       });
     }
 
-    // 3. Handle Lab Orders
+    // 3. Handle Diagnostic & Lab Orders
     const createdLabReports = [];
+    const createdDiagnosticOrders = [];
     if (Array.isArray(labOrders) && labOrders.length > 0) {
       const labCount = await LabReport.countDocuments();
       for (let i = 0; i < labOrders.length; i++) {
         const order = labOrders[i];
         if (!order.testName) continue;
 
+        // Try to locate test in DiagnosticTest catalog
+        let testDoc = null;
+        if (order.testId && mongoose.isValidObjectId(order.testId)) {
+          testDoc = await DiagnosticTest.findById(order.testId);
+        }
+        if (!testDoc) {
+          testDoc = await DiagnosticTest.findOne({
+            $or: [
+              { testName: { $regex: new RegExp(`^${order.testName.trim()}$`, "i") } },
+              { testCode: { $regex: new RegExp(`^${order.testName.trim()}$`, "i") } },
+            ],
+          });
+        }
+        if (!testDoc) {
+          testDoc = await DiagnosticTest.create({
+            testCode: `TST-${Date.now().toString().slice(-4)}`,
+            testName: order.testName.trim(),
+            department: order.category?.toLowerCase().includes("radio") ? "Radiology" : "Pathology",
+            category: order.category || "General",
+            modality: order.category?.toLowerCase().includes("radio") ? "X-Ray" : "Biochemistry",
+            price: 500,
+            requiresSample: !order.category?.toLowerCase().includes("radio"),
+            turnaroundHours: 4,
+          });
+        }
+
+        const orderNumber = `DIAG-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
+        const diagOrder = await DiagnosticOrder.create({
+          orderNumber,
+          patient: patient._id,
+          patientName: patient.name,
+          patientIdStr: patient.patientId || patient.abhaId,
+          doctor: doctorId,
+          doctorName: `Dr. ${doctorName}`,
+          department: doctor?.department || "General Medicine",
+          appointment: appointment._id,
+          test: testDoc._id,
+          testCode: testDoc.testCode,
+          testName: testDoc.testName,
+          diagnosticDepartment: testDoc.department,
+          category: testDoc.category,
+          modality: testDoc.modality,
+          clinicalIndication: order.clinicalIndication || diagnosis || "Ordered during doctor consultation",
+          priority: order.priority || "Routine",
+          price: testDoc.price,
+          notes: order.notes || "",
+        });
+
+        // Trigger synchronized cross-portal workflow
+        try {
+          await diagnosticSyncService.onDiagnosticRequestCreated(diagOrder, {
+            userId: req.user?._id,
+            userName: `Dr. ${doctorName}`,
+            role: "doctor",
+          });
+        } catch (syncErr) {
+          console.error("Diagnostic sync service error during consultation:", syncErr.message);
+        }
+        createdDiagnosticOrders.push(diagOrder);
+
+        // Also create legacy LabReport for backwards-compatibility
         const reportNumber = `LAB-${Date.now().toString().slice(-6)}-${String(labCount + i + 1).padStart(3, "0")}`;
         const newReport = await LabReport.create({
           reportNumber,
@@ -519,6 +605,7 @@ export const concludeConsultation = async (req, res) => {
         clinicalNote,
         prescription: createdPrescription,
         labReports: createdLabReports,
+        diagnosticOrders: createdDiagnosticOrders,
         referral: createdReferral,
       },
     });
@@ -551,6 +638,8 @@ export const getDoctorPatientProfile = async (req, res) => {
       appointments,
       doctorOrders,
       referrals,
+      diagnosticOrders,
+      diagnosticReports,
     ] = await Promise.all([
       Vitals.find({ patient: patientId }).sort({ recordedAt: -1 }).lean(),
       Prescription.find({ patient: patientId })
@@ -577,6 +666,15 @@ export const getDoctorPatientProfile = async (req, res) => {
         .sort({ createdAt: -1 })
         .populate("referringDoctor", "name specialization")
         .populate("specialistDoctor", "name specialization")
+        .lean(),
+      DiagnosticOrder.find({ patient: patientId })
+        .sort({ createdAt: -1 })
+        .populate("doctor", "name specialization")
+        .populate("report")
+        .lean(),
+      DiagnosticReport.find({ patient: patientId })
+        .sort({ updatedAt: -1 })
+        .populate("doctor", "name specialization")
         .lean(),
     ]);
 
@@ -624,6 +722,17 @@ export const getDoctorPatientProfile = async (req, res) => {
       });
     });
 
+    diagnosticOrders.forEach((d) => {
+      timeline.push({
+        type: "diagnostic",
+        date: d.requestedDate || d.createdAt,
+        title: `Diagnostic: ${d.testName} (${d.status})`,
+        subtitle: `${d.diagnosticDepartment} • ${d.modality} • Priority: ${d.priority}`,
+        isCritical: d.isCritical,
+        details: d,
+      });
+    });
+
     doctorOrders.forEach((o) => {
       timeline.push({
         type: "order",
@@ -648,6 +757,8 @@ export const getDoctorPatientProfile = async (req, res) => {
         appointments,
         doctorOrders,
         referrals,
+        diagnosticOrders,
+        diagnosticReports,
         timeline,
       },
     });
@@ -857,14 +968,6 @@ export const updateReferralStatus = async (req, res) => {
  */
 export const getCriticalLabResults = async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      const demoLabs = [
-        { _id: "lab_crit_1", testName: "Serum Potassium", category: "Biochemistry", isCritical: true, summaryConclusion: "Critical hyperkalemia (6.8 mEq/L) - Immediate ECG advised", patient: { name: "Ramesh Patel", age: 54, gender: "Male" }, testDate: new Date(), status: "Completed" },
-        { _id: "lab_crit_2", testName: "Cardiac Troponin-I", category: "Cardiology", isCritical: true, summaryConclusion: "Elevated Troponin-I (1.8 ng/mL) - Acute Coronary Syndrome", patient: { name: "Meena Nair", age: 67, gender: "Female" }, testDate: new Date(), status: "Completed" },
-      ];
-      return res.status(200).json({ success: true, data: demoLabs, isOfflineDemo: true });
-    }
-
     const doctor = await resolveDoctorForUser(req.user);
     const filter = {
       $or: [
@@ -881,13 +984,53 @@ export const getCriticalLabResults = async (req, res) => {
       filter.doctorReviewStatus = req.query.status;
     }
 
-    const reports = await LabReport.find(filter)
-      .populate("patient", "name patientId age gender phone")
-      .populate("doctor", "name specialization")
-      .sort({ testDate: -1, createdAt: -1 })
-      .lean();
+    // Parallel fetch from legacy LabReport and centralized DiagnosticOrder
+    const [labReports, diagOrders] = await Promise.all([
+      LabReport.find(filter)
+        .populate("patient", "name patientId age gender phone")
+        .populate("doctor", "name specialization")
+        .sort({ testDate: -1, createdAt: -1 })
+        .lean(),
+      DiagnosticOrder.find({
+        isCritical: true,
+        ...(doctor ? { doctor: doctor._id } : {}),
+      })
+        .populate("patient", "name patientId age gender phone contactNumber")
+        .populate("doctor", "name specialization")
+        .populate("report")
+        .sort({ updatedAt: -1 })
+        .lean(),
+    ]);
 
-    return res.status(200).json({ success: true, data: reports });
+    // Format DiagnosticOrder records into consistent critical alert cards
+    const formattedDiagAlerts = diagOrders.map((diag) => ({
+      _id: diag._id,
+      orderNumber: diag.orderNumber,
+      testName: diag.testName,
+      category: diag.category || diag.diagnosticDepartment,
+      isCritical: true,
+      diagnosticDepartment: diag.diagnosticDepartment,
+      status: diag.status,
+      doctorReviewStatus:
+        diag.criticalDetails?.escalationStatus === "Acknowledged" ||
+        diag.criticalDetails?.escalationStatus === "Resolved"
+          ? "reviewed"
+          : "pending",
+      summaryConclusion:
+        diag.criticalDetails?.parameter
+          ? `CRITICAL VALUE: ${diag.criticalDetails.parameter} = ${diag.criticalDetails.detectedValue} (Ref: ${diag.criticalDetails.normalRange})`
+          : "Critical Diagnostic Alert",
+      criticalDetails: diag.criticalDetails,
+      patient: diag.patient,
+      doctor: diag.doctor,
+      testDate: diag.criticalDetails?.flaggedAt || diag.updatedAt || diag.createdAt,
+      report: diag.report,
+      isDiagnosticOrder: true,
+    }));
+
+    const combinedReports = [...formattedDiagAlerts, ...labReports];
+
+    return res.status(200).json({ success: true, data: combinedReports });
   } catch (error) {
     return sendError(res, 500, "Error loading critical lab results", error);
   }
@@ -895,7 +1038,7 @@ export const getCriticalLabResults = async (req, res) => {
 
 /**
  * 11. POST /api/doctor-workspace/acknowledge-lab/:reportId
- * Acknowledge critical lab review
+ * Acknowledge critical lab review (supports both LabReport and DiagnosticOrder)
  */
 export const acknowledgeCriticalLabResult = async (req, res) => {
   try {
@@ -907,6 +1050,24 @@ export const acknowledgeCriticalLabResult = async (req, res) => {
       return sendError(res, 400, "Invalid lab report ID");
     }
 
+    // Check if ID is a DiagnosticOrder
+    const diagOrder = await DiagnosticOrder.findById(reportId);
+    if (diagOrder && diagOrder.isCritical) {
+      await diagnosticSyncService.onCriticalResultAcknowledged(diagOrder._id, {
+        userId: req.user?._id,
+        userName: doctor?.name || req.user?.name || "Attending Physician",
+        notes: notes || "Physician evaluated critical result and commenced intervention",
+      });
+
+      const updated = await DiagnosticOrder.findById(reportId);
+      return res.status(200).json({
+        success: true,
+        message: "Diagnostic critical result acknowledged successfully",
+        data: updated,
+      });
+    }
+
+    // Fallback to legacy LabReport
     const report = await LabReport.findById(reportId);
     if (!report) return sendError(res, 404, "Lab report not found");
 

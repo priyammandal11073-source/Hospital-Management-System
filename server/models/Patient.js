@@ -99,9 +99,11 @@ patientSchema.methods.comparePassword = async function comparePassword(
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// This supports quick email searches and prevents duplicate supplied emails.
-// `sparse` allows multiple patients to leave the optional email field empty.
+// Indexes for quick email searches, name/contact queries, and registration date sorting
 patientSchema.index({ email: 1 }, { unique: true, sparse: true });
+patientSchema.index({ name: 1, contactNumber: 1 });
+patientSchema.index({ registrationDate: -1 });
+patientSchema.index({ createdAt: -1 });
 
 const Patient = mongoose.model("Patient", patientSchema);
 

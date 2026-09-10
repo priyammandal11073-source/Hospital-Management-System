@@ -166,11 +166,30 @@ export const getAllAppointments = async (req, res) => {
       if (end) filter.appointmentDate.$lte = end;
     }
 
-    const appointments = await Appointment.find(filter)
+    const page = req.query.page ? Math.max(1, parseInt(req.query.page, 10)) : null;
+    const limit = req.query.limit ? Math.min(200, Math.max(1, parseInt(req.query.limit, 10))) : (page ? 50 : 200);
+    const skip = page ? (page - 1) * limit : 0;
+
+    let query = Appointment.find(filter)
       .populate("patient", "name contactNumber age gender abhaId bloodGroup")
       .populate("doctor", "name specialization department")
       .sort({ appointmentDate: 1, timeSlot: 1 });
 
+    if (page) {
+      const [appointments, totalCount] = await Promise.all([
+        query.skip(skip).limit(limit),
+        Appointment.countDocuments(filter),
+      ]);
+      return res.status(200).json({
+        appointments,
+        totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit),
+      });
+    }
+
+    const appointments = await query.limit(limit);
     return res.status(200).json({ appointments });
   } catch (error) {
     return sendDatabaseError(error, res);

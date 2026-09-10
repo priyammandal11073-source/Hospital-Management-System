@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMyLabReports } from "../../services/api.js";
+import { getMyLabReports, downloadDiagnosticReportPdfBlob } from "../../services/api.js";
 
 const STATUS_CLASSES = {
   ordered: "bg-amber-50 text-amber-800 border-amber-200",
@@ -117,17 +117,44 @@ export default function MyLabReports() {
                   <span>👁️ View Full Report</span>
                 </button>
 
-                {report.attachmentUrl && (
-                  <a
-                    href={report.attachmentUrl}
-                    download={report.attachmentName || "lab-report.pdf"}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs font-bold text-slate-700 hover:text-teal-700 flex items-center gap-1"
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        const blob = await downloadDiagnosticReportPdfBlob(report._id);
+                        const url = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.setAttribute("download", `${report.reportNumber || "Report"}.pdf`);
+                        document.body.appendChild(link);
+                        link.click();
+                        link.parentNode.removeChild(link);
+                      } catch (err) {
+                        if (report.attachmentUrl) {
+                          window.open(report.attachmentUrl, "_blank");
+                        } else {
+                          alert("PDF Report is currently being processed or unavailable.");
+                        }
+                      }
+                    }}
+                    className="text-xs font-bold text-teal-700 hover:text-teal-900 flex items-center gap-1 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200"
                   >
-                    <span>📥 Download PDF</span>
-                  </a>
-                )}
+                    <span>📄 Official PDF</span>
+                  </button>
+
+                  {report.attachmentUrl && (
+                    <a
+                      href={report.attachmentUrl}
+                      download={report.attachmentName || "lab-report.pdf"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs font-bold text-slate-700 hover:text-teal-700 flex items-center gap-1"
+                    >
+                      <span>📎 File</span>
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
           ))}

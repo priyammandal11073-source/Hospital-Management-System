@@ -156,11 +156,11 @@ export default function Reports() {
         </div>
 
         {/* View Switcher */}
-        <div className="flex rounded-xl bg-slate-100 p-1 text-xs font-bold self-start sm:self-auto">
+        <div className="flex w-full sm:w-auto overflow-x-auto rounded-xl bg-slate-100 p-1 text-xs font-bold self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setActiveView("revenue")}
-            className={`px-3.5 py-1.5 rounded-lg transition ${
+            className={`flex-1 sm:flex-none min-h-[44px] px-3.5 py-2 rounded-lg transition flex items-center justify-center gap-1.5 ${
               activeView === "revenue"
                 ? "bg-white text-teal-900 shadow-xs"
                 : "text-slate-600 hover:text-slate-900"
@@ -171,7 +171,7 @@ export default function Reports() {
           <button
             type="button"
             onClick={() => setActiveView("appointments")}
-            className={`px-3.5 py-1.5 rounded-lg transition ${
+            className={`flex-1 sm:flex-none min-h-[44px] px-3.5 py-2 rounded-lg transition flex items-center justify-center gap-1.5 ${
               activeView === "appointments"
                 ? "bg-white text-teal-900 shadow-xs"
                 : "text-slate-600 hover:text-slate-900"
@@ -183,7 +183,7 @@ export default function Reports() {
       </div>
 
       {/* ── Executive KPI Cards ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Total Revenue */}
         <div className="p-5 rounded-2xl bg-gradient-to-br from-teal-700 to-teal-900 text-white shadow-md flex flex-col justify-between">
           <span className="text-xs font-semibold text-teal-200 uppercase tracking-wider">
@@ -381,7 +381,7 @@ export default function Reports() {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="text-xs font-bold text-teal-700 hover:text-teal-900 bg-teal-50 px-3 py-1.5 rounded-xl border border-teal-200"
+                  className="w-full sm:w-auto text-xs font-bold text-teal-700 hover:text-teal-900 bg-teal-50 min-h-[44px] px-4 py-2 rounded-xl border border-teal-200 inline-flex items-center justify-center gap-1.5 transition"
                 >
                   🖨️ Export Revenue Summary
                 </button>

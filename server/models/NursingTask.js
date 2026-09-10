@@ -26,12 +26,18 @@ const nursingTaskSchema = new mongoose.Schema(
         "IV Monitoring",
         "Patient Repositioning",
         "Patient Preparation",
+        "Patient Transport",
         "Discharge Preparation",
         "Medication Due",
         "Catheter Care",
         "Other",
       ],
       default: "Record Vitals",
+    },
+    diagnosticOrder: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "DiagnosticOrder",
+      index: true,
     },
     title: {
       type: String,
