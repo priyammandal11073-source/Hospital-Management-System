@@ -1,3 +1,4 @@
+<a id="top"></a>
 <div align="center">
 
 # 🏥 Nivora Care Hospital
@@ -13,13 +14,13 @@
 
 <br/>
 
-**Nivora Care Hospital** is a mission-critical, end-to-end full-stack healthcare operating system engineered to bridge hospital management operations across **7 specialized portals**: Administration, Doctors, Nursing, Reception, Pharmacy, Diagnostic Services (Pathology & Radiology), and Patient Self-Service.
+**Nivora Care Hospital** is a mission-critical, end-to-end full-stack healthcare operating system engineered to bridge hospital operations across **7 specialized portals**: Administration, Doctors, Nursing, Reception, Pharmacy, Diagnostic Services (Pathology & Radiology), and Patient Self-Service.
 
 <br/>
 
-<img src="./docs/screenshots/LOGIN_gateway_updated.png" alt="Nivora Care Hospital Unified Healthcare Gateway" width="900" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"/>
+<img src="./docs/screenshots/LOGIN_gateway_updated.png" alt="Nivora Care Hospital Unified Healthcare Gateway" width="920" style="border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.18);"/>
 
-> **Unified Healthcare Gateway**: Secure role-based entry point connecting every operational department—including Diagnostic Services—in Nivora Care Hospital from a single responsive interface.
+<p><em>Unified Healthcare Gateway: Single responsive entry point providing role-isolated access to all clinical & administrative departments.</em></p>
 
 </div>
 
@@ -27,30 +28,32 @@
 
 ## 📑 Table of Contents
 
-- [Overview](#overview)
-- [System Highlights](#system-highlights)
-- [Hospital Portals](#hospital-portals)
-  - [🧑‍💼 Admin Portal](#admin-portal)
-  - [👨‍⚕️ Doctor Portal](#doctor-portal)
-  - [👩‍⚕️ Nurse Portal](#nurse-portal)
-  - [🧾 Receptionist Portal](#receptionist-portal)
-  - [💊 Pharmacy Portal](#pharmacy-portal)
-  - [🧪 Diagnostic Services Portal](#diagnostic-services-portal)
-  - [👤 Patient Portal](#patient-portal)
-- [Cross-Portal Workflows & Integration](#cross-portal-workflows)
-- [Real-World Workflow Examples](#real-world-workflows)
-- [Architecture](#architecture)
-- [Database Schema & Indexing](#database-schema)
-- [Medical File & Laser Film Storage](#medical-file-storage)
-- [Security & Access Control](#security-access-control)
-- [Complete Screenshot Gallery](#complete-screenshot-gallery)
-- [Installation & Setup](#installation-setup)
-- [Environment Variables](#environment-variables)
-- [Demo Test Accounts](#demo-test-accounts)
-- [Verification & Automated Diagnostics](#verification-diagnostics)
-- [Project Structure](#project-structure)
-- [Future Improvements](#future-improvements)
-- [Author & License](#author-license)
+| Section | Description |
+|---|---|
+| 🏥 [Overview](#overview) | System objectives, architectural problem solved, and key value drivers |
+| ⚡ [System Highlights](#system-highlights) | At-a-glance matrix of all 7 hospital departments & core capabilities |
+| 🏢 [Hospital Portals](#hospital-portals) | In-depth breakdown of features, workflows, and UI screens for every portal |
+| ├─ 🧑‍💼 [Admin Portal](#admin-portal) | Hospital command center, revenue analytics, staff, and bed capacity |
+| ├─ 👨‍⚕️ [Doctor Portal](#doctor-portal) | OPD queue, clinical consultations, EHR, e-prescriptions, and lab orders |
+| ├─ 👩‍⚕️ [Nurse Portal](#nurse-portal) | Bedside care, vitals monitoring, MAR administration, and shift handovers |
+| ├─ 🧾 [Receptionist Portal](#receptionist-portal) | Patient registration, OPD tokens, inpatient admissions, and cashier billing |
+| ├─ 💊 [Pharmacy Portal](#pharmacy-portal) | Digital prescription queue, FEFO inventory, expiry tracking, and POs |
+| ├─ 🧪 [Diagnostic Services Portal](#diagnostic-services-portal) | Pathology labs, radiology PACS DICOM viewer, and film sheet generator |
+| └─ 👤 [Patient Portal](#patient-portal) | Self-service appointments, digital Rx, lab reports, and billing payments |
+| 🔄 [Cross-Portal Workflows](#cross-portal-workflows) | Event-driven data synchronization across clinical and financial departments |
+| 🔁 [Real-World Workflows](#real-world-workflows) | Step-by-step lifecycles for Pathology, Radiology CT, and Medication MAR |
+| 🏗️ [Architecture](#architecture) | Full-stack architecture diagram (React 18 + Express + MongoDB Atlas) |
+| 🗄️ [Database Schema & Indexing](#database-schema) | High-performance compound & partial index configurations |
+| 📁 [Medical File Storage](#medical-file-storage) | Dynamic PDF reports, thermal film generator (1/4/9-Up), and static asset CDN |
+| 🔒 [Security & Access Control](#security-access-control) | RBAC middleware, JWT auth, IDOR guards, and unauthorized rejection tests |
+| 🖼️ [Complete Screenshot Gallery](#complete-screenshot-gallery) | Collapsible high-resolution visual catalog of all 7 portals |
+| ⚙️ [Installation & Setup](#installation-setup) | Quickstart guide, prerequisites, and automated installation commands |
+| 🔑 [Environment Variables](#environment-variables) | Complete `.env` configuration guide for client and server |
+| 🧪 [Demo Test Accounts](#demo-test-accounts) | Pre-seeded login credentials for immediate testing across all roles |
+| 🧪 [Automated System Diagnostics](#verification-diagnostics) | Automated 24-point optimization and security verification suite |
+| 📂 [Project Structure](#project-structure) | Clean tree map of frontend, backend, and documentation directories |
+| 🔮 [Future Improvements](#future-improvements) | Roadmap: FHIR / HL7, AI scan screening, telemedicine, and IoT sync |
+| 👨‍💻 [Author & License](#author-license) | Project creator information, GitHub profile, and MIT license |
 
 ---
 
@@ -112,6 +115,8 @@ The **Admin Portal** serves as the command center for hospital executive leaders
 
 </div>
 
+<p align="right"><a href="#top">⬆ Back to Top</a></p>
+
 ---
 
 ### <a id="doctor-portal"></a>👨‍⚕️ Doctor Portal
@@ -143,6 +148,8 @@ Designed for high-speed clinical environments, the **Doctor Portal** equips phys
 > *Live consultation screen allowing doctors to inspect vitals history, record diagnostic findings, and generate prescriptions.*
 
 </div>
+
+<p align="right"><a href="#top">⬆ Back to Top</a></p>
 
 ---
 
@@ -176,6 +183,8 @@ The **Nurse Portal** provides bedside care teams with real-time patient monitori
 
 </div>
 
+<p align="right"><a href="#top">⬆ Back to Top</a></p>
+
 ---
 
 ### <a id="receptionist-portal"></a>🧾 Receptionist Portal
@@ -208,6 +217,8 @@ The **Receptionist Portal** manages patient entry, OPD registration, waiting roo
 
 </div>
 
+<p align="right"><a href="#top">⬆ Back to Top</a></p>
+
 ---
 
 ### <a id="pharmacy-portal"></a>💊 Pharmacy Portal
@@ -239,6 +250,8 @@ The **Pharmacy Portal** controls medication inventory, batch tracking, prescript
 > *Pharmacist workspace for fulfilling incoming doctor prescriptions, allocating drug batches, and completing orders.*
 
 </div>
+
+<p align="right"><a href="#top">⬆ Back to Top</a></p>
 
 ---
 
@@ -297,6 +310,8 @@ The **Diagnostic Services Portal** is a dual-subsystem platform combining **Path
 
 </div>
 
+<p align="right"><a href="#top">⬆ Back to Top</a></p>
+
 ---
 
 ### <a id="patient-portal"></a>👤 Patient Portal
@@ -328,6 +343,8 @@ The **Patient Portal** empowers patients to take control of their healthcare jou
 > *Self-service appointment reservation form allowing patients to select departments, doctors, and available time slots.*
 
 </div>
+
+<p align="right"><a href="#top">⬆ Back to Top</a></p>
 
 ---
 
