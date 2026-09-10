@@ -9,7 +9,7 @@
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#-license)
+[![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#author-license)
 
 <br/>
 
@@ -27,34 +27,34 @@
 
 ## 📑 Table of Contents
 
-- [Overview](#-overview)
-- [System Highlights](#-system-highlights)
-- [Hospital Portals](#-hospital-portals)
-  - [🧑‍💼 Admin Portal](#-admin-portal)
-  - [👨‍⚕️ Doctor Portal](#-doctor-portal)
-  - [👩‍⚕️ Nurse Portal](#-nurse-portal)
-  - [🧾 Receptionist Portal](#-receptionist-portal)
-  - [💊 Pharmacy Portal](#-pharmacy-portal)
-  - [🧪 Diagnostic Services Portal](#-diagnostic-services-portal)
-  - [👤 Patient Portal](#-patient-portal)
-- [Cross-Portal Workflows & Integration](#-cross-portal-workflows--integration)
-- [Real-World Workflow Examples](#-real-world-workflow-examples)
-- [Architecture](#-architecture)
-- [Database Schema & Indexing](#-database-schema--indexing)
-- [Medical File & Laser Film Storage](#-medical-file--laser-film-storage)
-- [Security & Access Control](#-security--access-control)
-- [Complete Screenshot Gallery](#-complete-screenshot-gallery)
-- [Installation & Setup](#-installation--setup)
-- [Environment Variables](#-environment-variables)
-- [Demo Test Accounts](#-demo-test-accounts)
-- [Verification & Automated Diagnostics](#-verification--automated-diagnostics)
-- [Project Structure](#-project-structure)
-- [Future Improvements](#-future-improvements)
-- [Author & License](#-author--license)
+- [Overview](#overview)
+- [System Highlights](#system-highlights)
+- [Hospital Portals](#hospital-portals)
+  - [🧑‍💼 Admin Portal](#admin-portal)
+  - [👨‍⚕️ Doctor Portal](#doctor-portal)
+  - [👩‍⚕️ Nurse Portal](#nurse-portal)
+  - [🧾 Receptionist Portal](#receptionist-portal)
+  - [💊 Pharmacy Portal](#pharmacy-portal)
+  - [🧪 Diagnostic Services Portal](#diagnostic-services-portal)
+  - [👤 Patient Portal](#patient-portal)
+- [Cross-Portal Workflows & Integration](#cross-portal-workflows)
+- [Real-World Workflow Examples](#real-world-workflows)
+- [Architecture](#architecture)
+- [Database Schema & Indexing](#database-schema)
+- [Medical File & Laser Film Storage](#medical-file-storage)
+- [Security & Access Control](#security-access-control)
+- [Complete Screenshot Gallery](#complete-screenshot-gallery)
+- [Installation & Setup](#installation-setup)
+- [Environment Variables](#environment-variables)
+- [Demo Test Accounts](#demo-test-accounts)
+- [Verification & Automated Diagnostics](#verification-diagnostics)
+- [Project Structure](#project-structure)
+- [Future Improvements](#future-improvements)
+- [Author & License](#author-license)
 
 ---
 
-## 🏥 Overview
+## <a id="overview"></a>🏥 Overview
 
 Modern clinical operations fail when data remains trapped in departmental silos. **Nivora Care Hospital** solves this fragmentation by implementing a real-time event-driven architecture where patient admission, clinical diagnosis, nursing care, lab orders, pharmacy dispensing, and financial ledgering are tightly synchronized.
 
@@ -66,7 +66,7 @@ Modern clinical operations fail when data remains trapped in departmental silos.
 
 ---
 
-## ⚡ System Highlights
+## <a id="system-highlights"></a>⚡ System Highlights
 
 | Module | Core Purpose & Operations | Supported Capabilities |
 |---|---|---|
@@ -80,9 +80,9 @@ Modern clinical operations fail when data remains trapped in departmental silos.
 
 ---
 
-## 🏢 Hospital Portals
+## <a id="hospital-portals"></a>🏢 Hospital Portals
 
-### 🧑‍💼 Admin Portal
+### <a id="admin-portal"></a>🧑‍💼 Admin Portal
 
 #### Overview
 The **Admin Portal** serves as the command center for hospital executive leadership, providing real-time financial tracking, audit logging, facility management, and human resource oversight.
@@ -114,7 +114,7 @@ The **Admin Portal** serves as the command center for hospital executive leaders
 
 ---
 
-### 👨‍⚕️ Doctor Portal
+### <a id="doctor-portal"></a>👨‍⚕️ Doctor Portal
 
 #### Overview
 Designed for high-speed clinical environments, the **Doctor Portal** equips physicians with streamlined consultation workspaces, electronic health record (EHR) review, instant prescription ordering, and diagnostic investigation requests.
@@ -146,7 +146,7 @@ Designed for high-speed clinical environments, the **Doctor Portal** equips phys
 
 ---
 
-### 👩‍⚕️ Nurse Portal
+### <a id="nurse-portal"></a>👩‍⚕️ Nurse Portal
 
 #### Overview
 The **Nurse Portal** provides bedside care teams with real-time patient monitoring tools, vital signs entry, medication administration records (MAR), fluid intake/output tracking, and nursing shift handovers.
@@ -178,7 +178,7 @@ The **Nurse Portal** provides bedside care teams with real-time patient monitori
 
 ---
 
-### 🧾 Receptionist Portal
+### <a id="receptionist-portal"></a>🧾 Receptionist Portal
 
 #### Overview
 The **Receptionist Portal** manages patient entry, OPD registration, waiting room queue tokens, doctor schedule booking, inpatient bed allocation, and multi-channel billing settlements.
@@ -210,7 +210,7 @@ The **Receptionist Portal** manages patient entry, OPD registration, waiting roo
 
 ---
 
-### 12. 💊 Pharmacy Portal
+### <a id="pharmacy-portal"></a>💊 Pharmacy Portal
 
 #### Overview
 The **Pharmacy Portal** controls medication inventory, batch tracking, prescription fulfillment queues, supplier purchase orders, and stock reordering.
@@ -242,7 +242,7 @@ The **Pharmacy Portal** controls medication inventory, batch tracking, prescript
 
 ---
 
-### 🧪 Diagnostic Services Portal
+### <a id="diagnostic-services-portal"></a>🧪 Diagnostic Services Portal
 
 #### Overview
 The **Diagnostic Services Portal** is a dual-subsystem platform combining **Pathology / Laboratory Medicine** with **Radiology / Medical Imaging (PACS)**. It governs the full life cycle of diagnostic investigations from doctor ordering to final report distribution.
@@ -299,7 +299,7 @@ The **Diagnostic Services Portal** is a dual-subsystem platform combining **Path
 
 ---
 
-### 👤 Patient Portal
+### <a id="patient-portal"></a>👤 Patient Portal
 
 #### Overview
 The **Patient Portal** empowers patients to take control of their healthcare journey by providing self-service appointment booking, prescription access, diagnostic report downloads, and invoice payments.
@@ -331,7 +331,7 @@ The **Patient Portal** empowers patients to take control of their healthcare jou
 
 ---
 
-## 🔄 Cross-Portal Workflows & Integration
+## <a id="cross-portal-workflows"></a>🔄 Cross-Portal Workflows & Integration
 
 Nivora Care Hospital is designed as a unified event-driven system. Data recorded in one portal instantly propagates to all relevant departments without manual re-entry.
 
@@ -352,7 +352,7 @@ flowchart LR
 
 ---
 
-## 🔁 Real-World Workflow Examples
+## <a id="real-world-workflows"></a>🔁 Real-World Workflow Examples
 
 ### Workflow 1 — Pathology Investigation Cycle
 ```
@@ -407,7 +407,7 @@ flowchart LR
 
 ---
 
-## 🏗️ Architecture
+## <a id="architecture"></a>🏗️ Architecture
 
 Nivora Care Hospital is engineered on a modern decoupled architecture separating presentation, business logic, persistence, and static object storage.
 
@@ -448,7 +448,7 @@ flowchart TD
 
 ---
 
-## 🗄️ Database Schema & Indexing
+## <a id="database-schema"></a>🗄️ Database Schema & Indexing
 
 The backend uses **Mongoose** over **MongoDB Atlas**. To maintain high performance during heavy concurrent access, all core collections utilize compound and partial indexes to eliminate collection scans (`COLLSCAN`).
 
@@ -473,7 +473,7 @@ PatientSchema.index({ lastName: 1, firstName: 1 });
 
 ---
 
-## 📁 Medical File & Laser Film Storage
+## <a id="medical-file-storage"></a>📁 Medical File & Laser Film Storage
 
 Diagnostic scans, PDF reports, and radiology film prints are managed by a dedicated storage service (`server/services/storageService.js` & `pdfReportService.js`).
 
@@ -483,7 +483,7 @@ Diagnostic scans, PDF reports, and radiology film prints are managed by a dedica
 
 ---
 
-## 🔒 Security & Access Control
+## <a id="security-access-control"></a>🔒 Security & Access Control
 
 Nivora Care Hospital implements strict multi-layered security protocols across both backend APIs and frontend UI routes:
 
@@ -507,7 +507,7 @@ Nivora Care Hospital implements strict multi-layered security protocols across b
 
 ---
 
-## 🖼️ Complete Screenshot Gallery
+## <a id="complete-screenshot-gallery"></a>🖼️ Complete Screenshot Gallery
 
 <details>
 <summary><b>🔍 Click to Expand Complete Screenshot Gallery (All 7 Portals)</b></summary>
@@ -558,7 +558,7 @@ Nivora Care Hospital implements strict multi-layered security protocols across b
 
 ---
 
-## ⚙️ Installation & Setup
+## <a id="installation-setup"></a>⚙️ Installation & Setup
 
 ### Prerequisites
 - **Node.js**: v18.0.0 or higher
@@ -583,7 +583,7 @@ cd ..
 ```
 
 ### Step 3: Configure Environment Variables
-Create `.env` files in both `server/` and `client/` directories using the instructions in the [Environment Variables](#-environment-variables) section.
+Create `.env` files in both `server/` and `client/` directories using the instructions in the [Environment Variables](#environment-variables) section.
 
 ### Step 4: Seed Database (Optional but Recommended)
 Populate the database with complete test accounts, doctors, patients, wards, inventory, and diagnostic test catalogs:
@@ -603,7 +603,7 @@ npm run dev
 
 ---
 
-## 🔑 Environment Variables
+## <a id="environment-variables"></a>🔑 Environment Variables
 
 ### Server Configuration (`server/.env`)
 ```env
@@ -621,7 +621,7 @@ VITE_API_BASE_URL=http://localhost:5000
 
 ---
 
-## 🧪 Demo Test Accounts
+## <a id="demo-test-accounts"></a>🧪 Demo Test Accounts
 
 Use these pre-configured credentials after running `npm run seed`:
 
@@ -637,7 +637,7 @@ Use these pre-configured credentials after running `npm run seed`:
 
 ---
 
-## 🧪 Verification & Automated Diagnostics
+## <a id="verification-diagnostics"></a>🧪 Verification & Automated Diagnostics
 
 The repository includes an automated verification test suite located in `server/scratch/verify_system_optimization.js`.
 
@@ -656,7 +656,7 @@ node scratch/verify_system_optimization.js
 
 ---
 
-## 📂 Project Structure
+## <a id="project-structure"></a>📂 Project Structure
 
 ```
 Hospital-Management-System/
@@ -699,7 +699,7 @@ Hospital-Management-System/
 
 ---
 
-## 🔮 Future Improvements
+## <a id="future-improvements"></a>🔮 Future Improvements
 
 - [ ] **HL7 / FHIR Integration**: Standardized clinical data exchange with external healthcare networks.
 - [ ] **AI-Assisted Diagnostic Screening**: Machine learning pre-screening for chest X-ray abnormality detection.
@@ -709,7 +709,7 @@ Hospital-Management-System/
 
 ---
 
-## 👨‍💻 Author & License
+## <a id="author-license"></a>👨‍💻 Author & License
 
 ### Author
 **Priyam Mandal**  
