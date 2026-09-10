@@ -151,59 +151,77 @@ export default function DiagnosticDashboard({ user, refreshKey, onTriggerRefresh
       )}
 
       {/* ================= TELEMETRY KPI TILES ================= */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs hover:shadow-md transition">
-          <div className="flex items-center justify-between text-slate-500">
-            <span className="text-xs font-semibold">Total Orders</span>
-            <span className="text-base">📋</span>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-500 to-slate-700" />
+          <div className="flex items-start justify-between gap-2 text-slate-500">
+            <span className="text-xs font-semibold uppercase tracking-wider line-clamp-1">Total Orders</span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-700 text-sm">📋</span>
           </div>
-          <p className="mt-2 text-2xl sm:text-3xl font-black text-slate-800">{kpis.totalTestsToday || 0}</p>
-          <div className="mt-2 text-[10px] font-medium text-slate-400">Total active orders</div>
+          <p className="my-1 text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">{kpis.totalTestsToday || 0}</p>
+          <div className="pt-2 border-t border-slate-100 text-[10px] font-medium text-slate-400 min-h-[26px] flex items-center">
+            Total active orders
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-amber-200/80 bg-amber-50/50 p-4 shadow-xs hover:shadow-md transition">
-          <div className="flex items-center justify-between text-amber-700">
-            <span className="text-xs font-semibold">Pending Reqs</span>
-            <span className="text-base">⏳</span>
+        <div className="group relative overflow-hidden rounded-2xl border border-amber-200/80 bg-amber-50/40 p-4 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
+          <div className="flex items-start justify-between gap-2 text-amber-700">
+            <span className="text-xs font-semibold uppercase tracking-wider line-clamp-1">Pending Reqs</span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-800 text-sm animate-pulse">⏳</span>
           </div>
-          <p className="mt-2 text-2xl sm:text-3xl font-black text-amber-900">{kpis.pendingRequests || 0}</p>
-          <div className="mt-2 text-[10px] font-medium text-amber-600">Awaiting acceptance</div>
+          <p className="my-1 text-2xl sm:text-3xl font-extrabold text-amber-900 tracking-tight">{kpis.pendingRequests || 0}</p>
+          <div className="pt-2 border-t border-amber-100/80 text-[10px] font-semibold text-amber-700 min-h-[26px] flex items-center">
+            Awaiting acceptance
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-teal-200/80 bg-teal-50/50 p-4 shadow-xs hover:shadow-md transition">
-          <div className="flex items-center justify-between text-teal-700">
-            <span className="text-xs font-semibold">Samples Due</span>
-            <span className="text-base">🧪</span>
+        <div className="group relative overflow-hidden rounded-2xl border border-teal-200/80 bg-teal-50/40 p-4 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-400 to-emerald-500" />
+          <div className="flex items-start justify-between gap-2 text-teal-700">
+            <span className="text-xs font-semibold uppercase tracking-wider line-clamp-1">Samples Due</span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-100 text-teal-800 text-sm">🧪</span>
           </div>
-          <p className="mt-2 text-2xl sm:text-3xl font-black text-teal-900">{kpis.samplesPending || 0}</p>
-          <div className="mt-2 text-[10px] font-medium text-teal-600">Phlebotomy collection</div>
+          <p className="my-1 text-2xl sm:text-3xl font-extrabold text-teal-900 tracking-tight">{kpis.samplesPending || 0}</p>
+          <div className="pt-2 border-t border-teal-100/80 text-[10px] font-semibold text-teal-700 min-h-[26px] flex items-center">
+            Phlebotomy collection
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-blue-200/80 bg-blue-50/50 p-4 shadow-xs hover:shadow-md transition">
-          <div className="flex items-center justify-between text-blue-700">
-            <span className="text-xs font-semibold">In Progress</span>
-            <span className="text-base">⚙️</span>
+        <div className="group relative overflow-hidden rounded-2xl border border-blue-200/80 bg-blue-50/40 p-4 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-600" />
+          <div className="flex items-start justify-between gap-2 text-blue-700">
+            <span className="text-xs font-semibold uppercase tracking-wider line-clamp-1">In Progress</span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-800 text-sm">⚙️</span>
           </div>
-          <p className="mt-2 text-2xl sm:text-3xl font-black text-blue-900">{kpis.testsInProgress || 0}</p>
-          <div className="mt-2 text-[10px] font-medium text-blue-600">Testing & Scans</div>
+          <p className="my-1 text-2xl sm:text-3xl font-extrabold text-blue-900 tracking-tight">{kpis.testsInProgress || 0}</p>
+          <div className="pt-2 border-t border-blue-100/80 text-[10px] font-semibold text-blue-700 min-h-[26px] flex items-center">
+            Testing & Scans
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-purple-200/80 bg-purple-50/50 p-4 shadow-xs hover:shadow-md transition">
-          <div className="flex items-center justify-between text-purple-700">
-            <span className="text-xs font-semibold">Review Due</span>
-            <span className="text-base">✍️</span>
+        <div className="group relative overflow-hidden rounded-2xl border border-purple-200/80 bg-purple-50/40 p-4 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-violet-600" />
+          <div className="flex items-start justify-between gap-2 text-purple-700">
+            <span className="text-xs font-semibold uppercase tracking-wider line-clamp-1">Review Due</span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-800 text-sm">✍️</span>
           </div>
-          <p className="mt-2 text-2xl sm:text-3xl font-black text-purple-900">{kpis.reportsPending || 0}</p>
-          <div className="mt-2 text-[10px] font-medium text-purple-600">Specialist sign-off</div>
+          <p className="my-1 text-2xl sm:text-3xl font-extrabold text-purple-900 tracking-tight">{kpis.reportsPending || 0}</p>
+          <div className="pt-2 border-t border-purple-100/80 text-[10px] font-semibold text-purple-700 min-h-[26px] flex items-center">
+            Specialist sign-off
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/50 p-4 shadow-xs hover:shadow-md transition">
-          <div className="flex items-center justify-between text-emerald-700">
-            <span className="text-xs font-semibold">Completed</span>
-            <span className="text-base">✓</span>
+        <div className="group relative overflow-hidden rounded-2xl border border-emerald-200/80 bg-emerald-50/40 p-4 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-600" />
+          <div className="flex items-start justify-between gap-2 text-emerald-700">
+            <span className="text-xs font-semibold uppercase tracking-wider line-clamp-1">Completed</span>
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800 text-sm">✓</span>
           </div>
-          <p className="mt-2 text-2xl sm:text-3xl font-black text-emerald-900">{kpis.reportsCompleted || 0}</p>
-          <div className="mt-2 text-[10px] font-medium text-emerald-600">Finalized reports</div>
+          <p className="my-1 text-2xl sm:text-3xl font-extrabold text-emerald-900 tracking-tight">{kpis.reportsCompleted || 0}</p>
+          <div className="pt-2 border-t border-emerald-100/80 text-[10px] font-semibold text-emerald-700 min-h-[26px] flex items-center">
+            Finalized reports
+          </div>
         </div>
       </div>
 

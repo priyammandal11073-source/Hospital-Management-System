@@ -165,21 +165,21 @@ export default function PharmacyDashboard({ user, refreshKey, onTriggerRefresh }
         {/* KPI 1: Prescriptions Today */}
         <Link
           to="/pharmacy/queue"
-          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-amber-400 transition-all duration-200"
+          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-amber-400 transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-600" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Prescriptions Today</p>
-              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-800">{kpis.prescriptionsToday}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider line-clamp-1">Prescriptions Today</p>
+              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">{kpis.prescriptionsToday}</p>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:scale-110 transition">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600 group-hover:scale-110 transition">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-slate-400 pt-2 border-t border-slate-100">
+          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-slate-400 pt-2 border-t border-slate-100 min-h-[28px]">
             <span>{kpis.dispensedToday} fulfilled</span>
             <span className="text-blue-600">Open Queue →</span>
           </div>
@@ -188,166 +188,166 @@ export default function PharmacyDashboard({ user, refreshKey, onTriggerRefresh }
         {/* KPI 2: Pending Dispensing */}
         <Link
           to="/pharmacy/queue"
-          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-amber-300 bg-amber-50/20 hover:shadow-md hover:ring-2 hover:ring-amber-500 transition-all duration-200"
+          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-amber-300 bg-amber-50/20 hover:shadow-md hover:ring-2 hover:ring-amber-500 transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-600" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Pending Dispensing</p>
-              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-amber-900">{kpis.pendingDispensing}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-amber-700 uppercase tracking-wider line-clamp-1">Pending Dispensing</p>
+              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-amber-900 tracking-tight">{kpis.pendingDispensing}</p>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700 group-hover:scale-110 transition animate-pulse">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700 group-hover:scale-110 transition animate-pulse">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-amber-700 pt-2 border-t border-amber-100">
-            <span className="inline-flex items-center gap-1">
+          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-amber-700 pt-2 border-t border-amber-100 min-h-[28px]">
+            <span className="inline-flex items-center gap-1 truncate">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-600 animate-ping"></span>
-              Needs Pharmacist Action
+              Needs Action
             </span>
-            <span>Review →</span>
+            <span className="shrink-0">Review →</span>
           </div>
         </Link>
 
         {/* KPI 3: Dispensed Today */}
         <Link
           to="/pharmacy/prescriptions-history"
-          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-emerald-400 transition-all duration-200"
+          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-emerald-400 transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-600" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Dispensed Today</p>
-              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-800">{kpis.dispensedToday}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider line-clamp-1">Dispensed Today</p>
+              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">{kpis.dispensedToday}</p>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-110 transition">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 group-hover:scale-110 transition">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-emerald-600 pt-2 border-t border-slate-100">
+          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-emerald-600 pt-2 border-t border-slate-100 min-h-[28px]">
             <span>
               {kpis.prescriptionsToday > 0 ? Math.round((kpis.dispensedToday / kpis.prescriptionsToday) * 100) : 100}% Fulfilled
             </span>
-            <span>View Logs →</span>
+            <span className="shrink-0">View Logs →</span>
           </div>
         </Link>
 
         {/* KPI 4: Low Stock Items */}
         <Link
           to="/pharmacy/low-stock"
-          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-rose-400 transition-all duration-200"
+          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-rose-400 transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Low Stock Items</p>
-              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-rose-600">{kpis.lowStockItems}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider line-clamp-1">Low Stock Items</p>
+              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-rose-600 tracking-tight">{kpis.lowStockItems}</p>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600 group-hover:scale-110 transition">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600 group-hover:scale-110 transition">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-rose-600 pt-2 border-t border-slate-100">
+          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-rose-600 pt-2 border-t border-slate-100 min-h-[28px]">
             <span>{kpis.outOfStockItems} Out of Stock</span>
-            <span>Reorder →</span>
+            <span className="shrink-0">Reorder →</span>
           </div>
         </Link>
 
         {/* KPI 5: Expiring Batches (<60d) */}
         <Link
           to="/pharmacy/expiry"
-          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-amber-400 transition-all duration-200"
+          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-amber-400 transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 to-yellow-500" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Expiring Soon (&lt;60d)</p>
-              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-amber-600">{kpis.expiringSoon}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider line-clamp-1">Expiring Soon (&lt;60d)</p>
+              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-amber-600 tracking-tight">{kpis.expiringSoon}</p>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600 group-hover:scale-110 transition">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600 group-hover:scale-110 transition">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-amber-700 pt-2 border-t border-slate-100">
-            <span>FIFO Dispensing Priority</span>
-            <span>Inspect Radar →</span>
+          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-amber-700 pt-2 border-t border-slate-100 min-h-[28px]">
+            <span>FIFO Priority</span>
+            <span className="shrink-0">Inspect Radar →</span>
           </div>
         </Link>
 
         {/* KPI 6: Pending Rx Payments */}
         <Link
           to="/pharmacy/billing"
-          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-violet-400 transition-all duration-200"
+          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-violet-400 transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 to-purple-600" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Rx Payments</p>
-              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-violet-700">₹{kpis.pendingPayments?.toLocaleString("en-IN")}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider line-clamp-1">Pending Rx Payments</p>
+              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-violet-700 tracking-tight truncate">₹{kpis.pendingPayments?.toLocaleString("en-IN")}</p>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 text-violet-600 group-hover:scale-110 transition">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-50 text-violet-600 group-hover:scale-110 transition">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-violet-600 pt-2 border-t border-slate-100">
+          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-violet-600 pt-2 border-t border-slate-100 min-h-[28px]">
             <span>Cashier / Insurance</span>
-            <span>Billing Desk →</span>
+            <span className="shrink-0">Billing Desk →</span>
           </div>
         </Link>
 
         {/* KPI 7: Total Formulary Medicines */}
         <Link
           to="/pharmacy/inventory"
-          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-sky-400 transition-all duration-200"
+          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-sky-400 transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 to-cyan-600" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Formulary Catalog</p>
-              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-800">{kpis.totalMedicines}</p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider line-clamp-1">Formulary Catalog</p>
+              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">{kpis.totalMedicines}</p>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-50 text-sky-600 group-hover:scale-110 transition">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600 group-hover:scale-110 transition">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-sky-600 pt-2 border-t border-slate-100">
+          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-sky-600 pt-2 border-t border-slate-100 min-h-[28px]">
             <span>100% Active</span>
-            <span>Directory →</span>
+            <span className="shrink-0">Directory →</span>
           </div>
         </Link>
 
         {/* KPI 8: Active Suppliers */}
         <Link
           to="/pharmacy/suppliers"
-          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-teal-400 transition-all duration-200"
+          className="group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200 hover:shadow-md hover:ring-2 hover:ring-teal-400 transition-all duration-200 flex flex-col justify-between h-full min-h-[148px]"
         >
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-teal-500 to-emerald-600" />
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Approved Suppliers</p>
-              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-800">12</p>
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider line-clamp-1">Approved Suppliers</p>
+              <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">12</p>
             </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 text-teal-600 group-hover:scale-110 transition">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600 group-hover:scale-110 transition">
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-teal-600 pt-2 border-t border-slate-100">
-            <span>GMP Certified</span>
-            <span>Vendors →</span>
+          <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-teal-600 pt-2 border-t border-slate-100 min-h-[28px]">
+            <span>Verified Vendors</span>
+            <span className="shrink-0">Vendor Desk →</span>
           </div>
         </Link>
       </div>

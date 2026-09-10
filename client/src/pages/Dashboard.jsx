@@ -47,38 +47,40 @@ const formatDate = (date) =>
 function MetricCard({ label, value, icon, gradient, badge, badgeColor, to, onClick }) {
   const cardContent = (
     <div
-      className={`group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${
+      className={`group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-between h-full min-h-[148px] ${
         to || onClick ? "cursor-pointer hover:ring-2 hover:ring-slate-300" : ""
       }`}
     >
       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs font-semibold text-slate-500">{label}</p>
-          <p className="mt-2 text-3xl font-extrabold text-slate-800 tracking-tight">{value}</p>
+      <div className="flex items-start justify-between gap-2.5">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold text-slate-500 line-clamp-2 min-h-[32px] leading-tight" title={label}>{label}</p>
+          <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight truncate">{value}</p>
         </div>
-        <div className={`flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-sm transition-transform duration-300 group-hover:scale-110`}>
+        <div className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-sm transition-transform duration-300 group-hover:scale-110`}>
           {icon}
         </div>
       </div>
-      {badge && (
-        <div className="mt-3 flex items-center justify-between gap-1.5 pt-2 border-t border-slate-100">
-          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${badgeColor}`}>
+      <div className="mt-3 flex items-center justify-between gap-1.5 pt-2 border-t border-slate-100 min-h-[28px]">
+        {badge ? (
+          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold truncate max-w-[150px] ${badgeColor}`}>
             {badge}
           </span>
-          {to && (
-            <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-800 transition flex items-center gap-0.5">
-              Open →
-            </span>
-          )}
-        </div>
-      )}
+        ) : (
+          <span />
+        )}
+        {to && (
+          <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-800 transition flex items-center gap-0.5 shrink-0 ml-auto">
+            Open →
+          </span>
+        )}
+      </div>
     </div>
   );
 
   if (to) {
     return (
-      <Link to={to} className="block no-underline">
+      <Link to={to} className="block h-full no-underline">
         {cardContent}
       </Link>
     );
@@ -86,7 +88,7 @@ function MetricCard({ label, value, icon, gradient, badge, badgeColor, to, onCli
 
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className="w-full text-left p-0 border-0 bg-transparent block no-underline">
+      <button type="button" onClick={onClick} className="w-full h-full text-left p-0 border-0 bg-transparent block no-underline">
         {cardContent}
       </button>
     );
