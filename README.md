@@ -17,9 +17,9 @@
 
 <br/>
 
-<img src="./docs/screenshots/gateway_desktop_1280.png" alt="Nivora Care Hospital Unified Healthcare Gateway" width="900" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"/>
+<img src="./docs/screenshots/LOGIN_gateway_updated.png" alt="Nivora Care Hospital Unified Healthcare Gateway" width="900" style="border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);"/>
 
-> **Unified Healthcare Gateway**: Secure role-based entry point connecting every operational department in Nivora Care Hospital from a single responsive interface.
+> **Unified Healthcare Gateway**: Secure role-based entry point connecting every operational department—including Diagnostic Services—in Nivora Care Hospital from a single responsive interface.
 
 </div>
 
