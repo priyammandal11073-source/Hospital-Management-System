@@ -52,6 +52,8 @@ jobs:
 
       # The project has no automated server tests yet. This confirms the
       # JavaScript files parse successfully until tests are added.
+      # Skip node_modules: dependencies such as fontkit ship .js with
+      # decorators (@cache) that node --check cannot parse.
       - name: Check server syntax
         working-directory: server
-        run: find . -type f -name "*.js" -print0 | xargs -0 -n1 node --check
+        run: find . -name node_modules -prune -o -type f -name "*.js" -print0 | xargs -0 -n1 node --check
