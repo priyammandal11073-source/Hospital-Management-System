@@ -8,6 +8,7 @@ import {
   getDiagnosticTests,
   getPatients,
 } from "../../services/api.js";
+import UniversalPaymentModal from "../../components/UniversalPaymentModal.jsx";
 
 export default function FrontDeskWorkQueuePage() {
   const [workQueue, setWorkQueue] = useState([]);
@@ -17,6 +18,7 @@ export default function FrontDeskWorkQueuePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [actioningId, setActioningId] = useState(null);
+  const [settlingBilling, setSettlingBilling] = useState(null);
 
   const fetchQueue = async () => {
     setIsLoading(true);
@@ -385,11 +387,18 @@ export default function FrontDeskWorkQueuePage() {
                           </button>
                         ) : item.actionType === "collect_payment" ? (
                           <button
-                            disabled={actioningId === item.originalId}
-                            onClick={() => handleQuickCash(item.originalId)}
-                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition disabled:opacity-50"
+                            onClick={() =>
+                              setSettlingBilling({
+                                _id: item.originalId,
+                                id: item.originalId,
+                                totalAmount: item.amount || 500,
+                                patient: { name: item.patient, contactNumber: item.contactNumber },
+                              })
+                            }
+                            className="rounded-xl bg-teal-600 hover:bg-teal-700 px-3 py-1.5 text-xs font-bold text-white transition shadow-xs flex items-center gap-1"
                           >
-                            {actioningId === item.originalId ? "Settling..." : "Collect Cash"}
+                            <span>💳</span>
+                            <span>Settle Bill</span>
                           </button>
                         ) : item.actionType === "check_in_diagnostic" ? (
                           <button
@@ -545,6 +554,20 @@ export default function FrontDeskWorkQueuePage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Universal Payment Settlement Modal */}
+      {settlingBilling && (
+        <UniversalPaymentModal
+          billing={settlingBilling}
+          isOpen={Boolean(settlingBilling)}
+          onClose={() => setSettlingBilling(null)}
+          onPaymentSuccess={() => {
+            setSettlingBilling(null);
+            fetchQueue();
+          }}
+          title="Reception Cashier Payment Settlement"
+        />
       )}
     </div>
   );

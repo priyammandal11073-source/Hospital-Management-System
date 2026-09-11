@@ -1,18 +1,21 @@
 import React from "react";
 
-const Card = ({ title, children, className = "", headerAction, ...props }) => {
+const Card = ({ title, subtitle, children, className = "", headerAction, ...props }) => {
   return (
     <div
       className={`
-        bg-white rounded-xl p-6 shadow-sm border border-slate-200
+        bg-white rounded-lg p-4 sm:p-5 border border-slate-200 shadow-2xs
         ${className}
       `}
       {...props}
     >
-      {title && (
+      {(title || subtitle || headerAction) && (
         <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
-          <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-          {headerAction && <div>{headerAction}</div>}
+          <div>
+            {title && <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">{title}</h3>}
+            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
+          </div>
+          {headerAction && <div className="flex items-center gap-2">{headerAction}</div>}
         </div>
       )}
       {children}
@@ -22,3 +25,4 @@ const Card = ({ title, children, className = "", headerAction, ...props }) => {
 
 export default Card;
 export { Card };
+

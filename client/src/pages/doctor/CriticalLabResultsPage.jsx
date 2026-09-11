@@ -4,6 +4,7 @@ import {
   acknowledgeCriticalLabResult,
   downloadDiagnosticReportPdfBlob,
 } from "../../services/api.js";
+import { printClinicalReport } from "../../utils/printReport.js";
 
 export default function CriticalLabResultsPage() {
   const [reports, setReports] = useState([]);
@@ -124,6 +125,14 @@ export default function CriticalLabResultsPage() {
                     }`}>
                       {rep.doctorReviewStatus === "reviewed" ? "✓ Clinically Reviewed" : "Needs Doctor Review"}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => printClinicalReport(rep)}
+                      className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                      title="Direct hardcopy print"
+                    >
+                      🖨️ Print
+                    </button>
                     {rep.doctorReviewStatus !== "reviewed" ? (
                       <button
                         onClick={() => setSelectedReport(rep)}

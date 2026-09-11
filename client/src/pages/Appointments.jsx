@@ -5,6 +5,7 @@ import PrescriptionForm from "../components/PrescriptionForm.jsx";
 import PrescriptionModal from "../components/PrescriptionModal.jsx";
 import NursingChecklistModal from "../components/NursingChecklistModal.jsx";
 import VitalsTracker from "../components/VitalsTracker.jsx";
+import UniversalPaymentModal from "../components/UniversalPaymentModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import {
   deleteAppointment,
@@ -12,6 +13,7 @@ import {
   getDoctors,
   updateAppointmentStatus,
   getPatientVitals,
+  getBillingById,
 } from "../services/api.js";
 
 const statuses = ["pending", "waiting", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"];
@@ -69,6 +71,7 @@ function Appointments() {
   const [updatingId, setUpdatingId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState("");
+  const [paymentBilling, setPaymentBilling] = useState(null);
 
   useEffect(() => {
     let isCurrentRequest = true;
@@ -631,6 +634,19 @@ function Appointments() {
             />
           </div>
         </div>
+      )}
+      {/* Universal Hospital Payment Settlement Modal */}
+      {paymentBilling && (
+        <UniversalPaymentModal
+          billing={paymentBilling}
+          isOpen={Boolean(paymentBilling)}
+          onClose={() => setPaymentBilling(null)}
+          onPaymentSuccess={() => {
+            setPaymentBilling(null);
+            setRefreshKey((k) => k + 1);
+          }}
+          title="Consultation Fee & Visit Settlement"
+        />
       )}
     </section>
   );

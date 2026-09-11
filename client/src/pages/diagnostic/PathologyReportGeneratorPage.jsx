@@ -10,6 +10,7 @@ import {
 } from "../../services/api.js";
 import HospitalLogo from "../../components/HospitalLogo.jsx";
 import ReprintModal from "../../components/diagnostic/ReprintModal.jsx";
+import { printClinicalReport } from "../../utils/printReport.js";
 
 export default function PathologyReportGeneratorPage() {
   const { recordId } = useParams();
@@ -149,10 +150,27 @@ export default function PathologyReportGeneratorPage() {
           reason: "Pathology Clinical Hardcopy Print",
         });
       }
-      window.print();
+      const printObj = {
+        ...(record?.report || {}),
+        patient: record?.patient || record?.order?.patient,
+        doctor: record?.doctor || record?.order?.doctor,
+        order: record?.order,
+        department: "Pathology",
+        testName: record?.test?.name || record?.order?.testName || record?.report?.testName,
+        testResults: results.map((p) => ({
+          parameter: p.parameter,
+          result: p.result,
+          unit: p.unit,
+          referenceRange: p.referenceRange,
+          status: p.status,
+          flag: p.flag,
+        })),
+        summaryConclusion,
+      };
+      printClinicalReport(printObj);
     } catch (err) {
       console.error("Print log error", err);
-      window.print();
+      printClinicalReport(record?.report);
     }
   };
 

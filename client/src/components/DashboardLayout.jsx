@@ -5,110 +5,110 @@ import HospitalLogo from "./HospitalLogo.jsx";
 import NotificationBell from "./NotificationBell.jsx";
 
 const navLinkClass = ({ isActive }) =>
-  `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
+  `group flex items-center gap-2.5 rounded-md px-3 py-2 text-xs font-semibold transition-colors duration-150 ${
     isActive
-      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 ring-1 ring-blue-400/40"
-      : "text-slate-400 hover:bg-slate-800/80 hover:text-white"
+      ? "bg-blue-600 text-white shadow-2xs font-bold"
+      : "text-slate-300 hover:bg-slate-800 hover:text-white"
   }`;
 
 const PORTAL_CONFIG = {
   admin: {
     label: "Admin portal",
-    title: "Executive hospital administration",
-    badge: "👑 Administrator portal",
-    badgeClass: "bg-purple-50 text-purple-700 ring-purple-500/30",
-    avatarGrad: "from-purple-600 to-indigo-600",
-    tagColor: "text-purple-600",
-    roleDesc: "Level 3 executive access",
+    title: "Hospital Administration",
+    badge: "Hospital Administration",
+    badgeClass: "bg-slate-100 text-slate-800 border border-slate-300",
+    avatarBg: "bg-slate-800 text-white",
+    tagColor: "text-slate-600",
+    roleDesc: "System Administrator",
   },
   doctor: {
     label: "Doctor portal",
-    title: "Doctor clinical workspace",
-    badge: "🩺 Doctor consultation desk",
-    badgeClass: "bg-emerald-50 text-emerald-700 ring-emerald-500/30",
-    avatarGrad: "from-emerald-600 to-teal-600",
-    tagColor: "text-emerald-600",
-    roleDesc: "Medical specialist",
+    title: "Physician Clinical Workspace",
+    badge: "Clinical Workspace",
+    badgeClass: "bg-blue-50 text-blue-800 border border-blue-200",
+    avatarBg: "bg-blue-700 text-white",
+    tagColor: "text-blue-700",
+    roleDesc: "Consultant Physician",
   },
   receptionist: {
     label: "Front desk portal",
-    title: "Front desk admissions & cashier",
-    badge: "📋 Front office & check-in",
-    badgeClass: "bg-amber-50 text-amber-700 ring-amber-500/30",
-    avatarGrad: "from-amber-600 to-orange-600",
-    tagColor: "text-amber-600",
-    roleDesc: "Admissions executive",
+    title: "Front Desk & Admissions",
+    badge: "Admissions Desk",
+    badgeClass: "bg-amber-50 text-amber-800 border border-amber-200",
+    avatarBg: "bg-amber-700 text-white",
+    tagColor: "text-amber-700",
+    roleDesc: "Admissions & Cashier",
   },
   nurse: {
     label: "Nursing station",
-    title: "Nursing & inpatient care station",
-    badge: "👩‍⚕️ Clinical nursing station",
-    badgeClass: "bg-teal-50 text-teal-700 ring-teal-500/30",
-    avatarGrad: "from-teal-600 to-cyan-600",
-    tagColor: "text-teal-600",
-    roleDesc: "Clinical care & ward nurse",
+    title: "Inpatient Nursing Station",
+    badge: "Nursing Station",
+    badgeClass: "bg-teal-50 text-teal-800 border border-teal-200",
+    avatarBg: "bg-teal-700 text-white",
+    tagColor: "text-teal-700",
+    roleDesc: "Clinical Care Nurse",
   },
   patient: {
-    label: "Patient care portal",
-    title: "Personal patient health portal",
-    badge: "🏥 Patient care portal",
-    badgeClass: "bg-cyan-50 text-cyan-700 ring-cyan-500/30",
-    avatarGrad: "from-cyan-600 to-blue-600",
-    tagColor: "text-cyan-600",
-    roleDesc: "Self-service health hub",
+    label: "Patient portal",
+    title: "Patient Health Portal",
+    badge: "Patient Portal",
+    badgeClass: "bg-sky-50 text-sky-800 border border-sky-200",
+    avatarBg: "bg-sky-700 text-white",
+    tagColor: "text-sky-700",
+    roleDesc: "Patient Record",
   },
   pharmacist: {
     label: "Pharmacy portal",
-    title: "Pharmacy operations",
-    badge: "💊 Pharmacy operations",
-    badgeClass: "bg-orange-50 text-orange-700 ring-orange-500/30",
-    avatarGrad: "from-orange-600 to-amber-600",
-    tagColor: "text-orange-600",
-    roleDesc: "Medication & inventory specialist",
+    title: "Hospital Pharmacy Operations",
+    badge: "Pharmacy Operations",
+    badgeClass: "bg-emerald-50 text-emerald-800 border border-emerald-200",
+    avatarBg: "bg-emerald-700 text-white",
+    tagColor: "text-emerald-700",
+    roleDesc: "Chief Pharmacist",
   },
   diagnostic_admin: {
     label: "Diagnostic services",
-    title: "Diagnostic services & imaging center",
-    badge: "🔬 Diagnostic command center",
-    badgeClass: "bg-indigo-50 text-indigo-700 ring-indigo-500/30",
-    avatarGrad: "from-indigo-600 to-purple-600",
-    tagColor: "text-indigo-600",
+    title: "Diagnostic & Imaging Services",
+    badge: "Diagnostic Center",
+    badgeClass: "bg-indigo-50 text-indigo-800 border border-indigo-200",
+    avatarBg: "bg-indigo-700 text-white",
+    tagColor: "text-indigo-700",
     roleDesc: "Diagnostic Administrator",
   },
   pathologist: {
     label: "Pathology desk",
-    title: "Pathology & laboratory medicine",
-    badge: "🔬 Consultant pathologist",
-    badgeClass: "bg-purple-50 text-purple-700 ring-purple-500/30",
-    avatarGrad: "from-purple-600 to-pink-600",
-    tagColor: "text-purple-600",
-    roleDesc: "Senior Consultant Pathologist",
+    title: "Pathology & Laboratory Medicine",
+    badge: "Pathology Department",
+    badgeClass: "bg-indigo-50 text-indigo-800 border border-indigo-200",
+    avatarBg: "bg-indigo-700 text-white",
+    tagColor: "text-indigo-700",
+    roleDesc: "Consultant Pathologist",
   },
   radiologist: {
     label: "Radiology desk",
-    title: "Medical imaging & radiology",
-    badge: "🩻 Consultant radiologist",
-    badgeClass: "bg-blue-50 text-blue-700 ring-blue-500/30",
-    avatarGrad: "from-blue-600 to-cyan-600",
-    tagColor: "text-blue-600",
-    roleDesc: "Senior Consultant Radiologist",
+    title: "Medical Imaging & Radiology",
+    badge: "Radiology Department",
+    badgeClass: "bg-blue-50 text-blue-800 border border-blue-200",
+    avatarBg: "bg-blue-700 text-white",
+    tagColor: "text-blue-700",
+    roleDesc: "Consultant Radiologist",
   },
   lab_technician: {
     label: "Laboratory bench",
-    title: "Phlebotomy & clinical laboratory",
-    badge: "🧪 Senior lab technician",
-    badgeClass: "bg-teal-50 text-teal-700 ring-teal-500/30",
-    avatarGrad: "from-teal-600 to-emerald-600",
-    tagColor: "text-teal-600",
-    roleDesc: "Clinical Laboratory Technologist",
+    title: "Phlebotomy & Clinical Laboratory",
+    badge: "Clinical Laboratory",
+    badgeClass: "bg-teal-50 text-teal-800 border border-teal-200",
+    avatarBg: "bg-teal-700 text-white",
+    tagColor: "text-teal-700",
+    roleDesc: "Laboratory Technologist",
   },
   radiology_technician: {
     label: "Radiology station",
-    title: "Imaging modality station",
-    badge: "☢️ Radiology technologist",
-    badgeClass: "bg-sky-50 text-sky-700 ring-sky-500/30",
-    avatarGrad: "from-sky-600 to-indigo-600",
-    tagColor: "text-sky-600",
+    title: "Imaging Modality Station",
+    badge: "Imaging Station",
+    badgeClass: "bg-sky-50 text-sky-800 border border-sky-200",
+    avatarBg: "bg-sky-700 text-white",
+    tagColor: "text-sky-700",
     roleDesc: "Radiology Technologist",
   },
 };
@@ -180,9 +180,9 @@ function DashboardLayout() {
             </Link>
 
             <div className="hidden xl:flex items-center gap-2 border-l border-slate-200 pl-3">
-              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 truncate max-w-[240px] ${config.badgeClass}`}>
+              <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold truncate max-w-[240px] ${config.badgeClass}`}>
                 {role === "doctor" && user?.name
-                  ? `🩺 Dr. ${user.name.replace(/^Dr\.\s*/i, "")}`
+                  ? `Dr. ${user.name.replace(/^Dr\.\s*/i, "")}`
                   : config.badge}
               </span>
             </div>
@@ -193,26 +193,26 @@ function DashboardLayout() {
             {/* Quick Switch Portal Button */}
             <Link
               to="/login"
-              className="hidden lg:inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-2xs flex-shrink-0"
+              className="hidden lg:inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-2xs flex-shrink-0"
               title="Switch to another portal"
             >
               <span>⇄</span>
               <span>Switch portal</span>
             </Link>
 
-            {/* Emergency Hotline Pill */}
-            <div className="hidden 2xl:flex items-center gap-1.5 rounded-full bg-rose-50 border border-rose-200/80 px-3 py-1 text-xs font-semibold text-rose-700 flex-shrink-0">
-              <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
-              <span className="font-bold">24/7 Emergency:</span>
-              <span className="font-mono text-rose-800 font-bold">108 / 112</span>
+            {/* Emergency Hotline */}
+            <div className="hidden 2xl:flex items-center gap-1.5 rounded-md bg-rose-50 border border-rose-200 px-2.5 py-1 text-xs font-semibold text-rose-700 flex-shrink-0">
+              <span className="h-2 w-2 rounded-full bg-rose-600"></span>
+              <span className="font-bold text-[11px] uppercase tracking-wider">Emergency:</span>
+              <span className="font-mono text-rose-900 font-bold">108 / 112</span>
             </div>
 
             {/* Current Date Badge */}
-            <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full flex-shrink-0">
+            <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-md flex-shrink-0">
               <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span>{todayStr}</span>
+              <span className="font-mono text-[11px]">{todayStr}</span>
             </div>
 
             {/* Real-time Notification Bell */}
@@ -221,8 +221,8 @@ function DashboardLayout() {
             </div>
 
             {/* User Profile Card */}
-            <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50/80 p-1 sm:px-2.5 sm:py-1 shadow-2xs flex-shrink-0">
-              <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-tr ${config.avatarGrad} text-xs font-bold text-white uppercase shadow-sm flex-shrink-0`}>
+            <div className="flex items-center gap-2 rounded-md border border-slate-200 bg-slate-50/80 px-2 py-1 shadow-2xs flex-shrink-0">
+              <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-md ${config.avatarBg || "bg-slate-800 text-white"} text-xs font-bold uppercase shadow-2xs flex-shrink-0`}>
                 {user?.name ? user.name.charAt(0) : "U"}
               </div>
               <div className="text-left hidden lg:block">
@@ -233,14 +233,14 @@ function DashboardLayout() {
               </div>
             </div>
 
-            {/* Logout Button - FIXED & GUARANTEED VISIBLE */}
+            {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="flex-shrink-0 group flex items-center gap-1 rounded-lg bg-rose-50 hover:bg-rose-600 px-2 sm:px-2.5 py-1.5 text-xs font-bold text-rose-600 hover:text-white transition-all duration-150 ring-1 ring-rose-200 hover:ring-rose-600 shadow-xs touch-target cursor-pointer"
+              className="flex-shrink-0 group flex items-center gap-1 rounded-md bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-300 px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:text-rose-700 transition shadow-2xs touch-target cursor-pointer"
               type="button"
               title="Sign Out"
             >
-              <svg className="h-4 w-4 transition-transform group-hover:translate-x-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-3.5 w-3.5 text-slate-500 group-hover:text-rose-600 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
               <span className="hidden sm:inline">Logout</span>
@@ -266,7 +266,7 @@ function DashboardLayout() {
             if (e.target.closest("a")) setMobileOpen(false);
           }}
           className={`
-            border-r border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 text-white flex flex-col justify-between overflow-y-auto
+            border-r border-slate-800 bg-slate-900 p-3.5 text-white flex flex-col justify-between overflow-y-auto
             ${
               mobileOpen
                 ? "fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full shadow-2xl animate-drawer-in flex"
@@ -1366,23 +1366,23 @@ function DashboardLayout() {
           </div>
 
           {/* Sidebar Footer Badge */}
-          <div className="mt-8 rounded-xl bg-slate-900/90 border border-slate-800/80 p-3.5 text-center">
-            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-blue-400">
-              <svg className="h-4 w-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mt-6 rounded-md bg-slate-950/60 border border-slate-800 p-2.5 text-center">
+            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-300">
+              <svg className="h-3.5 w-3.5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>NABH accredited</span>
+              <span>NABH Accredited</span>
             </div>
-            <p className="mt-1 text-[11px] text-slate-400 leading-tight">
-              Ayushman Bharat (ABDM) connected
+            <p className="mt-0.5 text-[10px] text-slate-400 font-mono">
+              ABDM Connected (HFR/HIP)
             </p>
-            <div className="mt-3 pt-3 border-t border-slate-800">
+            <div className="mt-2.5 pt-2 border-t border-slate-800">
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-rose-950/40 border border-rose-800/60 px-3 py-2 text-xs font-bold text-rose-300 hover:bg-rose-600 hover:text-white transition shadow-sm cursor-pointer touch-target"
+                className="w-full flex items-center justify-center gap-1.5 rounded-md bg-slate-800 border border-slate-700 hover:bg-rose-900/80 hover:border-rose-700 px-2.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition cursor-pointer touch-target"
               >
-                <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-3.5 w-3.5 flex-shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
                 <span>Sign Out ({role})</span>
@@ -1392,7 +1392,7 @@ function DashboardLayout() {
         </aside>
 
         {/* Main Content Pane */}
-        <main className="flex-1 min-w-0 bg-slate-50/70 p-3 sm:p-5 lg:p-8 overflow-x-hidden">
+        <main className="flex-1 min-w-0 bg-slate-50 p-4 sm:p-6 lg:p-7 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

@@ -7,6 +7,7 @@ import {
   getPatients,
   getDoctors,
 } from "../services/api.js";
+import { printClinicalReport } from "../utils/printReport.js";
 
 const CATEGORIES = [
   "Hematology",
@@ -340,7 +341,15 @@ export default function LabReports() {
                         onClick={() => setPreviewReport(report)}
                         className="text-teal-700 hover:text-teal-900 font-bold"
                       >
-                        Preview / Print
+                        Preview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => printClinicalReport(report)}
+                        className="text-indigo-600 hover:text-indigo-800 font-bold"
+                        title="Direct official print"
+                      >
+                        🖨️ Print
                       </button>
                       <button
                         type="button"
@@ -586,15 +595,15 @@ export default function LabReports() {
 
       {/* ── MODAL: PREVIEW / PRINT REPORT ── */}
       {previewReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="printable-report-modal w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-4 bg-slate-900 text-white flex items-center justify-between no-print">
               <h3 className="font-bold text-sm">Diagnostic Report Preview</h3>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
-                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-3 py-1 rounded-lg text-xs"
+                  onClick={() => printClinicalReport(previewReport)}
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-3 py-1 rounded-lg text-xs cursor-pointer"
                 >
                   🖨️ Print
                 </button>

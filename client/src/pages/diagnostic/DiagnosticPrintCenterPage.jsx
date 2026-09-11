@@ -8,6 +8,8 @@ import {
 } from "../../services/api.js";
 import ReprintModal from "../../components/diagnostic/ReprintModal.jsx";
 import RadiologyFilmGeneratorModal from "../../components/diagnostic/RadiologyFilmGeneratorModal.jsx";
+import FormalReportModal from "../../components/diagnostic/FormalReportModal.jsx";
+import { printClinicalReport } from "../../utils/printReport.js";
 
 export default function DiagnosticPrintCenterPage() {
   const navigate = useNavigate();
@@ -30,6 +32,7 @@ export default function DiagnosticPrintCenterPage() {
   const [loading, setLoading] = useState(true);
 
   // Modals
+  const [previewReportModal, setPreviewReportModal] = useState(null);
   const [selectedReportForReprint, setSelectedReportForReprint] = useState(null);
   const [filmModalData, setFilmModalData] = useState(null);
   const [notification, setNotification] = useState("");
@@ -89,12 +92,13 @@ export default function DiagnosticPrintCenterPage() {
         copies: 1,
         reason: "Print Center Hardcopy Dispatch",
       });
-      setNotification(`Printing ${report.reportNumber}...`);
+      setNotification(`Preparing official print document for ${report.reportNumber}...`);
       setTimeout(() => setNotification(""), 3000);
-      window.print();
+      printClinicalReport(report);
       fetchData();
     } catch (err) {
-      window.print();
+      console.error("Print error:", err);
+      printClinicalReport(report);
     }
   };
 
@@ -453,24 +457,21 @@ export default function DiagnosticPrintCenterPage() {
 
                       <td className="px-3.5 py-2.5 text-right">
                         <div className="inline-flex items-center gap-1.5">
-                          {/* Preview Link */}
-                          <Link
-                            to={
-                              report.department === "Pathology"
-                                ? `/diagnostic/pathology/${report._id}`
-                                : `/diagnostic/radiology/${report._id}`
-                            }
-                            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition"
-                            title="Open investigation workspace"
+                          {/* Preview Report Modal Button */}
+                          <button
+                            type="button"
+                            onClick={() => setPreviewReportModal(report)}
+                            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                            title="Preview formal clinical report"
                           >
                             👁️ View
-                          </Link>
+                          </button>
 
                           {/* Print Report */}
                           <button
                             type="button"
                             onClick={() => handlePrintReport(report)}
-                            className="rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-slate-800 transition"
+                            className="rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-slate-800 transition cursor-pointer"
                             title="Print clinical document"
                           >
                             🖨️ Print
@@ -480,7 +481,7 @@ export default function DiagnosticPrintCenterPage() {
                           <button
                             type="button"
                             onClick={() => handleDownloadPdf(report)}
-                            className="rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 transition"
+                            className="rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 transition cursor-pointer"
                             title="Download vector PDF"
                           >
                             📥 PDF
@@ -522,6 +523,19 @@ export default function DiagnosticPrintCenterPage() {
             </table>
           </div>
         </div>
+      )}
+
+      {/* ================= FORMAL REPORT PREVIEW MODAL ================= */}
+      {previewReportModal && (
+        <FormalReportModal
+          isOpen={Boolean(previewReportModal)}
+          onClose={() => setPreviewReportModal(null)}
+          report={previewReportModal}
+          onPrintSuccess={() => {
+            fetchData();
+            setNotification("Report print registered in audit log.");
+          }}
+        />
       )}
 
       {/* ================= REPRINT MODAL ================= */}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMyLabReports, downloadDiagnosticReportPdfBlob } from "../../services/api.js";
+import { printClinicalReport } from "../../utils/printReport.js";
 
 const STATUS_CLASSES = {
   ordered: "bg-amber-50 text-amber-800 border-amber-200",
@@ -163,15 +164,15 @@ export default function MyLabReports() {
 
       {/* ── MODAL: PREVIEW / PRINT REPORT ── */}
       {previewReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="printable-report-modal w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-4 bg-slate-900 text-white flex items-center justify-between no-print">
               <h3 className="font-bold text-sm">Diagnostic Report Preview</h3>
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
-                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-3 py-1 rounded-lg text-xs"
+                  onClick={() => printClinicalReport(previewReport)}
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-3 py-1 rounded-lg text-xs cursor-pointer"
                 >
                   🖨️ Print
                 </button>

@@ -5,7 +5,7 @@ import axios from "axios";
  * In development, an empty base URL lets Vite proxy /api requests to Express.
  */
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "",
+  baseURL: import.meta.env?.VITE_API_BASE_URL || "",
   headers: {
     "Content-Type": "application/json",
   },

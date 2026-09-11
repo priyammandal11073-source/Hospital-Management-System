@@ -1,12 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { getBillings, updatePaymentStatus } from "../../services/api.js";
+import { getBillings } from "../../services/api.js";
+import UniversalPaymentModal from "../../components/UniversalPaymentModal.jsx";
 
 export default function PharmacyBillingPage() {
   const [billings, setBillings] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedBilling, setSelectedBilling] = useState(null);
 
   const fetchBillings = async () => {
     setIsLoading(true);
@@ -23,19 +25,6 @@ export default function PharmacyBillingPage() {
   useEffect(() => {
     fetchBillings();
   }, []);
-
-  const handleSettle = async (billingId, method = "cash") => {
-    try {
-      await updatePaymentStatus(billingId, {
-        paymentStatus: "paid",
-        paymentMethod: method,
-      });
-      alert("Bill settled successfully!");
-      fetchBillings();
-    } catch (err) {
-      alert("Settlement failed: " + (err.response?.data?.message || err.message));
-    }
-  };
 
   const filteredBillings = billings.filter((b) => {
     const status = b.paymentStatus || "pending";
@@ -194,22 +183,14 @@ export default function PharmacyBillingPage() {
                       </td>
                       <td className="px-4 py-3.5 text-right whitespace-nowrap space-x-1.5">
                         {!isPaid && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => handleSettle(bill._id, "cash")}
-                              className="rounded-lg bg-amber-500 hover:bg-amber-600 px-2.5 py-1 text-xs font-bold text-slate-950 transition shadow-2xs"
-                            >
-                              Cash
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleSettle(bill._id, "upi")}
-                              className="rounded-lg bg-blue-600 hover:bg-blue-700 px-2.5 py-1 text-xs font-bold text-white transition shadow-2xs"
-                            >
-                              UPI
-                            </button>
-                          </>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedBilling(bill)}
+                            className="rounded-xl bg-teal-600 hover:bg-teal-700 px-3.5 py-1.5 text-xs font-bold text-white transition shadow-sm flex items-center gap-1 ml-auto"
+                          >
+                            <span>💳</span>
+                            <span>Pay & Settle</span>
+                          </button>
                         )}
                         {isPaid && (
                           <span className="text-[11px] font-bold text-emerald-600">Receipt Issued</span>
@@ -223,6 +204,19 @@ export default function PharmacyBillingPage() {
           </div>
         )}
       </div>
+
+      {selectedBilling && (
+        <UniversalPaymentModal
+          billing={selectedBilling}
+          isOpen={Boolean(selectedBilling)}
+          onClose={() => setSelectedBilling(null)}
+          onPaymentSuccess={() => {
+            setSelectedBilling(null);
+            fetchBillings();
+          }}
+          title="Pharmacy Medicine Billing & Settlement"
+        />
+      )}
     </div>
   );
 }

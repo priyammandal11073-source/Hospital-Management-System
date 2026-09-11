@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import BillingForm from "../components/BillingForm.jsx";
 import InvoiceModal from "../components/InvoiceModal.jsx";
+import UniversalPaymentModal from "../components/UniversalPaymentModal.jsx";
 import PaymentMethodSelect from "../components/PaymentMethodSelect.jsx";
 import {
   getBillingById,
@@ -447,63 +448,16 @@ function Billing() {
       )}
 
       {paymentBilling && (
-        <div
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
-          role="dialog"
-        >
-          <form className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl" onSubmit={handlePaymentSubmit}>
-            <h2 className="text-xl font-semibold text-slate-800">Mark bill as paid</h2>
-            <p className="mt-2 text-sm text-slate-600">
-              Confirm payment of ₹{paymentBilling.totalAmount.toFixed(2)} for {paymentBilling.patient?.name || "this patient"}.
-            </p>
-
-            <div className="mt-4">
-              <PaymentMethodSelect
-                value={paymentMethod}
-                onChange={setPaymentMethod}
-                label="Payment Method"
-              />
-            </div>
-            {paymentMethod === "upi" && (
-              <label className="mt-3 block text-sm font-medium text-slate-700">
-                UPI transaction / UTR number
-                <div className="mt-1 flex gap-2">
-                  <input
-                    type="text"
-                    className="flex-1 rounded-md border border-slate-300 px-3 py-2 font-mono text-sm"
-                    placeholder="e.g. 423891029381"
-                    value={upiUtr}
-                    onChange={(e) => setUpiUtr(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="rounded-md bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition"
-                    onClick={() => setUpiUtr("UPI" + Math.floor(100000000000 + Math.random() * 900000000000))}
-                  >
-                    Generate mock UTR
-                  </button>
-                </div>
-              </label>
-            )}
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                onClick={() => setPaymentBilling(null)}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:bg-green-400"
-                disabled={isUpdatingPayment}
-                type="submit"
-              >
-                {isUpdatingPayment ? "Updating..." : "Confirm payment"}
-              </button>
-            </div>
-          </form>
-        </div>
+        <UniversalPaymentModal
+          billing={paymentBilling}
+          isOpen={Boolean(paymentBilling)}
+          onClose={() => setPaymentBilling(null)}
+          onPaymentSuccess={() => {
+            setPaymentBilling(null);
+            setRefreshKey((k) => k + 1);
+          }}
+          title="Settle Patient Invoice"
+        />
       )}
 
       {/* ── SMS Payment Link Modal ── */}

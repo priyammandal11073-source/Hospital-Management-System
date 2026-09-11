@@ -9,6 +9,7 @@ import PatientClinicalProfileModal from "../components/nurse/PatientClinicalProf
 import DoctorPatientProfileModal from "../components/doctor/DoctorPatientProfileModal.jsx";
 import PharmacyDashboard from "./pharmacy/PharmacyDashboard.jsx";
 import DiagnosticDashboard from "./diagnostic/DiagnosticDashboard.jsx";
+import UniversalPaymentModal from "../components/UniversalPaymentModal.jsx";
 import {
   cancelMyAppointment,
   getAppointments,
@@ -1417,6 +1418,7 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
   const [error, setError] = useState("");
   const [settlingId, setSettlingId] = useState(null);
   const [actioningId, setActioningId] = useState(null);
+  const [settlingBilling, setSettlingBilling] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -1442,16 +1444,13 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
     return () => { active = false; };
   }, [refreshKey, activeCategory]);
 
-  const handleQuickCashSettlement = async (billingId) => {
-    setSettlingId(billingId);
-    try {
-      await updatePaymentStatus(billingId, { paymentStatus: "paid", paymentMethod: "cash" });
-      onTriggerRefresh();
-    } catch (err) {
-      alert("Payment settlement failed: " + (err.response?.data?.message || err.message));
-    } finally {
-      setSettlingId(null);
-    }
+  const handleOpenPaymentModal = (item) => {
+    setSettlingBilling({
+      _id: item.originalId,
+      id: item.originalId,
+      totalAmount: item.amount || 500,
+      patient: { name: item.patient, contactNumber: item.contactNumber },
+    });
   };
 
   const handleConfirmAppointment = async (appId) => {
@@ -1738,11 +1737,11 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
                         </button>
                       ) : item.actionType === "collect_payment" ? (
                         <button
-                          disabled={settlingId === item.originalId}
-                          onClick={() => handleQuickCashSettlement(item.originalId)}
-                          className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 transition disabled:opacity-50"
+                          onClick={() => handleOpenPaymentModal(item)}
+                          className="rounded-xl bg-teal-600 hover:bg-teal-700 px-3 py-1.5 text-xs font-bold text-white transition shadow-xs flex items-center gap-1 ml-auto"
                         >
-                          {settlingId === item.originalId ? "Settling..." : "Collect Cash"}
+                          <span>💳</span>
+                          <span>Settle Bill</span>
                         </button>
                       ) : (
                         <Link
@@ -1882,6 +1881,20 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
           )}
         </section>
       </div>
+
+      {/* Universal Reception Cashier Payment Settlement Modal */}
+      {settlingBilling && (
+        <UniversalPaymentModal
+          billing={settlingBilling}
+          isOpen={Boolean(settlingBilling)}
+          onClose={() => setSettlingBilling(null)}
+          onPaymentSuccess={() => {
+            setSettlingBilling(null);
+            onTriggerRefresh();
+          }}
+          title="Reception Cashier Payment Settlement"
+        />
+      )}
     </div>
   );
 }

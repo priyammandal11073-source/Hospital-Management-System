@@ -542,14 +542,54 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
             </table>
           </div>
 
-          {/* Dynamic UPI QR Code Section */}
-          <div className="mt-6 no-print">
-            <UpiPaymentBox
-              billing={billing}
-              onPaymentSuccess={handleUpiPaymentSuccess}
-              isPatient={isPatient}
-            />
-          </div>
+          {/* Interactive Hospital Payment Gateway Section (When Unpaid) */}
+          {billing.paymentStatus !== "paid" && (
+            <div className="mt-6 no-print rounded-2xl border border-teal-200 bg-teal-50/30 p-5 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-teal-100 pb-3">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                    <span>💳 Settle Invoice Online or at Counter</span>
+                    <span className="rounded-full bg-teal-600 text-white text-[10px] font-bold px-2 py-0.5">Instant Settlement</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Scan the UPI QR code below, launch Razorpay Checkout (Cards/NetBanking), or submit Health Insurance claim
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <a
+                    href={`/pay/${billing._id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs transition"
+                  >
+                    <span>🔗 Open Secure Gateway</span>
+                    <span>↗</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Dynamic UPI QR Code Section */}
+              <UpiPaymentBox
+                billing={billing}
+                onPaymentSuccess={handleUpiPaymentSuccess}
+                isPatient={isPatient}
+              />
+            </div>
+          )}
+
+          {billing.paymentStatus === "paid" && (
+            <div className="mt-6 no-print rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 text-center space-y-1">
+              <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-800">
+                <span>✓</span>
+                <span>INVOICE FULLY SETTLED VIA {(billing.paymentMethod || "CASH").toUpperCase()}</span>
+              </span>
+              {billing.upiTransactionId && (
+                <p className="text-[11px] font-mono text-slate-600">
+                  UTR: <strong>{billing.upiTransactionId}</strong>
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Payment Terms & Signatures */}
           <div className="mt-10 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6">

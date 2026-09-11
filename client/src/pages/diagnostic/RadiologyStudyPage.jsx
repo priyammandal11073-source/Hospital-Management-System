@@ -10,6 +10,7 @@ import {
 import HospitalLogo from "../../components/HospitalLogo.jsx";
 import RadiologyFilmGeneratorModal from "../../components/diagnostic/RadiologyFilmGeneratorModal.jsx";
 import ReprintModal from "../../components/diagnostic/ReprintModal.jsx";
+import { printClinicalReport } from "../../utils/printReport.js";
 
 export default function RadiologyStudyPage() {
   const { studyId } = useParams();
@@ -173,9 +174,26 @@ export default function RadiologyStudyPage() {
           reason: "Radiology Report Hardcopy Print",
         });
       }
-      window.print();
+      const printObj = {
+        ...(studyData?.report || {}),
+        patient: studyData?.patient || studyData?.order?.patient,
+        doctor: studyData?.doctor || studyData?.order?.doctor,
+        order: studyData?.order,
+        department: "Radiology",
+        testName: studyData?.order?.testName || studyData?.report?.testName,
+        radiologyStudy: {
+          technique,
+          findings,
+          impression,
+          radiationDose,
+          contrastUsed,
+        },
+        summaryConclusion: impression,
+      };
+      printClinicalReport(printObj);
     } catch (err) {
-      window.print();
+      console.error("Print log error", err);
+      printClinicalReport(studyData?.report);
     }
   };
 

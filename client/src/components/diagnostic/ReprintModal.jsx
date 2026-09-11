@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { reprintDiagnosticReport } from "../../services/api.js";
+import { printClinicalReport } from "../../utils/printReport.js";
 
 const PRESET_REASONS = [
   "Patient requested another copy",
@@ -41,7 +42,7 @@ export default function ReprintModal({ isOpen, onClose, report, onReprintSuccess
           onReprintSuccess(res.data);
         }
         onClose();
-        window.print();
+        printClinicalReport(res.data || report);
       }
     } catch (err) {
       console.error("Reprint error:", err);

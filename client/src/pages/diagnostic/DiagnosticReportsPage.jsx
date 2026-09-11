@@ -5,25 +5,29 @@ import {
   downloadDiagnosticReportPdfBlob,
   logPrintAction,
 } from "../../services/api.js";
-import HospitalLogo from "../../components/HospitalLogo.jsx";
 import ReprintModal from "../../components/diagnostic/ReprintModal.jsx";
+import { printClinicalReport } from "../../utils/printReport.js";
 
 export default function DiagnosticReportsPage() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Formal Printable Modal
   const [activeReportModal, setActiveReportModal] = useState(null);
-  const [reprintModalReport, setReprintModalReport] = useState(null);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [reprintModalReport, setReprintModalReport] = useState(null);
 
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const params = {};
-      if (departmentFilter) params.department = departmentFilter;
-      if (search.trim()) params.search = search.trim();
-      const res = await getDiagnosticReports(params);
+      const res = await getDiagnosticReports({
+        department: departmentFilter !== "all" ? departmentFilter : undefined,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+        limit: 100,
+      });
       if (res.success) {
         setReports(res.data || []);
       }
@@ -49,6 +53,8 @@ export default function DiagnosticReportsPage() {
           reason: "Formal Report Modal Print",
         });
       } catch {}
+      printClinicalReport(activeReportModal);
+      return;
     }
     window.print();
   };
@@ -203,6 +209,23 @@ export default function DiagnosticReportsPage() {
                           title="Download official PDF"
                         >
                           📥 PDF
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            logPrintAction({
+                              reportId: r._id,
+                              orderId: r.order?._id,
+                              documentType: r.department === "Pathology" ? "PATHOLOGY_REPORT" : "RADIOLOGY_REPORT",
+                              copies: 1,
+                              reason: "Direct Archive Print",
+                            }).catch(() => {});
+                            printClinicalReport(r);
+                          }}
+                          className="rounded-lg border border-teal-200 bg-teal-50 px-2 py-1 text-[11px] font-bold text-teal-700 hover:bg-teal-100 transition flex items-center gap-1 cursor-pointer"
+                          title="Direct Hardcopy Print"
+                        >
+                          🖨️ Print
                         </button>
                         <button
                           type="button"

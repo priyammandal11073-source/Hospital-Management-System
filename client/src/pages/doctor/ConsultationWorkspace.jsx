@@ -7,6 +7,7 @@ import {
   getDiagnosticTests,
 } from "../../services/api.js";
 import DoctorPatientProfileModal from "../../components/doctor/DoctorPatientProfileModal.jsx";
+import PatientBanner from "../../components/ui/PatientBanner.jsx";
 
 const COMMON_DIAGNOSES = [
   "Acute Upper Respiratory Infection",
@@ -321,84 +322,58 @@ export default function ConsultationWorkspace() {
   return (
     <div className="space-y-4 pb-12">
       {/* ================= 1. PATIENT CLINICAL HEADER BANNER ================= */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center font-extrabold text-white text-xl shadow-md">
-              {patient.name ? patient.name.charAt(0).toUpperCase() : "P"}
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">{patient.name}</h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                  {patient.patientId || "PID"}
-                </span>
-                {patient.bloodGroup && (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800 border border-rose-300">
-                    {patient.bloodGroup}
-                  </span>
-                )}
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-                  {patient.gender}, {patient.age} yrs
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-500 mt-1">
-                <span>📞 {patient.phone || "No phone"}</span>
-                <span>📅 Slot: <strong className="text-slate-700">{bundle.appointment?.timeSlot}</strong></span>
-                <span>Reason: <strong className="text-slate-700">{bundle.appointment?.reasonForVisit}</strong></span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 self-start lg:self-center">
+      <PatientBanner
+        patient={{
+          ...patient,
+          phone: patient.phone,
+          status: bundle.appointment?.status || "OPD In-Consultation",
+          department: "General Medicine / OPD",
+          doctor: bundle.appointment?.doctorName,
+          allergies: patientAllergies,
+        }}
+        actions={
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setProfileModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1.5 shadow-2xs"
+              className="px-3 py-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-800 text-xs font-semibold transition flex items-center gap-1.5 shadow-2xs cursor-pointer touch-target"
             >
-              <span>📋</span>
-              <span>Open 360° Chart</span>
+              <svg className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <span>360° Medical Record</span>
             </button>
             <button
               type="button"
               onClick={() => navigate("/appointments")}
-              className="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-semibold transition"
+              className="px-3 py-1.5 rounded-md border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold transition cursor-pointer touch-target"
             >
               Back to Queue
             </button>
           </div>
-        </div>
-
-        {/* Allergy Warning Alert */}
-        {patientAllergies.length > 0 && (
-          <div className="mt-3 bg-rose-50 border border-rose-200 rounded-xl px-4 py-2 flex items-center gap-2 text-xs font-bold text-rose-700 animate-pulse">
-            <span className="h-2 w-2 rounded-full bg-rose-600"></span>
-            <span>CRITICAL ALLERGY ALERT:</span>
-            <span>Patient is allergic to: {patientAllergies.join(", ")}</span>
-          </div>
-        )}
-      </div>
+        }
+      />
 
       {/* ================= 2. TWO-COLUMN WORKSPACE ================= */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* ================= LEFT 2 COLUMNS: CLINICAL INPUT DESK ================= */}
-        <div className="lg:col-span-2 space-y-5">
-          <form onSubmit={handleConclude} className="space-y-5">
+        <div className="lg:col-span-2 space-y-4">
+          <form onSubmit={handleConclude} className="space-y-4">
             {/* 2.1 SOAP: Subjective & Objective Examination */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">1</span>
-                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                  <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">1</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wide">
                     Subjective & Objective Clinical Findings
                   </h2>
                 </div>
-                <span className="text-[11px] text-slate-400">SOAP Protocol</span>
+                <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">SOAP Protocol</span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Chief Complaint & Presenting Symptoms
                   </label>
                   <textarea
@@ -406,12 +381,12 @@ export default function ConsultationWorkspace() {
                     value={chiefComplaint}
                     onChange={(e) => setChiefComplaint(e.target.value)}
                     placeholder="e.g. Fever for 3 days, dry cough, body ache..."
-                    className="w-full text-xs rounded-xl border border-slate-200 p-3 focus:outline-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Clinical History & Systemic Inquiry
                   </label>
                   <textarea
@@ -419,13 +394,13 @@ export default function ConsultationWorkspace() {
                     value={clinicalHistory}
                     onChange={(e) => setClinicalHistory(e.target.value)}
                     placeholder="e.g. No history of DM/HTN. Had similar episode 6 months ago..."
-                    className="w-full text-xs rounded-xl border border-slate-200 p-3 focus:outline-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                    className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Physical Examination & Clinical Observations
                 </label>
                 <textarea
@@ -433,25 +408,25 @@ export default function ConsultationWorkspace() {
                   value={examination}
                   onChange={(e) => setExamination(e.target.value)}
                   placeholder="e.g. Chest: bilateral clear breath sounds. Abdomen soft, non-tender. CVS: S1 S2 normal..."
-                  className="w-full text-xs rounded-xl border border-slate-200 p-3 focus:outline-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
                 />
               </div>
             </div>
 
             {/* 2.2 Assessment & Diagnosis */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">2</span>
-                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                  <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">2</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wide">
                     Assessment & Clinical Diagnosis
                   </h2>
                 </div>
-                <span className="text-[11px] text-rose-500 font-semibold">* Required</span>
+                <span className="text-[10px] font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded">* Required</span>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Primary Clinical Diagnosis
                 </label>
                 <input
@@ -460,18 +435,18 @@ export default function ConsultationWorkspace() {
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
                   placeholder="e.g. Acute Upper Respiratory Infection"
-                  className="w-full text-xs rounded-xl border border-slate-200 p-3 font-semibold text-slate-800 focus:outline-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 font-semibold text-slate-900 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
                 />
 
                 {/* Quick diagnoses picker */}
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  <span className="text-[11px] text-slate-400 font-medium self-center">Quick pick:</span>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase">Frequent:</span>
                   {COMMON_DIAGNOSES.slice(0, 6).map((d, i) => (
                     <button
                       key={i}
                       type="button"
                       onClick={() => setDiagnosis(d)}
-                      className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium transition"
+                      className="px-2 py-1 rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-[11px] font-medium transition cursor-pointer"
                     >
                       + {d}
                     </button>
@@ -480,7 +455,7 @@ export default function ConsultationWorkspace() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Differential Diagnosis / Secondary Considerations (Optional)
                 </label>
                 <input
@@ -488,52 +463,52 @@ export default function ConsultationWorkspace() {
                   value={differentialDiagnosis}
                   onChange={(e) => setDifferentialDiagnosis(e.target.value)}
                   placeholder="e.g. Rule out Influenza, Allergic Rhinitis"
-                  className="w-full text-xs rounded-xl border border-slate-200 p-3 focus:outline-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
                 />
               </div>
             </div>
 
             {/* 2.3 Prescription Builder with Safety Check */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold">3</span>
-                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                  <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">3</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wide">
                     Digital Prescription (Rx Builder)
                   </h2>
                 </div>
-                <span className="text-[11px] text-indigo-600 font-semibold">{medications.length} items added</span>
+                <span className="text-[10px] font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded font-semibold">{medications.length} items added</span>
               </div>
 
               {/* Medication Input Row */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <div className="bg-slate-50 p-3.5 rounded-md border border-slate-200 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                   <div className="sm:col-span-2">
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Medicine Name</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Medicine Name</label>
                     <input
                       type="text"
                       value={newMed.name}
                       onChange={(e) => setNewMed({ ...newMed, name: e.target.value })}
                       placeholder="e.g. Paracetamol"
-                      className="w-full text-xs rounded-lg border border-slate-200 p-2 bg-white"
+                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Strength</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Strength</label>
                     <input
                       type="text"
                       value={newMed.strength}
                       onChange={(e) => setNewMed({ ...newMed, strength: e.target.value })}
                       placeholder="e.g. 650mg"
-                      className="w-full text-xs rounded-lg border border-slate-200 p-2 bg-white"
+                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Frequency</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Frequency</label>
                     <select
                       value={newMed.frequency}
                       onChange={(e) => setNewMed({ ...newMed, frequency: e.target.value })}
-                      className="w-full text-xs rounded-lg border border-slate-200 p-2 bg-white"
+                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
                     >
                       <option value="1-0-1">1-0-1 (Twice daily)</option>
                       <option value="1-0-0">1-0-0 (Morning)</option>
@@ -544,11 +519,11 @@ export default function ConsultationWorkspace() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Timing</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Timing</label>
                     <select
                       value={newMed.timing}
                       onChange={(e) => setNewMed({ ...newMed, timing: e.target.value })}
-                      className="w-full text-xs rounded-lg border border-slate-200 p-2 bg-white"
+                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
                     >
                       <option value="After food">After food</option>
                       <option value="Before food">Before food</option>
@@ -558,13 +533,13 @@ export default function ConsultationWorkspace() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-600 mb-1">Duration</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Duration</label>
                     <input
                       type="text"
                       value={newMed.duration}
                       onChange={(e) => setNewMed({ ...newMed, duration: e.target.value })}
                       placeholder="e.g. 5 days"
-                      className="w-full text-xs rounded-lg border border-slate-200 p-2 bg-white"
+                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
                     />
                   </div>
                 </div>
@@ -572,13 +547,13 @@ export default function ConsultationWorkspace() {
                 <div className="flex items-center justify-between pt-1">
                   {/* Quick Pick medicines */}
                   <div className="flex flex-wrap items-center gap-1">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Popular:</span>
+                    <span className="text-[10px] text-slate-500 font-semibold uppercase">Popular:</span>
                     {COMMON_MEDICATIONS.slice(0, 5).map((m, idx) => (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => handleSelectPredefinedMed(m)}
-                        className="px-2 py-0.5 rounded bg-white hover:bg-slate-200 text-slate-700 text-[10px] font-semibold border border-slate-200"
+                        className="px-2 py-0.5 rounded bg-white hover:bg-slate-100 text-slate-700 text-[10px] font-medium border border-slate-200 transition cursor-pointer"
                       >
                         {m.name}
                       </button>
@@ -588,18 +563,18 @@ export default function ConsultationWorkspace() {
                   <button
                     type="button"
                     onClick={handleAddMedication}
-                    className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1 shadow-xs"
+                    className="px-3.5 py-1.5 rounded-md bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold transition flex items-center gap-1 shadow-2xs cursor-pointer touch-target"
                   >
-                    <span>+ Add Drug</span>
+                    <span>+ Add Medication</span>
                   </button>
                 </div>
               </div>
 
               {/* Added Medications Table */}
               {medications.length > 0 && (
-                <div className="border border-slate-200 rounded-xl overflow-hidden">
+                <div className="border border-slate-200 rounded-md overflow-hidden">
                   <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold border-b border-slate-200">
+                    <thead className="bg-slate-50 text-slate-700 text-[11px] uppercase font-semibold border-b border-slate-200">
                       <tr>
                         <th className="px-3 py-2">Medicine</th>
                         <th className="px-3 py-2">Strength / Route</th>
@@ -609,19 +584,19 @@ export default function ConsultationWorkspace() {
                         <th className="px-2 py-2 text-right">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-slate-200">
                       {medications.map((m, idx) => (
                         <tr key={idx} className="hover:bg-slate-50">
-                          <td className="px-3 py-2 font-bold text-slate-800">💊 {m.name}</td>
+                          <td className="px-3 py-2 font-bold text-slate-900">{m.name}</td>
                           <td className="px-3 py-2 text-slate-600">{m.strength || "-"} • {m.route || "Oral"}</td>
-                          <td className="px-3 py-2 font-semibold text-indigo-700">{m.frequency}</td>
+                          <td className="px-3 py-2 font-semibold text-blue-700">{m.frequency}</td>
                           <td className="px-3 py-2 text-slate-600">{m.timing}</td>
                           <td className="px-3 py-2 text-slate-600">{m.duration}</td>
                           <td className="px-2 py-2 text-right">
                             <button
                               type="button"
                               onClick={() => handleRemoveMedication(idx)}
-                              className="text-rose-500 hover:text-rose-700 font-bold px-2 py-1"
+                              className="text-rose-600 hover:text-rose-800 font-bold px-2 py-1 cursor-pointer"
                             >
                               ✕
                             </button>
@@ -635,15 +610,15 @@ export default function ConsultationWorkspace() {
             </div>
 
             {/* 2.4 Diagnostic Lab & Radiology Orders */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-cyan-100 text-cyan-700 flex items-center justify-center text-xs font-bold">4</span>
-                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                  <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">4</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wide">
                     Diagnostic Lab & Imaging Orders
                   </h2>
                 </div>
-                <span className="text-[11px] text-cyan-700 font-semibold">{labOrders.length} tests selected</span>
+                <span className="text-[10px] font-mono text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded font-semibold">{labOrders.length} tests selected</span>
               </div>
 
               {/* Modality Filter Pills & Live Search */}
@@ -655,9 +630,9 @@ export default function ConsultationWorkspace() {
                         key={mod}
                         type="button"
                         onClick={() => setDiagModalityFilter(mod)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition whitespace-nowrap ${
+                        className={`px-2.5 py-1 rounded text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
                           diagModalityFilter === mod
-                            ? "bg-cyan-600 text-white shadow-xs"
+                            ? "bg-blue-700 text-white shadow-2xs"
                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         }`}
                       >
@@ -670,12 +645,12 @@ export default function ConsultationWorkspace() {
                     value={diagSearchQuery}
                     onChange={(e) => setDiagSearchQuery(e.target.value)}
                     placeholder="Search diagnostic catalog..."
-                    className="text-xs rounded-xl border border-slate-200 px-3 py-1.5 bg-slate-50 w-full sm:w-64 focus:outline-cyan-500"
+                    className="text-xs rounded-md border border-slate-300 px-3 py-1.5 bg-white w-full sm:w-64 focus:border-blue-600 outline-none"
                   />
                 </div>
 
                 {/* Filtered Tests Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1 bg-slate-50/50 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1 bg-slate-50 rounded-md border border-slate-200">
                   {(diagnosticCatalog.length > 0
                     ? diagnosticCatalog.filter((t) => {
                         const matchesMod =
@@ -719,9 +694,9 @@ export default function ConsultationWorkspace() {
                             ]);
                           }
                         }}
-                        className={`p-2 rounded-xl border text-left text-xs transition flex flex-col justify-between ${
+                        className={`p-2 rounded-md border text-left text-xs transition flex flex-col justify-between cursor-pointer ${
                           isSelected
-                            ? "border-cyan-500 bg-cyan-50 text-cyan-900 font-bold shadow-xs"
+                            ? "border-blue-600 bg-blue-50 text-blue-900 font-semibold shadow-2xs"
                             : "border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
                         }`}
                       >
@@ -730,10 +705,10 @@ export default function ConsultationWorkspace() {
                           <span className="text-xs shrink-0">{isSelected ? "✓" : "+"}</span>
                         </div>
                         <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1 w-full">
-                          <span className="px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
+                          <span className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
                             {test.modality || test.department || "Lab"}
                           </span>
-                          {test.price ? <span className="font-semibold text-cyan-700">₹{test.price}</span> : null}
+                          {test.price ? <span className="font-semibold text-blue-700 font-mono">₹{test.price}</span> : null}
                         </div>
                       </button>
                     );
@@ -748,31 +723,31 @@ export default function ConsultationWorkspace() {
                   value={customLab.testName}
                   onChange={(e) => setCustomLab({ ...customLab, testName: e.target.value })}
                   placeholder="Other diagnostic test name (e.g. Serum Ferritin, Thyroid Profile)"
-                  className="flex-1 text-xs rounded-xl border border-slate-200 p-2.5 bg-slate-50"
+                  className="flex-1 text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddCustomLab}
-                  className="px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold transition shadow-xs"
+                  className="px-3.5 py-2 rounded-md bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold transition shadow-2xs cursor-pointer touch-target"
                 >
-                  + Add Custom Test
+                  + Add Custom
                 </button>
               </div>
 
               {/* Ordered Labs List */}
               {labOrders.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-200">
                   {labOrders.map((lab, i) => (
                     <span
                       key={i}
-                      className="px-3 py-1.5 rounded-lg bg-cyan-50 text-cyan-800 border border-cyan-200 text-xs font-semibold flex items-center gap-2"
+                      className="px-2.5 py-1 rounded-md bg-blue-50 text-blue-800 border border-blue-200 text-xs font-medium flex items-center gap-2"
                     >
-                      <span>🧪 {lab.testName}</span>
-                      {lab.price ? <span className="text-[10px] text-cyan-600">₹{lab.price}</span> : null}
+                      <span>{lab.testName}</span>
+                      {lab.price ? <span className="text-[10px] text-blue-600 font-mono">₹{lab.price}</span> : null}
                       <button
                         type="button"
                         onClick={() => handleRemoveLabOrder(i)}
-                        className="text-cyan-600 hover:text-cyan-900 font-bold"
+                        className="text-blue-600 hover:text-blue-900 font-bold cursor-pointer"
                       >
                         ✕
                       </button>
@@ -783,29 +758,29 @@ export default function ConsultationWorkspace() {
             </div>
 
             {/* 2.5 Specialist Cross-Department Referral (Optional) */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">5</span>
-                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                  <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">5</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wide">
                     Cross-Department Specialist Referral
                   </h2>
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-slate-700">
+                <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
                   <input
                     type="checkbox"
                     checked={referralEnabled}
                     onChange={(e) => setReferralEnabled(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span>Refer to Specialist Colleague</span>
                 </label>
               </div>
 
               {referralEnabled && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-amber-50/50 p-4 rounded-xl border border-amber-200">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 p-3.5 rounded-md border border-slate-200">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Target Specialist Doctor</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Target Specialist Doctor</label>
                     <select
                       value={referralData.specialistDoctorId}
                       onChange={(e) => {
@@ -817,7 +792,7 @@ export default function ConsultationWorkspace() {
                           department: sel?.department || "",
                         });
                       }}
-                      className="w-full text-xs rounded-lg border border-slate-200 p-2 bg-white"
+                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 outline-none"
                     >
                       <option value="">-- Choose Specialist --</option>
                       {specialists.map((doc) => (
@@ -829,11 +804,11 @@ export default function ConsultationWorkspace() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Priority</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Priority</label>
                     <select
                       value={referralData.priority}
                       onChange={(e) => setReferralData({ ...referralData, priority: e.target.value })}
-                      className="w-full text-xs rounded-lg border border-slate-200 p-2 bg-white"
+                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 outline-none"
                     >
                       <option value="Routine">Routine</option>
                       <option value="Urgent">Urgent</option>
@@ -842,13 +817,13 @@ export default function ConsultationWorkspace() {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">Reason for Referral</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 mb-1">Reason for Referral</label>
                     <input
                       type="text"
                       value={referralData.reason}
                       onChange={(e) => setReferralData({ ...referralData, reason: e.target.value })}
                       placeholder="e.g. Cardiology consult for persistent arrhythmia"
-                      className="w-full text-xs rounded-lg border border-slate-200 p-2 bg-white"
+                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 outline-none"
                     />
                   </div>
                 </div>
@@ -856,18 +831,18 @@ export default function ConsultationWorkspace() {
             </div>
 
             {/* 2.6 Treatment Plan, Follow-up & Discharge Instructions */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
-                  <span className="h-6 w-6 rounded-lg bg-teal-100 text-teal-700 flex items-center justify-center text-xs font-bold">6</span>
-                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wide">
+                  <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">6</span>
+                  <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wide">
                     Treatment Plan & Follow-up Scheduling
                   </h2>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Treatment Plan & Patient Care Advice
                 </label>
                 <textarea
@@ -875,14 +850,14 @@ export default function ConsultationWorkspace() {
                   value={treatmentPlan}
                   onChange={(e) => setTreatmentPlan(e.target.value)}
                   placeholder="e.g. Adequate hydration, warm saline gargles, review with CBC report..."
-                  className="w-full text-xs rounded-xl border border-slate-200 p-3 focus:outline-emerald-500 focus:ring-1 focus:ring-emerald-500"
+                  className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-slate-700">Follow-up Date</label>
+                    <label className="block text-xs font-semibold text-slate-700">Follow-up Date</label>
                     <div className="flex gap-1">
                       {[
                         { label: "+3d", days: 3 },
@@ -894,7 +869,7 @@ export default function ConsultationWorkspace() {
                           key={p.label}
                           type="button"
                           onClick={() => handleFollowUpPreset(p.days)}
-                          className="px-1.5 py-0.5 rounded bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-bold"
+                          className="px-1.5 py-0.5 rounded border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-[10px] font-medium cursor-pointer"
                         >
                           {p.label}
                         </button>
@@ -905,12 +880,12 @@ export default function ConsultationWorkspace() {
                     type="date"
                     value={followUpDate}
                     onChange={(e) => setFollowUpDate(e.target.value)}
-                    className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-slate-50"
+                    className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
                     Specific Follow-up Instructions
                   </label>
                   <input
@@ -918,18 +893,18 @@ export default function ConsultationWorkspace() {
                     value={followUpInstructions}
                     onChange={(e) => setFollowUpInstructions(e.target.value)}
                     placeholder="e.g. Come fasting for blood sugar recheck"
-                    className="w-full text-xs rounded-xl border border-slate-200 p-2.5 bg-slate-50"
+                    className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 outline-none"
                   />
                 </div>
               </div>
             </div>
 
             {/* Action Bar */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs flex items-center justify-between">
+            <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => navigate("/appointments")}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-bold transition"
+                className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold transition cursor-pointer touch-target"
               >
                 Cancel & Exit
               </button>
@@ -938,7 +913,7 @@ export default function ConsultationWorkspace() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-extrabold shadow-md shadow-emerald-500/20 transition flex items-center gap-2 disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-md bg-blue-700 hover:bg-blue-800 text-white text-xs sm:text-sm font-semibold shadow-2xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer touch-target"
                 >
                   {submitting ? (
                     <>
@@ -947,8 +922,7 @@ export default function ConsultationWorkspace() {
                     </>
                   ) : (
                     <>
-                      <span>🩺</span>
-                      <span>Conclude Consultation & Generate Rx</span>
+                      <span>Conclude Consultation & Generate Rx →</span>
                     </>
                   )}
                 </button>
@@ -960,13 +934,13 @@ export default function ConsultationWorkspace() {
         {/* ================= RIGHT COLUMN: 360° PATIENT CONTEXT SIDEBAR ================= */}
         <div className="space-y-4">
           {/* Latest Recorded Vitals */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                💓 Triage Vital Signs
+          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Triage Vital Signs
               </h3>
               {latestVitals && (
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] font-mono text-slate-500">
                   {new Date(latestVitals.recordedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
               )}
@@ -974,106 +948,106 @@ export default function ConsultationWorkspace() {
 
             {latestVitals ? (
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">BP</span>
-                  <p className="font-extrabold text-slate-800">
+                <div className="bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase">BP</span>
+                  <p className="font-bold text-slate-900">
                     {latestVitals.bloodPressureSys || "-"}/{latestVitals.bloodPressureDia || "-"}
-                    <span className="text-[10px] font-normal text-slate-400 ml-1">mmHg</span>
+                    <span className="text-[10px] font-normal text-slate-500 ml-1">mmHg</span>
                   </p>
                 </div>
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Heart Rate</span>
-                  <p className="font-extrabold text-slate-800">
+                <div className="bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase">Heart Rate</span>
+                  <p className="font-bold text-slate-900">
                     {latestVitals.heartRate || "-"}
-                    <span className="text-[10px] font-normal text-slate-400 ml-1">bpm</span>
+                    <span className="text-[10px] font-normal text-slate-500 ml-1">bpm</span>
                   </p>
                 </div>
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">SpO2</span>
-                  <p className={`font-extrabold ${latestVitals.spo2 && latestVitals.spo2 < 95 ? "text-rose-600" : "text-slate-800"}`}>
+                <div className="bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase">SpO2</span>
+                  <p className={`font-bold ${latestVitals.spo2 && latestVitals.spo2 < 95 ? "text-rose-600" : "text-slate-900"}`}>
                     {latestVitals.spo2 ? `${latestVitals.spo2}%` : "-"}
                   </p>
                 </div>
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Temp</span>
-                  <p className="font-extrabold text-slate-800">
+                <div className="bg-slate-50 p-2.5 rounded-md border border-slate-200">
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase">Temp</span>
+                  <p className="font-bold text-slate-900">
                     {latestVitals.temperature ? `${latestVitals.temperature}°F` : "-"}
                   </p>
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-slate-400 italic">No triage vitals recorded for this visit.</p>
+              <p className="text-xs text-slate-500 italic">No triage vitals recorded for this visit.</p>
             )}
           </div>
 
           {/* Current Active Medications */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                💊 Current Active Medications ({currentMeds.length})
+          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Current Active Medications ({currentMeds.length})
               </h3>
             </div>
 
             {currentMeds.length > 0 ? (
               <div className="space-y-1.5 max-h-48 overflow-y-auto">
                 {currentMeds.map((m, idx) => (
-                  <div key={idx} className="p-2 rounded-lg bg-slate-50 border border-slate-200 text-[11px]">
-                    <p className="font-bold text-slate-800">{m.name} ({m.strength || m.dosage})</p>
+                  <div key={idx} className="p-2 rounded-md bg-slate-50 border border-slate-200 text-[11px]">
+                    <p className="font-bold text-slate-900">{m.name} ({m.strength || m.dosage})</p>
                     <p className="text-slate-500">{m.frequency} • {m.timing}</p>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-slate-400 italic">No active long-term medications.</p>
+              <p className="text-xs text-slate-500 italic">No active long-term medications.</p>
             )}
           </div>
 
           {/* Past Notes / Consultations */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                📝 Previous Consultations ({notesHistory.length})
+          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Previous Consultations ({notesHistory.length})
               </h3>
             </div>
 
             {notesHistory.length > 0 ? (
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {notesHistory.slice(0, 3).map((n) => (
-                  <div key={n._id} className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
-                    <div className="flex items-center justify-between text-[10px] text-slate-400">
+                  <div key={n._id} className="p-2.5 rounded-md bg-slate-50 border border-slate-200 text-xs">
+                    <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
                       <span>{new Date(n.createdAt).toLocaleDateString()}</span>
                       <span>Dr. {n.doctorName}</span>
                     </div>
-                    <p className="font-bold text-slate-800 mt-1">{n.diagnosis || n.chiefComplaint}</p>
+                    <p className="font-bold text-slate-900 mt-1">{n.diagnosis || n.chiefComplaint}</p>
                     {n.treatmentPlan && (
-                      <p className="text-slate-500 text-[11px] line-clamp-1">{n.treatmentPlan}</p>
+                      <p className="text-slate-600 text-[11px] line-clamp-1">{n.treatmentPlan}</p>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-slate-400 italic">First documented clinical consultation.</p>
+              <p className="text-xs text-slate-500 italic">First documented clinical consultation.</p>
             )}
           </div>
 
           {/* Recent Lab Investigations */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                🧪 Recent Lab Reports ({labReports.length})
+          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Recent Lab Reports ({labReports.length})
               </h3>
             </div>
 
             {labReports.length > 0 ? (
               <div className="space-y-1.5 max-h-48 overflow-y-auto">
                 {labReports.slice(0, 3).map((l) => (
-                  <div key={l._id} className="p-2 rounded-lg bg-slate-50 border border-slate-200 text-[11px] flex items-center justify-between">
+                  <div key={l._id} className="p-2 rounded-md bg-slate-50 border border-slate-200 text-[11px] flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-slate-800">{l.testName}</p>
-                      <p className="text-slate-400">{new Date(l.testDate || l.createdAt).toLocaleDateString()}</p>
+                      <p className="font-bold text-slate-900">{l.testName}</p>
+                      <p className="text-slate-400 font-mono">{new Date(l.testDate || l.createdAt).toLocaleDateString()}</p>
                     </div>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      l.isCritical ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-700"
+                      l.isCritical ? "bg-rose-100 text-rose-800 border border-rose-200" : "bg-slate-100 text-slate-700 border border-slate-200"
                     }`}>
                       {l.status}
                     </span>
@@ -1086,41 +1060,41 @@ export default function ConsultationWorkspace() {
           </div>
 
           {/* Diagnostic Imaging & Pathology Studies */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-2xs space-y-3">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                🔬 Diagnostic Studies ({bundle?.diagnosticOrders?.length || 0})
+          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Diagnostic Studies ({bundle?.diagnosticOrders?.length || 0})
               </h3>
             </div>
 
             {bundle?.diagnosticOrders?.length > 0 ? (
               <div className="space-y-2 max-h-56 overflow-y-auto">
                 {bundle.diagnosticOrders.map((d) => (
-                  <div key={d._id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                  <div key={d._id} className="p-2.5 rounded-md bg-slate-50 border border-slate-200 text-xs space-y-1">
                     <div className="flex items-center justify-between">
-                      <span className="font-bold text-slate-800 truncate">{d.testName}</span>
+                      <span className="font-bold text-slate-900 truncate">{d.testName}</span>
                       <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
                         d.status === "Finalized"
-                          ? "bg-emerald-100 text-emerald-800"
+                          ? "bg-teal-100 text-teal-800 border border-teal-200"
                           : d.isCritical
-                          ? "bg-rose-100 text-rose-800"
-                          : "bg-cyan-100 text-cyan-800"
+                          ? "bg-rose-100 text-rose-800 border border-rose-200"
+                          : "bg-blue-100 text-blue-800 border border-blue-200"
                       }`}>
                         {d.status}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-slate-500">
                       <span>{d.modality} • {d.orderNumber}</span>
-                      <span>{new Date(d.requestedDate || d.createdAt).toLocaleDateString()}</span>
+                      <span className="font-mono">{new Date(d.requestedDate || d.createdAt).toLocaleDateString()}</span>
                     </div>
                     {d.report && (
                       <div className="pt-1 flex items-center justify-between">
-                        <span className="text-[10px] text-emerald-700 font-semibold">Report Signed</span>
+                        <span className="text-[10px] text-teal-700 font-semibold">Report Signed</span>
                         <a
                           href={`/diagnostics/reports/${typeof d.report === "object" ? d.report._id : d.report}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-[10px] text-cyan-700 hover:underline font-bold"
+                          className="text-[10px] text-blue-700 hover:underline font-semibold"
                         >
                           View Official Report ↗
                         </a>
@@ -1130,7 +1104,7 @@ export default function ConsultationWorkspace() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-slate-400 italic">No previous diagnostic investigations.</p>
+              <p className="text-xs text-slate-500 italic">No previous diagnostic investigations.</p>
             )}
           </div>
         </div>
@@ -1139,23 +1113,25 @@ export default function ConsultationWorkspace() {
       {/* ================= ALLERGY WARNING OVERRIDE MODAL ================= */}
       {allergyWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-rose-200 p-6 space-y-4">
-            <div className="flex items-center gap-3 text-rose-600">
-              <span className="text-3xl">⚠️</span>
+          <div className="w-full max-w-md bg-white rounded-lg shadow-xl border border-rose-200 p-6 space-y-4">
+            <div className="flex items-center gap-3 text-rose-700">
+              <svg className="h-7 w-7 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
               <div>
-                <h3 className="text-base font-bold text-rose-900">Drug Allergy Contraindication Alert</h3>
+                <h3 className="text-sm font-bold text-rose-900">Drug Allergy Contraindication Alert</h3>
                 <p className="text-xs text-rose-700">Patient safety warning system triggered</p>
               </div>
             </div>
 
-            <div className="bg-rose-50 p-4 rounded-xl border border-rose-200 text-xs text-rose-900 space-y-2">
+            <div className="bg-rose-50 p-3.5 rounded-md border border-rose-200 text-xs text-rose-900 space-y-2">
               <p>
                 Patient has a documented allergy to: <strong className="uppercase">{allergyWarning.allergy}</strong>.
               </p>
               <p>
                 You are adding: <strong className="uppercase">{allergyWarning.medicine}</strong>.
               </p>
-              <p className="text-[11px] text-rose-700 font-medium">
+              <p className="text-[11px] text-rose-800 font-medium">
                 Please verify cross-reactivity or clinical indication before proceeding.
               </p>
             </div>
@@ -1167,7 +1143,7 @@ export default function ConsultationWorkspace() {
                   setAllergyWarning(null);
                   setNewMed({ ...newMed, name: "" });
                 }}
-                className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50"
+                className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-50 transition cursor-pointer touch-target"
               >
                 Cancel Drug
               </button>
@@ -1187,7 +1163,7 @@ export default function ConsultationWorkspace() {
                   });
                   setAllergyWarning(null);
                 }}
-                className="px-4 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold"
+                className="px-4 py-2 rounded-md bg-rose-700 hover:bg-rose-800 text-white text-xs font-semibold transition cursor-pointer touch-target"
               >
                 Acknowledge & Prescribe Anyway
               </button>
@@ -1199,12 +1175,12 @@ export default function ConsultationWorkspace() {
       {/* ================= SUCCESS CONFIRMATION MODAL ================= */}
       {successModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 text-center space-y-4">
-            <div className="h-14 w-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl font-bold">
+          <div className="w-full max-w-md bg-white rounded-lg shadow-xl border border-slate-200 p-6 text-center space-y-4">
+            <div className="h-12 w-12 rounded-full bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center mx-auto text-xl font-bold">
               ✓
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Consultation Concluded Successfully</h3>
-            <p className="text-xs text-slate-500">
+            <h3 className="text-base font-bold text-slate-900">Consultation Concluded Successfully</h3>
+            <p className="text-xs text-slate-600">
               Clinical notes, digital prescription, and diagnostic orders have been saved to the permanent patient record.
             </p>
 
@@ -1212,14 +1188,14 @@ export default function ConsultationWorkspace() {
               <button
                 type="button"
                 onClick={() => navigate("/prescriptions")}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-xs"
+                className="w-full py-2 rounded-md bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold transition shadow-2xs cursor-pointer touch-target"
               >
                 View Generated Prescription (Rx)
               </button>
               <button
                 type="button"
                 onClick={() => navigate("/appointments")}
-                className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition"
+                className="w-full py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold transition cursor-pointer touch-target"
               >
                 Back to Consultation Queue
               </button>

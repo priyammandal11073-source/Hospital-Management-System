@@ -25,7 +25,7 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #f1f5f9;
+  background-color: #f8fafc;
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -269,23 +269,61 @@ textarea:disabled,
     font-size: 11pt !important;
   }
 
-  /* Completely strip portal UI, sidebar, headers, buttons, overlays */
+  /* Completely strip portal UI, sidebar, headers, buttons, navigation, and controls */
   aside,
   header,
   nav,
   footer,
   .no-print,
+  .print\:hidden,
   button,
   .btn,
   [role="dialog"] > div > header,
-  .fixed.inset-0.bg-slate-900\/60,
-  .fixed.inset-0.bg-slate-950\/70 {
+  [role="dialog"] button,
+  .app-sidebar,
+  .app-navbar {
     display: none !important;
+  }
+
+  /* Modal overlays and backdrops become static & transparent so report contents print */
+  .fixed.inset-0,
+  [role="dialog"] {
+    position: static !important;
+    inset: auto !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+  }
+
+  /* When a modal or dialog is open during print, hide the underlying main page dashboard */
+  body:has(.fixed.inset-0) #root > div > main,
+  body:has([role="dialog"]) #root > div > main,
+  body:has(.fixed.inset-0) main > *:not(.fixed):not([role="dialog"]),
+  body:has([role="dialog"]) main > *:not([role="dialog"]) {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* When an in-page clinical report canvas exists, hide editing tools, viewers, and dashboards */
+  body:has(.clinical-print-sheet) main > *:not(:has(.clinical-print-sheet)):not(.clinical-print-sheet) {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
   }
 
   /* Force modals and report sheets to fill standard paper dimensions */
   .clinical-print-sheet,
-  .printable-report-container {
+  .printable-report-container,
+  .printable-report-modal {
     display: block !important;
     position: static !important;
     width: 100% !important;
@@ -295,6 +333,22 @@ textarea:disabled,
     box-shadow: none !important;
     border: none !important;
     background: #ffffff !important;
+  }
+
+  /* Dedicated Report Printing Isolation Class */
+  body.printing-report-mode #root > div > *:not([role="dialog"]):not(.fixed),
+  body.printing-report-mode main > *:not(.clinical-print-sheet):not(.printable-report-container):not(.printable-report-modal),
+  body.printing-report-mode aside,
+  body.printing-report-mode header,
+  body.printing-report-mode nav,
+  body.printing-report-mode footer,
+  body.printing-report-mode .no-print {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
   }
 
   /* Dark Laser Imager Film Printing */
