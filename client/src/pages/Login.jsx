@@ -112,11 +112,71 @@ const PORTAL_TYPES = [
     defaultEmail: "diagnostics@hospital.com",
     defaultPass: "diagnostic123",
     subRoles: [
-      { name: "Administrator", email: "diagnostics@hospital.com", pass: "diagnostic123", role: "diagnostic_admin" },
-      { name: "Pathologist", email: "pathologist@hospital.com", pass: "pathologist123", role: "pathologist" },
-      { name: "Radiologist", email: "radiologist@hospital.com", pass: "radiologist123", role: "radiologist" },
-      { name: "Lab Tech", email: "labtech@hospital.com", pass: "labtech123", role: "lab_technician" },
-      { name: "Rad Tech", email: "radtech@hospital.com", pass: "radtech123", role: "radiology_technician" },
+      {
+        name: "Administrator",
+        email: "diagnostics@hospital.com",
+        pass: "diagnostic123",
+        role: "diagnostic_admin",
+        tagline: "Ops & Approvals",
+        accentColor: "bg-cyan-600",
+        icon: (
+          <svg className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6.5-1.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        ),
+      },
+      {
+        name: "Pathologist",
+        email: "pathologist@hospital.com",
+        pass: "pathologist123",
+        role: "pathologist",
+        tagline: "Report Review",
+        accentColor: "bg-teal-600",
+        icon: (
+          <svg className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        ),
+      },
+      {
+        name: "Radiologist",
+        email: "radiologist@hospital.com",
+        pass: "radiologist123",
+        role: "radiologist",
+        tagline: "PACS Reading",
+        accentColor: "bg-sky-600",
+        icon: (
+          <svg className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+          </svg>
+        ),
+      },
+      {
+        name: "Lab Tech",
+        email: "labtech@hospital.com",
+        pass: "labtech123",
+        role: "lab_technician",
+        tagline: "Workbench",
+        accentColor: "bg-indigo-600",
+        icon: (
+          <svg className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+          </svg>
+        ),
+      },
+      {
+        name: "Rad Tech",
+        email: "radtech@hospital.com",
+        pass: "radtech123",
+        role: "radiology_technician",
+        tagline: "Scan Worklist",
+        accentColor: "bg-violet-600",
+        icon: (
+          <svg className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h1.5l.86-1.72A2 2 0 019.34 4h5.32a2 2 0 011.79 1.1L17.32 7H19a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V9zm8.5 1.5a3 3 0 100 6 3 3 0 000-6z" />
+          </svg>
+        ),
+      },
     ],
     icon: (
       <svg className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
@@ -273,15 +333,73 @@ function Login() {
               </section>
             )}
 
-            {/* ================= STEP 2: CREDENTIALS & LOGIN CARD ================= */}
-            {step === 2 && (
+            {/* ================= STEP 2: SUB-ROLE TILES ONLY (DIAGNOSTICS) ================= */}
+            {step === 2 && selectedPortal.subRoles && (
               <section className="w-full bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-300/40">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer mb-5"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer mb-6"
                 >
                   <span>← Back to portal selection</span>
+                </button>
+
+                <div className="mb-6 text-center">
+                  <h1 className="font-display text-[1.5rem] font-semibold text-slate-900">Select Specialization</h1>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Choose your role in the Diagnostics department to continue
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {selectedPortal.subRoles.map((sr, index) => (
+                    <button
+                      key={sr.role}
+                      type="button"
+                      onClick={() => {
+                        setEmail(sr.email);
+                        setPassword(sr.pass);
+                        setError("");
+                        setStep(3);
+                      }}
+                      className={`group relative bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-3 min-h-[8rem] hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/80 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 ${
+                        index === selectedPortal.subRoles.length - 1
+                          ? "sm:col-span-2 sm:w-full sm:max-w-[calc(50%-0.5rem)] sm:mx-auto"
+                          : ""
+                      }`}
+                    >
+                      <div
+                        className={`h-11 w-11 rounded-xl ${sr.accentColor} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}
+                      >
+                        {sr.icon}
+                      </div>
+                      <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 transition-colors">
+                        {sr.name}
+                      </span>
+                      <span className="absolute bottom-2 text-[10px] uppercase tracking-wide text-slate-400">
+                        {sr.tagline}
+                      </span>
+                      <span
+                        className="absolute top-2.5 right-3 text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ================= STEP 2 (NO SUB-ROLES) / STEP 3: CREDENTIALS & LOGIN CARD ================= */}
+            {((step === 2 && !selectedPortal.subRoles) || step === 3) && (
+              <section className="w-full bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-300/40">
+                <button
+                  type="button"
+                  onClick={() => (step === 3 ? setStep(2) : setStep(1))}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer mb-5"
+                >
+                  <span>{step === 3 ? "← Back to specialization selection" : "← Back to portal selection"}</span>
                 </button>
 
                 {/* Active Portal Header */}
@@ -308,37 +426,6 @@ function Login() {
 
                 {/* Form */}
                 <form className="space-y-4" onSubmit={handleSubmit}>
-                  {selectedPortal.subRoles && (
-                    <div className="rounded border border-slate-200 bg-slate-50 p-3">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-2">
-                        Specialization:
-                      </p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {selectedPortal.subRoles.map((sr) => {
-                          const isCurrent = email === sr.email;
-                          return (
-                            <button
-                              key={sr.role}
-                              type="button"
-                              onClick={() => {
-                                setEmail(sr.email);
-                                setPassword(sr.pass);
-                                setError("");
-                              }}
-                              className={`rounded px-2 py-1 text-xs font-medium transition cursor-pointer ${
-                                isCurrent
-                                  ? "bg-blue-700 text-white shadow-2xs"
-                                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
-                              }`}
-                            >
-                              {sr.name}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
                   <div>
                     <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="email">
                       {selectedPortal.role === "patient" ? "Patient Email Address" : "Staff Email"}
