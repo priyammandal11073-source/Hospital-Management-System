@@ -44,6 +44,7 @@
 | 📁 | [Medical File Storage](#medical-file-storage) | Dynamic PDF reports, thermal film generator & static asset CDN |
 | 🔒 | [Security & Access Control](#security-access-control) | RBAC middleware, JWT auth, IDOR guards & rejection tests |
 | 🖼️ | [Screenshot Gallery](#complete-screenshot-gallery) | Collapsible visual catalog of all 7 portals |
+| 🔐 | [Portal Login Pages](#portal-logins) | Dedicated sign-in screens for every staff role plus the patient portal |
 | ⚙️ | [Installation & Setup](#installation-setup) | Prerequisites and step-by-step start commands |
 | 🔑 | [Environment Variables](#environment-variables) | Complete `.env` guide for client and server |
 | 🧪 | [Demo Test Accounts](#demo-test-accounts) | Pre-seeded credentials for instant testing across all roles |
@@ -554,6 +555,24 @@ Multi-layered security enforced across both backend APIs and frontend UI routes:
 | <img src="./docs/screenshots/PAT_01_patient_dashboard.png" width="270"/> | <img src="./docs/screenshots/PAT_02_my_appointments.png" width="270"/> | <img src="./docs/screenshots/PAT_05_my_billings.png" width="270"/> |
 
 </details>
+
+---
+
+## <a id="portal-logins"></a>🔐 Portal Login Pages
+
+Every staff role signs in through the unified gateway; each view pre-configures the matching credentials and, for Diagnostics, the specialization pills. Patients use their own dedicated rose-themed sign-in.
+
+| Admin | Doctor | Nursing |
+|---|---|---|
+| <img src="./docs/screenshots/LOGIN_admin.png" width="400"/> | <img src="./docs/screenshots/LOGIN_doctor.png" width="400"/> | <img src="./docs/screenshots/LOGIN_nurse.png" width="400"/> |
+
+| Reception | Pharmacy | Diagnostics |
+|---|---|---|
+| <img src="./docs/screenshots/LOGIN_reception.png" width="400"/> | <img src="./docs/screenshots/LOGIN_pharmacy.png" width="400"/> | <img src="./docs/screenshots/LOGIN_diagnostics.png" width="400"/> |
+
+| Patient |
+|---|
+| <img src="./docs/screenshots/LOGIN_patient.png" width="400"/> |
 
 ---
 
