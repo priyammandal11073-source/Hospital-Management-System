@@ -8,8 +8,8 @@ import NotificationBell from "./NotificationBell.jsx";
 const navLinkClass = ({ isActive }) =>
   `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
     isActive
-      ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/25 ring-1 ring-blue-400/40"
-      : "text-slate-400 hover:bg-slate-800/80 hover:text-white"
+      ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-md shadow-rose-500/25 ring-1 ring-rose-400/40"
+      : "text-slate-600 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm"
   }`;
 
 function PatientLayout() {
@@ -51,9 +51,17 @@ function PatientLayout() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+    <div className="min-h-screen bg-gradient-to-br from-[#faf6f3] via-[#f6f4f2] to-[#f0eef4] flex flex-col font-sans">
+      {/* ================= AMBIENT LIQUID-GLASS BACKGROUND ORBS ================= */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+        <div className="glass-ambient -top-24 -left-24 h-96 w-96 bg-rose-400/20"></div>
+        <div className="glass-ambient top-1/4 -right-32 h-[30rem] w-[30rem] bg-cyan-400/15"></div>
+        <div className="glass-ambient bottom-0 left-1/3 h-80 w-80 bg-pink-300/15"></div>
+        <div className="glass-ambient top-2/3 right-1/4 h-72 w-72 bg-blue-300/15"></div>
+      </div>
+
       {/* ================= TOP HOSPITAL BRANDING HEADER ================= */}
-      <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 backdrop-blur-md shadow-sm px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5">
+      <header className="sticky top-0 z-40 border-b border-white/60 bg-white/60 backdrop-blur-2xl shadow-xs px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5">
         <div className="flex items-center justify-between gap-2 max-w-full">
           {/* Hospital Logo & Brand Title */}
           <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-shrink">
@@ -79,8 +87,8 @@ function PatientLayout() {
               <HospitalLogo variant="icon" className="sm:hidden" />
             </Link>
             <span className="hidden h-7 w-px bg-slate-200 xl:inline-block" />
-            <span className="hidden rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-blue-500/30 xl:inline-flex items-center gap-1.5 flex-shrink-0">
-              <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <span className="hidden rounded-full bg-rose-50/90 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-400/30 xl:inline-flex items-center gap-1.5 flex-shrink-0 backdrop-blur-md">
+              <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
               Patient care portal
             </span>
           </div>
@@ -98,7 +106,7 @@ function PatientLayout() {
             </div>
 
             {/* Current Date Badge */}
-            <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full flex-shrink-0">
+            <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-white/60 backdrop-blur-md border border-white/70 px-3 py-1 rounded-full flex-shrink-0">
               <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -111,13 +119,13 @@ function PatientLayout() {
             </div>
 
             {/* Patient Profile Card */}
-            <div className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50/80 p-1 sm:px-2.5 sm:py-1 shadow-2xs flex-shrink-0">
-              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-600 to-blue-600 text-xs font-bold text-white uppercase shadow-sm flex-shrink-0">
+            <div className="flex items-center gap-1.5 rounded-lg border border-white/70 bg-white/70 backdrop-blur-md p-1 sm:px-2.5 sm:py-1 shadow-2xs flex-shrink-0">
+              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-tr from-rose-500 to-pink-600 text-xs font-bold text-white uppercase shadow-sm flex-shrink-0">
                 {patient?.name ? patient.name.charAt(0) : "P"}
               </div>
               <div className="text-left hidden lg:block">
                 <p className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[110px]">{patient?.name || "Patient"}</p>
-                <span className="text-[10px] font-semibold text-blue-600 block">
+                <span className="text-[10px] font-semibold text-rose-600 block">
                   Patient
                 </span>
               </div>
@@ -144,7 +152,7 @@ function PatientLayout() {
         {/* Mobile Backdrop Overlay */}
         {mobileOpen && (
           <div
-            className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs lg:hidden animate-backdrop-fade"
+            className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden animate-backdrop-fade"
             onClick={() => setMobileOpen(false)}
             aria-hidden="true"
           />
@@ -156,7 +164,7 @@ function PatientLayout() {
             if (e.target.closest("a")) setMobileOpen(false);
           }}
           className={`
-            border-r border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 text-white flex flex-col justify-between overflow-y-auto
+            glass-panel p-4 text-slate-800 flex flex-col justify-between overflow-y-auto
             ${
               mobileOpen
                 ? "fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full shadow-2xl animate-drawer-in flex"
@@ -166,14 +174,14 @@ function PatientLayout() {
           aria-label="Patient portal navigation"
         >
           {/* Mobile Drawer Header with Close Button */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-3 lg:hidden">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200/70 mb-3 lg:hidden">
             <Link to="/patient/dashboard" onClick={() => setMobileOpen(false)}>
-              <HospitalLogo variant="full" isDark={true} />
+              <HospitalLogo variant="full" />
             </Link>
             <button
               type="button"
               onClick={() => setMobileOpen(false)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition touch-target flex items-center justify-center"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-white/80 transition touch-target flex items-center justify-center"
               aria-label="Close menu"
             >
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -184,10 +192,10 @@ function PatientLayout() {
           <div>
             {/* Sidebar Section Title */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
-              <span className="text-[11px] font-semibold text-slate-400">
+              <span className="text-[11px] font-semibold text-slate-500">
                 Patient services
               </span>
-              <span className="rounded bg-blue-500/20 px-1.5 py-0.5 text-[9px] font-semibold text-blue-400">
+              <span className="rounded bg-white/80 border border-slate-200/80 px-1.5 py-0.5 text-[9px] font-semibold text-rose-600">
                 Active
               </span>
             </div>
@@ -344,27 +352,27 @@ function PatientLayout() {
           </div>
 
           {/* Emergency Assistance Box */}
-          <div className="mt-8 rounded-xl bg-slate-900/90 border border-slate-800/80 p-3.5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-rose-400">
+          <div className="mt-8 rounded-xl bg-white/70 border border-slate-200/70 p-3.5 backdrop-blur-md">
+            <div className="flex items-center gap-2 text-xs font-semibold text-rose-600">
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <span>Emergency & helplines</span>
             </div>
-            <p className="mt-1.5 text-[11px] text-slate-400 leading-snug">
-              Ambulance: <strong className="text-rose-400">108 / 102</strong><br />
-              National helpline: <strong className="text-rose-400">112</strong><br />
-              Health helpline: <strong className="text-sky-400">1075</strong> (MoHFW)
+            <p className="mt-1.5 text-[11px] text-slate-600 leading-snug">
+              Ambulance: <strong className="text-rose-600">108 / 102</strong><br />
+              National helpline: <strong className="text-rose-600">112</strong><br />
+              Health helpline: <strong className="text-sky-700">1075</strong> (MoHFW)
             </p>
-            <div className="mt-3 border-t border-slate-800 pt-2 flex items-center justify-between text-[10px] text-slate-500">
+            <div className="mt-3 border-t border-slate-200/70 pt-2 flex items-center justify-between text-[10px] text-slate-500">
               <span>NABH accredited</span>
-              <span className="text-emerald-400 font-medium">ABDM compliant</span>
+              <span className="text-emerald-600 font-medium">ABDM compliant</span>
             </div>
-            <div className="mt-3 pt-3 border-t border-slate-800">
+            <div className="mt-3 pt-3 border-t border-slate-200/70">
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 rounded-xl bg-rose-950/40 border border-rose-800/60 px-3 py-2 text-xs font-bold text-rose-300 hover:bg-rose-600 hover:text-white transition shadow-sm cursor-pointer touch-target"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-white/70 border border-rose-200 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition shadow-sm cursor-pointer touch-target"
               >
                 <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -376,7 +384,7 @@ function PatientLayout() {
         </aside>
 
         {/* Main Content Pane */}
-        <main className="flex-1 min-w-0 bg-slate-50/70 p-3 sm:p-5 lg:p-8 overflow-x-hidden">
+        <main className="relative z-[1] flex-1 min-w-0 bg-transparent p-3 sm:p-5 lg:p-8 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

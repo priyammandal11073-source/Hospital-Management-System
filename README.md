@@ -1,71 +1,69 @@
 <a id="top"></a>
+
 <div align="center">
 
+**NHMS · ENTERPRISE HOSPITAL OPERATING SYSTEM**
+
 # 🏥 Nivora Care Hospital
+
 ### Next-Generation Unified Enterprise Hospital Management System (HMS)
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![Express.js](https://img.shields.io/badge/Express.js-4.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![Express.js](https://img.shields.io/badge/Express.js-5.x-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas%20%2F%20Mongoose-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![React](https://img.shields.io/badge/React-19.x-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-7.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.x-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](#author-license)
 
 <br/>
 
-**Nivora Care Hospital** is a mission-critical, end-to-end full-stack healthcare operating system engineered to bridge hospital operations across **7 specialized portals**: Administration, Doctors, Nursing, Reception, Pharmacy, Diagnostic Services (Pathology & Radiology), and Patient Self-Service.
+> A mission-critical, end-to-end full-stack healthcare operating system that connects **7 specialized portals** — Administration, Doctors, Nursing, Reception, Pharmacy, Diagnostic Services (Pathology &amp; Radiology), and Patient Self-Service — into one event-driven, role-isolated platform.
 
 <br/>
 
 <img src="./docs/screenshots/LOGIN_gateway_updated.png" alt="Nivora Care Hospital Unified Healthcare Gateway" width="920" style="border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.18);"/>
 
-<p><em>Unified Healthcare Gateway: Single responsive entry point providing role-isolated access to all clinical & administrative departments.</em></p>
+<p><em>Unified Healthcare Gateway — a single responsive entry point providing role-isolated access to every clinical and administrative department.</em></p>
 
 </div>
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-| Section | Description |
-|---|---|
-| 🏥 [Overview](#overview) | System objectives, architectural problem solved, and key value drivers |
-| ⚡ [System Highlights](#system-highlights) | At-a-glance matrix of all 7 hospital departments & core capabilities |
-| 🏢 [Hospital Portals](#hospital-portals) | In-depth breakdown of features, workflows, and UI screens for every portal |
-| ├─ 🧑‍💼 [Admin Portal](#admin-portal) | Hospital command center, revenue analytics, staff, and bed capacity |
-| ├─ 👨‍⚕️ [Doctor Portal](#doctor-portal) | OPD queue, clinical consultations, EHR, e-prescriptions, and lab orders |
-| ├─ 👩‍⚕️ [Nurse Portal](#nurse-portal) | Bedside care, vitals monitoring, MAR administration, and shift handovers |
-| ├─ 🧾 [Receptionist Portal](#receptionist-portal) | Patient registration, OPD tokens, inpatient admissions, and cashier billing |
-| ├─ 💊 [Pharmacy Portal](#pharmacy-portal) | Digital prescription queue, FEFO inventory, expiry tracking, and POs |
-| ├─ 🧪 [Diagnostic Services Portal](#diagnostic-services-portal) | Pathology labs, radiology PACS DICOM viewer, and film sheet generator |
-| └─ 👤 [Patient Portal](#patient-portal) | Self-service appointments, digital Rx, lab reports, and billing payments |
-| 🔄 [Cross-Portal Workflows](#cross-portal-workflows) | Event-driven data synchronization across clinical and financial departments |
-| 🔁 [Real-World Workflows](#real-world-workflows) | Step-by-step lifecycles for Pathology, Radiology CT, and Medication MAR |
-| 🏗️ [Architecture](#architecture) | Full-stack architecture diagram (React 18 + Express + MongoDB Atlas) |
-| 🗄️ [Database Schema & Indexing](#database-schema) | High-performance compound & partial index configurations |
-| 📁 [Medical File Storage](#medical-file-storage) | Dynamic PDF reports, thermal film generator (1/4/9-Up), and static asset CDN |
-| 🔒 [Security & Access Control](#security-access-control) | RBAC middleware, JWT auth, IDOR guards, and unauthorized rejection tests |
-| 🖼️ [Complete Screenshot Gallery](#complete-screenshot-gallery) | Collapsible high-resolution visual catalog of all 7 portals |
-| ⚙️ [Installation & Setup](#installation-setup) | Quickstart guide, prerequisites, and automated installation commands |
-| 🔑 [Environment Variables](#environment-variables) | Complete `.env` configuration guide for client and server |
-| 🧪 [Demo Test Accounts](#demo-test-accounts) | Pre-seeded login credentials for immediate testing across all roles |
-| 🧪 [Automated System Diagnostics](#verification-diagnostics) | Automated 24-point optimization and security verification suite |
-| 📂 [Project Structure](#project-structure) | Clean tree map of frontend, backend, and documentation directories |
-| 🔮 [Future Improvements](#future-improvements) | Roadmap: FHIR / HL7, AI scan screening, telemedicine, and IoT sync |
-| 👨‍💻 [Author & License](#author-license) | Project creator information, GitHub profile, and MIT license |
+| | Section | Description |
+|---|---|---|
+| 🏥 | [Overview](#overview) | System objectives, the architectural problem solved, and key value drivers |
+| ⚡ | [System Highlights](#system-highlights) | At-a-glance capability matrix across all 7 hospital departments |
+| 🏢 | [Hospital Portals](#hospital-portals) | In-depth feature, workflow and screen breakdown per portal |
+| 🔄 | [Cross-Portal Workflows](#cross-portal-workflows) | Event-driven data synchronization across clinical & financial departments |
+| 🔁 | [Real-World Workflows](#real-world-workflows) | Step-by-step lifecycles for Pathology, Radiology CT and Medication MAR |
+| 🏗️ | [Architecture](#architecture) | Full-stack architecture — React 19 + Express + MongoDB Atlas |
+| 🗄️ | [Database Schema & Indexing](#database-schema) | High-performance compound & partial index configurations |
+| 📁 | [Medical File Storage](#medical-file-storage) | Dynamic PDF reports, thermal film generator & static asset CDN |
+| 🔒 | [Security & Access Control](#security-access-control) | RBAC middleware, JWT auth, IDOR guards & rejection tests |
+| 🖼️ | [Screenshot Gallery](#complete-screenshot-gallery) | Collapsible visual catalog of all 7 portals |
+| ⚙️ | [Installation & Setup](#installation-setup) | Prerequisites and step-by-step start commands |
+| 🔑 | [Environment Variables](#environment-variables) | Complete `.env` guide for client and server |
+| 🧪 | [Demo Test Accounts](#demo-test-accounts) | Pre-seeded credentials for instant testing across all roles |
+| 🧪 | [Automated System Diagnostics](#verification-diagnostics) | 24-point optimization & security verification suite |
+| 📂 | [Project Structure](#project-structure) | Tree map of frontend, backend and documentation |
+| 🔮 | [Future Improvements](#future-improvements) | Roadmap — FHIR/HL7, AI screening, telemedicine, IoT |
+| 👨‍💻 | [Author & License](#author-license) | Project creator, GitHub profile and MIT license |
 
 ---
 
 ## <a id="overview"></a>🏥 Overview
 
-Modern clinical operations fail when data remains trapped in departmental silos. **Nivora Care Hospital** solves this fragmentation by implementing a real-time event-driven architecture where patient admission, clinical diagnosis, nursing care, lab orders, pharmacy dispensing, and financial ledgering are tightly synchronized.
+Modern clinical operations fail when data remains trapped in departmental silos. **Nivora Care Hospital** solves this fragmentation with a real-time, event-driven architecture — patient admission, clinical diagnosis, nursing care, lab orders, pharmacy dispensing and financial ledgering are tightly synchronized from the moment a patient walks in.
 
-### Core Value Drivers:
-- **Zero Information Loss**: A doctor's prescription instantaneously populates both the **Pharmacy Dispensing Queue** and the **Patient Prescription Portal**.
-- **Integrated Diagnostics & PACS**: Lab test orders flow directly to Phlebotomy & Laboratory Workbenches, while Radiology orders render DICOM-grade imaging with film layout engines (1-Up, 4-Up, 9-Up).
-- **Financial Ledgering**: OPD consultations, nursing bed tariffs, pharmacy medications, and diagnostic investigations auto-aggregate into unified patient invoices.
-- **Strict Role Isolation**: Server-enforced Role-Based Access Control (RBAC) ensures medical record privacy, preventing unauthorized access across departmental boundaries.
+### Core Value Drivers
+
+- **Zero Information Loss** — A doctor's prescription instantaneously populates both the **Pharmacy Dispensing Queue** and the **Patient Prescription Portal**.
+- **Integrated Diagnostics &amp; PACS** — Lab test orders flow directly to Phlebotomy and Laboratory workbenches, while Radiology orders render DICOM-grade imaging with film layout engines (**1-Up, 4-Up, 9-Up**).
+- **Financial Ledgering** — OPD consultations, nursing bed tariffs, pharmacy medications and diagnostic investigations auto-aggregate into unified patient invoices.
+- **Strict Role Isolation** — Server-enforced Role-Based Access Control (RBAC) protects medical record privacy and blocks access across departmental boundaries.
 
 ---
 
@@ -77,7 +75,7 @@ Modern clinical operations fail when data remains trapped in departmental silos.
 | **👨‍⚕️ Doctor** | Clinical Workspace & Consultations | Patient consultation, SOAP note recording, Rx prescription writing, diagnostic ordering, critical result alerts. |
 | **👩‍⚕️ Nurse** | Inpatient Monitoring & Nursing Care | Real-time vital sign recording, MAR medication administration, fluid intake/output balance, shift handover notes. |
 | **🧾 Receptionist** | Front Desk & Queue Logistics | Patient registration, walk-in tokens, doctor schedule booking, inpatient bed admissions, cashier payment settlement. |
-| **💊 Pharmacy** | Inventory & Medication Dispensing | Real-time prescription fulfillment queue, batch batch/expiry tracking, low-stock reorder triggers, supplier PO management. |
+| **💊 Pharmacy** | Inventory & Medication Dispensing | Real-time prescription fulfillment queue, batch/expiry tracking, low-stock reorder triggers, supplier PO management. |
 | **🧪 Diagnostics** | Pathology Labs & Radiology DICOM | Phlebotomy sample barcode tracking, laboratory result entry, PACS radiology DICOM viewer, film sheet generator. |
 | **👤 Patient** | Patient Self-Service Portal | Online appointment scheduling, digital prescription downloads, lab result portal sync, invoice payments. |
 
@@ -87,31 +85,29 @@ Modern clinical operations fail when data remains trapped in departmental silos.
 
 ### <a id="admin-portal"></a>🧑‍💼 Admin Portal
 
-#### Overview
-The **Admin Portal** serves as the command center for hospital executive leadership, providing real-time financial tracking, audit logging, facility management, and human resource oversight.
+**Overview** — The **Admin Portal** is the command center for hospital executive leadership, delivering real-time financial tracking, audit logging, facility management and human-resource oversight.
 
-#### Features
 | Feature | Technical Description | Operational Impact |
 |---|---|---|
-| **Executive Dashboard & KPIs** | Live MongoDB aggregations for occupancy, daily revenue, and active clinical cases. | Provides instant visibility into hospital throughput and revenue streams. |
-| **Staff & Doctor Directory** | Full CRUD controls for hospital personnel, credentials, and departmental mapping. | Controls employee directory and system authentication access. |
-| **Department & Equipment Tracker** | Equipment maintenance schedule tracking, status flags, and asset utilization logs. | Prevents critical biomedical equipment downtime. |
-| **Bed & Ward Occupancy** | Real-time matrix of General, ICU, Ventilator, and Private ward availability. | Maximizes bed turnover efficiency and emergency triage. |
-| **System Audit Trail** | Immutable log tracking every login, record modification, and payment transaction. | Guarantees compliance and HIPAA/NABH security auditing. |
+| **Executive Dashboard & KPIs** | Live MongoDB aggregations for occupancy, daily revenue, and active clinical cases. | Instant visibility into hospital throughput and revenue streams. |
+| **Staff & Doctor Directory** | Full CRUD controls for personnel, credentials and departmental mapping. | Controls employee directory and system authentication access. |
+| **Department & Equipment Tracker** | Equipment maintenance schedules, status flags and asset utilization logs. | Prevents critical biomedical equipment downtime. |
+| **Bed & Ward Occupancy** | Real-time matrix of General, ICU, Ventilator and Private ward availability. | Maximizes bed turnover efficiency and emergency triage. |
+| **System Audit Trail** | Immutable log of every login, record modification and payment transaction. | Guarantees compliance and NABH security auditing. |
 
-#### Screenshots
+**Screenshots**
 
 <div align="center">
 
 **Admin Executive Dashboard & Financial Analytics**
 <img src="./docs/screenshots/ADM_01_admin_dashboard.png" alt="Admin Dashboard" width="850"/>
-> *The Admin Dashboard presents macro operational analytics, departmental breakdown, bed occupancy statistics, and quick navigation actions.*
+> *Macro operational analytics, departmental breakdown, bed occupancy statistics and quick navigation actions.*
 
 <br/>
 
 **Hospital Staff & Personnel Directory**
 <img src="./docs/screenshots/ADM_page_staff.png" alt="Admin Staff Directory" width="850"/>
-> *Admin interface for managing clinical staff onboarding, role permissions, and active employment status.*
+> *Clinical staff onboarding, role permissions and active employment status management.*
 
 </div>
 
@@ -121,31 +117,29 @@ The **Admin Portal** serves as the command center for hospital executive leaders
 
 ### <a id="doctor-portal"></a>👨‍⚕️ Doctor Portal
 
-#### Overview
-Designed for high-speed clinical environments, the **Doctor Portal** equips physicians with streamlined consultation workspaces, electronic health record (EHR) review, instant prescription ordering, and diagnostic investigation requests.
+**Overview** — Built for high-speed clinical environments, the **Doctor Portal** streamlines consultation workspaces, electronic health record (EHR) review, instant prescription writing and diagnostic investigation requests.
 
-#### Features
 | Feature | Technical Description | Operational Impact |
 |---|---|---|
-| **Appointments Queue** | Filterable queue showing pending, checked-in, and completed consultations for the day. | Optimizes doctor OPD throughput and reduces patient wait times. |
-| **Consultation Workspace** | Integrated clinical interface featuring patient medical history, past vitals, and current complaints. | Centralizes patient EHR data during face-to-face consultations. |
-| **Prescription Builder** | Structured drug form with automatic dosage, frequency, duration, and food instruction inputs. | Eliminates handwritten prescription ambiguity and feeds Pharmacy queue. |
-| **Diagnostic Test Orders** | Dual-type order creation for Pathology (Blood/Urine) and Radiology (X-Ray/CT/MRI). | Initiates cross-portal diagnostic processing without paperwork. |
-| **Critical Result Alerts** | High-priority notification banner alerting doctors to abnormal panic lab values immediately. | Accelerates urgent clinical interventions for critical patients. |
+| **Appointments Queue** | Filterable queue showing pending, checked-in and completed consultations for the day. | Optimizes OPD throughput and reduces patient wait times. |
+| **Consultation Workspace** | Integrated interface with patient medical history, past vitals and current complaints. | Centralizes patient EHR data during face-to-face consultations. |
+| **Prescription Builder** | Structured drug form with dosage, frequency, duration and food instructions. | Eliminates handwritten prescription ambiguity and feeds the Pharmacy queue. |
+| **Diagnostic Test Orders** | Dual-type orders for Pathology (Blood/Urine) and Radiology (X-Ray/CT/MRI). | Initiates cross-portal diagnostic processing without paperwork. |
+| **Critical Result Alerts** | High-priority banner alerts for abnormal panic lab values. | Accelerates urgent clinical interventions for critical patients. |
 
-#### Screenshots
+**Screenshots**
 
 <div align="center">
 
 **Doctor Clinical Dashboard & Today's Schedule**
 <img src="./docs/screenshots/DOC_01_doctor_dashboard.png" alt="Doctor Dashboard" width="850"/>
-> *Doctor dashboard showcasing daily appointment queues, quick patient lookups, and recent clinical activities.*
+> *Daily appointment queues, quick patient lookups and recent clinical activities.*
 
 <br/>
 
 **Consultation & Electronic Health Record Workspace**
 <img src="./docs/screenshots/DOC_03_consultation_workspace.png" alt="Doctor Consultation Workspace" width="850"/>
-> *Live consultation screen allowing doctors to inspect vitals history, record diagnostic findings, and generate prescriptions.*
+> *Inspect vitals history, record diagnostic findings and generate prescriptions in one screen.*
 
 </div>
 
@@ -155,31 +149,29 @@ Designed for high-speed clinical environments, the **Doctor Portal** equips phys
 
 ### <a id="nurse-portal"></a>👩‍⚕️ Nurse Portal
 
-#### Overview
-The **Nurse Portal** provides bedside care teams with real-time patient monitoring tools, vital signs entry, medication administration records (MAR), fluid intake/output tracking, and nursing shift handovers.
+**Overview** — The **Nurse Portal** equips bedside teams with real-time patient monitoring, vital signs entry, medication administration records (MAR), intake/output tracking and structured shift handovers.
 
-#### Features
 | Feature | Technical Description | Operational Impact |
 |---|---|---|
-| **Nursing Station Dashboard** | Overview of admitted ward patients, pending vitals due, and active nursing care alerts. | Keeps shift nurses synchronized on inpatient care tasks. |
-| **Vital Signs Recorder** | Input screen for BP, Heart Rate, SpO2, Temperature, Respiratory Rate, and Pain Scale. | Tracks patient trend graphs and alerts doctors of clinical deterioration. |
-| **Medication Administration (MAR)** | Timed medication schedule populated automatically from doctor prescriptions. | Prevents missed or duplicate drug doses for ward inpatients. |
-| **Intake & Output Balance** | Fluid balance calculator logging oral/IV intake vs. urine/drainage output. | Essential for nephrology, ICU, and post-surgical recovery monitoring. |
-| **Shift Handover Log** | Structured notes transferring patient care responsibility between nursing shifts. | Ensures continuous, error-free patient handovers across shifts. |
+| **Nursing Station Dashboard** | Overview of admitted ward patients, pending vitals and active nursing alerts. | Keeps shift nurses synchronized on inpatient care tasks. |
+| **Vital Signs Recorder** | Input for BP, Heart Rate, SpO2, Temperature, Respiratory Rate and Pain Scale. | Tracks trend graphs and alerts doctors to clinical deterioration. |
+| **Medication Administration (MAR)** | Timed medication schedule auto-populated from doctor prescriptions. | Prevents missed or duplicate drug doses for ward inpatients. |
+| **Intake & Output Balance** | Fluid balance calculator logging oral/IV intake vs. urine/drainage output. | Essential for nephrology, ICU and post-surgical recovery. |
+| **Shift Handover Log** | Structured notes transferring care responsibility between shifts. | Ensures continuous, error-free patient handovers. |
 
-#### Screenshots
+**Screenshots**
 
 <div align="center">
 
 **Nursing Station Dashboard & Inpatient Care Overview**
 <img src="./docs/screenshots/NUR_01_nurse_dashboard.png" alt="Nurse Dashboard" width="850"/>
-> *Nursing station view showing assigned ward beds, pending nursing tasks, and current patient vital statuses.*
+> *Assigned ward beds, pending nursing tasks and current patient vital statuses.*
 
 <br/>
 
 **Bedside Vital Signs Recorder**
 <img src="./docs/screenshots/NUR_02_vitals_page.png" alt="Nurse Vitals Page" width="850"/>
-> *Nurse interface for recording vital signs, calculating body metrics, and detecting abnormal clinical readings.*
+> *Vital sign recording, body metric calculation and abnormal reading detection.*
 
 </div>
 
@@ -189,31 +181,29 @@ The **Nurse Portal** provides bedside care teams with real-time patient monitori
 
 ### <a id="receptionist-portal"></a>🧾 Receptionist Portal
 
-#### Overview
-The **Receptionist Portal** manages patient entry, OPD registration, waiting room queue tokens, doctor schedule booking, inpatient bed allocation, and multi-channel billing settlements.
+**Overview** — The **Receptionist Portal** manages patient entry, OPD registration, waiting-room token queues, doctor schedule booking, inpatient bed allocation and multi-channel billing settlement.
 
-#### Features
 | Feature | Technical Description | Operational Impact |
 |---|---|---|
-| **Patient Registration** | Comprehensive patient demographic capture with unique MRN generation. | Establishes master patient index across all hospital departments. |
-| **OPD Token & Queue Manager** | Real-time token generator assigning patients to doctor waiting rooms. | Reduces waiting hall congestion through structured token numbering. |
-| **Ward & Bed Allocations** | Matrix for admitting patients to specific wards, room transfers, and discharges. | Manages physical bed assets and triggers room tariff calculations. |
-| **Cashier & Billing Desk** | Invoice settlement supporting Cash, UPI QR, Card, Insurance TPA, and NetBanking. | Ensures immediate payment collection and transparent patient receipts. |
-| **SMS Payment Link Dispenser** | Integration with SMS gateways to dispatch remote payment links to patient phones. | Enables contactless payments for family members or remote settlements. |
+| **Patient Registration** | Comprehensive demographic capture with unique MRN generation. | Establishes the master patient index across all departments. |
+| **OPD Token & Queue Manager** | Real-time token generator assigning patients to doctor waiting rooms. | Reduces waiting-hall congestion through structured token numbering. |
+| **Ward & Bed Allocations** | Matrix for admitting patients, room transfers and discharges. | Manages physical bed assets and room tariff calculations. |
+| **Cashier & Billing Desk** | Invoice settlement via Cash, UPI QR, Card, Insurance TPA and NetBanking. | Ensures immediate collection and transparent patient receipts. |
+| **SMS Payment Link Dispenser** | SMS gateway dispatch of remote payment links to patient phones. | Enables contactless payments for families or remote settlement. |
 
-#### Screenshots
+**Screenshots**
 
 <div align="center">
 
 **Front Desk Reception Dashboard & Operations**
 <img src="./docs/screenshots/REC_01_reception_dashboard.png" alt="Reception Dashboard" width="850"/>
-> *Receptionist overview displaying daily patient registrations, OPD token statuses, and cashier desk metrics.*
+> *Daily registrations, OPD token statuses and cashier desk metrics.*
 
 <br/>
 
 **Waiting Room OPD Token Management**
 <img src="./docs/screenshots/REC_03_waiting_room_tokens.png" alt="Reception OPD Waiting Tokens" width="850"/>
-> *Real-time waiting room token management displaying active consultations, waiting patients, and doctor availability.*
+> *Active consultations, waiting patients and doctor availability in real time.*
 
 </div>
 
@@ -223,31 +213,29 @@ The **Receptionist Portal** manages patient entry, OPD registration, waiting roo
 
 ### <a id="pharmacy-portal"></a>💊 Pharmacy Portal
 
-#### Overview
-The **Pharmacy Portal** controls medication inventory, batch tracking, prescription fulfillment queues, supplier purchase orders, and stock reordering.
+**Overview** — The **Pharmacy Portal** controls medication inventory, batch tracking, prescription fulfillment queues, supplier purchase orders and automated stock reordering.
 
-#### Features
 | Feature | Technical Description | Operational Impact |
 |---|---|---|
-| **Prescription Fulfillment Queue** | Real-time queue populated automatically when a doctor signs a digital prescription. | Enables instant dispensing without paper prescriptions. |
-| **Batch & Expiry Management** | FEFO (First-Expired, First-Out) inventory tracking by batch number and expiry date. | Prevents stock loss due to drug expiration and ensures patient safety. |
-| **Inventory Stock Control** | Itemized drug database with stock levels, reorder thresholds, and category tags. | Automates low-stock alerts and purchase requests. |
-| **Supplier & Purchase Orders** | PO creation, stock receipt logging, and vendor management tools. | Streamlines pharmaceutical procurement and vendor billing. |
-| **Direct Dispense Billing** | Automatic calculation of drug quantities and auto-billing integration with Cashier. | Syncs pharmacy sales directly with the master financial ledger. |
+| **Prescription Fulfillment Queue** | Real-time queue auto-populated when a doctor signs a digital prescription. | Enables instant dispensing without paper prescriptions. |
+| **Batch & Expiry Management** | FEFO (First-Expired, First-Out) tracking by batch number and expiry date. | Prevents expiry-related stock loss and protects patient safety. |
+| **Inventory Stock Control** | Itemized drug database with stock levels, reorder thresholds and category tags. | Automates low-stock alerts and purchase requests. |
+| **Supplier & Purchase Orders** | PO creation, stock receipt logging and vendor management. | Streamlines procurement and vendor billing. |
+| **Direct Dispense Billing** | Automatic drug quantity calculation synced with the Cashier. | Feeds pharmacy sales directly into the master financial ledger. |
 
-#### Screenshots
+**Screenshots**
 
 <div align="center">
 
 **Pharmacy Inventory & Fulfillment Dashboard**
 <img src="./docs/screenshots/PHA_01_pharmacy_dashboard.png" alt="Pharmacy Dashboard" width="850"/>
-> *Pharmacy command center showing pending prescription count, low-stock warnings, and daily sales metrics.*
+> *Pending prescription count, low-stock warnings and daily sales metrics.*
 
 <br/>
 
 **Prescription Dispensing Queue**
 <img src="./docs/screenshots/PHA_03_dispensing_queue.png" alt="Pharmacy Dispensing Queue" width="850"/>
-> *Pharmacist workspace for fulfilling incoming doctor prescriptions, allocating drug batches, and completing orders.*
+> *Fulfilling incoming prescriptions, allocating drug batches and completing orders.*
 
 </div>
 
@@ -257,56 +245,53 @@ The **Pharmacy Portal** controls medication inventory, batch tracking, prescript
 
 ### <a id="diagnostic-services-portal"></a>🧪 Diagnostic Services Portal
 
-#### Overview
-The **Diagnostic Services Portal** is a dual-subsystem platform combining **Pathology / Laboratory Medicine** with **Radiology / Medical Imaging (PACS)**. It governs the full life cycle of diagnostic investigations from doctor ordering to final report distribution.
+**Overview** — A dual-subsystem platform combining **Pathology / Laboratory Medicine** with **Radiology / Medical Imaging (PACS)**, governing the complete diagnostic life cycle from doctor order to final report distribution.
 
-#### Comprehensive Subsystem Architecture
 ```
-                                🧪 DIAGNOSTIC SERVICES PORTAL
-                                              │
-               ┌──────────────────────────────┴──────────────────────────────┐
-               ▼                                                             ▼
-     🧪 PATHOLOGY / LABORATORY                                    📷 RADIOLOGY / IMAGING
-  • Phlebotomy Sample Collection                              • Worklist Queue (X-Ray/CT/MRI/USG)
-  • Barcode Tracking & Rack Mapping                           • PACS Imaging DICOM Viewer
-  • Laboratory Workbench (Hematology/Biochem)                 • Radiology Findings & Impression Entry
-  • Pathologist Specialist Review & Approval                  • Laser Film Sheet Generator (1/4/9-Up)
-  • PDF Pathology Report Generation                           • Formal Radiology Report Printing
+🧪 DIAGNOSTIC SERVICES PORTAL
+            │
+   ┌────────┴────────┐
+   ▼                 ▼
+🧪 PATHOLOGY                     📷 RADIOLOGY / IMAGING
+• Phlebotomy Sample Collection   • Worklist Queue (X-Ray/CT/MRI/USG)
+• Barcode Tracking & Rack Maps   • PACS DICOM Imaging Viewer
+• Lab Workbench (Hemo/Biochem)   • Findings & Impression Entry
+• Pathologist Review & Approval  • Laser Film Sheet Generator (1/4/9-Up)
+• PDF Pathology Reports          • Formal Radiology Report Printing
 ```
 
-#### Detailed Feature Matrix
 | Diagnostic Domain | Sub-Module | Key Operational Capabilities |
 |---|---|---|
-| **Phlebotomy & Sample Lab** | **Sample Collection** | Barcode generation, sample container tracking (EDTA, Serum, Fluoride), collection timestamping, and rack placement. |
-| | **Lab Workbench** | Numerical result entry for Hematology, Biochemistry, Microbiology, with automatic high/low panic value flagging. |
-| | **Pathologist Review** | Specialist review workflow where senior pathologists verify abnormal readings before report authorization. |
-| **Radiology & PACS Imaging** | **Imaging Worklist** | Modality worklist filtering by X-Ray, CT Scan, MRI, Ultrasound, and Mammography. |
-| | **DICOM Visualizer** | Web-based medical imaging viewer supporting zoom, pan, contrast adjustments, and measurement overlays. |
-| | **Radiology Reporting** | Structured reporting editor for recording Clinical Indications, Imaging Findings, and Final Diagnostic Impressions. |
-| | **Film Sheet Generator** | Advanced print engine rendering DICOM image series into multi-frame laser film layouts (**1-Up, 4-Up, 9-Up**). |
-| **Administrative & Safety** | **Critical Panic Alerts** | Instant alert dispatcher pushing critical lab/radiology results directly to attending doctors' dashboards. |
-| | **Diagnostic Inventory** | Reagent and film stock tracking with automated consumption per test performed. |
-| | **Print Center & Audit** | Centralized print logging tracking every physical report printout, reprint request, and PDF download. |
+| **Phlebotomy & Sample Lab** | **Sample Collection** | Barcode generation, container tracking (EDTA, Serum, Fluoride), timestamping and rack placement. |
+| | **Lab Workbench** | Numerical result entry for Hematology, Biochemistry and Microbiology with automatic high/low panic flags. |
+| | **Pathologist Review** | Senior-pathologist workflow that verifies abnormal readings before report authorization. |
+| **Radiology & PACS Imaging** | **Imaging Worklist** | Modality filtering across X-Ray, CT, MRI, Ultrasound and Mammography. |
+| | **DICOM Visualizer** | Web-based medical imaging viewer with zoom, pan, contrast and measurement overlays. |
+| | **Radiology Reporting** | Structured editor for Clinical Indications, Imaging Findings and Diagnostic Impressions. |
+| | **Film Sheet Generator** | Print engine rendering DICOM series into **1-Up, 4-Up, 9-Up** laser film layouts. |
+| **Administrative & Safety** | **Critical Panic Alerts** | Instant dispatch of critical lab/radiology results to attending doctors. |
+| | **Diagnostic Inventory** | Reagent and film stock tracking with automated per-test consumption. |
+| | **Print Center & Audit** | Centralized logging of every printout, reprint request and PDF download. |
 
-#### Screenshots
+**Screenshots**
 
 <div align="center">
 
 **Diagnostic Services Master Gateway**
 <img src="./docs/screenshots/DIAG_01_gateway_1280px.png" alt="Diagnostic Gateway" width="850"/>
-> *Master entry point for diagnostic staff selecting specialized sub-roles (Phlebotomist, Lab Tech, Radiologist, Pathologist).*
+> *Entry point for diagnostic staff selecting specialized sub-roles (Phlebotomist, Lab Tech, Radiologist, Pathologist).*
 
 <br/>
 
-**PACS Radiology Imaging &DICOM Viewer**
+**PACS Radiology Imaging & DICOM Viewer**
 <img src="./docs/screenshots/EV_DIAG_PRINT_007_radiology_study_xray_viewer.png" alt="Radiology Viewer" width="850"/>
-> *High-resolution radiology viewer displaying chest X-rays with zoom controls, measurement overlays, and diagnostic report panel.*
+> *Chest X-ray viewing with zoom controls, measurement overlays and a diagnostic report panel.*
 
 <br/>
 
 **Laser Radiology Film Sheet Generator (4-Up Layout)**
 <img src="./docs/screenshots/EV_DIAG_PRINT_012_ct_film_4up.png" alt="Radiology 4-Up Film Generator" width="850"/>
-> *Radiology film generator creating a 4-Up CT slice layout for thermal laser film printing.*
+> *4-Up CT slice layout rendered for thermal laser film printing.*
 
 </div>
 
@@ -316,31 +301,29 @@ The **Diagnostic Services Portal** is a dual-subsystem platform combining **Path
 
 ### <a id="patient-portal"></a>👤 Patient Portal
 
-#### Overview
-The **Patient Portal** empowers patients to take control of their healthcare journey by providing self-service appointment booking, prescription access, diagnostic report downloads, and invoice payments.
+**Overview** — The **Patient Portal** puts patients in control of their healthcare journey with self-service appointment booking, prescription access, diagnostic report downloads and invoice payments.
 
-#### Features
 | Feature | Description |
 |---|---|
-| **Patient Dashboard** | Personal health summary displaying upcoming appointments, active prescriptions, and recent lab tests. |
-| **Book Appointment** | Self-service schedule booking with doctor specialization selection and real-time slot availability. |
-| **Digital Prescriptions** | Access to all active and past doctor prescriptions with dosage details and downloadable PDFs. |
-| **Diagnostic Reports** | Instant access to finalized Pathology lab reports and Radiology imaging studies as soon as approved. |
-| **Invoice & Payments** | Transparent view of outstanding bills with direct payment options via UPI, Card, or NetBanking. |
+| **Patient Dashboard** | Personal health summary: upcoming appointments, active prescriptions and recent lab tests. |
+| **Book Appointment** | Self-service booking with doctor specialization selection and real-time slot availability. |
+| **Digital Prescriptions** | All active and past prescriptions with dosage details and downloadable PDFs. |
+| **Diagnostic Reports** | Instant access to finalized Pathology reports and Radiology studies once approved. |
+| **Invoice & Payments** | Outstanding-bill overview with direct UPI, Card or NetBanking payment. |
 
-#### Screenshots
+**Screenshots**
 
 <div align="center">
 
 **Patient Self-Service Dashboard**
 <img src="./docs/screenshots/PAT_01_patient_dashboard.png" alt="Patient Dashboard" width="850"/>
-> *Patient home screen displaying health timeline, upcoming visits, active medications, and quick action buttons.*
+> *Health timeline, upcoming visits, active medications and quick action buttons.*
 
 <br/>
 
 **Patient Self-Service Appointment Booking**
 <img src="./docs/screenshots/PAT_03_book_appointment.png" alt="Patient Booking" width="850"/>
-> *Self-service appointment reservation form allowing patients to select departments, doctors, and available time slots.*
+> *Select departments, doctors and available time slots.*
 
 </div>
 
@@ -350,7 +333,7 @@ The **Patient Portal** empowers patients to take control of their healthcare jou
 
 ## <a id="cross-portal-workflows"></a>🔄 Cross-Portal Workflows & Integration
 
-Nivora Care Hospital is designed as a unified event-driven system. Data recorded in one portal instantly propagates to all relevant departments without manual re-entry.
+Data recorded in one portal instantly propagates to every relevant department — no manual re-entry.
 
 ```mermaid
 flowchart LR
@@ -376,61 +359,61 @@ flowchart LR
 1. 👨‍⚕️ Doctor orders "Complete Blood Count (CBC)" during consultation.
    │
    ▼
-2. 🧾 System auto-generates Diagnostic Order & creates pending billing entry.
+2. 🧾 System auto-generates Diagnostic Order & creates a pending billing entry.
    │
    ▼
-3. 🧪 Phlebotomist views order in Sample Collection queue -> Collects blood sample -> Scans EDTA Barcode.
+3. 🧪 Phlebotomist views the order in Sample Collection -> Collects blood -> Scans EDTA Barcode.
    │
    ▼
-4. 🧪 Lab Technician runs sample on analyzer -> Enters Hemoglobin, WBC, Platelet values in Workbench.
+4. 🧪 Lab Technician runs the sample -> Enters Hemoglobin, WBC, Platelet values in Workbench.
    │
    ▼
 5. 👨‍⚕️ Senior Pathologist reviews abnormal flags -> Clicks "Approve & Sign Report".
    │
    ▼
-6. 📲 Finalized PDF syncs to Patient Portal + Attending Doctor receives instant notification.
+6. 📲 Finalized PDF syncs to the Patient Portal + Attending Doctor receives an instant notification.
 ```
 
 ### Workflow 2 — Radiology CT Scan & Laser Film Printing
 ```
-1. 👨‍⚕️ Doctor orders "CT Thorax Contrast" for trauma patient.
+1. 👨‍⚕️ Doctor orders "CT Thorax Contrast" for a trauma patient.
    │
    ▼
-2. 🧪 Radiology Worklist receives order -> Radiographer performs scan -> Uploads DICOM series.
+2. 🧪 Radiology Worklist receives the order -> Radiographer performs the scan -> Uploads DICOM series.
    │
    ▼
-3. 👨‍⚕️ Radiologist opens PACS Viewer -> Inspects axial slices -> Writes Diagnostic Findings & Impression.
+3. 👨‍⚕️ Radiologist opens the PACS Viewer -> Inspects axial slices -> Writes Findings & Impression.
    │
    ▼
-4. 🧪 Film Print Center generates 4-Up Laser Film Sheet -> Sends to thermal DICOM printer.
+4. 🧪 Film Print Center generates a 4-Up Laser Film Sheet -> Sends to the thermal DICOM printer.
    │
    ▼
-5. 📄 Formal Radiology Report & Laser Film dispatched to ward; PDF attached to Patient EHR.
+5. 📄 Formal Radiology Report & Laser Film dispatched to the ward; PDF attached to the patient EHR.
 ```
 
 ### Workflow 3 — Inpatient Medication & MAR Cycle
 ```
-1. 👨‍⚕️ Doctor prescribes IV Antibiotics for admitted ward patient.
+1. 👨‍⚕️ Doctor prescribes IV Antibiotics for an admitted ward patient.
    │
    ▼
-2. 💊 Pharmacy receives order -> Verifies batch expiry -> Dispenses drug to ward station.
+2. 💊 Pharmacy receives the order -> Verifies batch expiry -> Dispenses drug to the ward station.
    │
    ▼
-3. 👩‍⚕️ Nurse receives medication -> Opens MAR Schedule -> Administers dose at scheduled hour -> Logs timestamp.
+3. 👩‍⚕️ Nurse receives the medication -> Opens the MAR Schedule -> Administers the dose -> Logs timestamp.
    │
    ▼
-4. 🧾 Billing Ledger auto-adds drug cost to patient's daily IPD invoice.
+4. 🧾 Billing Ledger auto-adds the drug cost to the patient's daily IPD invoice.
 ```
 
 ---
 
 ## <a id="architecture"></a>🏗️ Architecture
 
-Nivora Care Hospital is engineered on a modern decoupled architecture separating presentation, business logic, persistence, and static object storage.
+A modern decoupled architecture separating presentation, business logic, persistence and static object storage.
 
 ```mermaid
 flowchart TD
-    subgraph Frontend ["Client Layer (React 18 + Vite + TailwindCSS)"]
+    subgraph Frontend ["Client Layer (React 19 + Vite + TailwindCSS)"]
         UI[Responsive SPA Interface]
         State[React Context & Auth State]
         Routes[React-Router-Dom Lazy Routes]
@@ -442,7 +425,7 @@ flowchart TD
         Auth[JWT & Bcrypt Auth Middleware]
         Controllers[Controller Logic Layer]
         Services[DiagnosticSync & PDF Services]
-        
+
         Routes --> Auth
         Auth --> Controllers
         Controllers --> Services
@@ -467,23 +450,22 @@ flowchart TD
 
 ## <a id="database-schema"></a>🗄️ Database Schema & Indexing
 
-The backend uses **Mongoose** over **MongoDB Atlas**. To maintain high performance during heavy concurrent access, all core collections utilize compound and partial indexes to eliminate collection scans (`COLLSCAN`).
+The backend uses **Mongoose** over **MongoDB Atlas**. All core collections use compound and partial indexes to eliminate collection scans (`COLLSCAN`) under heavy concurrent load.
 
-### Key Models & Index Configurations
 ```javascript
-// Appointment Schema - Compound Double-Booking Prevention Index
+// Appointment — compound double-booking prevention index
 AppointmentSchema.index(
   { doctorId: 1, appointmentDate: 1, timeSlot: 1 },
   { unique: true, partialFilterExpression: { status: { $ne: "cancelled" } } }
 );
 
-// Billing Schema - Patient Invoice Lookup Index
+// Billing — patient invoice lookup index
 BillingSchema.index({ patientId: 1, createdAt: -1 });
 
-// Notification Schema - Unread Alert Index
+// Notification — unread-alert index
 NotificationSchema.index({ userId: 1, isRead: 1 });
 
-// Patient Schema - Fast MRN & Name Search Index
+// Patient — fast MRN & name search indexes
 PatientSchema.index({ mrn: 1 }, { unique: true });
 PatientSchema.index({ lastName: 1, firstName: 1 });
 ```
@@ -492,24 +474,24 @@ PatientSchema.index({ lastName: 1, firstName: 1 });
 
 ## <a id="medical-file-storage"></a>📁 Medical File & Laser Film Storage
 
-Diagnostic scans, PDF reports, and radiology film prints are managed by a dedicated storage service (`server/services/storageService.js` & `pdfReportService.js`).
+Diagnostic scans, PDF reports and radiology film prints are managed by a dedicated storage service (`server/services/storageService.js` and `pdfReportService.js`).
 
-- **File Path Routing**: Diagnostic scans are stored under `server/storage/medical_files/` and exposed via secure static endpoints (`/medical_scans/`).
-- **PDF Report Generation**: Clinical reports are dynamically compiled into official hospital PDFs complete with hospital header, QR verification code, pathologist signature, and reference ranges.
-- **DICOM & Film Sheet Engine**: Supports exporting multi-slice grid representations (1-Up, 4-Up, 9-Up) formatted for laser film printing.
+- **File Path Routing** — Scans are stored under `server/storage/medical_files/` and exposed via secure static endpoints (`/medical_scans/`).
+- **PDF Report Generation** — Clinical reports are compiled into official hospital PDFs with header, QR verification code, pathologist signature and reference ranges.
+- **DICOM & Film Sheet Engine** — Multi-slice grid export (**1-Up, 4-Up, 9-Up**) formatted for laser film printing.
 
 ---
 
 ## <a id="security-access-control"></a>🔒 Security & Access Control
 
-Nivora Care Hospital implements strict multi-layered security protocols across both backend APIs and frontend UI routes:
+Multi-layered security enforced across both backend APIs and frontend UI routes:
 
-1. **JWT Authentication**: 7-day signed JSON Web Tokens containing user identity and explicit role payloads.
-2. **Bcrypt Password Hashing**: Passwords salted and hashed with 10 salt rounds prior to persistence.
-3. **IDOR Guarding**: API endpoints (e.g., `diagnosticController.js`) enforce ownership checks verifying that requesting patients can only access their own records.
+1. **JWT Authentication** — 7-day signed tokens carrying user identity and explicit role payloads.
+2. **Bcrypt Password Hashing** — Passwords salted and hashed with 10 salt rounds before persistence.
+3. **IDOR Guarding** — API endpoints (e.g., `diagnosticController.js`) enforce ownership checks so patients can only access their own records.
 4. **Server-Side RBAC Middleware**:
    ```javascript
-   // Backend Role Guard Example
+   // Backend role guard example
    router.post('/doctors', protect, restrictTo('admin'), createDoctor);
    ```
 5. **Security Isolation Verification**:
@@ -518,7 +500,7 @@ Nivora Care Hospital implements strict multi-layered security protocols across b
 
 **Role-Based Access Control Barrier (Unauthorized Access Blocked)**
 <img src="./docs/screenshots/SEC_01_patient_admin_rejected.png" alt="Security RBAC Rejection" width="800"/>
-> *Verification screenshot demonstrating server-side rejection (403 Forbidden) when a lower-privileged role attempts admin access.*
+> *Server-side rejection (403 Forbidden) when a lower-privileged role attempts admin access.*
 
 </div>
 
@@ -578,45 +560,51 @@ Nivora Care Hospital implements strict multi-layered security protocols across b
 ## <a id="installation-setup"></a>⚙️ Installation & Setup
 
 ### Prerequisites
-- **Node.js**: v18.0.0 or higher
-- **MongoDB**: Local instance running at `mongodb://127.0.0.1:27017` OR a MongoDB Atlas cluster URI
-- **npm**: v8.0.0 or higher
 
-### Step 1: Clone Repository
+- **Node.js** — v18.0.0 or higher
+- **MongoDB** — local instance at `mongodb://127.0.0.1:27017`, or a MongoDB Atlas cluster URI
+- **npm** — v8.0.0 or higher
+
+### Step 1 — Clone the Repository
 ```bash
 git clone https://github.com/priyammandal11073-source/Hospital-Management-System.git
 cd Hospital-Management-System
 ```
 
-### Step 2: Install Dependencies
+### Step 2 — Install Dependencies
 ```bash
-# Install root dependencies
-npm install
+# Root + client + server dependencies
+npm run install:all
+```
 
-# Install client & server dependencies
+<details>
+<summary><b>Manual install (equivalent steps)</b></summary>
+
+```bash
+npm install
 cd server && npm install
 cd ../client && npm install
 cd ..
 ```
 
-### Step 3: Configure Environment Variables
-Create `.env` files in both `server/` and `client/` directories using the instructions in the [Environment Variables](#environment-variables) section.
+</details>
 
-### Step 4: Seed Database (Optional but Recommended)
-Populate the database with complete test accounts, doctors, patients, wards, inventory, and diagnostic test catalogs:
+### Step 3 — Configure Environment Variables
+Create `.env` files in both `server/` and `client/` using the [Environment Variables](#environment-variables) guide.
+
+### Step 4 — Seed the Database (Optional but Recommended)
+Populates test accounts, doctors, patients, wards, inventory and the diagnostic test catalog:
 ```bash
-cd server
 npm run seed
 ```
 
-### Step 5: Start Application
-Run backend server and frontend client concurrently from the project root:
+### Step 5 — Start the Application
 ```bash
-# From root directory
 npm run dev
 ```
-- **Frontend App**: `http://localhost:5173`
-- **Backend API**: `http://localhost:5000`
+
+- **Frontend App:** http://localhost:5173
+- **Backend API:** http://localhost:5000
 
 ---
 
@@ -640,7 +628,7 @@ VITE_API_BASE_URL=http://localhost:5000
 
 ## <a id="demo-test-accounts"></a>🧪 Demo Test Accounts
 
-Use these pre-configured credentials after running `npm run seed`:
+These credentials work after running `npm run seed`:
 
 | Role | Email Address | Password | Primary Access Portal |
 |---|---|---|---|
@@ -648,28 +636,32 @@ Use these pre-configured credentials after running `npm run seed`:
 | **👨‍⚕️ Doctor** | `doctor@hospital.com` | `doctor123` | Doctor Consultation Workspace |
 | **👩‍⚕️ Nurse** | `nurse@hospital.com` | `nurse123` | Nursing Station & Bedside Care |
 | **🧾 Receptionist** | `receptionist@hospital.com` | `receptionist123` | Front Desk, Registration & Billing |
-| **💊 Pharmacist** | `pharmacy@hospital.com` | `pharmacy123` | Pharmacy Dispensing & Inventory |
-| **🧪 Diagnostic Staff** | `diagnostic@hospital.com` | `diag123` | Pathology Labs & Radiology PACS |
+| **💊 Pharmacist** | `pharmacist@hospital.com` | `pharmacist123` | Pharmacy Dispensing & Inventory |
+| **🧪 Diagnostics Admin** | `diagnostics@hospital.com` | `diagnostic123` | Pathology Labs & Radiology PACS |
+| **🧪 Pathologist** | `pathologist@hospital.com` | `pathologist123` | Specialist Report Review & Approval |
+| **🧪 Radiologist** | `radiologist@hospital.com` | `radiologist123` | PACS Viewer & Imaging Reports |
+| **🧪 Lab Technician** | `labtech@hospital.com` | `labtech123` | Phlebotomy & Lab Workbench |
+| **🧪 Radiology Technician** | `radtech@hospital.com` | `radtech123` | Sample Collection & Scan Worklist |
 | **👤 Patient** | `john@example.com` | `patient123` | Patient Self-Service Portal |
 
 ---
 
-## <a id="verification-diagnostics"></a>🧪 Verification & Automated Diagnostics
+## <a id="verification-diagnostics"></a>🧪 Automated System Diagnostics
 
-The repository includes an automated verification test suite located in `server/scratch/verify_system_optimization.js`.
+An automated verification suite ships at `server/scratch/verify_system_optimization.js`:
 
-### Run Automated System Diagnostics:
 ```bash
 cd server
 node scratch/verify_system_optimization.js
 ```
 
-### Verification Checks Performed:
-- ✅ **Database Index Verification**: Confirms all 10 compound indexes exist and optimize queries via `IXSCAN`.
-- ✅ **Route Bundle Analysis**: Verifies zero dynamic bundle errors across all 75+ React lazy routes.
-- ✅ **RBAC Endpoint Protection**: Tests unauthorized request rejection across all portal roles.
-- ✅ **IDOR Security Verification**: Verifies ownership restrictions on diagnostic and patient endpoints.
-- ✅ **CSS Cursor Reset Rule**: Validates global `cursor: default` and text/pointer element overrides.
+### Verification Checks
+
+- ✅ **Database Index Verification** — Confirms all compound indexes exist and optimize queries via `IXSCAN`.
+- ✅ **Route Bundle Analysis** — Verifies zero dynamic bundle errors across all lazy routes.
+- ✅ **RBAC Endpoint Protection** — Tests unauthorized request rejection across all portal roles.
+- ✅ **IDOR Security Verification** — Verifies ownership restrictions on diagnostic and patient endpoints.
+- ✅ **CSS Cursor Reset Rule** — Validates the global `cursor: default` and text/pointer element overrides.
 
 ---
 
@@ -677,7 +669,7 @@ node scratch/verify_system_optimization.js
 
 ```
 Hospital-Management-System/
-├── client/                         # React 18 + Vite Frontend Application
+├── client/                         # React 19 + Vite Frontend Application
 │   ├── public/                     # Static assets & medical DICOM scan samples
 │   ├── src/
 │   │   ├── components/             # Reusable UI component library
@@ -695,12 +687,12 @@ Hospital-Management-System/
 │   │   ├── index.css               # Global Tailwind CSS & cursor styling
 │   │   └── App.jsx                 # Lazy-loaded route router with Suspense
 │   ├── tailwind.config.js          # Nivora Care design system configuration
-│   └── vite.config.js              # Vite bundler & manualChunks config
+│   └── vite.config.js              # Vite bundler config
 │
 ├── server/                         # Node.js + Express REST API Backend
 │   ├── config/                     # Database connection & CORS settings
 │   ├── controllers/                # Business logic controllers for all 7 portals
-│   ├── middleware/                 # JWT Auth & Role-Based Access Control (protect/restrictTo)
+│   ├── middleware/                 # JWT Auth & RBAC (protect/restrictTo)
 │   ├── models/                     # Mongoose Schemas (User, Patient, Doctor, Appointment, Billing, Diagnostic*)
 │   ├── routes/                     # REST API Endpoint Routers
 │   ├── services/                   # DiagnosticSync, PDF Generator, Storage Service
@@ -718,20 +710,23 @@ Hospital-Management-System/
 
 ## <a id="future-improvements"></a>🔮 Future Improvements
 
-- [ ] **HL7 / FHIR Integration**: Standardized clinical data exchange with external healthcare networks.
-- [ ] **AI-Assisted Diagnostic Screening**: Machine learning pre-screening for chest X-ray abnormality detection.
-- [ ] **Telemedicine Video Consultations**: WebRTC video calling embedded directly in Doctor-Patient portals.
-- [ ] **Multi-Language Support**: i18n localization support for regional medical staff and patients.
-- [ ] **IoT Bedside Vitals Sync**: Automatic ingestion of telemetry data from Bluetooth/Wi-Fi patient monitors.
+- [ ] **HL7 / FHIR Integration** — Standardized clinical data exchange with external healthcare networks.
+- [ ] **AI-Assisted Diagnostic Screening** — Machine-learning pre-screening for chest X-ray abnormality detection.
+- [ ] **Telemedicine Video Consultations** — WebRTC video calling embedded in Doctor and Patient portals.
+- [ ] **Multi-Language Support** — i18n localization for regional medical staff and patients.
+- [ ] **IoT Bedside Vitals Sync** — Automatic ingestion of telemetry data from Bluetooth/Wi-Fi patient monitors.
 
 ---
 
 ## <a id="author-license"></a>👨‍💻 Author & License
 
 ### Author
-**Priyam Mandal**  
-Full-Stack Software Engineer & Healthcare Systems Developer  
-*GitHub*: [@priyammandal11073-source](https://github.com/priyammandal11073-source)
+
+**Priyam Mandal** — Full-Stack Software Engineer & Healthcare Systems Developer  
+*GitHub:* [@priyammandal11073-source](https://github.com/priyammandal11073-source)
 
 ### 📜 License
-This project is licensed under the **MIT License** — see the `LICENSE` file for details. Built for educational, hackathon, and healthcare software portfolio demonstrations.
+
+This project is licensed under the **MIT License** — see the `LICENSE` file for details. Built for educational, hackathon and healthcare software portfolio demonstrations.
+
+<p align="right"><a href="#top">⬆ Back to Top</a></p>

@@ -1,6 +1,8 @@
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
 import Patient from "../models/Patient.js";
+import { generateOtp, normalizeContact, verifyOtp } from "../services/otpService.js";
+import { sendSms } from "../services/smsService.js";
 
 const createToken = (patient) => {
   if (!process.env.JWT_SECRET) {
@@ -12,16 +14,79 @@ const createToken = (patient) => {
   });
 };
 
+// POST /api/patient-auth/otp/send
+export const sendRegistrationOtp = async (req, res) => {
+  try {
+    const { contactNumber, email } = req.body;
+
+    if (!contactNumber) {
+      return res.status(400).json({ message: "Contact number is required" });
+    }
+
+    const normalizedContact = normalizeContact(contactNumber);
+    if (normalizedContact.length !== 10 || !/^[6-9]\d{9}$/.test(normalizedContact)) {
+      return res.status(400).json({
+        message: "Please enter a valid 10-digit Indian mobile number",
+      });
+    }
+
+    if (email) {
+      const existingByEmail = await Patient.findOne({ email: email.toLowerCase().trim() });
+      if (existingByEmail) {
+        return res.status(409).json({ message: "Email is already registered" });
+      }
+    }
+
+    const existingByContact = await Patient.findOne({ contactNumber: normalizedContact });
+    if (existingByContact) {
+      return res.status(409).json({ message: "This mobile number is already registered" });
+    }
+
+    const otp = generateOtp(normalizedContact);
+    const message =
+      `Your Nivora Care Hospital verification OTP is ${otp}. It expires in 5 minutes. ` +
+      `Do not share this code with anyone. -Nivora Care`;
+
+    let smsResult = { sent: true, method: "simulated" };
+    try {
+      smsResult = await sendSms(normalizedContact, message);
+    } catch {
+      // SMS delivery is best-effort; the OTP store still lets the flow continue.
+    }
+
+    return res.status(200).json({
+      message: "OTP sent successfully",
+      sent: true,
+      preview: smsResult.preview || null,
+      method: smsResult.method || "simulated",
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 // POST /api/patient-auth/register
 export const registerPatient = async (req, res) => {
   try {
-    const { name, email, password, age, gender, contactNumber, abhaId } = req.body;
+    const { name, email, password, age, gender, contactNumber, abhaId, otp } = req.body;
 
     if (!name || !email || !password || !age || !gender || !contactNumber) {
       return res.status(400).json({
         message:
           "Name, email, password, age, gender, and contact number are required",
       });
+    }
+
+    const normalizedContact = normalizeContact(contactNumber);
+    if (normalizedContact.length !== 10 || !/^[6-9]\d{9}$/.test(normalizedContact)) {
+      return res.status(400).json({
+        message: "Please enter a valid 10-digit Indian mobile number",
+      });
+    }
+
+    const otpCheck = verifyOtp(normalizedContact, otp);
+    if (!otpCheck.valid) {
+      return res.status(400).json({ message: otpCheck.message });
     }
 
     const existingPatient = await Patient.findOne({ email: email.toLowerCase() });
@@ -36,7 +101,7 @@ export const registerPatient = async (req, res) => {
       password,
       age,
       gender,
-      contactNumber,
+      contactNumber: normalizedContact,
       abhaId: abhaId?.trim() || undefined,
     });
 

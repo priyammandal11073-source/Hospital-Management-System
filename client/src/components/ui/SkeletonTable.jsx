@@ -2,9 +2,9 @@ import React from "react";
 
 export default function SkeletonTable({ rows = 5, cols = 5, className = "" }) {
   return (
-    <div className={`overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs ${className}`}>
+    <div className={`overflow-hidden rounded-2xl glass-card shadow-lg shadow-slate-300/30 ${className}`}>
       {/* Skeleton Table Header */}
-      <div className="border-b border-slate-100 bg-slate-50/70 px-6 py-4 flex items-center justify-between gap-4">
+      <div className="border-b border-white/60 bg-white/50 px-6 py-4 flex items-center justify-between gap-4">
         <div className="h-4 w-40 rounded-md bg-slate-200 animate-pulse"></div>
         <div className="flex gap-2">
           <div className="h-7 w-24 rounded-lg bg-slate-200 animate-pulse"></div>

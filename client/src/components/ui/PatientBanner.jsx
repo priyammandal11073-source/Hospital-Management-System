@@ -17,7 +17,7 @@ export default function PatientBanner({
   const isAdmitted = patient?.isAdmitted;
 
   return (
-    <div className={`bg-white border border-slate-200 rounded-lg shadow-2xs overflow-hidden ${className}`}>
+    <div className={`glass-card rounded-2xl shadow-lg shadow-slate-300/40 overflow-hidden ${className}`}>
       <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Patient Identity Block */}
         <div className="flex items-start sm:items-center gap-3.5">

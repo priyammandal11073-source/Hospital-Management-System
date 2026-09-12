@@ -172,6 +172,11 @@ export const sendBillingPaymentLinkSms = async (id, phoneNumber) => {
 
 
 // Patient self-service auth (separate from staff auth)
+export const sendRegistrationOtp = async ({ contactNumber, email }) => {
+  const response = await api.post("/api/patient-auth/otp/send", { contactNumber, email });
+  return response.data;
+};
+
 export const registerPatient = async (patientData) => {
   const response = await api.post("/api/patient-auth/register", patientData);
   return response.data;

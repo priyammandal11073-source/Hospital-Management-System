@@ -12,10 +12,10 @@ export default function EmptyStateCard({
 }) {
   return (
     <div
-      className={`flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300/80 bg-slate-50/50 px-6 py-14 text-center ${className}`}
+      className={`flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300/70 bg-white/40 backdrop-blur-md px-6 py-14 text-center ${className}`}
       role="status"
     >
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-xs ring-1 ring-slate-200/80 text-2xl mb-4">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/80 shadow-xs ring-1 ring-slate-200/80 text-2xl mb-4">
         {icon}
       </div>
       <h3 className="text-sm font-bold text-slate-800 tracking-tight">{title}</h3>

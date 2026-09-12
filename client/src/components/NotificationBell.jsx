@@ -113,7 +113,7 @@ export default function NotificationBell({ isPatient = false }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-teal-700 shadow-sm transition"
+        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/70 bg-white/70 backdrop-blur-md text-slate-700 hover:bg-white hover:text-teal-700 shadow-sm transition"
         title="Notifications"
       >
         <span className="text-lg">🔔</span>
@@ -126,9 +126,9 @@ export default function NotificationBell({ isPatient = false }) {
 
       {/* Dropdown Drawer */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/90 backdrop-blur-2xl shadow-2xl border border-white/60 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
           {/* Header */}
-          <div className="p-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between">
+          <div className="p-4 bg-white/50 border-b border-white/60 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-black text-slate-900">Notifications</h3>
               <p className="text-[11px] text-slate-500">

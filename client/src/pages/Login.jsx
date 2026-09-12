@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import HospitalLogo from "../components/HospitalLogo.jsx";
+import AuthBrandPanel from "../components/AuthBrandPanel.jsx";
 
 const PORTAL_TYPES = [
   {
@@ -191,199 +192,235 @@ function Login() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f8fafc] py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans">
-      <div className="w-full max-w-4xl mx-auto">
-        {/* ================= STEP 1: SELECT PORTAL ================= */}
-        {step === 1 && (
+    <main className="relative min-h-screen bg-[#f7f6f3] py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans overflow-hidden">
+      {/* Decorative soft background shapes */}
+      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl" />
+        <div className="absolute -right-24 top-1/3 h-96 w-96 rounded-full bg-indigo-200/40 blur-3xl" />
+        <div className="absolute -left-24 bottom-0 h-96 w-96 rounded-full bg-sky-100/60 blur-3xl" />
+      </div>
+
+      <div className="relative z-10 w-full max-w-7xl mx-auto">
+        <div className="grid gap-8 items-center lg:grid-cols-[0.85fr_1.15fr]">
+          {/* Decorative brand panel */}
+          <AuthBrandPanel
+            accent="blue"
+            badge="Nivora Care HMS"
+            title="Secure Portal Access"
+            subtitle="Sign in to manage clinical workflows, operations, and patient care across every department — from a single secure gateway."
+            features={[
+              "Role-based access for all departments",
+              "Real-time OPD, ward & pharmacy dashboards",
+              "Unified patient records & billing",
+            ]}
+            stats={[
+              { value: "24/7", label: "Care coverage" },
+              { value: "7", label: "Integrated portals" },
+              { value: "99.9%", label: "System uptime" },
+            ]}
+          />
+
+          {/* Interactive panel */}
           <div className="w-full">
-            {/* Header: Exact Hospital Name & Clean Logo */}
-            <div className="mb-8 flex items-center justify-center">
+            <div className="mb-6 flex items-center justify-center lg:hidden">
               <HospitalLogo variant="full" />
             </div>
 
-            {/* 7-Portal Matrix: 3 cols desktop, 2 cols tablet, 1 col mobile */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {PORTAL_TYPES.map((portal) => {
-                const isDiagnostics = portal.id === "diagnostic";
-                return (
-                  <button
-                    type="button"
-                    key={portal.id}
-                    onClick={() => handlePortalSelect(portal)}
-                    className={`group relative bg-white border border-slate-200 rounded-md p-5 flex flex-col items-center justify-center text-center gap-3 h-32 hover:border-slate-400 hover:bg-slate-50/50 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 ${
-                      isDiagnostics
-                        ? "sm:col-span-2 sm:w-full sm:max-w-[calc(50%-0.5rem)] sm:mx-auto lg:col-span-1 lg:col-start-2 lg:max-w-none"
-                        : ""
-                    }`}
-                  >
-                    <div className="h-8 w-8 flex items-center justify-center">
-                      {portal.icon}
-                    </div>
-
-                    <span className="text-base font-medium text-slate-800 group-hover:text-slate-900 transition-colors">
-                      {portal.name}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* ================= STEP 2: CREDENTIALS & LOGIN CARD ================= */}
-        {step === 2 && (
-          <div className="w-full max-w-md mx-auto">
-            {/* Header: Clean Logo & Brand */}
-            <div className="mb-6 flex items-center justify-center">
-              <HospitalLogo variant="full" />
-            </div>
-
-            <div className="mb-3">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
-              >
-                <span>← Back to portal selection</span>
-              </button>
-            </div>
-
-            <section className="bg-white rounded-md border border-slate-200 p-6 sm:p-7 shadow-xs">
-              {/* Active Portal Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded border border-slate-200 bg-slate-50 flex items-center justify-center flex-shrink-0">
-                    {selectedPortal.icon}
-                  </div>
-                  <div>
-                    <h2 className="text-base font-semibold text-slate-900">
-                      {selectedPortal.name}
-                    </h2>
-                  </div>
+            {/* ================= STEP 1: SELECT PORTAL ================= */}
+            {step === 1 && (
+              <section className="w-full bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-300/40">
+                <div className="mb-6 text-center">
+                  <h1 className="font-display text-[1.75rem] font-semibold text-slate-900">Choose Your Portal</h1>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Select the department you&apos;d like to access
+                  </p>
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {PORTAL_TYPES.map((portal) => {
+                    const isDiagnostics = portal.id === "diagnostic";
+                    return (
+                      <button
+                        type="button"
+                        key={portal.id}
+                        onClick={() => handlePortalSelect(portal)}
+                        className={`group relative bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-3 h-32 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/80 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 ${
+                          isDiagnostics
+                            ? "sm:col-span-2 sm:w-full sm:max-w-[calc(50%-0.5rem)] sm:mx-auto lg:col-span-1 lg:col-start-2 lg:max-w-none"
+                            : ""
+                        }`}
+                      >
+                        <div
+                          className={`h-11 w-11 rounded-xl ${portal.accentColor} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}
+                        >
+                          {portal.icon}
+                        </div>
+
+                        <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 transition-colors">
+                          {portal.name}
+                        </span>
+
+                        <span
+                          className="absolute top-2.5 right-3 text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-hidden="true"
+                        >
+                          →
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* ================= STEP 2: CREDENTIALS & LOGIN CARD ================= */}
+            {step === 2 && (
+              <section className="w-full bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-300/40">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer mb-5"
                 >
-                  Change
+                  <span>← Back to portal selection</span>
                 </button>
-              </div>
 
-              {/* Form */}
-              <form className="space-y-4" onSubmit={handleSubmit}>
-                {selectedPortal.subRoles && (
-                  <div className="rounded border border-slate-200 bg-slate-50 p-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-2">
-                      Specialization:
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedPortal.subRoles.map((sr) => {
-                        const isCurrent = email === sr.email;
-                        return (
-                          <button
-                            key={sr.role}
-                            type="button"
-                            onClick={() => {
-                              setEmail(sr.email);
-                              setPassword(sr.pass);
-                              setError("");
-                            }}
-                            className={`rounded px-2 py-1 text-xs font-medium transition cursor-pointer ${
-                              isCurrent
-                                ? "bg-blue-700 text-white shadow-2xs"
-                                : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
-                            }`}
-                          >
-                            {sr.name}
-                          </button>
-                        );
-                      })}
+                {/* Active Portal Header */}
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className={`h-10 w-10 rounded-xl ${selectedPortal.accentColor} flex items-center justify-center text-white flex-shrink-0 shadow-lg`}>
+                      {selectedPortal.icon}
+                    </div>
+                    <div>
+                      <h2 className="text-base font-semibold text-slate-900">
+                        {selectedPortal.name}
+                      </h2>
+                      <p className="text-xs text-slate-500">{selectedPortal.tagline}</p>
                     </div>
                   </div>
-                )}
-
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="email">
-                    {selectedPortal.role === "patient" ? "Patient Email Address" : "Staff Email"}
-                  </label>
-                  <input
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    autoComplete="email"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="password">
-                    Password
-                  </label>
-                  <input
-                    className="w-full rounded border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    autoComplete="current-password"
-                    required
-                  />
-                </div>
-
-                {error && (
-                  <div className="flex items-center gap-2 rounded border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
-                    <svg className="h-4 w-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                  <button
-                    className="flex-1 rounded bg-blue-700 hover:bg-blue-800 px-4 py-2 text-sm font-medium text-white shadow-2xs transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
-                    disabled={isSubmitting}
-                    type="submit"
-                  >
-                    {isSubmitting ? (
-                      <span className="inline-flex items-center gap-2">
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                        Authenticating...
-                      </span>
-                    ) : (
-                      "Sign In →"
-                    )}
-                  </button>
-
                   <button
                     type="button"
-                    disabled={isSubmitting}
-                    onClick={() => handleInstantDemoLogin(selectedPortal)}
-                    className="rounded border border-slate-300 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition shadow-2xs cursor-pointer flex items-center justify-center"
-                    title="Direct sign-in with demo credentials"
+                    onClick={() => setStep(1)}
+                    className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer"
                   >
-                    Demo Entry
+                    Change
                   </button>
                 </div>
-              </form>
 
-              {/* Patient Registration Link */}
-              {selectedPortal.role === "patient" && (
-                <div className="mt-5 border-t border-slate-100 pt-4 text-center">
-                  <p className="text-xs text-slate-600">
-                    First time patient?{" "}
-                    <Link to="/patient/register" className="font-medium text-blue-700 hover:underline">
-                      Register as New Patient →
-                    </Link>
-                  </p>
-                </div>
-              )}
-            </section>
+                {/* Form */}
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                  {selectedPortal.subRoles && (
+                    <div className="rounded border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-2">
+                        Specialization:
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {selectedPortal.subRoles.map((sr) => {
+                          const isCurrent = email === sr.email;
+                          return (
+                            <button
+                              key={sr.role}
+                              type="button"
+                              onClick={() => {
+                                setEmail(sr.email);
+                                setPassword(sr.pass);
+                                setError("");
+                              }}
+                              className={`rounded px-2 py-1 text-xs font-medium transition cursor-pointer ${
+                                isCurrent
+                                  ? "bg-blue-700 text-white shadow-2xs"
+                                  : "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100"
+                              }`}
+                            >
+                              {sr.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="email">
+                      {selectedPortal.role === "patient" ? "Patient Email Address" : "Staff Email"}
+                    </label>
+                    <input
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="password">
+                      Password
+                    </label>
+                    <input
+                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      autoComplete="current-password"
+                      required
+                    />
+                  </div>
+
+                  {error && (
+                    <div className="flex items-center gap-2 rounded border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
+                      <svg className="h-4 w-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>{error}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                    <button
+                      className="flex-1 rounded-lg bg-blue-700 hover:bg-blue-800 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-700/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
+                      disabled={isSubmitting}
+                      type="submit"
+                    >
+                      {isSubmitting ? (
+                        <span className="inline-flex items-center gap-2">
+                          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                          Authenticating...
+                        </span>
+                      ) : (
+                        "Sign In →"
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isSubmitting}
+                      onClick={() => handleInstantDemoLogin(selectedPortal)}
+                      className="rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition shadow-2xs cursor-pointer flex items-center justify-center"
+                      title="Direct sign-in with demo credentials"
+                    >
+                      Demo Entry
+                    </button>
+                  </div>
+                </form>
+
+                {/* Patient Registration Link */}
+                {selectedPortal.role === "patient" && (
+                  <div className="mt-5 border-t border-slate-100 pt-4 text-center">
+                    <p className="text-xs text-slate-600">
+                      First time patient?{" "}
+                      <Link to="/patient/register" className="font-medium text-blue-700 hover:underline">
+                        Register as New Patient →
+                      </Link>
+                    </p>
+                  </div>
+                )}
+              </section>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </main>
   );

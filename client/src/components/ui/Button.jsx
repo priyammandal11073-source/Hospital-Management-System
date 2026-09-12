@@ -11,10 +11,10 @@ const Button = ({
   const variants = {
     default: "bg-blue-700 text-white hover:bg-blue-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 shadow-2xs",
     primary: "bg-blue-700 text-white hover:bg-blue-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 disabled:opacity-50 shadow-2xs",
-    secondary: "bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 disabled:opacity-50 shadow-2xs",
+    secondary: "bg-white/70 backdrop-blur-md border border-slate-300/80 text-slate-700 hover:bg-white hover:text-slate-900 focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 disabled:opacity-50 shadow-2xs",
     danger: "bg-rose-700 text-white hover:bg-rose-800 focus:ring-2 focus:ring-rose-500 focus:ring-offset-1 disabled:opacity-50 shadow-2xs",
     success: "bg-emerald-700 text-white hover:bg-emerald-800 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:opacity-50 shadow-2xs",
-    outline: "border border-slate-300 text-slate-700 bg-transparent hover:bg-slate-50 focus:ring-2 focus:ring-slate-300",
+    outline: "border border-slate-300/80 text-slate-700 bg-white/40 backdrop-blur-md hover:bg-white/70 focus:ring-2 focus:ring-slate-300",
     link: "underline text-blue-700 hover:text-blue-900 p-0 h-auto shadow-none",
   };
 

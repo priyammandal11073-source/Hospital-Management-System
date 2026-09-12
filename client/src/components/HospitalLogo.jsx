@@ -17,7 +17,7 @@ function HospitalLogo({ variant = "full", className = "", isDark = false }) {
       {/* Hospital Name */}
       {variant !== "icon" && (
         <span
-          className={`text-base sm:text-lg font-bold tracking-tight ${
+          className={`font-display text-base sm:text-lg font-semibold tracking-tight ${
             isDark ? "text-white" : "text-slate-900"
           }`}
         >

@@ -4,13 +4,13 @@ const Card = ({ title, subtitle, children, className = "", headerAction, ...prop
   return (
     <div
       className={`
-        bg-white rounded-lg p-4 sm:p-5 border border-slate-200 shadow-2xs
+        glass-card rounded-2xl shadow-lg shadow-slate-300/40 p-4 sm:p-5
         ${className}
       `}
       {...props}
     >
       {(title || subtitle || headerAction) && (
-        <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+        <div className="flex items-center justify-between mb-4 border-b border-white/60 pb-3">
           <div>
             {title && <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">{title}</h3>}
             {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
