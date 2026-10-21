@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getAppointments, getDoctors, getDoctorAvailability } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 const STANDARD_SLOTS = [
   "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM",
@@ -98,7 +99,7 @@ export default function OPDCalendarPage() {
           >
             {doctors.map((doc) => (
               <option key={doc._id} value={doc._id}>
-                Dr. {doc.name} ({doc.department || doc.specialization})
+                {formatDoctorName(doc.name)} ({doc.department || doc.specialization})
               </option>
             ))}
           </select>
@@ -145,7 +146,7 @@ export default function OPDCalendarPage() {
               Dr
             </div>
             <div>
-              <h2 className="text-base font-black text-slate-800">Dr. {selectedDoctor.name}</h2>
+              <h2 className="text-base font-black text-slate-800">{formatDoctorName(selectedDoctor.name)}</h2>
               <p className="text-xs text-slate-500">
                 {selectedDoctor.specialization} • Department of {selectedDoctor.department}
               </p>

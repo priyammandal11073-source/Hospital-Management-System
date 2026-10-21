@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getClinicalPatientProfile } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function PatientClinicalProfileModal({ patientId, onClose, onRefresh }) {
   const [profile, setProfile] = useState(null);
@@ -168,7 +169,7 @@ export default function PatientClinicalProfileModal({ patientId, onClose, onRefr
                       <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Attending Doctor</span>
                       <p className="mt-1 text-base font-bold text-slate-900">
                         {profile.activeBed?.currentAdmission?.attendingDoctor?.name
-                          ? `Dr. ${profile.activeBed.currentAdmission.attendingDoctor.name}`
+                          ? formatDoctorName(profile.activeBed.currentAdmission.attendingDoctor.name)
                           : "Primary Physician"}
                       </p>
                       <p className="text-xs text-slate-500 mt-0.5">
@@ -341,7 +342,7 @@ export default function PatientClinicalProfileModal({ patientId, onClose, onRefr
                               Diagnosis: {rx.diagnosis}
                             </h4>
                             <p className="text-xs text-slate-500">
-                              Prescribed by {rx.doctor?.name ? `Dr. ${rx.doctor.name}` : "Doctor"} on{" "}
+                              Prescribed by {rx.doctor?.name ? formatDoctorName(rx.doctor.name) : "Doctor"} on{" "}
                               {new Date(rx.createdAt).toLocaleDateString("en-IN")}
                             </p>
                           </div>

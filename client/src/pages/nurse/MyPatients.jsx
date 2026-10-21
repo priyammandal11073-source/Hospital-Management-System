@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getInpatientsWithCare } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 import PatientClinicalProfileModal from "../../components/nurse/PatientClinicalProfileModal.jsx";
 
 const WARDS = [
@@ -250,7 +251,7 @@ export default function MyPatients() {
 
                     <td className="px-4 py-3.5">
                       <div className="font-semibold text-slate-800">
-                        {item.attendingDoctor?.name ? `Dr. ${item.attendingDoctor.name}` : "On-Call"}
+                        {item.attendingDoctor?.name ? formatDoctorName(item.attendingDoctor.name) : "On-Call"}
                       </div>
                       <div className="text-[11px] text-slate-500">{item.attendingDoctor?.specialization || "General"}</div>
                     </td>

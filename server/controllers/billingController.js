@@ -6,7 +6,7 @@ import Patient from "../models/Patient.js";
 import { sendPaymentLinkSms } from "../services/smsService.js";
 import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
 
-const paymentStatuses = ["pending", "paid", "partially_paid"];
+const paymentStatuses = ["pending", "paid", "partially_paid", "cancelled", "refunded"];
 const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque", "razorpay"];
 
 const sendDatabaseError = (error, res) => {

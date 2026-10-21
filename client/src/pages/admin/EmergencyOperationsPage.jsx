@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getAdminEmergencyOperations } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 const TRIAGE_BADGES = {
   Immediate: "bg-rose-600 text-white font-black animate-pulse",
@@ -179,7 +180,7 @@ export default function EmergencyOperationsPage() {
                         {adm.admissionDate ? new Date(adm.admissionDate).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "Recent"}
                       </td>
                       <td className="py-3 text-slate-700 font-semibold">
-                        {adm.doctor?.name ? `Dr. ${adm.doctor.name}` : "ER Specialist on Duty"}
+                        {adm.doctor?.name ? formatDoctorName(adm.doctor.name) : "ER Specialist on Duty"}
                       </td>
                     </tr>
                   ))

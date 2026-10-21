@@ -256,7 +256,7 @@ export default function RadiologyImagingPage() {
                 {/* Scan Image */}
                 {activeViewerStudy.report?.attachedFiles?.[0] || activeViewerStudy.attachedFiles?.[0] ? (
                   <img
-                    src={(activeViewerStudy.report?.attachedFiles?.[0] || activeViewerStudy.attachedFiles?.[0]).secureUrl}
+                    src={(activeViewerStudy.report?.attachedFiles?.[0] || activeViewerStudy.attachedFiles?.[0])?.secureUrl}
                     alt="DICOM Slice"
                     className="max-h-full max-w-full object-contain transition-transform duration-100"
                     style={{

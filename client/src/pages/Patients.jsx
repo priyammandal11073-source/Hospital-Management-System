@@ -2,15 +2,18 @@ import { useEffect, useState } from "react";
 import PatientForm from "../components/PatientForm.jsx";
 import AllocateBedModal from "../components/AllocateBedModal.jsx";
 import VitalsTracker from "../components/VitalsTracker.jsx";
-import { deletePatient, getPatients, getPatientVitals } from "../services/api.js";
+import { deletePatient, getPatientById, getPatients, getPatientVitals } from "../services/api.js";
+import QrScannerModal from "../components/ui/QrScannerModal.jsx";
+import PatientQrCardModal from "../components/ui/PatientQrCardModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
+import { formatDoctorName } from "../utils/doctorName.js";
 
 function Patients() {
   const { user } = useAuth();
   const isReceptionist = user?.role === "receptionist";
   const isDoctor = user?.role === "doctor";
   const canDelete = ["admin", "receptionist"].includes(user?.role);
-  const canAdmitBed = ["admin", "receptionist", "nurse"].includes(user?.role);
+  const canAdmitBed = ["admin", "receptionist", "nurse", "emergency"].includes(user?.role);
 
   const [patients, setPatients] = useState([]);
   const [pagination, setPagination] = useState(null);
@@ -26,6 +29,9 @@ function Patients() {
   const [patientVitalsList, setPatientVitalsList] = useState([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [view360Patient, setView360Patient] = useState(null);
+  const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
+  const [qrCardPatient, setQrCardPatient] = useState(null);
+  const [qrError, setQrError] = useState("");
 
   // Administrative Filters
   const [bloodGroupFilter, setBloodGroupFilter] = useState("All");
@@ -110,6 +116,24 @@ function Patients() {
     }
   };
 
+  const handleQrScanned = async (patientId) => {
+    setQrError("");
+    try {
+      const payload = await getPatientById(patientId);
+      if (!payload?.patient) {
+        setQrError("Patient not found for this QR identity.");
+        return;
+      }
+      setView360Patient(payload.patient);
+    } catch (requestError) {
+      setQrError(
+        requestError?.response?.status === 404
+          ? "No patient record matches this QR identity."
+          : requestError.response?.data?.message || "Unable to open patient record from QR."
+      );
+    }
+  };
+
   const displayPatients = patients.filter((p) => {
     const matchBlood = bloodGroupFilter === "All" || p.bloodGroup === bloodGroupFilter;
     const matchGender = genderFilter === "All" || p.gender?.toLowerCase() === genderFilter.toLowerCase();
@@ -130,17 +154,27 @@ function Patients() {
           </h1>
           <p className="mt-1 text-sm text-slate-600">
             {isDoctor
-              ? `Patients under the clinical care and consultation of Dr. ${user?.name?.replace(/^Dr\.\s*/i, "") || "Doctor"}.`
+              ? `Patients under the clinical care and consultation of ${formatDoctorName(user?.name, "Doctor")}.`
               : "Institutional master patient index, digital health records, and admission status."}
           </p>
         </div>
-        <button
-          className="rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-700 transition shadow-sm"
-          onClick={openAddForm}
-          type="button"
-        >
-          + Add New Patient
-        </button>
+        <div className="flex gap-2">
+          <button
+            className="rounded-xl border border-teal-200 bg-teal-50 px-4 py-2 text-xs font-bold text-teal-800 hover:bg-teal-100 transition shadow-sm"
+            onClick={() => setIsQrScannerOpen(true)}
+            type="button"
+            title="Scan a patient QR identity card"
+          >
+            📷 Scan QR
+          </button>
+          <button
+            className="rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-700 transition shadow-sm"
+            onClick={openAddForm}
+            type="button"
+          >
+            + Add New Patient
+          </button>
+        </div>
       </div>
 
       {/* Filter and Search Bar */}
@@ -394,6 +428,15 @@ function Patients() {
                         👁️ 360 View
                       </button>
                       <button
+                        aria-label={`QR identity card for ${patient.name}`}
+                        className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition shadow-2xs"
+                        onClick={() => setQrCardPatient(patient)}
+                        title="Show QR identity card for scanning at any station"
+                        type="button"
+                      >
+                        ▦ QR Card
+                      </button>
+                      <button
                         aria-label={`Vitals for ${patient.name}`}
                         className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
                         onClick={async () => {
@@ -546,6 +589,30 @@ function Patients() {
               />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Patient QR Identity Card Modal */}
+      {qrCardPatient && (
+        <PatientQrCardModal
+          isOpen={Boolean(qrCardPatient)}
+          onClose={() => setQrCardPatient(null)}
+          patient={qrCardPatient}
+        />
+      )}
+
+      {/* Patient QR Scanner Modal */}
+      <QrScannerModal
+        isOpen={isQrScannerOpen}
+        onClose={() => {
+          setIsQrScannerOpen(false);
+          setQrError("");
+        }}
+        onScanned={handleQrScanned}
+      />
+      {qrError && (
+        <div className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700">
+          {qrError}
         </div>
       )}
 

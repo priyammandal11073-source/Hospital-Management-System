@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-do
 import { useAuth } from "../context/AuthContext.jsx";
 import HospitalLogo from "./HospitalLogo.jsx";
 import NotificationBell from "./NotificationBell.jsx";
+import { formatDoctorName } from "../utils/doctorName.js";
 
 const navLinkClass = ({ isActive }) =>
   `group flex items-center gap-2.5 rounded-md px-3 py-2 text-xs font-semibold transition-all duration-150 ${
@@ -127,6 +128,8 @@ function DashboardLayout() {
   }, [location.pathname]);
 
   // Lock body scroll when mobile drawer is open
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
@@ -137,6 +140,39 @@ function DashboardLayout() {
       document.body.style.overflow = "";
     };
   }, [mobileOpen]);
+
+  // Real-time observer to detect any open modal across any portal page
+  useEffect(() => {
+    const checkModal = () => {
+      const overlays = document.querySelectorAll(".fixed.inset-0, [role='dialog']");
+      let found = false;
+      for (const el of overlays) {
+        if (el.getAttribute("aria-hidden") === "true") continue;
+        if (el.classList.contains("pointer-events-none")) continue;
+        if (el.classList.contains("-z-10")) continue;
+        if (el.classList.contains("animate-backdrop-fade") && !el.classList.contains("z-50")) continue;
+        found = true;
+        break;
+      }
+      setIsModalOpen(found);
+      if (found) setMobileOpen(false);
+    };
+
+    checkModal();
+
+    const observer = new MutationObserver(() => {
+      checkModal();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "style", "aria-hidden"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -153,7 +189,7 @@ function DashboardLayout() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f8f7f4] via-[#f4f4f1] to-[#eef1f6] flex flex-col font-sans">
       {/* ================= AMBIENT LIQUID-GLASS BACKGROUND ORBS ================= */}
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="glass-ambient -top-24 -left-24 h-96 w-96 bg-blue-400/20"></div>
         <div className="glass-ambient top-1/4 -right-32 h-[30rem] w-[30rem] bg-indigo-400/20"></div>
         <div className="glass-ambient bottom-0 left-1/3 h-80 w-80 bg-rose-300/15"></div>
@@ -161,7 +197,14 @@ function DashboardLayout() {
       </div>
 
       {/* ================= MODERN TOP HEADER BAR ================= */}
-      <header className="sticky top-0 z-40 border-b border-white/60 bg-white/60 backdrop-blur-2xl px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 shadow-xs">
+      <header
+        className={`sticky top-0 border-b px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 shadow-xs transition-all duration-200 ${
+          isModalOpen
+            ? "z-0 opacity-20 pointer-events-none select-none blur-[1.5px] bg-slate-100/40 border-slate-300/40"
+            : "z-20 border-white/60 bg-white/60 backdrop-blur-2xl"
+        }`}
+        aria-hidden={isModalOpen}
+      >
         <div className="flex items-center justify-between gap-2 max-w-full">
           {/* Brand Logo & Active Workspace Badge */}
           <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-shrink">
@@ -190,7 +233,7 @@ function DashboardLayout() {
             <div className="hidden xl:flex items-center gap-2 border-l border-slate-200/80 pl-3">
               <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold truncate max-w-[240px] ${config.badgeClass}`}>
                 {role === "doctor" && user?.name
-                  ? `Dr. ${user.name.replace(/^Dr\.\s*/i, "")}`
+                  ? formatDoctorName(user.name)
                   : config.badge}
               </span>
             </div>
@@ -258,7 +301,7 @@ function DashboardLayout() {
       </header>
 
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
-      <div className="flex flex-1 flex-col lg:flex-row relative">
+      <div className="flex flex-1 flex-col lg:flex-row">
         {/* Mobile Frosted Backdrop Overlay */}
         {mobileOpen && (
           <div
@@ -1400,7 +1443,7 @@ function DashboardLayout() {
         </aside>
 
         {/* Main Content Pane */}
-        <main className="relative z-[1] flex-1 min-w-0 bg-transparent p-4 sm:p-6 lg:p-7 overflow-x-hidden">
+        <main className="flex-1 min-w-0 bg-transparent p-4 sm:p-6 lg:p-7 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

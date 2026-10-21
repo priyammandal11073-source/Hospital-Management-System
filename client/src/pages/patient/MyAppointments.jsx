@@ -5,6 +5,7 @@ import {
   getMyAppointments,
   rescheduleMyAppointment,
 } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 const statusClasses = {
   pending: "bg-amber-50 text-amber-800 border-amber-200",
@@ -247,7 +248,7 @@ function MyAppointments() {
                       </div>
 
                       <h3 className="text-base font-bold text-slate-900 mt-1">
-                        Dr. {a.doctor?.name || "Specialist"}
+                        {formatDoctorName(a.doctor?.name, "Specialist")}
                       </h3>
                       <p className="text-xs font-semibold text-blue-700">
                         {a.doctor?.specialization || "General Medicine"}
@@ -332,7 +333,7 @@ function MyAppointments() {
             <form onSubmit={handleRescheduleSubmit} className="mt-4 space-y-4">
               <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 text-xs">
                 <p className="font-bold text-slate-800">
-                  Doctor: Dr. {rescheduleAppt.doctor?.name}
+                  Doctor: {formatDoctorName(rescheduleAppt.doctor?.name)}
                 </p>
                 <p className="text-slate-500">{rescheduleAppt.doctor?.specialization}</p>
                 <p className="mt-1 text-slate-400">

@@ -28,6 +28,32 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+const cleanRepeatedDr = (value) => {
+  if (typeof value === "string") {
+    return value.replace(/(?:^|\b)(?:dr\.?\s*){2,}/gi, "Dr. ");
+  }
+  if (Array.isArray(value)) {
+    return value.map(cleanRepeatedDr);
+  }
+  if (value !== null && typeof value === "object") {
+    if (typeof Blob !== "undefined" && value instanceof Blob) return value;
+    if (typeof ArrayBuffer !== "undefined" && value instanceof ArrayBuffer) return value;
+    const cleaned = {};
+    for (const key of Object.keys(value)) {
+      cleaned[key] = cleanRepeatedDr(value[key]);
+    }
+    return cleaned;
+  }
+  return value;
+};
+
+api.interceptors.response.use((response) => {
+  if (response.data) {
+    response.data = cleanRepeatedDr(response.data);
+  }
+  return response;
+});
+
 export const loginUser = async (email, password) => {
   const response = await api.post("/api/auth/login", { email, password });
   return response.data;
@@ -187,6 +213,16 @@ export const loginPatient = async (email, password) => {
   return response.data;
 };
 
+export const sendForgotPasswordOtp = async (email) => {
+  const response = await api.post("/api/patient-auth/forgot-password", { email });
+  return response.data;
+};
+
+export const resetPatientPassword = async ({ email, otp, newPassword }) => {
+  const response = await api.post("/api/patient-auth/reset-password", { email, otp, newPassword });
+  return response.data;
+};
+
 // Patient portal (scoped to logged-in patient, requires patient token)
 export const getMyProfile = async () => {
   const response = await api.get("/api/patient-portal/me");
@@ -196,6 +232,11 @@ export const getMyProfile = async () => {
 export const getMyAppointments = async (filters = {}) => {
   const params = Object.fromEntries(Object.entries(filters).filter(([, v]) => v));
   const response = await api.get("/api/patient-portal/appointments", { params });
+  return response.data;
+};
+
+export const getMyPatients = async () => {
+  const response = await api.get("/api/doctor/patients");
   return response.data;
 };
 
@@ -765,6 +806,11 @@ export const getAdminEquipment = async (params = {}) => {
   return response.data;
 };
 
+export const logPreventiveMaintenance = async (id, data) => {
+  const response = await api.post(`/api/admin/equipment/${id}/service`, data);
+  return response.data;
+};
+
 export const getAdminMaintenanceOrders = async (params = {}) => {
   const response = await api.get("/api/admin/maintenance", { params });
   return response.data;
@@ -916,6 +962,11 @@ export const sendAdministrativeNotification = async (data) => {
 
 export const getAppointmentReminders = async () => {
   const response = await api.get("/api/receptionist/reminders");
+  return response.data;
+};
+
+export const sendAppointmentReminder = async (appointmentId) => {
+  const response = await api.post(`/api/receptionist/reminders/${appointmentId}/send`);
   return response.data;
 };
 
@@ -1186,6 +1237,133 @@ export const generateRadiologyFilmPdfBlob = async (data) => {
 
 export const createWalkInDiagnostic = async (data) => {
   const response = await api.post("/api/receptionist/walk-in-diagnostic", data);
+  return response.data;
+};
+
+// ── Telemedicine (Video Consultations) ──────────────────────────────────────
+export const getMyTelemedicine = async () => {
+  const response = await api.get("/api/patient-portal/telemedicine");
+  return response.data;
+};
+
+export const getDoctorTeleconsults = async () => {
+  const response = await api.get("/api/doctor-workspace/telemedicine");
+  return response.data;
+};
+
+export const startTeleconsult = async (id) => {
+  const response = await api.post(`/api/doctor-workspace/telemedicine/${id}/start`);
+  return response.data;
+};
+
+export const endTeleconsult = async (id) => {
+  const response = await api.post(`/api/doctor-workspace/telemedicine/${id}/end`);
+  return response.data;
+};
+
+// ── Insurance Claims Desk ───────────────────────────────────────────────────
+export const getAdminInsuranceClaims = async (status = "") => {
+  const params = status ? { status } : {};
+  const response = await api.get("/api/admin/insurance-claims", { params });
+  return response.data;
+};
+
+export const decideInsuranceClaim = async (billingId, data) => {
+  const response = await api.patch(`/api/admin/insurance-claims/${billingId}/decision`, data);
+  return response.data;
+};
+
+// ── Patient Feedback Quality Desk ───────────────────────────────────────────
+export const getAdminFeedback = async (status = "") => {
+  const params = status ? { status } : {};
+  const response = await api.get("/api/admin/feedback", { params });
+  return response.data;
+};
+
+export const reviewFeedback = async (id, data) => {
+  const response = await api.patch(`/api/admin/feedback/${id}/review`, data);
+  return response.data;
+};
+
+// ── Emergency Department ──────────────────────────────────────────────────
+export const searchPatientsForEmergency = async (q) => {
+  const response = await api.get("/api/emergency/search-patients", { params: { q } });
+  return response.data;
+};
+export const createEmergencyEncounter = async (data) => {
+  const response = await api.post("/api/emergency", data);
+  return response.data;
+};
+export const getEmergencyDashboard = async () => {
+  const response = await api.get("/api/emergency/dashboard");
+  return response.data;
+};
+export const getEmergencyQueue = async (params = {}) => {
+  const response = await api.get("/api/emergency", { params });
+  return response.data;
+};
+export const getEmergencyById = async (id) => {
+  const response = await api.get(`/api/emergency/${id}`);
+  return response.data;
+};
+export const updateEmergencyTriage = async (id, data) => {
+  const response = await api.post(`/api/emergency/${id}/triage`, data);
+  return response.data;
+};
+export const addEmergencyVitals = async (id, data) => {
+  const response = await api.post(`/api/emergency/${id}/vitals`, data);
+  return response.data;
+};
+export const addEmergencyNote = async (id, data) => {
+  const response = await api.post(`/api/emergency/${id}/notes`, data);
+  return response.data;
+};
+export const assignEmergencyDoctor = async (id, doctorId) => {
+  const response = await api.patch(`/api/emergency/${id}/assign-doctor`, { doctorId });
+  return response.data;
+};
+export const assignEmergencyNurse = async (id, data) => {
+  const response = await api.patch(`/api/emergency/${id}/assign-nurse`, data);
+  return response.data;
+};
+export const updateEmergencyStatus = async (id, data) => {
+  const response = await api.patch(`/api/emergency/${id}/status`, data);
+  return response.data;
+};
+export const createEmergencyDiagnosticOrder = async (id, data) => {
+  const response = await api.post(`/api/emergency/${id}/orders`, data);
+  return response.data;
+};
+export const createEmergencyPrescription = async (id, data) => {
+  const response = await api.post(`/api/emergency/${id}/prescription`, data);
+  return response.data;
+};
+export const updateEmergencyObservation = async (id, data) => {
+  const response = await api.post(`/api/emergency/${id}/observation`, data);
+  return response.data;
+};
+export const addEmergencyProcedure = async (id, data) => {
+  const response = await api.post(`/api/emergency/${id}/procedures`, data);
+  return response.data;
+};
+export const admitEmergencyPatient = async (id, data) => {
+  const response = await api.post(`/api/emergency/${id}/admit`, data);
+  return response.data;
+};
+export const transferEmergencyPatient = async (id, data) => {
+  const response = await api.post(`/api/emergency/${id}/transfer`, data);
+  return response.data;
+};
+export const dischargeEmergencyPatient = async (id, data) => {
+  const response = await api.post(`/api/emergency/${id}/discharge`, data);
+  return response.data;
+};
+export const getEmergencyBeds = async () => {
+  const response = await api.get("/api/emergency/beds");
+  return response.data;
+};
+export const getEmergencyReports = async () => {
+  const response = await api.get("/api/emergency/reports/summary");
   return response.data;
 };
 

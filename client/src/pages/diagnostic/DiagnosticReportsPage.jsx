@@ -6,9 +6,11 @@ import {
   logPrintAction,
 } from "../../services/api.js";
 import ReprintModal from "../../components/diagnostic/ReprintModal.jsx";
-import { printClinicalReport } from "../../utils/printReport.js";
+import { printClinicalReport, generateReportHtml } from "../../utils/printReport.js";
+import { usePrintModal } from "../../context/PrintModalContext.jsx";
 
 export default function DiagnosticReportsPage() {
+  const { openPrintPreview } = usePrintModal();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -53,10 +55,18 @@ export default function DiagnosticReportsPage() {
           reason: "Formal Report Modal Print",
         });
       } catch {}
-      printClinicalReport(activeReportModal);
-      return;
+
+      try {
+        const html = generateReportHtml(activeReportModal);
+        openPrintPreview({
+          title: `Diagnostic Report - ${activeReportModal.reportNumber || "Report"}`,
+          htmlContent: html,
+          refNumber: activeReportModal.reportNumber,
+        });
+      } catch {
+        printClinicalReport(activeReportModal);
+      }
     }
-    window.print();
   };
 
   const handleDownloadPdf = async (report) => {

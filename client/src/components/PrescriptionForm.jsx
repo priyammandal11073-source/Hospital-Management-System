@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getPatients, getDoctors, createPrescription, updatePrescription } from "../services/api.js";
+import { getDoctorDisplayName, formatDoctorName } from "../utils/doctorName.js";
 
 const COMMON_DIAGNOSES = [
   "Hypertension",
@@ -356,7 +357,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
             {user?.role === "doctor" ? (
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                 <p className="text-sm font-extrabold text-slate-900">
-                  Dr. {selectedDoctorObj?.name || user?.name?.replace(/^Dr\.\s*/i, "")}
+                  {getDoctorDisplayName(selectedDoctorObj || { name: user?.name?.replace(/^Dr\.\s*/i, "") })}
                 </p>
                 <p className="text-xs text-slate-600 font-medium mt-0.5">
                   {selectedDoctorObj?.specialization || "Specialist"} • Department of {selectedDoctorObj?.department || "Medicine"}
@@ -376,7 +377,7 @@ function PrescriptionForm({ prescriptionToEdit, initialAppointment, initialPatie
                   <option value="">Select doctor</option>
                   {doctors.map((d) => (
                     <option key={d._id} value={d._id}>
-                      Dr. {d.name} — {d.specialization} ({d.department})
+                      {formatDoctorName(d.name)} — {d.specialization} ({d.department})
                     </option>
                   ))}
                 </select>

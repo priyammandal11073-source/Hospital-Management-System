@@ -1,4 +1,19 @@
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 import mongoose from "mongoose";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, "../.env"), override: true });
+
+const mongoClientOptions = {
+  serverSelectionTimeoutMS: 5000,
+  // Keep a small pool of warm connections. For remote MongoDB (e.g. Atlas
+  // free tier) re-establishing connections adds significant per-request
+  // latency, so a pre-warmed pool makes dashboards feel snappier.
+  minPoolSize: 2,
+  maxPoolSize: 10,
+};
 
 /**
  * Opens the MongoDB connection used by the Express application.
@@ -16,9 +31,7 @@ const connectDB = async () => {
   }
 
   try {
-    const connection = await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 5000,
-    });
+    const connection = await mongoose.connect(mongoUri, mongoClientOptions);
     console.log(`MongoDB connected: ${connection.connection.host}`);
   } catch (error) {
     console.error(`\n[!] MongoDB initial connection warning: ${error.message}`);
@@ -33,7 +46,7 @@ const connectDB = async () => {
           return;
         }
         console.log("[MongoDB] Attempting reconnection...");
-        const conn = await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+        const conn = await mongoose.connect(mongoUri, mongoClientOptions);
         console.log(`[MongoDB] Reconnection successful: ${conn.connection.host}`);
         clearInterval(retryInterval);
       } catch (err) {

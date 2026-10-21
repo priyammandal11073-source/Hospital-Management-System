@@ -5,8 +5,12 @@ import {
   updateWaitingRoomStatus,
   getDoctors,
 } from "../../services/api.js";
+import { usePrintModal } from "../../context/PrintModalContext.jsx";
+import { generateQueueTokenSlipHtml } from "../../utils/printTemplates.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function WaitingRoomPage() {
+  const { openPrintPreview } = usePrintModal();
   const [queue, setQueue] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState("all");
@@ -14,6 +18,16 @@ export default function WaitingRoomPage() {
   const [error, setError] = useState("");
   const [activeTokenModal, setActiveTokenModal] = useState(null);
   const [callingId, setCallingId] = useState(null);
+
+  const handlePrintSlip = (token) => {
+    if (!token) return;
+    const html = generateQueueTokenSlipHtml(token);
+    openPrintPreview({
+      title: `OPD Token #${token.tokenNumber || token.token || "Slip"}`,
+      htmlContent: html,
+      refNumber: `TKN-${token.tokenNumber || "SLIP"}`,
+    });
+  };
 
   const fetchQueue = async () => {
     setIsLoading(true);
@@ -149,7 +163,7 @@ export default function WaitingRoomPage() {
             <option value="all">All Specialists & Clinics</option>
             {doctors.map((doc) => (
               <option key={doc._id} value={doc._id}>
-                Dr. {doc.name} ({doc.department || doc.specialization})
+                {formatDoctorName(doc.name)} ({doc.department || doc.specialization})
               </option>
             ))}
           </select>
@@ -200,7 +214,7 @@ export default function WaitingRoomPage() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800">Dr. {item.doctor?.name}</div>
+                      <div className="font-semibold text-slate-800">{formatDoctorName(item.doctor?.name)}</div>
                       <div className="text-[11px] text-slate-500">{item.doctor?.department}</div>
                     </td>
                     <td className="py-3.5 px-4 font-medium text-slate-600">
@@ -270,7 +284,7 @@ export default function WaitingRoomPage() {
 
                         {/* Print Token Slip */}
                         <button
-                          onClick={() => setActiveTokenModal(item)}
+                          onClick={() => setActiveTokenModal({ ...item, checkedInAt: item.checkedInAt || new Date().toISOString() })}
                           className="rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-2 py-1 text-xs font-semibold transition"
                           title="Print OPD Token Slip"
                         >
@@ -288,8 +302,12 @@ export default function WaitingRoomPage() {
 
       {/* Printable OPD Token Slip Modal */}
       {activeTokenModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-slate-200 print:m-0 print:p-0">
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"
+        >
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-slate-200 clinical-print-sheet printable-card print:m-0 print:p-0 print:border-none print:shadow-none">
             <div className="text-center border-b border-dashed border-slate-300 pb-4">
               <h3 className="text-base font-black text-slate-800">NIVORA CARE HOSPITAL</h3>
               <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Care • Trust • Healing</p>
@@ -313,7 +331,7 @@ export default function WaitingRoomPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Doctor:</span>
-                <span className="font-bold text-slate-800">Dr. {activeTokenModal.doctor?.name}</span>
+                <span className="font-bold text-slate-800">{formatDoctorName(activeTokenModal.doctor?.name)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Department:</span>
@@ -326,7 +344,7 @@ export default function WaitingRoomPage() {
               <div className="flex justify-between">
                 <span className="text-slate-400">Issued At:</span>
                 <span className="font-medium text-slate-700">
-                  {new Date(activeTokenModal.checkedInAt || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                  {new Date(activeTokenModal.checkedInAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </span>
               </div>
             </div>
@@ -343,7 +361,7 @@ export default function WaitingRoomPage() {
                 Close
               </button>
               <button
-                onClick={() => window.print()}
+                onClick={() => handlePrintSlip(activeTokenModal)}
                 className="rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700 shadow-xs"
               >
                 Print Slip

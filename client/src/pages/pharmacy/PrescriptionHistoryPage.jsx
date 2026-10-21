@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getPrescriptionQueue } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function PrescriptionHistoryPage() {
   const [history, setHistory] = useState([]);
@@ -150,7 +151,7 @@ export default function PrescriptionHistoryPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-semibold text-slate-800">Dr. {rx.doctor?.name || "Specialist"}</div>
+                        <div className="font-semibold text-slate-800">{formatDoctorName(rx.doctor?.name, "Specialist")}</div>
                         <div className="text-[11px] text-slate-500">{rx.doctor?.specialization || "Clinical OPD"}</div>
                       </td>
                       <td className="px-4 py-3">

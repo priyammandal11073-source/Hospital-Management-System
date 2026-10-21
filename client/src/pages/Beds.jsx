@@ -5,6 +5,7 @@ import DischargeBedModal from "../components/DischargeBedModal.jsx";
 import CreateBedModal from "../components/CreateBedModal.jsx";
 import { getBeds, getBedSummary, updateBedStatus, deleteBed } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 const WARDS = [
   "All wards",
@@ -35,7 +36,7 @@ const formatDate = (date) =>
 
 function Beds() {
   const { user } = useAuth();
-  const canManageBeds = ["receptionist", "nurse", "admin"].includes(user?.role);
+  const canManageBeds = ["receptionist", "nurse", "admin", "doctor", "emergency"].includes(user?.role);
 
   const [beds, setBeds] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -432,7 +433,7 @@ function Beds() {
                       </p>
 
                       <div className="flex items-center justify-between text-xs font-medium text-slate-600 pt-2 border-t border-slate-200">
-                        <span className="font-bold text-slate-800">Dr. {doctor.name || "Physician"}</span>
+                        <span className="font-bold text-slate-800">{getDoctorDisplayName(doctor, "Physician")}</span>
                         <span>Admitted {formatDate(admission.admittedAt)}</span>
                       </div>
                     </div>

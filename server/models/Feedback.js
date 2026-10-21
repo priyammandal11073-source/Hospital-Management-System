@@ -32,6 +32,25 @@ const feedbackSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    status: {
+      type: String,
+      enum: ["new", "reviewed"],
+      default: "new",
+      index: true,
+    },
+    response: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    respondedBy: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    respondedAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

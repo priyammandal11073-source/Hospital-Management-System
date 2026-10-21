@@ -1,10 +1,50 @@
 import { useState, useEffect } from "react";
 import { getDailyFrontDeskSummary } from "../../services/api.js";
+import { usePrintModal } from "../../context/PrintModalContext.jsx";
+import { generateGeneralHospitalReportHtml } from "../../utils/printTemplates.js";
 
 export default function ReceptionReportsPage() {
+  const { openPrintPreview } = usePrintModal();
   const [reportDate, setReportDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [summary, setSummary] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const handlePrintDailyReport = () => {
+    const html = generateGeneralHospitalReportHtml({
+      title: "Daily Front Desk Operational & Audit Report",
+      subtitle: `Front Desk Census & Inpatient Admission Registry • ${new Date(reportDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}`,
+      metrics: [
+        { label: "New Registrations", value: `${summary?.patientsRegistered ?? 0}`, color: "#0284c7" },
+        { label: "Checked In", value: `${summary?.checkinsToday ?? 0}`, color: "#16a34a" },
+        { label: "Consults Done", value: `${summary?.consultationsCompleted ?? 0}`, color: "#0f766e" },
+        { label: "No Shows", value: `${summary?.noShowsToday ?? 0}`, color: "#dc2626" },
+        { label: "Collections", value: `₹${(summary?.totalCollected || 0).toLocaleString("en-IN")}`, color: "#059669" },
+      ],
+      tables: [
+        {
+          title: "Front Desk Key Operational Performance Indicators",
+          headers: ["Operational Metric Indicator", "Count / Value", "Operational Status"],
+          rows: [
+            ["Total Consultations Scheduled for Today", String(summary?.appointmentsToday ?? 0), "Scheduled Bookings"],
+            ["Arrived & Checked In at Reception Desk", String(summary?.checkinsToday ?? 0), "Verified On-Site"],
+            ["Completed Specialist Consultations", String(summary?.consultationsCompleted ?? 0), "Clinical Handover Complete"],
+            ["Cancelled by Patient / Clinic", String(summary?.cancellationsToday ?? 0), "OPD Slot Freed"],
+            ["Patient Absenteeism (No-Shows)", String(summary?.noShowsToday ?? 0), "Unattended"],
+            ["New Inpatient Ward Admissions Processed", String(summary?.admissionsToday ?? 0), "Bed Allocated"],
+            ["Gross Cashier Collections (Settled)", `₹${(summary?.totalCollected || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`, `${summary?.settledInvoicesCount || 0} Invoices Settled`],
+            ["Total Outstanding Dues (Pending)", `₹${(summary?.totalPending || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`, `${summary?.pendingInvoicesCount || 0} Open Accounts`],
+          ],
+        },
+      ],
+      notes: `Official Front Desk Audit certified for Date: ${reportDate}. Prepared by Central Patient Reception & Cashier Counter.`,
+    });
+
+    openPrintPreview({
+      title: `Front Desk Audit Report - ${reportDate}`,
+      htmlContent: html,
+      refNumber: `RECPT-${reportDate.replace(/-/g, "")}`,
+    });
+  };
 
   const loadSummary = async () => {
     setIsLoading(true);
@@ -39,7 +79,7 @@ export default function ReceptionReportsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 no-print print:hidden">
           <input
             type="date"
             value={reportDate}
@@ -47,7 +87,7 @@ export default function ReceptionReportsPage() {
             className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-xs focus:outline-none"
           />
           <button
-            onClick={() => window.print()}
+            onClick={handlePrintDailyReport}
             className="rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700 shadow-xs transition"
           >
             🖨️ Print Daily Report
@@ -110,7 +150,7 @@ export default function ReceptionReportsPage() {
       </div>
 
       {/* Printable Report View */}
-      <div className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80 print:shadow-none print:ring-0">
+      <div className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80 clinical-print-sheet printable-card print:shadow-none print:ring-0">
         <div className="border-b border-slate-200 pb-4 flex items-center justify-between">
           <div>
             <h3 className="text-base font-black text-slate-800">Nivora Care Hospital Front Desk Audit</h3>

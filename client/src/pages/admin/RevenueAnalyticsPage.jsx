@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getAdminRevenueAnalytics } from "../../services/api.js";
+import { exportToCsv } from "../../utils/csvExport.js";
 
 const formatCurrency = (amt) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amt || 0);
@@ -169,9 +170,31 @@ export default function RevenueAnalyticsPage() {
               <h2 className="text-sm font-bold text-slate-900">Recent Settled Receipts</h2>
               <p className="text-xs text-slate-400 mt-0.5">Audited real-time billing settlements</p>
             </div>
-            <Link to="/billing" className="text-xs font-bold text-purple-600 hover:underline">
-              View All Invoices →
-            </Link>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  exportToCsv({
+                    filename: `revenue-settled-${range}.csv`,
+                    headers: ["Invoice #", "Patient", "Date", "Method", "Amount"],
+                    rows: recentTransactions.map((tx) => [
+                      tx.invoiceNumber || tx._id.slice(-6).toUpperCase(),
+                      tx.patient?.name || "Patient Walk-in",
+                      new Date(tx.updatedAt || tx.createdAt).toLocaleString("en-IN"),
+                      tx.paymentMethod || "Counter Cash",
+                      Number(tx.totalAmount || 0).toFixed(2),
+                    ]),
+                  })
+                }
+                disabled={recentTransactions.length === 0}
+                className="rounded-lg border border-purple-200 bg-purple-50 px-3 py-1.5 text-xs font-bold text-purple-700 hover:bg-purple-100 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                ⬇ Export CSV
+              </button>
+              <Link to="/billing" className="text-xs font-bold text-purple-600 hover:underline">
+                View All Invoices →
+              </Link>
+            </div>
           </div>
 
           <div className="mt-4 overflow-x-auto">

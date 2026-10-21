@@ -10,6 +10,9 @@ import {
   updatePaymentStatus,
 } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { exportToCsv } from "../utils/csvExport.js";
+import ActionMenu from "../components/ui/ActionMenu.jsx";
+import { formatDoctorName } from "../utils/doctorName.js";
 
 const paymentStatuses = ["pending", "paid", "partially_paid"];
 const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque"];
@@ -176,6 +179,29 @@ function Billing() {
             👁️ View-only access (Nursing staff)
           </span>
         )}
+        <button
+          type="button"
+          className="rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          onClick={() =>
+            exportToCsv({
+              filename: `billing-invoices.csv`,
+              headers: ["Invoice #", "Patient", "Department", "Date", "Total", "Paid", "Status", "Method"],
+              rows: billings.map((b) => [
+                b.invoiceNumber || String(b._id).slice(-6).toUpperCase(),
+                b.patient?.name || "Walk-in",
+                b.department || "—",
+                new Date(b.createdAt || b.billDate || Date.now()).toLocaleString("en-IN"),
+                Number(b.totalAmount || 0).toFixed(2),
+                Number(b.paidAmount || 0).toFixed(2),
+                (b.paymentStatus || "").replace(/_/g, " "),
+                b.paymentMethod || "—",
+              ]),
+            })
+          }
+          disabled={billings.length === 0}
+        >
+          ⬇ Export CSV
+        </button>
       </div>
 
       <div className="mb-5 grid gap-3 md:grid-cols-3">
@@ -251,7 +277,7 @@ function Billing() {
                         {billing.patient?.name || "Unknown patient"}
                       </h3>
                       <p className="text-xs text-slate-500">
-                        #{billing._id.toString().slice(-6).toUpperCase()} • Dr. {billing.appointment?.doctor?.name || "Specialist"}
+                        #{billing._id.toString().slice(-6).toUpperCase()} • {formatDoctorName(billing.appointment?.doctor?.name, "Specialist")}
                       </p>
                     </div>
                   </div>
@@ -286,39 +312,80 @@ function Billing() {
                 </div>
 
                 {/* Mobile Touch-Friendly Action Buttons */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
-                  <button
-                    className="rounded-xl bg-blue-50 border border-blue-200 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
-                    onClick={() => setSelectedInvoice(billing)}
-                    type="button"
-                  >
-                    📄 Invoice
-                  </button>
-                  {billing.paymentStatus !== "paid" && canManageBilling && (
-                    <>
-                      <button
-                        className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
-                        onClick={() => {
-                          setPaymentBilling(billing);
-                          setPaymentMethod("cash");
-                        }}
-                        type="button"
-                      >
-                        ✓ Mark Paid
-                      </button>
-                      <button
-                        className="col-span-2 sm:col-span-1 rounded-xl bg-violet-50 border border-violet-200 px-3 py-2 text-xs font-bold text-violet-700 hover:bg-violet-100 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
-                        onClick={() => {
-                          setSmsBilling(billing);
-                          setSmsPhone(billing.patient?.contactNumber || "");
-                          setSmsResult("");
-                        }}
-                        type="button"
-                      >
-                        📲 SMS Link
-                      </button>
-                    </>
-                  )}
+                <div className="pt-1">
+                  <ActionMenu
+                    triggerLabel="Actions"
+                    triggerIcon={
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                      </svg>
+                    }
+                    items={[
+                      {
+                        label: "View / Print",
+                        icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
+                        primary: true,
+                        onClick: () => setSelectedInvoice(billing),
+                      },
+                      {
+                        label: "Download PDF",
+                        icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+                        onClick: () => {
+                          setSelectedInvoice(billing);
+                          setTimeout(() => {
+                            const printBtn = document.querySelector('button[title="Print or Save as PDF"]');
+                            printBtn?.click();
+                          }, 300);
+                        },
+                      },
+                      {
+                        label: "Email Invoice",
+                        icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+                        disabled: !billing.patient?.email,
+                        onClick: () => {
+                          setSelectedInvoice(billing);
+                          setTimeout(() => {
+                            const emailBtn = document.querySelector('button[title^="Send invoice to"]');
+                            emailBtn?.click();
+                          }, 300);
+                        },
+                      },
+                      {
+                        label: "WhatsApp",
+                        icon: <span className="text-sm">💬</span>,
+                        disabled: !billing.patient?.contactNumber,
+                        onClick: () => {
+                          setSelectedInvoice(billing);
+                          setTimeout(() => {
+                            const waLink = document.querySelector('a[href^="https://wa.me/"]');
+                            waLink?.click();
+                          }, 300);
+                        },
+                      },
+                      { divider: true },
+                      ...(billing.paymentStatus !== "paid" && canManageBilling ? [
+                        {
+                          label: "Mark as Paid",
+                          icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>,
+                          onClick: () => {
+                            setPaymentBilling(billing);
+                            setPaymentMethod("cash");
+                          },
+                        },
+                        {
+                          label: "Send SMS Link",
+                          icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h4M8 12l-2-2m2 2l2-2m-4 4v6M8 12V4m-2 8l4-4m-4 4l4 4" /></svg>,
+                          onClick: () => {
+                            setSmsBilling(billing);
+                            setSmsPhone(billing.patient?.contactNumber || "");
+                            setSmsResult("");
+                          },
+                        },
+                      ] : []),
+                    ]}
+                    align="left"
+                    triggerClassName="w-full justify-center"
+                  />
                 </div>
               </div>
             ))}
@@ -348,7 +415,7 @@ function Billing() {
                         <div>
                           <p className="font-bold text-slate-800">{billing.patient?.name || "Unknown patient"}</p>
                           <p className="text-xs text-slate-500">
-                            #{billing._id.toString().slice(-6).toUpperCase()} • Dr. {billing.appointment?.doctor?.name || "Hospital Specialist"}
+                            #{billing._id.toString().slice(-6).toUpperCase()} • {formatDoctorName(billing.appointment?.doctor?.name, "Hospital Specialist")}
                           </p>
                         </div>
                       </div>
@@ -376,45 +443,78 @@ function Billing() {
                     <td className="whitespace-nowrap px-4 py-3.5 text-xs text-slate-500 font-mono">
                       {formatDate(billing.paymentDate)}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-2">
-                      <button
-                        className="rounded-lg bg-blue-50 border border-blue-200 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
-                        onClick={() => setSelectedInvoice(billing)}
-                        type="button"
-                      >
-                        📄 Invoice
-                      </button>
-                      {billing.paymentStatus !== "paid" && (
-                        canManageBilling ? (
-                          <>
-                            <button
-                              className="rounded-lg bg-emerald-600 px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-700 transition shadow-2xs"
-                              onClick={() => {
+                    <td className="whitespace-nowrap px-4 py-3.5 text-right">
+                      <ActionMenu
+                        triggerIcon={
+                          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                          </svg>
+                        }
+                        items={[
+                          {
+                            label: "View / Print",
+                            icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
+                            primary: true,
+                            onClick: () => setSelectedInvoice(billing),
+                          },
+                          {
+                            label: "Download PDF",
+                            icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+                            onClick: () => {
+                              setSelectedInvoice(billing);
+                              setTimeout(() => {
+                                const printBtn = document.querySelector('button[title="Print or Save as PDF"]');
+                                printBtn?.click();
+                              }, 300);
+                            },
+                          },
+                          {
+                            label: "Email Invoice",
+                            icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+                            disabled: !billing.patient?.email,
+                            onClick: () => {
+                              setSelectedInvoice(billing);
+                              setTimeout(() => {
+                                const emailBtn = document.querySelector('button[title^="Send invoice to"]');
+                                emailBtn?.click();
+                              }, 300);
+                            },
+                          },
+                          {
+                            label: "WhatsApp",
+                            icon: <span className="text-sm">💬</span>,
+                            disabled: !billing.patient?.contactNumber,
+                            onClick: () => {
+                              setSelectedInvoice(billing);
+                              setTimeout(() => {
+                                const waLink = document.querySelector('a[href^="https://wa.me/"]');
+                                waLink?.click();
+                              }, 300);
+                            },
+                          },
+                          { divider: true },
+                          ...(billing.paymentStatus !== "paid" && canManageBilling ? [
+                            {
+                              label: "Mark as Paid",
+                              icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>,
+                              onClick: () => {
                                 setPaymentBilling(billing);
                                 setPaymentMethod("cash");
-                              }}
-                              type="button"
-                            >
-                              Mark as paid
-                            </button>
-                            <button
-                              className="rounded-lg bg-violet-50 border border-violet-200 px-2.5 py-1 text-xs font-semibold text-violet-700 hover:bg-violet-100 transition shadow-2xs"
-                              onClick={() => {
+                              },
+                            },
+                            {
+                              label: "Send SMS Link",
+                              icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h4M8 12l-2-2m2 2l2-2m-4 4v6M8 12V4m-2 8l4-4m-4 4l4 4" /></svg>,
+                              onClick: () => {
                                 setSmsBilling(billing);
                                 setSmsPhone(billing.patient?.contactNumber || "");
                                 setSmsResult("");
-                              }}
-                              type="button"
-                            >
-                              📲 Send SMS link
-                            </button>
-                          </>
-                        ) : (
-                          <span className="text-xs text-amber-600 font-medium px-2 py-1 bg-amber-50 rounded-md border border-amber-200">
-                            Unsettled
-                          </span>
-                        )
-                      )}
+                              },
+                            },
+                          ] : []),
+                        ]}
+                        align="right"
+                      />
                     </td>
                   </tr>
                 ))}

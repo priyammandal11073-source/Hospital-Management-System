@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMyAdmissions } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 function MyAdmissions() {
   const [admissions, setAdmissions] = useState([]);
@@ -76,7 +77,7 @@ function MyAdmissions() {
 
             <div className="rounded-2xl bg-white/10 p-4 backdrop-blur-xs text-xs space-y-1.5 border border-white/15">
               <p className="text-teal-200">
-                Attending Physician: <strong className="text-white">Dr. {activeAdmission.attendingDoctor?.name || "Consultant"}</strong>
+                Attending Physician: <strong className="text-white">{formatDoctorName(activeAdmission.attendingDoctor?.name, "Consultant")}</strong>
               </p>
               <p className="text-teal-200">
                 Admitted on:{" "}
@@ -162,7 +163,7 @@ function MyAdmissions() {
                           Ward: {adm.ward || "Inpatient Unit"} (Bed #{adm.bedNumber || "N/A"})
                         </h3>
                         <p className="text-xs text-slate-600 mt-0.5">
-                          Physician: <strong className="text-slate-800">Dr. {adm.attendingDoctor?.name || "Consultant"}</strong>
+                          Physician: <strong className="text-slate-800">{formatDoctorName(adm.attendingDoctor?.name, "Consultant")}</strong>
                         </p>
                         {adm.admissionReason && (
                           <p className="text-xs text-slate-500 mt-1">

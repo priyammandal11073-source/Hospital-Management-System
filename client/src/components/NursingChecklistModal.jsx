@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { updateAppointmentChecklist, updateAppointmentStatus } from "../services/api.js";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 const DEFAULT_CHECKLIST_ITEMS = [
   "Pre-consultation vital signs recorded & verified",
@@ -130,7 +131,7 @@ export default function NursingChecklistModal({
           </div>
           <div>
             <span className="text-slate-500">Doctor: </span>
-            <span className="font-semibold text-slate-700">Dr. {doctor.name || "Physician"}</span>
+            <span className="font-semibold text-slate-700">{getDoctorDisplayName(doctor, "Physician")}</span>
           </div>
           <div>
             <span className="text-slate-500">Time: </span>

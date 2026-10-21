@@ -6,10 +6,33 @@ import {
   dispensePrescription,
   flagPrescriptionIssue,
 } from "../../services/api.js";
+import { usePrintModal } from "../../context/PrintModalContext.jsx";
+import { generatePharmacyReceiptHtml } from "../../utils/printTemplates.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function PrescriptionDispensePage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { openPrintPreview } = usePrintModal();
+
+  const handlePrintReceipt = () => {
+    if (!dispenseResult || !prescription) return;
+    const html = generatePharmacyReceiptHtml({
+      prescription,
+      dispenseResult,
+      patient: prescription?.patient,
+      doctor: prescription?.doctor,
+      medicines: prescription?.medicines,
+      receiptNumber: dispenseResult?.receiptNumber,
+      paymentMethod,
+      totalAmount: dispenseResult?.totalAmount || prescription?.totalAmount,
+    });
+    openPrintPreview({
+      title: `Pharmacy Receipt - ${dispenseResult.receiptNumber || "Dispense"}`,
+      htmlContent: html,
+      refNumber: dispenseResult.receiptNumber || "RX-RCPT",
+    });
+  };
 
   // Selection list if no ID provided in params
   const [allQueue, setAllQueue] = useState([]);
@@ -61,36 +84,53 @@ export default function PrescriptionDispensePage() {
     setError("");
     try {
       const data = await getPrescriptionForDispensing(prescriptionId);
-      setPrescription(data.prescription);
+      const prescription = data.prescription;
+      setPrescription(prescription);
       setInventoryItems(data.inventoryItems || []);
-      setMedicineBatches(data.batches || {});
+
+      // Build medicineBatches object from medications' batches arrays
+      const medications = prescription?.medications || prescription?.medicines || [];
+      const batchesMap = {};
+      medications.forEach((med, idx) => {
+        const medKey = med._id || `med_${idx}`;
+        if (med.batches && Array.isArray(med.batches)) {
+          batchesMap[medKey] = med.batches.map(b => ({
+            _id: b._id || b.batchNumber,
+            batchNumber: b.batchNumber,
+            expiryDate: b.expiryDate,
+            currentStock: b.quantity,
+            price: b.price,
+            sellingPrice: b.price,
+            unitPrice: b.price,
+          }));
+        }
+      });
+      setMedicineBatches(batchesMap);
 
       // Auto-populate default batches and quantities
       const initialSelected = {};
       const initialQtys = {};
 
-      if (data.prescription?.medicines) {
-        data.prescription.medicines.forEach((med, idx) => {
-          const medKey = med._id || `med_${idx}`;
-          const available = data.batches?.[medKey] || [];
-          // Pick the first non-expired batch
-          const validBatch = available.find((b) => new Date(b.expiryDate) > new Date()) || available[0];
-          if (validBatch) {
-            initialSelected[medKey] = validBatch._id;
-          }
-          // Default quantity from prescription (e.g. 10 or calculate duration * freq)
-          initialQtys[medKey] = 10;
-        });
-      }
+      medications.forEach((med, idx) => {
+        const medKey = med._id || `med_${idx}`;
+        const available = batchesMap[medKey] || [];
+        // Pick the first non-expired batch
+        const validBatch = available.find((b) => new Date(b.expiryDate) > new Date()) || available[0];
+        if (validBatch) {
+          initialSelected[medKey] = validBatch._id;
+        }
+        // Default quantity from prescription
+        initialQtys[medKey] = med.requestedQuantity || med.quantity || 10;
+      });
 
       setSelectedBatches(initialSelected);
       setQuantities(initialQtys);
 
       // If already dispensed, show receipt mode
-      if (data.prescription?.dispensingStatus === "dispensed") {
+      if (prescription?.dispensingStatus === "dispensed") {
         setDispenseResult({
-          receiptNumber: data.prescription.pharmacyReceiptNumber || `RX-DISP-${prescriptionId.slice(-6).toUpperCase()}`,
-          dispensedAt: data.prescription.dispensedAt || data.prescription.updatedAt,
+          receiptNumber: prescription.pharmacyReceiptNumber || `RX-DISP-${prescriptionId.slice(-6).toUpperCase()}`,
+          dispensedAt: prescription.dispensedAt || prescription.updatedAt,
         });
       }
     } catch (err) {
@@ -112,14 +152,25 @@ export default function PrescriptionDispensePage() {
       return;
     }
 
-    // Build dispense items payload
-    const itemsToDispense = (prescription.medicines || []).map((med, idx) => {
+    // Build dispense items payload matching backend expectations
+    const medications = prescription.medications || prescription.medicines || [];
+    const itemsToDispense = medications.map((med, idx) => {
       const medKey = med._id || `med_${idx}`;
+      const selectedBatchId = selectedBatches[medKey];
+      const availableBatches = medicineBatches[medKey] || [];
+      const selectedBatch = availableBatches.find(b => b._id === selectedBatchId) || availableBatches[0];
+      
       return {
         medicineName: med.name,
-        batchId: selectedBatches[medKey] || null,
-        quantity: Number(quantities[medKey]) || 1,
+        dispensedQuantity: Number(quantities[medKey]) || med.requestedQuantity || 10,
+        requestedQuantity: med.requestedQuantity || 10,
+        unitPrice: selectedBatch?.price || selectedBatch?.unitPrice || selectedBatch?.sellingPrice || 10,
+        batchId: selectedBatchId || null,
+        batchNumber: selectedBatch?.batchNumber || "",
+        inventoryId: med.inventoryId || null,
         dosage: med.dosage,
+        frequency: med.frequency,
+        duration: med.duration,
         instructions: med.instructions,
       };
     });
@@ -127,13 +178,28 @@ export default function PrescriptionDispensePage() {
     // Check for expired batch selection
     for (const item of itemsToDispense) {
       if (item.batchId) {
-        // find batch
         const allB = Object.values(medicineBatches).flat();
         const found = allB.find((b) => b._id === item.batchId);
         if (found && new Date(found.expiryDate) <= new Date()) {
           alert(`🚫 Cannot dispense expired batch (${found.batchNumber}) for ${item.medicineName}. Please select a valid batch.`);
           return;
         }
+      }
+    }
+
+    // Validate all items have required fields
+    for (const item of itemsToDispense) {
+      if (!item.medicineName) {
+        alert("Medicine name is required for all items");
+        return;
+      }
+      if (!item.dispensedQuantity || item.dispensedQuantity <= 0) {
+        alert(`Invalid quantity for ${item.medicineName}`);
+        return;
+      }
+      if (!item.unitPrice || item.unitPrice <= 0) {
+        alert(`Invalid unit price for ${item.medicineName}`);
+        return;
       }
     }
 
@@ -165,7 +231,7 @@ export default function PrescriptionDispensePage() {
         reason: flagReason,
         notes: flagNotes,
       });
-      alert(`Prescription placed ON HOLD. Doctor Dr. ${prescription.doctor?.name || "in charge"} has been notified.`);
+      alert(`Prescription placed ON HOLD. ${formatDoctorName(prescription.doctor?.name, "Physician in charge")} has been notified.`);
       setShowFlagModal(false);
       navigate("/pharmacy/queue");
     } catch (err) {
@@ -228,7 +294,7 @@ export default function PrescriptionDispensePage() {
                     <span className="text-[10px] text-slate-400">({item.patient?.gender || "—"}, {item.patient?.age || "—"} yrs)</span>
                   </div>
                   <div className="text-xs text-slate-500 mt-0.5">
-                    Prescribed by Dr. {item.doctor?.name} • {item.medicines?.length || 0} medication(s)
+                    Prescribed by {formatDoctorName(item.doctor?.name)} • {item.medicines?.length || 0} medication(s)
                   </div>
                 </div>
                 <Link
@@ -270,11 +336,11 @@ export default function PrescriptionDispensePage() {
   const patientAllergies = prescription.patient?.allergies || [];
   const hasAllergies = Array.isArray(patientAllergies) ? patientAllergies.length > 0 : Boolean(patientAllergies);
 
-  // If dispensed, render the printable receipt view
+// If dispensed, render the printable receipt view
   if (dispenseResult) {
     return (
       <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between no-print">
           <Link
             to="/pharmacy/queue"
             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
@@ -282,18 +348,18 @@ export default function PrescriptionDispensePage() {
             ← Back to Queue
           </Link>
           <button
-            onClick={() => window.print()}
+            onClick={handlePrintReceipt}
             className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 shadow-sm transition"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 002-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 002-2H9a2 2 0 00-2-2v4a2 2 0 002 2z" />
             </svg>
             <span>Print Official Pharmacy Receipt</span>
           </button>
         </div>
 
-        {/* Printable Official Receipt Card */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-md font-sans text-xs space-y-6 print:m-0 print:border-none print:shadow-none">
+        {/* Printable Official Receipt Card - clinical-print-sheet ensures it prints correctly */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-md font-sans text-xs space-y-6 print:m-0 print:border-none print:shadow-none clinical-print-sheet">
           {/* Header */}
           <div className="border-b border-slate-200 pb-5 text-center">
             <h2 className="text-xl font-black uppercase tracking-wider text-slate-900">Nivora Care Hospital</h2>
@@ -333,7 +399,7 @@ export default function PrescriptionDispensePage() {
             </div>
             <div>
               <p className="text-[10px] font-bold uppercase text-slate-400">Prescribing Physician</p>
-              <p className="font-bold text-slate-900">Dr. {prescription.doctor?.name}</p>
+              <p className="font-bold text-slate-900">{formatDoctorName(prescription.doctor?.name)}</p>
               <p className="text-slate-500">{prescription.doctor?.specialization || "Clinical OPD"}</p>
             </div>
           </div>
@@ -350,7 +416,7 @@ export default function PrescriptionDispensePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {(prescription.medicines || []).map((m, i) => {
+              {(prescription.medications || prescription.medicines || []).map((m, i) => {
                 const qty = quantities[m._id || `med_${i}`] || 10;
                 const rate = 15.5; // Demo rate
                 const amount = qty * rate;
@@ -474,7 +540,7 @@ export default function PrescriptionDispensePage() {
         {/* Doctor & Clinical diagnosis card */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
           <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Prescribing Physician</p>
-          <p className="mt-1 text-base font-black text-slate-900">Dr. {prescription.doctor?.name}</p>
+          <p className="mt-1 text-base font-black text-slate-900">{formatDoctorName(prescription.doctor?.name)}</p>
           <div className="mt-2 space-y-1 text-xs text-slate-600">
             <p>Specialization: <span className="font-semibold text-slate-800">{prescription.doctor?.specialization || "Clinical OPD"}</span></p>
             <p>Clinical Diagnosis: <span className="font-semibold text-slate-800">{prescription.diagnosis || "Upper Respiratory Tract Infection"}</span></p>
@@ -497,10 +563,10 @@ export default function PrescriptionDispensePage() {
           </div>
 
           <div className="divide-y divide-slate-100">
-            {(prescription.medicines || []).map((med, idx) => {
-              const medKey = med._id || `med_${idx}`;
-              const availableBatches = medicineBatches[medKey] || [];
-              const selectedBatchId = selectedBatches[medKey];
+{(prescription.medications || prescription.medicines || []).map((med, idx) => {
+                const medKey = med._id || `med_${idx}`;
+                const availableBatches = medicineBatches[medKey] || [];
+                const selectedBatchId = selectedBatches[medKey];
 
               return (
                 <div key={idx} className="p-5 space-y-3">
@@ -617,7 +683,7 @@ export default function PrescriptionDispensePage() {
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
                 <span className="flex h-3 w-3 rounded-full bg-rose-500 animate-ping"></span>
-                Flag Issue to Dr. {prescription.doctor?.name}
+                Flag Issue to {formatDoctorName(prescription.doctor?.name)}
               </h3>
               <button onClick={() => setShowFlagModal(false)} className="text-slate-400 font-bold">✕</button>
             </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getInpatientsWithCare, recordPatientVitals, getPatientVitals } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function VitalSignsPage() {
   const [inpatients, setInpatients] = useState([]);
@@ -155,7 +156,7 @@ export default function VitalSignsPage() {
             <div>
               <span className="text-slate-400 text-[10px] block">Attending Doctor</span>
               <span className="font-bold text-slate-800">
-                {selectedInpatient.attendingDoctor?.name ? `Dr. ${selectedInpatient.attendingDoctor.name}` : "Attending"}
+                {selectedInpatient.attendingDoctor?.name ? formatDoctorName(selectedInpatient.attendingDoctor.name) : "Attending"}
               </span>
             </div>
           </div>

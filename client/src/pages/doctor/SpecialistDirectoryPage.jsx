@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getSpecialistDirectory } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function SpecialistDirectoryPage() {
   const navigate = useNavigate();
@@ -116,7 +117,7 @@ export default function SpecialistDirectoryPage() {
                   {doc.name ? doc.name.charAt(0).toUpperCase() : "D"}
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Dr. {doc.name}</h3>
+                  <h3 className="text-sm font-bold text-slate-900">{formatDoctorName(doc.name)}</h3>
                   <p className="text-xs text-blue-600 font-semibold">{doc.specialization}</p>
                   <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold mt-1">
                     {doc.department}

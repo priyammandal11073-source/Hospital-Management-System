@@ -105,8 +105,17 @@ export const verifyPayment = async (req, res) => {
 
     const secret = process.env.RAZORPAY_KEY_SECRET;
 
-    // Signature verification if secret exists and signature was sent
-    if (secret && razorpayOrderId && razorpaySignature) {
+    // Signature verification is MANDATORY whenever a key secret is configured.
+    // Without this an attacker could mark an invoice as paid by posting a fake
+    // payment id. The key secret is only absent in development/test mode where
+    // the client runs a local (non-authoritative) checkout.
+    if (secret) {
+      if (!razorpayOrderId || !razorpaySignature) {
+        return res.status(400).json({
+          message: "Payment signature parameters are required to verify this payment.",
+        });
+      }
+
       const generatedSignature = crypto
         .createHmac("sha256", secret)
         .update(`${razorpayOrderId}|${razorpayPaymentId}`)
@@ -141,5 +150,67 @@ export const verifyPayment = async (req, res) => {
   } catch (error) {
     console.error("Error verifying Razorpay payment:", error);
     res.status(500).json({ message: error.message || "Failed to verify Razorpay payment." });
+  }
+};
+
+/**
+ * @desc    Razorpay server-to-server webhook (payment.captured etc.)
+ * @route   POST /api/razorpay/webhook
+ * @access  Webhook (signed with RAZORPAY_WEBHOOK_SECRET)
+ *
+ * Raw JSON body is required so the HMAC signature can be verified over the
+ * exact bytes Razorpay signed. Rejects unsigned/forged payloads with 400.
+ */
+export const rzpWebhookHandler = async (req, res) => {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET;
+  const signature = req.headers["x-razorpay-signature"];
+  const rawBody = req.body;
+
+  try {
+    if (!secret || !signature || !Buffer.isBuffer(rawBody)) {
+      return res.status(400).json({
+        success: false,
+        message: "Webhook signature verification is required.",
+      });
+    }
+
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(rawBody.toString("utf8"))
+      .digest("hex");
+
+    if (expectedSignature !== signature) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid webhook signature.",
+      });
+    }
+
+    const event = JSON.parse(rawBody.toString("utf8"));
+
+    if (event.event === "payment.captured") {
+      const payment = event.payload?.payment?.entity;
+      const billingId = payment?.notes?.billingId;
+
+      if (billingId) {
+        const billing = await Billing.findById(billingId);
+        if (billing && billing.paymentStatus !== "paid") {
+          billing.paymentStatus = "paid";
+          billing.paymentMethod = "razorpay";
+          billing.razorpayPaymentId = payment.id;
+          billing.razorpayOrderId = payment.order_id;
+          billing.razorpaySignature = signature;
+          await billing.save();
+        }
+      }
+    }
+
+    return res.status(200).json({ success: true, received: true });
+  } catch (error) {
+    console.error("Razorpay webhook error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Failed to process Razorpay webhook.",
+    });
   }
 };

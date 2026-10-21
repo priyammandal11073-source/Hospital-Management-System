@@ -12,6 +12,7 @@ import IntakeOutput from "../models/IntakeOutput.js";
 import PatientTransfer from "../models/PatientTransfer.js";
 import NurseHandover from "../models/NurseHandover.js";
 import DiagnosticOrder from "../models/DiagnosticOrder.js";
+import { formatDoctorName } from "../utils/doctorHelper.js";
 
 // Helper to determine clinical severity based on vitals and admission reason
 const assessPatientRisk = (vitals, bed) => {
@@ -92,16 +93,41 @@ export const getNurseDashboardMetrics = async (req, res) => {
 
     const patientIds = admittedPatients.map((item) => item.patient._id);
 
-    // Fetch latest vitals for all admitted patients
-    const latestVitalsList = await Vitals.aggregate([
-      { $match: { patient: { $in: patientIds } } },
-      { $sort: { recordedAt: -1 } },
-      {
-        $group: {
-          _id: "$patient",
-          latestVital: { $first: "$$ROOT" },
+    // Fetch dashboard data downstream in parallel. Every query depends only on
+    // the admitted patient ids resolved above, so they run concurrently instead
+    // of stacking sequential round-trips.
+    const [
+      latestVitalsList,
+      activePrescriptions,
+      pendingTasks,
+      pendingTasksCount,
+      recentDoctorOrders,
+      activeOrdersCount,
+    ] = await Promise.all([
+      Vitals.aggregate([
+        { $match: { patient: { $in: patientIds } } },
+        { $sort: { recordedAt: -1 } },
+        {
+          $group: {
+            _id: "$patient",
+            latestVital: { $first: "$$ROOT" },
+          },
         },
-      },
+      ]),
+      Prescription.find({ patient: { $in: patientIds } })
+        .populate("patient", "name age gender")
+        .populate("doctor", "name specialization")
+        .sort({ createdAt: -1 }),
+      NursingTask.find({ status: { $in: ["Pending", "In Progress"] } })
+        .populate("patient", "name age gender")
+        .sort({ dueTime: 1 })
+        .limit(10),
+      NursingTask.countDocuments({ status: { $in: ["Pending", "In Progress"] } }),
+      DoctorOrder.find()
+        .populate("patient", "name age gender")
+        .sort({ createdAt: -1 })
+        .limit(10),
+      DoctorOrder.countDocuments({ status: { $in: ["New", "Acknowledged", "In Progress"] } }),
     ]);
 
     const vitalsMap = {};
@@ -128,7 +154,7 @@ export const getNurseDashboardMetrics = async (req, res) => {
           roomBed: `${item.bed.floor} / ${item.bed.bedNumber}`,
           bedId: item.bed._id,
           diagnosis: item.admission.admissionReason || "Under evaluation",
-          attendingDoctor: item.doctor?.name ? `Dr. ${item.doctor.name}` : "On-Call Physician",
+          attendingDoctor: item.doctor?.name ? formatDoctorName(item.doctor.name) : "On-Call Physician",
           severity: risk.level,
           riskReason: risk.reason,
           latestVital: v || null,
@@ -138,13 +164,6 @@ export const getNurseDashboardMetrics = async (req, res) => {
     });
 
     // Medications due queue from active Prescriptions
-    const activePrescriptions = await Prescription.find({
-      patient: { $in: patientIds },
-    })
-      .populate("patient", "name age gender")
-      .populate("doctor", "name specialization")
-      .sort({ createdAt: -1 });
-
     const medicationsDue = [];
     activePrescriptions.forEach((rx) => {
       rx.medications.forEach((med, index) => {
@@ -167,35 +186,13 @@ export const getNurseDashboardMetrics = async (req, res) => {
           frequency: med.frequency,
           timing: med.timing,
           scheduledTime: med.timing.includes("Before") ? "08:30 AM" : "01:30 PM",
-          prescribingDoctor: rx.doctor?.name ? `Dr. ${rx.doctor.name}` : "Attending Doctor",
+          prescribingDoctor: rx.doctor?.name ? formatDoctorName(rx.doctor.name) : "Attending Doctor",
           status: todayAdmin ? todayAdmin.status : "Due",
           administeredAt: todayAdmin?.doseTime || null,
           administeredByName: todayAdmin?.administeredByName || null,
           notes: todayAdmin?.notes || "",
         });
       });
-    });
-
-    // Pending tasks
-    const pendingTasks = await NursingTask.find({
-      status: { $in: ["Pending", "In Progress"] },
-    })
-      .populate("patient", "name age gender")
-      .sort({ dueTime: 1 })
-      .limit(10);
-
-    const pendingTasksCount = await NursingTask.countDocuments({
-      status: { $in: ["Pending", "In Progress"] },
-    });
-
-    // Recent Doctor Orders
-    const recentDoctorOrders = await DoctorOrder.find()
-      .populate("patient", "name age gender")
-      .sort({ createdAt: -1 })
-      .limit(10);
-
-    const activeOrdersCount = await DoctorOrder.countDocuments({
-      status: { $in: ["New", "Acknowledged", "In Progress"] },
     });
 
     // Pending discharges (admitted patients where expectedDischargeDate <= today or notes contain discharge)

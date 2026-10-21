@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { transferBed } from "../services/api.js";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 const TRANSFER_REASONS = [
   "Condition stabilized — step-down to General Ward",
@@ -95,7 +96,7 @@ function TransferBedModal({ sourceBed, allBeds, onClose, onSuccess }) {
               Current bed: <span className="font-bold text-teal-700">{sourceBed.bedNumber}</span> ({sourceBed.ward}) • Rate: ₹{sourceBed.dailyRate}/day
             </p>
             <p className="text-xs text-slate-600 mt-0.5">
-              Attending physician: Dr. {doctor.name || "Consultant"} ({doctor.specialization || "Medicine"})
+              Attending physician: {getDoctorDisplayName(doctor, "Consultant")} ({doctor.specialization || "Medicine"})
             </p>
           </div>
 

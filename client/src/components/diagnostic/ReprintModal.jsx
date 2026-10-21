@@ -12,13 +12,13 @@ const PRESET_REASONS = [
 ];
 
 export default function ReprintModal({ isOpen, onClose, report, onReprintSuccess }) {
-  if (!isOpen || !report) return null;
-
   const [reason, setReason] = useState(PRESET_REASONS[0]);
   const [customReason, setCustomReason] = useState("");
   const [copies, setCopies] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  if (!isOpen || !report) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

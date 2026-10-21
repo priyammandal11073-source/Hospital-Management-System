@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getPatients, getDoctors, getBeds, allocateBed } from "../services/api.js";
+import { formatDoctorName } from "../utils/doctorName.js";
 
 const ADMISSION_REASONS = [
   "Acute chest discomfort & cardiac telemetry",
@@ -271,7 +272,7 @@ function AllocateBedModal({ bed, initialPatient, availableBeds: passedBeds, onCl
               <option value="">Select primary consulting physician</option>
               {doctors.map((d) => (
                 <option key={d._id} value={d._id}>
-                  Dr. {d.name} — {d.specialization} ({d.department})
+                  {formatDoctorName(d.name)} — {d.specialization} ({d.department})
                 </option>
               ))}
             </select>

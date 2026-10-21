@@ -336,8 +336,19 @@ textarea:disabled,
    PRINT STYLES & CLINICAL HARDCOPY FORMATTING (SECTIONS 40, 45, 52)
    ========================================================================= */
 @media print {
-  body::before {
+  /* Completely hide decorative liquid-glass ambient orbs, backdrop filters, and pseudo-elements */
+  body::before,
+  body::after,
+  .glass-ambient,
+  [aria-hidden="true"].pointer-events-none,
+  .pointer-events-none.fixed.inset-0 {
     display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
   }
 
   html, body {
@@ -346,6 +357,9 @@ textarea:disabled,
     margin: 0 !important;
     padding: 0 !important;
     font-size: 11pt !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
   /* Completely strip portal UI, sidebar, headers, buttons, navigation, and controls */
@@ -364,9 +378,30 @@ textarea:disabled,
     display: none !important;
   }
 
-  /* Modal overlays and backdrops become static & transparent so report contents print */
-  .fixed.inset-0,
-  [role="dialog"] {
+  /* Unconstrain root and main containers so content is never hidden or clipped */
+  #root,
+  #root > div,
+  #root > div > div,
+  main {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* Modal overlays and backdrops become static & transparent so modal card prints */
+  [role="dialog"],
+  [aria-modal="true"] {
     position: static !important;
     inset: auto !important;
     background: transparent !important;
@@ -378,29 +413,34 @@ textarea:disabled,
     width: 100% !important;
     max-width: 100% !important;
     box-shadow: none !important;
+    border: none !important;
   }
 
-  /* When a modal or dialog is open during print, hide the underlying main page dashboard */
-  body:has(.fixed.inset-0) #root > div > main,
-  body:has([role="dialog"]) #root > div > main,
-  body:has(.fixed.inset-0) main > *:not(.fixed):not([role="dialog"]),
-  body:has([role="dialog"]) main > *:not([role="dialog"]) {
+  /* Prevent inner modal wrappers from clipping content or limiting to viewport height */
+  [role="dialog"] > div,
+  [aria-modal="true"] > div,
+  [role="dialog"] .overflow-y-auto,
+  [role="dialog"] .overflow-auto,
+  [role="dialog"] .overflow-hidden,
+  .printable-card,
+  .clinical-print-sheet {
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* When a modal or dialog is open during print, hide the underlying page content behind it */
+  body:has([role="dialog"]) main > *:not(:has([role="dialog"])):not([role="dialog"]),
+  body:has([role="dialog"]) main > * > *:not([role="dialog"]):not(:has([role="dialog"])) {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
     overflow: hidden !important;
   }
 
-  /* When an in-page clinical report canvas exists, hide editing tools, viewers, and dashboards */
-  body:has(.clinical-print-sheet) main > *:not(:has(.clinical-print-sheet)):not(.clinical-print-sheet) {
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    overflow: hidden !important;
-  }
-
-  /* Force modals and report sheets to fill standard paper dimensions */
+  /* Force printable sheets to fill standard paper dimensions */
   .clinical-print-sheet,
+  .printable-card,
   .printable-report-container,
   .printable-report-modal {
     display: block !important;
@@ -408,9 +448,7 @@ textarea:disabled,
     width: 100% !important;
     max-width: 100% !important;
     margin: 0 !important;
-    padding: 0 !important;
     box-shadow: none !important;
-    border: none !important;
     background: #ffffff !important;
   }
 
@@ -538,5 +576,18 @@ textarea:disabled,
     size: A4 landscape;
     margin: 8mm;
   }
+}
+
+/* =========================================================================
+   CROSS-PORTAL MODAL OVERLAY & HEADBAND PROTECTION
+   Ensures sticky portal header headband is never layered above or overlapping
+   with any open popup modal, film preview, or clinical dialog.
+   ========================================================================= */
+body:has(.fixed.inset-0:not([aria-hidden="true"]):not(.pointer-events-none):not(.-z-10)) header.sticky,
+body:has([role="dialog"]:not([aria-hidden="true"])) header.sticky {
+  z-index: 0 !important;
+  pointer-events: none !important;
+  opacity: 0.20 !important;
+  filter: blur(1.5px) !important;
 }
 

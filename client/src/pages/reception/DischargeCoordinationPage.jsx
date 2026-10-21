@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getDischargeQueue, dischargeBed } from "../../services/api.js";
+import { usePrintModal } from "../../context/PrintModalContext.jsx";
+import { generateDischargeSummaryHtml } from "../../utils/printTemplates.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function DischargeCoordinationPage() {
   const [discharges, setDischarges] = useState([]);
@@ -8,6 +11,26 @@ export default function DischargeCoordinationPage() {
   const [error, setError] = useState("");
   const [gatePassModal, setGatePassModal] = useState(null);
   const [dischargingId, setDischargingId] = useState(null);
+  const { openPrintPreview } = usePrintModal();
+
+  const handlePrintGatePass = () => {
+    if (!gatePassModal) return;
+    openPrintPreview({
+      title: `Discharge Clearance & Gate Pass — ${gatePassModal.patient?.name || "Patient"}`,
+      htmlContent: generateDischargeSummaryHtml({
+        patient: gatePassModal.patient,
+        patientName: gatePassModal.patient?.name,
+        uhid: gatePassModal.patient?.patientId,
+        ward: `${gatePassModal.ward} — Bed ${gatePassModal.bedNumber}`,
+        consultant: gatePassModal.doctor?.name ? formatDoctorName(gatePassModal.doctor.name) : "Attending Consultant",
+        admissionDate: gatePassModal.admittedAt,
+        dischargeDate: new Date(),
+        finalDiagnosis: "Inpatient Episode Cleared — Authorized for Departure",
+        instructions: "Billing, clinical clearance, and nursing discharge protocols completed. Gate pass verified by Nivora Care Hospital Central Front Desk.",
+      }),
+      refNumber: `GATE-${gatePassModal.bedNumber || Date.now().toString().slice(-4)}`,
+    });
+  };
 
   const loadDischarges = async () => {
     setIsLoading(true);
@@ -112,7 +135,7 @@ export default function DischargeCoordinationPage() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800">Dr. {item.doctor?.name}</div>
+                      <div className="font-semibold text-slate-800">{formatDoctorName(item.doctor?.name)}</div>
                       <div className="text-[11px] text-slate-500">{item.doctor?.department}</div>
                     </td>
                     <td className="py-3.5 px-4">
@@ -162,8 +185,12 @@ export default function DischargeCoordinationPage() {
 
       {/* Gate Pass Print Preview Modal */}
       {gatePassModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-slate-200 print:m-0 print:p-0">
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-slate-200 clinical-print-sheet printable-card print:m-0 print:p-0 print:border-none print:shadow-none">
             <div className="text-center border-b border-dashed border-slate-300 pb-4">
               <h3 className="text-base font-black text-slate-800">NIVORA CARE HOSPITAL</h3>
               <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Care • Trust • Healing</p>
@@ -183,7 +210,7 @@ export default function DischargeCoordinationPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Attending Doctor:</span>
-                <span className="font-bold text-slate-800">Dr. {gatePassModal.doctor?.name}</span>
+                <span className="font-bold text-slate-800">{formatDoctorName(gatePassModal.doctor?.name)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Admission Date:</span>
@@ -211,8 +238,8 @@ export default function DischargeCoordinationPage() {
                 Close
               </button>
               <button
-                onClick={() => window.print()}
-                className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-700 shadow-xs"
+                onClick={handlePrintGatePass}
+                className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-700 shadow-xs cursor-pointer"
               >
                 Print Gate Pass
               </button>

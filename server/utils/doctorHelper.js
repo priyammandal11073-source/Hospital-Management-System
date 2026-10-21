@@ -62,3 +62,28 @@ export const resolveDoctorForUser = async (user) => {
 
   return null;
 };
+
+export const formatDoctorName = (nameOrDoctor, fallback = "Physician") => {
+  const rawName =
+    typeof nameOrDoctor === "object" && nameOrDoctor !== null
+      ? nameOrDoctor.name
+      : nameOrDoctor;
+
+  const target =
+    typeof rawName === "string" && rawName.trim()
+      ? rawName.trim()
+      : typeof fallback === "string" && fallback.trim()
+      ? fallback.trim()
+      : "Physician";
+
+  if (/^[-—–/]+$/.test(target) || /^(n\/?a|none)$/i.test(target)) {
+    return target;
+  }
+
+  const withoutPrefix = target.replace(/^(?:dr\.?\s*)+/i, "").trim();
+  if (!withoutPrefix) {
+    return "Dr. Physician";
+  }
+
+  return `Dr. ${withoutPrefix}`;
+};

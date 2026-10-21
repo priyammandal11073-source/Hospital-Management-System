@@ -19,6 +19,7 @@ import {
   processBillingRefund,
   sendAdministrativeNotification,
   getAppointmentReminders,
+  sendAppointmentReminder,
 } from "../controllers/receptionistController.js";
 import { protect, restrictTo } from "../middleware/authMiddleware.js";
 
@@ -69,5 +70,6 @@ router.post("/refund/:id", processBillingRefund);
 // Administrative Notifications & Reminders
 router.post("/notification", sendAdministrativeNotification);
 router.get("/reminders", getAppointmentReminders);
+router.post("/reminders/:appointmentId/send", sendAppointmentReminder);
 
 export default router;

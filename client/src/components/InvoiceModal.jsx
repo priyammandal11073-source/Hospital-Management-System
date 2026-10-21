@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { sendBillingEmail } from "../services/api.js";
 import UpiPaymentBox, { generateUpiQrDataUrl, getUpiPaymentUrl } from "./UpiPaymentBox.jsx";
+import { printHtml } from "../utils/printUtils.js";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 const formatDate = (date) =>
   date
@@ -59,7 +61,7 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
     if (onBillingUpdate) onBillingUpdate(updatedBilling);
   };
 
-  // Clean isolated print handler — async to pre-generate QR data URL
+// Clean isolated print handler — async to pre-generate QR data URL
   const handlePrint = async () => {
     // Pre-generate QR code data URL for embedding into print HTML
     let qrDataUrl = "";
@@ -81,7 +83,7 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
             </div>
           </div>`
       : billing.paymentStatus !== "paid" && qrDataUrl
-        ? `<div style="margin-top: 20px; padding: 16px; border: 2px solid #0d9488; border-radius: 8px; background: #f0fdfa; display: flex; align-items: center; gap: 20px;">
+      ? `<div style="margin-top: 20px; padding: 16px; border: 2px solid #0d9488; border-radius: 8px; background: #f0fdfa; display: flex; align-items: center; gap: 20px;">
             <div style="text-align: center; flex-shrink: 0;">
               <img src="${qrDataUrl}" alt="UPI QR Code" style="width: 140px; height: 140px; border: 2px solid #1e293b; border-radius: 8px; padding: 4px; background: #fff;" />
               <div style="font-size: 10px; font-weight: 700; color: #475569; margin-top: 4px;">Scan & Pay ₹${totalAmount}</div>
@@ -95,27 +97,17 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
               <div style="font-size: 10px; color: #64748b; margin-top: 6px;">Scan with Google Pay, PhonePe, Paytm, BHIM, Cred, or any UPI app.</div>
             </div>
           </div>`
-        : '';
+      : '';
 
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow.document;
-    doc.open();
-    doc.write(`
+    const printHtmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Tax Invoice - ${invoiceNumber}</title>
           <meta charset="utf-8" />
           <style>
-            * { box-sizing: border-box; margin: 0; padding: 0; }
+            * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            @page { size: A4 portrait; margin: 12mm 15mm; }
             body {
               font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
               color: #1e293b;
@@ -154,6 +146,8 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
             .sign-box { text-align: center; }
             .sign-line { width: 180px; border-bottom: 1px solid #475569; height: 35px; margin-bottom: 4px; }
             @page { size: A4 portrait; margin: 12mm 15mm; }
+            * { box-sizing: border-box; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e293b; background: #ffffff; margin: 0; padding: 24px; font-size: 13px; line-height: 1.5; }
           </style>
         </head>
         <body>
@@ -194,7 +188,7 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
             </div>
             <div class="details-col">
               <div class="col-title">Consultation Details</div>
-              <div class="name-highlight">Dr. ${doctor.name || 'Assigned Physician'}</div>
+              <div class="name-highlight">${getDoctorDisplayName(doctor, 'Assigned Physician')}</div>
               <div class="info-line"><span class="info-label">Specialization:</span> ${doctor.specialization || 'General'} (${doctor.department || 'Medicine'})</div>
               <div class="info-line"><span class="info-label">Appointment Date:</span> ${formatDate(appointment.appointmentDate)} ${appointment.timeSlot ? `at ${appointment.timeSlot}` : ''}</div>
               ${appointment.reasonForVisit ? `<div class="info-line"><span class="info-label">Reason for visit:</span> ${appointment.reasonForVisit}</div>` : ''}
@@ -243,18 +237,9 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
           </div>
         </body>
       </html>
-    `);
-    doc.close();
+    `;
 
-    iframe.contentWindow.focus();
-    setTimeout(() => {
-      iframe.contentWindow.print();
-      setTimeout(() => {
-        if (document.body.contains(iframe)) {
-          document.body.removeChild(iframe);
-        }
-      }, 2000);
-    }, 250);
+    await printHtml(printHtmlContent, { title: `Tax Invoice - ${invoiceNumber}` });
   };
 
   // Email handler
@@ -487,7 +472,7 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
                 Consultation details
               </h3>
               <p className="mt-1 text-base font-bold text-slate-900">
-                {doctor.name ? `Dr. ${doctor.name}` : "General Physician"}
+                {getDoctorDisplayName(doctor)}
               </p>
               <div className="mt-1 text-xs space-y-0.5 text-slate-600">
                 <p>

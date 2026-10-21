@@ -4,6 +4,7 @@ import {
   createDoctorWorkspaceOrder,
   getPatients,
 } from "../../services/api.js";
+import { getDoctorDisplayName } from "../../utils/doctorName.js";
 
 export default function DoctorOrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -175,7 +176,7 @@ export default function DoctorOrdersPage() {
                   <tr key={ord._id} className="hover:bg-slate-50 transition">
                     <td className="px-4 py-3">
                       <p className="font-bold text-slate-900">{ord.description}</p>
-                      <p className="text-[11px] text-slate-400">Prescribing: Dr. {ord.doctorName}</p>
+                      <p className="text-[11px] text-slate-400">Prescribing: {getDoctorDisplayName({ name: ord.doctorName })}</p>
                     </td>
                     <td className="px-4 py-3">
                       <p className="font-bold text-slate-800">{ord.patient?.name || "Patient"}</p>

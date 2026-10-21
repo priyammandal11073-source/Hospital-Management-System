@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { sendPrescriptionEmail } from "../services/api.js";
+import { printHtml } from "../utils/printUtils.js";
+import { getDoctorDisplayName, formatDoctorName } from "../utils/doctorName.js";
 
 const formatDate = (date) =>
   date
@@ -44,7 +46,7 @@ function PrescriptionModal({ prescription, onClose }) {
 *Prescription No:* ${rxNumber}
 *Date:* ${formatDate(prescription.createdAt)}
 *Patient:* ${patient.name || "Patient"} ${patient.abhaId ? `(ABHA: ${patient.abhaId})` : ""}
-*Doctor:* Dr. ${doctor.name || "Consultant"} (${doctor.specialization || "General Medicine"})
+*Doctor:* ${getDoctorDisplayName(doctor, "Consultant")} (${doctor.specialization || "General Medicine"})
 
 *Diagnosis:* ${prescription.diagnosis || "General Consultation"}
 
@@ -60,20 +62,8 @@ Emergency: 108 / 112 | Hospital Helpline: +91 98765 43210`;
 
   const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(whatsappMessage)}`;
 
-  // Isolated print handler
-  const handlePrint = () => {
-    const iframe = document.createElement("iframe");
-    iframe.style.position = "fixed";
-    iframe.style.right = "0";
-    iframe.style.bottom = "0";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.border = "0";
-    document.body.appendChild(iframe);
-
-    const doc = iframe.contentWindow.document;
-    doc.open();
-
+  // Isolated print handler using unified print utility
+  const handlePrint = async () => {
     const medsTableRows = medications
       .map(
         (m, idx) => `
@@ -94,14 +84,14 @@ Emergency: 108 / 112 | Hospital Helpline: +91 98765 43210`;
       )
       .join("");
 
-    doc.write(`
+    const fullHtml = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>Prescription - ${rxNumber}</title>
           <meta charset="utf-8" />
           <style>
-            * { box-sizing: border-box; margin: 0; padding: 0; }
+            * { box-sizing: border-box; margin: 0; padding: 0; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             body {
               font-family: Arial, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
               color: #1e293b;
@@ -180,7 +170,7 @@ Emergency: 108 / 112 | Hospital Helpline: +91 98765 43210`;
             </div>
             <div class="patient-col" style="border-left: 1px solid #e2e8f0; padding-left: 16px;">
               <div class="col-title">Consulting Physician</div>
-              <div class="name-highlight">Dr. ${doctor.name || "Consultant"}</div>
+              <div class="name-highlight">${getDoctorDisplayName(doctor, "Consultant")}</div>
               <div class="info-line">Specialization: <strong>${doctor.specialization || "General Medicine"}</strong></div>
               <div class="info-line">Department: <strong>${doctor.department || "OPD"}</strong></div>
               <div class="info-line">Ref Code: Dr-${doctor._id?.toString().slice(-6).toUpperCase() || "OPD"}</div>
@@ -270,12 +260,10 @@ Emergency: 108 / 112 | Hospital Helpline: +91 98765 43210`;
               This digital prescription is generated on the Nivora Care Hospital Clinical System in compliance with National Digital Health Mission (ABDM) guidelines. Valid across registered retail pharmacies in India.
             </div>
             <div class="sign-box">
-              <div style="font-family: monospace; font-size: 12px; color: #0d9488; font-weight: 700;">/s/ Dr. ${
-                doctor.name || "Physician"
-              }</div>
+              <div style="font-family: monospace; font-size: 12px; color: #0d9488; font-weight: 700;">/s/ ${getDoctorDisplayName(doctor, "Physician")}</div>
               <div class="sign-line"></div>
               <div style="font-size: 12px; font-weight: 800; color: #0f172a;">${
-                signature.signedByName || `Dr. ${doctor.name || "Physician"}`
+                signature.signedByName || getDoctorDisplayName(doctor, "Physician")
               }</div>
               <div style="font-size: 10px; color: #64748b;">${
                 signature.designation || doctor.specialization || "Consultant Physician"
@@ -285,17 +273,13 @@ Emergency: 108 / 112 | Hospital Helpline: +91 98765 43210`;
           </div>
         </body>
       </html>
-    `);
+    `;
 
-    doc.close();
-
-    setTimeout(() => {
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 1000);
-    }, 400);
+    await printHtml(fullHtml, {
+      title: `Prescription - ${rxNumber}`,
+      waitForImages: true,
+      cleanupDelay: 3000,
+    });
   };
 
   const handleSendEmail = async () => {
@@ -504,7 +488,7 @@ Emergency: 108 / 112 | Hospital Helpline: +91 98765 43210`;
                   Consulting physician
                 </p>
                 <p className="text-base font-extrabold text-slate-900">
-                  Dr. {doctor.name || "Consultant"}
+                  {getDoctorDisplayName(doctor, "Consultant")}
                 </p>
                 <div className="text-xs text-slate-700 space-y-0.5 mt-1">
                   <p>
@@ -684,12 +668,12 @@ Emergency: 108 / 112 | Hospital Helpline: +91 98765 43210`;
               </div>
 
               <div className="text-right">
-                <div className="font-mono text-xs font-bold text-teal-700 mb-1">
-                  /s/ Dr. {doctor.name || "Physician"}
-                </div>
+<div className="font-mono text-xs font-bold text-teal-700 mb-1">
+              /s/ {getDoctorDisplayName(doctor, "Physician")}
+            </div>
                 <div className="w-48 border-b-2 border-slate-400 mb-1.5 ml-auto"></div>
                 <p className="text-xs font-bold text-slate-900">
-                  {signature.signedByName || `Dr. ${doctor.name || "Consultant"}`}
+                  {signature.signedByName || getDoctorDisplayName(doctor, "Consultant")}
                 </p>
                 <p className="text-[11px] text-slate-600 font-medium">
                   {signature.designation || doctor.specialization || "Consultant Physician"}

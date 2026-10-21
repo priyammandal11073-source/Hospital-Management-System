@@ -55,7 +55,7 @@ async function seedRealFiles() {
   // Ensure CT Order exists
   let ctOrder = await DiagnosticOrder.findOne({ orderNumber: "DIAG-2026-003" });
   if (!ctOrder && patient) {
-    ctOrder = await DiagnosticOrder.create({
+    await DiagnosticOrder.create({
       orderNumber: "DIAG-2026-003",
       patient: patient._id,
       patientName: patient.name,
@@ -85,7 +85,7 @@ async function seedRealFiles() {
   // Ensure MRI Order exists
   let mriOrder = await DiagnosticOrder.findOne({ orderNumber: "DIAG-2026-004" });
   if (!mriOrder && patient) {
-    mriOrder = await DiagnosticOrder.create({
+    await DiagnosticOrder.create({
       orderNumber: "DIAG-2026-004",
       patient: patient._id,
       patientName: patient.name,

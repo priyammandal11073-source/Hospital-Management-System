@@ -1,16 +1,60 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getMyMedicalRecords } from "../../services/api.js";
+import { usePrintModal } from "../../context/PrintModalContext.jsx";
+import { generateGeneralHospitalReportHtml } from "../../utils/printTemplates.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 const RECORD_TYPES = ["All", "Consultation", "Prescription", "Lab Report", "Clinical Note", "Admission", "Discharge"];
 
 export default function MyMedicalRecords() {
+  const { openPrintPreview } = usePrintModal();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [selectedRecord, setSelectedRecord] = useState(null);
+
+  const handlePrintSelectedRecord = (rec) => {
+    if (!rec) return;
+
+    const doctorName = rec.doctor ? formatDoctorName(rec.doctor.name) : (rec.doctorName ? formatDoctorName(rec.doctorName) : "Treating Physician");
+    const dept = rec.doctor?.department || rec.department || "Clinical Care";
+
+    const rows = [];
+    if (rec.diagnosis) rows.push(["Primary Diagnosis / Findings", rec.diagnosis]);
+    if (rec.summary) rows.push(["Clinical Summary", rec.summary]);
+    if (rec.details?.complaint) rows.push(["Chief Complaint", rec.details.complaint]);
+    if (rec.details?.clinicalFindings) rows.push(["Clinical Observations", rec.details.clinicalFindings]);
+    if (rec.details?.treatmentPlan) rows.push(["Prescribed Treatment Plan", rec.details.treatmentPlan]);
+    if (rec.details?.dischargeSummary) rows.push(["Discharge Course & Advice", rec.details.dischargeSummary]);
+
+    const html = generateGeneralHospitalReportHtml({
+      title: `Official Patient Health Record - ${rec.recordType || "Clinical Record"}`,
+      subtitle: `${dept} • ${doctorName}`,
+      metrics: [
+        { label: "Record Type", value: rec.recordType || "General", color: "#1e3a8a" },
+        { label: "Event Date", value: new Date(rec.recordDate).toLocaleDateString("en-IN"), color: "#0f766e" },
+        { label: "Document Status", value: "FINAL VERIFIED", color: "#16a34a" },
+        { label: "Reference Code", value: `REC-${String(rec._id).slice(-6).toUpperCase()}`, color: "#475569" },
+      ],
+      tables: [
+        {
+          title: "Clinical Details & Medical Information",
+          headers: ["Clinical Parameter", "Medical Entry / Observation"],
+          rows: rows.length > 0 ? rows : [["Summary", rec.summary || "No additional text"]],
+        },
+      ],
+      notes: "Official clinical document excerpt from Nivora Care Hospital Health Informatics System. Protected under patient confidentiality regulations.",
+    });
+
+    openPrintPreview({
+      title: `${rec.recordType || "Medical"} Record`,
+      htmlContent: html,
+      refNumber: `MR-${String(rec._id).slice(-6).toUpperCase()}`,
+    });
+  };
 
   useEffect(() => {
     let isCurrent = true;
@@ -195,7 +239,7 @@ export default function MyMedicalRecords() {
           aria-modal="true"
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4"
         >
-          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 animate-slide-in max-h-[85vh] overflow-y-auto">
+          <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 animate-slide-in max-h-[85vh] overflow-y-auto clinical-print-sheet printable-card print:max-h-none print:overflow-visible print:border-none print:shadow-none print:p-0">
             <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-4">
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{getRecordIcon(selectedRecord.recordType)}</span>
@@ -218,7 +262,7 @@ export default function MyMedicalRecords() {
               <button
                 type="button"
                 onClick={() => setSelectedRecord(null)}
-                className="text-slate-400 hover:text-slate-700 text-xl font-bold"
+                className="text-slate-400 hover:text-slate-700 text-xl font-bold no-print print:hidden"
               >
                 ×
               </button>
@@ -328,10 +372,10 @@ export default function MyMedicalRecords() {
               )}
             </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+            <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between no-print print:hidden">
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={() => handlePrintSelectedRecord(selectedRecord)}
                 className="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5"
               >
                 <span>🖨️</span> Print Record

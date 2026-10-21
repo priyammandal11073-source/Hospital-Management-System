@@ -17,6 +17,8 @@ import StaffLeave from "../models/StaffLeave.js";
 import ProcedureSchedule from "../models/ProcedureSchedule.js";
 import HospitalSetting from "../models/HospitalSetting.js";
 import DiagnosticOrder from "../models/DiagnosticOrder.js";
+import Feedback from "../models/Feedback.js";
+import { formatDoctorName } from "../utils/doctorHelper.js";
 
 // Helper to record immutable audit events
 export const logAuditEvent = async ({ user, action, module, recordId, details, req }) => {
@@ -102,6 +104,13 @@ export const getAdminTelemetry = async (req, res) => {
       diagnosticTestsToday,
       pendingDiagnostics,
       criticalDiagnosticAlerts,
+      icuTotal,
+      icuOccupied,
+      generalTotal,
+      generalOccupied,
+      emergencyTotal,
+      emergencyOccupied,
+      otProceduresToday,
     ] = await Promise.all([
       Patient.countDocuments(),
       Doctor.countDocuments(),
@@ -116,10 +125,10 @@ export const getAdminTelemetry = async (req, res) => {
       Bed.countDocuments({ status: "cleaning" }),
       Bed.countDocuments({ status: "maintenance" }),
       Billing.countDocuments({ paymentStatus: { $in: ["pending", "partially_paid"] } }),
-      Billing.find({
-        paymentStatus: "paid",
-        createdAt: { $gte: todayStart, $lte: todayEnd },
-      }).select("totalAmount"),
+      Billing.aggregate([
+        { $match: { paymentStatus: "paid", createdAt: { $gte: todayStart, $lte: todayEnd } } },
+        { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+      ]),
       LabReport.countDocuments({
         status: { $in: ["ordered", "sample_collected", "in_progress"] },
       }),
@@ -145,38 +154,24 @@ export const getAdminTelemetry = async (req, res) => {
       DiagnosticOrder.countDocuments({ createdAt: { $gte: todayStart, $lte: todayEnd } }),
       DiagnosticOrder.countDocuments({ status: { $in: ["Requested", "Scheduled", "Patient Ready", "Sample Collected", "In Progress"] } }),
       DiagnosticOrder.countDocuments({ isCritical: true, "criticalDetails.escalationStatus": { $ne: "Resolved" } }),
+      Bed.countDocuments({ ward: { $regex: /icu|critical/i } }),
+      Bed.countDocuments({ ward: { $regex: /icu|critical/i }, status: "occupied" }),
+      Bed.countDocuments({ ward: { $regex: /general/i } }),
+      Bed.countDocuments({ ward: { $regex: /general/i }, status: "occupied" }),
+      Bed.countDocuments({ ward: { $regex: /emergency|trauma/i } }),
+      Bed.countDocuments({ ward: { $regex: /emergency|trauma/i }, status: "occupied" }),
+      ProcedureSchedule.countDocuments({
+        scheduledDate: { $gte: todayStart, $lte: todayEnd },
+        status: { $in: ["scheduled", "preparing", "in_progress"] },
+      }),
     ]);
 
-    // Calculate today's revenue
-    const todayRevenue = todayPaidBills.reduce((acc, b) => acc + (b.totalAmount || 0), 0);
-
-    // Bed Census & Occupancy breakdown
-    const icuTotal = await Bed.countDocuments({ ward: { $regex: /icu|critical/i } });
-    const icuOccupied = await Bed.countDocuments({
-      ward: { $regex: /icu|critical/i },
-      status: "occupied",
-    });
-    const generalTotal = await Bed.countDocuments({ ward: { $regex: /general/i } });
-    const generalOccupied = await Bed.countDocuments({
-      ward: { $regex: /general/i },
-      status: "occupied",
-    });
-    const emergencyTotal = await Bed.countDocuments({ ward: { $regex: /emergency|trauma/i } });
-    const emergencyOccupied = await Bed.countDocuments({
-      ward: { $regex: /emergency|trauma/i },
-      status: "occupied",
-    });
-
+    // Today's revenue (single aggregation round-trip) & occupancy rates
+    const todayRevenue = todayPaidBills?.[0]?.total || 0;
     const bedOccupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
     const icuOccupancyRate = icuTotal > 0 ? Math.round((icuOccupied / icuTotal) * 100) : 0;
     const generalOccupancyRate = generalTotal > 0 ? Math.round((generalOccupied / generalTotal) * 100) : 0;
     const emergencyOccupancyRate = emergencyTotal > 0 ? Math.round((emergencyOccupied / emergencyTotal) * 100) : 0;
-
-    // OT status
-    const otProceduresToday = await ProcedureSchedule.countDocuments({
-      scheduledDate: { $gte: todayStart, $lte: todayEnd },
-      status: { $in: ["scheduled", "preparing", "in_progress"] },
-    });
 
     return res.status(200).json({
       success: true,
@@ -624,7 +619,7 @@ export const getRevenueAnalytics = async (req, res) => {
         const dept = b.appointment?.doctor?.department || "Hospital General";
         departmentRevenue[dept] = (departmentRevenue[dept] || 0) + amt;
 
-        const doc = b.appointment?.doctor?.name ? `Dr. ${b.appointment.doctor.name}` : "Hospital Services";
+        const doc = b.appointment?.doctor?.name ? formatDoctorName(b.appointment.doctor.name) : "Hospital Services";
         doctorRevenue[doc] = (doctorRevenue[doc] || 0) + amt;
       } else if (b.paymentStatus === "pending" || b.paymentStatus === "partially_paid") {
         totalPending += amt;
@@ -788,9 +783,99 @@ export const getEquipment = async (req, res) => {
       equipment = await Equipment.find().sort({ name: 1 });
     }
 
-    return res.status(200).json({ success: true, equipment });
+    // Preventive-maintenance enrichment: derive the expected service due date
+    // and flag overdue / due-soon assets regardless of stored fields.
+    const today = new Date();
+    const enriched = equipment.map((eq) => {
+      const intervalDays = eq.serviceIntervalDays || 90;
+      const dueOn =
+        eq.nextServiceDate ||
+        (eq.lastServiceDate
+          ? new Date(eq.lastServiceDate.getTime() + intervalDays * 86400000)
+          : null);
+
+      let pmStatus = "on_schedule";
+      if (dueOn) {
+        const msUntilDue = dueOn.getTime() - today.getTime();
+        if (msUntilDue < 0) pmStatus = "overdue";
+        else if (msUntilDue <= 7 * 86400000) pmStatus = "due_soon";
+      }
+
+      return {
+        ...eq.toObject(),
+        dueForServiceOn: dueOn,
+        pmStatus,
+      };
+    });
+
+    const portfolio = equipment.length;
+    const overdueCount = enriched.filter((e) => e.pmStatus === "overdue").length;
+    const dueSoonCount = enriched.filter((e) => e.pmStatus === "due_soon").length;
+
+    return res.status(200).json({
+      success: true,
+      equipment: enriched,
+      pm: { portfolio, overdueCount, dueSoonCount },
+    });
   } catch (error) {
     return res.status(500).json({ message: "Unable to fetch equipment records" });
+  }
+};
+
+// POST /api/admin/equipment/:id/service
+// Logs a completed preventive-maintenance service and rolls the asset's
+// schedule forward by its configured service interval.
+export const logPreventiveMaintenance = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { notes, technicianName } = req.body;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid equipment ID" });
+    }
+
+    const eq = await Equipment.findById(id);
+    if (!eq) {
+      return res.status(404).json({ message: "Equipment asset not found" });
+    }
+
+    const intervalDays = eq.serviceIntervalDays || 90;
+    const servicedAt = new Date();
+    eq.lastServiceDate = servicedAt;
+    eq.nextServiceDate = new Date(servicedAt.getTime() + intervalDays * 86400000);
+    eq.status = "operational";
+    await eq.save();
+
+    const orderNumber = `PM-${Math.floor(1000 + Math.random() * 9000)}`;
+    const order = await MaintenanceOrder.create({
+      orderNumber,
+      equipmentName: eq.name,
+      ward: eq.department || "Biomedical",
+      room: eq.location || "",
+      issue: notes || `Routine preventive maintenance (${intervalDays}-day interval)`,
+      priority: "routine",
+      assignedTo: technicianName || "Biomedical Team 1",
+      status: "completed",
+    });
+
+    await logAuditEvent({
+      user: req.user,
+      action: "preventive_maintenance_completed",
+      module: "equipment",
+      recordId: eq._id,
+      details: { equipmentId: eq.equipmentId, intervalDays, orderNumber },
+      req,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `Preventive maintenance logged. Next service: ${eq.nextServiceDate.toISOString().split("T")[0]}.`,
+      equipment: eq,
+      order,
+    });
+  } catch (error) {
+    console.error("PM log error:", error);
+    return res.status(500).json({ message: "Unable to log preventive maintenance" });
   }
 };
 
@@ -1145,5 +1230,208 @@ export const updateHospitalSettings = async (req, res) => {
     return res.status(200).json({ success: true, message: "Settings updated successfully", settings });
   } catch (error) {
     return res.status(500).json({ message: error.message || "Failed to update hospital settings" });
+  }
+};
+
+// ── INSURANCE CLAIMS DESK ───────────────────────────────────────────────────
+// GET /api/admin/insurance-claims?status=pending_verification|approved|rejected
+export const getInsuranceClaims = async (req, res) => {
+  try {
+    const { status } = req.query;
+    const validStatuses = ["pending_verification", "approved", "rejected"];
+    const filter = {
+      "insuranceDetails.status": { $in: validStatuses },
+    };
+    if (validStatuses.includes(status)) {
+      filter["insuranceDetails.status"] = status;
+    }
+
+    const [claims, summary] = await Promise.all([
+      Billing.find(filter)
+        .populate("patient", "name age gender contactNumber email bloodGroup")
+        .populate({
+          path: "appointment",
+          select: "appointmentDate timeSlot status reasonForVisit doctor",
+          populate: { path: "doctor", select: "name specialization department" },
+        })
+        .sort({ createdAt: -1 })
+        .limit(200),
+      Billing.aggregate([
+        { $match: { "insuranceDetails.status": { $in: validStatuses } } },
+        {
+          $group: {
+            _id: "$insuranceDetails.status",
+            count: { $sum: 1 },
+            total: { $sum: { $ifNull: ["$totalAmount", 0] } },
+          },
+        },
+      ]),
+    ]);
+
+    const counts = { pending_verification: 0, approved: 0, rejected: 0 };
+    summary.forEach((s) => {
+      counts[s._id] = s.count;
+    });
+
+    return res.status(200).json({
+      success: true,
+      claims,
+      summary: {
+        counts,
+        pendingAmount: counts.pending_verification
+          ? summary.find((s) => s._id === "pending_verification")?.total || 0
+          : 0,
+      },
+    });
+  } catch (error) {
+    console.error("Insurance claims error:", error);
+    return res.status(500).json({ message: "Unable to load insurance claims" });
+  }
+};
+
+// PATCH /api/admin/insurance-claims/:billingId/decision
+// body: { decision: "approved" | "rejected", notes? }
+export const decideInsuranceClaim = async (req, res) => {
+  try {
+    const { billingId } = req.params;
+    const { decision, notes } = req.body;
+
+    if (!mongoose.isValidObjectId(billingId)) {
+      return res.status(400).json({ message: "Invalid billing ID" });
+    }
+    if (!["approved", "rejected"].includes(decision)) {
+      return res.status(400).json({ message: "Decision must be approved or rejected" });
+    }
+
+    const billing = await Billing.findById(billingId);
+    if (!billing || !billing.insuranceDetails) {
+      return res.status(404).json({ message: "Insurance claim not found for this invoice" });
+    }
+    if (billing.insuranceDetails.status === "approved") {
+      return res.status(400).json({ message: "This claim is already approved" });
+    }
+
+    if (decision === "approved") {
+      billing.insuranceDetails.status = "approved";
+      if (notes) {
+        billing.insuranceDetails.notes = `${billing.insuranceDetails.notes ? billing.insuranceDetails.notes + " " : ""}[Preauth approved: ${notes}]`;
+      }
+      billing.paymentStatus = "paid";
+      billing.paymentMethod = "insurance";
+      billing.paymentDate = new Date();
+    } else {
+      billing.insuranceDetails.status = "rejected";
+      billing.insuranceDetails.notes = `${billing.insuranceDetails.notes ? billing.insuranceDetails.notes + " " : ""}[Claim rejected: ${notes || "Reason not specified"}]`;
+      // Invoice remains payable by the patient.
+    }
+
+    await billing.save();
+
+    await logAuditEvent({
+      user: req.user,
+      action: "insurance_claim_decision",
+      module: "billing",
+      recordId: billing._id,
+      details: { decision, billingId: billing._id, notes: notes || "" },
+      req,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message:
+        decision === "approved"
+          ? "Insurance claim approved and invoice settled via insurance."
+          : "Insurance claim rejected. Invoice remains due from the patient.",
+      billing,
+    });
+  } catch (error) {
+    console.error("Insurance decision error:", error);
+    return res.status(500).json({ message: "Unable to process insurance decision" });
+  }
+};
+
+// ── PATIENT FEEDBACK QUALITY DESK ───────────────────────────────────────────
+// GET /api/admin/feedback?status=new|reviewed
+export const getFeedbackReview = async (req, res) => {
+  try {
+    const { status } = req.query;
+    const filter = {};
+    if (status === "new" || status === "reviewed") {
+      filter.status = status;
+    }
+
+    const [feedbackList, summary] = await Promise.all([
+      Feedback.find(filter)
+        .populate("patient", "name age gender contactNumber")
+        .populate("appointment", "appointmentDate timeSlot")
+        .populate("doctor", "name specialization department")
+        .sort({ createdAt: -1 })
+        .limit(200),
+      Feedback.aggregate([
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+            avg: { $avg: "$rating" },
+          },
+        },
+      ]),
+    ]);
+
+    const summaryByStatus = {
+      new: summary.find((s) => s._id === "new") || { count: 0, avg: 0 },
+      reviewed: summary.find((s) => s._id === "reviewed") || { count: 0, avg: 0 },
+    };
+
+    const overall = await Feedback.aggregate([
+      { $group: { _id: null, count: { $sum: 1 }, avg: { $avg: "$rating" } } },
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      feedback: feedbackList,
+      summary: {
+        total: overall[0]?.count || 0,
+        averageRating: overall[0]?.avg ? Number(overall[0].avg.toFixed(1)) : 0,
+        new: summaryByStatus.new.count,
+        reviewed: summaryByStatus.reviewed.count,
+        averageNewRating: summaryByStatus.new.avg ? Number(summaryByStatus.new.avg.toFixed(1)) : 0,
+      },
+    });
+  } catch (error) {
+    console.error("Feedback review error:", error);
+    return res.status(500).json({ message: "Unable to load patient feedback" });
+  }
+};
+
+// PATCH /api/admin/feedback/:id/review
+export const reviewFeedback = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { response } = req.body;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return res.status(400).json({ message: "Invalid feedback ID" });
+    }
+
+    const feedback = await Feedback.findById(id);
+    if (!feedback) {
+      return res.status(404).json({ message: "Feedback not found" });
+    }
+
+    feedback.status = "reviewed";
+    feedback.response = response ? String(response).trim() : "";
+    feedback.respondedBy = req.user?.name || req.user?.role || "Hospital Quality Desk";
+    feedback.respondedAt = new Date();
+    await feedback.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Feedback reviewed and response recorded.",
+      feedback,
+    });
+  } catch (error) {
+    console.error("Feedback review update error:", error);
+    return res.status(500).json({ message: "Unable to update feedback review status" });
   }
 };

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getPatientDashboardSummary } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 function PatientDashboard() {
   const navigate = useNavigate();
@@ -107,7 +108,7 @@ function PatientDashboard() {
                 </span>
               </div>
               <p className="text-xs font-semibold text-slate-700 mt-1">
-                Reason: {activeBedStay.admissionReason || "Medical Observation"} • Attending: Dr. {activeBedStay.attendingDoctor?.name || "Consultant"}
+                Reason: {activeBedStay.admissionReason || "Medical Observation"} • Attending: {formatDoctorName(activeBedStay.attendingDoctor?.name, "Consultant")}
               </p>
             </div>
           </div>
@@ -268,7 +269,7 @@ function PatientDashboard() {
                 </div>
 
                 <h2 className="text-lg font-black text-slate-900 mt-1">
-                  Dr. {nextAppointment.doctor?.name || "Consultant"}
+                  {formatDoctorName(nextAppointment.doctor?.name, "Consultant")}
                 </h2>
                 <p className="text-xs font-semibold text-blue-700">
                   {nextAppointment.doctor?.specialization || "General Physician"} • {nextAppointment.doctor?.department || "OPD Department"}
@@ -467,7 +468,7 @@ function PatientDashboard() {
               <div className="mt-4 space-y-3">
                 <div className="flex items-center justify-between text-xs text-slate-500 bg-teal-50/60 p-3 rounded-xl border border-teal-100">
                   <div>
-                    <span className="font-semibold text-slate-800">Dr. {activePrescription.doctor?.name || "Consultant"}</span>
+                    <span className="font-semibold text-slate-800">{formatDoctorName(activePrescription.doctor?.name, "Consultant")}</span>
                     <p className="text-[11px] text-slate-500">{activePrescription.doctor?.specialization}</p>
                   </div>
                   <span className="font-mono text-slate-500">
@@ -529,7 +530,7 @@ function PatientDashboard() {
                 <div className="flex items-center justify-between text-xs text-slate-500 bg-purple-50/60 p-3 rounded-xl border border-purple-100">
                   <div>
                     <h4 className="font-bold text-slate-900 text-sm">{latestLabReport.testName}</h4>
-                    <p className="text-[11px] text-slate-500">Ordered by Dr. {latestLabReport.doctor?.name || "Consultant"}</p>
+                    <p className="text-[11px] text-slate-500">Ordered by {formatDoctorName(latestLabReport.doctor?.name, "Consultant")}</p>
                   </div>
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${

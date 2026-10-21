@@ -14,6 +14,103 @@ const createToken = (patient) => {
   });
 };
 
+const OTP_RESET_SUBJECT = "Nivora Care password reset";
+
+// POST /api/patient-auth/forgot-password
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const patient = await Patient.findOne({ email: normalizedEmail }).select(
+      "+password"
+    );
+
+    // Avoid leaking which emails have accounts by responding the same either way.
+    if (!patient) {
+      return res.status(200).json({
+        message: "If a patient account exists for this email, a reset OTP has been sent.",
+      });
+    }
+
+    const otpKey = patient.contactNumber
+      ? normalizeContact(patient.contactNumber)
+      : normalizedEmail;
+    const otp = generateOtp(otpKey);
+
+    const message =
+      `Your Nivora Care Hospital password reset OTP is ${otp}. It expires in 5 minutes. ` +
+      `Do not share this code with anyone. -Nivora Care`;
+
+    let smsResult = { sent: true, method: "simulated" };
+    if (patient.contactNumber) {
+      try {
+        smsResult = await sendSms(normalizeContact(patient.contactNumber), message);
+      } catch {
+        // SMS delivery is best-effort
+      }
+    } else {
+      console.log(`[SMS Simulation] ${normalizedEmail} (${OTP_RESET_SUBJECT})\n[SMS Simulation] Message: ${message}`);
+    }
+
+    return res.status(200).json({
+      message: "If a patient account exists for this email, a reset OTP has been sent.",
+      sent: true,
+      preview: smsResult.preview || null,
+      method: smsResult.method || "simulated",
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
+// POST /api/patient-auth/reset-password
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({
+        message: "Email, OTP, and new password are required",
+      });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const patient = await Patient.findOne({ email: normalizedEmail }).select(
+      "+password"
+    );
+
+    if (!patient) {
+      return res.status(404).json({ message: "No patient account found with this email" });
+    }
+
+    const otpKey = patient.contactNumber
+      ? normalizeContact(patient.contactNumber)
+      : normalizedEmail;
+    const otpCheck = verifyOtp(otpKey, otp);
+    if (!otpCheck.valid) {
+      return res.status(400).json({ message: otpCheck.message });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    patient.password = newPassword;
+    await patient.save();
+
+    return res.status(200).json({
+      message: "Password reset successfully. You can now sign in with your new password.",
+    });
+  } catch (error) {
+    return res.status(400).json({ message: error.message });
+  }
+};
+
 // POST /api/patient-auth/otp/send
 export const sendRegistrationOtp = async (req, res) => {
   try {

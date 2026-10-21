@@ -6,8 +6,10 @@ import {
   getSpecialistDirectory,
   getDiagnosticTests,
 } from "../../services/api.js";
+import { getDoctorDisplayName, formatDoctorName } from "../../utils/doctorName.js";
 import DoctorPatientProfileModal from "../../components/doctor/DoctorPatientProfileModal.jsx";
 import PatientBanner from "../../components/ui/PatientBanner.jsx";
+import { findClientInteractions } from "../../utils/prescriptionSafety.js";
 
 const COMMON_DIAGNOSES = [
   "Acute Upper Respiratory Infection",
@@ -607,6 +609,29 @@ export default function ConsultationWorkspace() {
                   </table>
                 </div>
               )}
+
+              {/* Drug-drug interaction flags (latest added medication only) */}
+              {(() => {
+                const latest = medications.length > 0 ? medications[medications.length - 1].name : "";
+                if (!latest) return null;
+                const flags = findClientInteractions(medications).filter((flag) =>
+                  flag.medications.includes(latest)
+                );
+                if (flags.length === 0) return null;
+                return (
+                  <div className="space-y-2">
+                    {flags.map((flag, fi) => (
+                      <div
+                        key={fi}
+                        className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800"
+                      >
+                        <span className="font-extrabold tracking-wide">⚠ INTERACTION: </span>
+                        <span className="font-bold">{flag.medications.join(" + ")}</span> — {flag.message}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* 2.4 Diagnostic Lab & Radiology Orders */}
@@ -797,7 +822,7 @@ export default function ConsultationWorkspace() {
                       <option value="">-- Choose Specialist --</option>
                       {specialists.map((doc) => (
                         <option key={doc._id} value={doc._id}>
-                          Dr. {doc.name} ({doc.department} - {doc.specialization})
+                          {formatDoctorName(doc.name)} ({doc.department} - {doc.specialization})
                         </option>
                       ))}
                     </select>
@@ -1016,7 +1041,7 @@ export default function ConsultationWorkspace() {
                   <div key={n._id} className="p-2.5 rounded-md bg-slate-50 border border-slate-200 text-xs">
                     <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono">
                       <span>{new Date(n.createdAt).toLocaleDateString()}</span>
-                      <span>Dr. {n.doctorName}</span>
+                      <span>{getDoctorDisplayName({ name: n.doctorName })}</span>
                     </div>
                     <p className="font-bold text-slate-900 mt-1">{n.diagnosis || n.chiefComplaint}</p>
                     {n.treatmentPlan && (

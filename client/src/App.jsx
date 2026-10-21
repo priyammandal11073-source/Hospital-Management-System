@@ -5,6 +5,7 @@ import PatientLayout from "./components/PatientLayout.jsx";
 import PatientProtectedRoute from "./components/PatientProtectedRoute.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageLoader from "./components/ui/PageLoader.jsx";
+import { PrintModalProvider } from "./context/PrintModalContext.jsx";
 
 // Core Staff & Common Pages (Lazy Loaded)
 const Appointments = lazy(() => import("./pages/Appointments.jsx"));
@@ -40,6 +41,7 @@ const DoctorReferralsPage = lazy(() => import("./pages/doctor/DoctorReferralsPag
 const CriticalLabResultsPage = lazy(() => import("./pages/doctor/CriticalLabResultsPage.jsx"));
 const DoctorFollowUpsPage = lazy(() => import("./pages/doctor/DoctorFollowUpsPage.jsx"));
 const SpecialistDirectoryPage = lazy(() => import("./pages/doctor/SpecialistDirectoryPage.jsx"));
+const TelemedicineDoctorPage = lazy(() => import("./pages/doctor/TelemedicineDoctorPage.jsx"));
 
 // Patient Self-Service Portal Pages (Lazy Loaded)
 const BookAppointment = lazy(() => import("./pages/patient/BookAppointment.jsx"));
@@ -51,6 +53,7 @@ const MyLabReports = lazy(() => import("./pages/patient/MyLabReports.jsx"));
 const PatientDashboard = lazy(() => import("./pages/patient/PatientDashboard.jsx"));
 const PatientLogin = lazy(() => import("./pages/patient/PatientLogin.jsx"));
 const PatientRegister = lazy(() => import("./pages/patient/PatientRegister.jsx"));
+const ForgotPassword = lazy(() => import("./pages/patient/ForgotPassword.jsx"));
 const FindDoctorsPage = lazy(() => import("./pages/patient/FindDoctorsPage.jsx"));
 const MyMedicalRecords = lazy(() => import("./pages/patient/MyMedicalRecords.jsx"));
 const MyMedicalTimeline = lazy(() => import("./pages/patient/MyMedicalTimeline.jsx"));
@@ -65,6 +68,24 @@ const PatientProfilePage = lazy(() => import("./pages/patient/PatientProfilePage
 const HelpSupportPage = lazy(() => import("./pages/patient/HelpSupportPage.jsx"));
 const PatientFeedbackPage = lazy(() => import("./pages/patient/PatientFeedbackPage.jsx"));
 const PatientNotificationsPage = lazy(() => import("./pages/patient/PatientNotificationsPage.jsx"));
+const TelemedicinePage = lazy(() => import("./pages/patient/TelemedicinePage.jsx"));
+const TeleconsultRoom = lazy(() => import("./pages/TeleconsultRoom.jsx"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage.jsx"));
+const WardMapPage = lazy(() => import("./pages/WardMapPage.jsx"));
+const ExecutiveDashboard = lazy(() => import("./pages/admin/ExecutiveDashboard.jsx"));
+const PharmacistVerificationWorkbench = lazy(() => import("./pages/pharmacy/PharmacistVerificationWorkbench.jsx"));
+const LabAutoVerificationDashboard = lazy(() => import("./pages/diagnostic/LabAutoVerificationDashboard.jsx"));
+const RadiologyWorkbench = lazy(() => import("./pages/diagnostic/RadiologyWorkbench.jsx"));
+const PatientHealthTimeline = lazy(() => import("./pages/patient/HealthTimelinePage.jsx"));
+const DoctorMobileDashboard = lazy(() => import("./pages/doctor/DoctorMobileDashboard.jsx"));
+const SupplyChainGRNPage = lazy(() => import("./pages/admin/SupplyChainGRNPage.jsx"));
+const InterStoreTransferPage = lazy(() => import("./pages/admin/InterStoreTransferPage.jsx"));
+const EmergencyDashboard = lazy(() => import("./pages/emergency/EmergencyDashboard.jsx"));
+const EmergencyQueuePage = lazy(() => import("./pages/emergency/EmergencyQueuePage.jsx"));
+const EmergencyRegistrationPage = lazy(() => import("./pages/emergency/EmergencyRegistrationPage.jsx"));
+const EmergencyPatientProfilePage = lazy(() => import("./pages/emergency/EmergencyPatientProfilePage.jsx"));
+const EmergencyBedsPage = lazy(() => import("./pages/emergency/EmergencyBedsPage.jsx"));
+const EmergencyReportsPage = lazy(() => import("./pages/emergency/EmergencyReportsPage.jsx"));
 
 // Hospital Administrator Operations Pages (Lazy Loaded)
 const StaffManagementPage = lazy(() => import("./pages/admin/StaffManagementPage.jsx"));
@@ -79,6 +100,8 @@ const EmergencyOperationsPage = lazy(() => import("./pages/admin/EmergencyOperat
 const OperatingTheatrePage = lazy(() => import("./pages/admin/OperatingTheatrePage.jsx"));
 const AuditLogPage = lazy(() => import("./pages/admin/AuditLogPage.jsx"));
 const HospitalSettingsPage = lazy(() => import("./pages/admin/HospitalSettingsPage.jsx"));
+const InsuranceClaimsPage = lazy(() => import("./pages/admin/InsuranceClaimsPage.jsx"));
+const FeedbackReviewPage = lazy(() => import("./pages/admin/FeedbackReviewPage.jsx"));
 
 // Receptionist & Front Desk Pages (Lazy Loaded)
 const WaitingRoomPage = lazy(() => import("./pages/reception/WaitingRoomPage.jsx"));
@@ -128,13 +151,16 @@ const RadiologyStudyPage = lazy(() => import("./pages/diagnostic/RadiologyStudyP
 
 function App() {
   return (
-    <Suspense fallback={<PageLoader />}>
+    <PrintModalProvider>
+      <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/patient/login" element={<PatientLogin />} />
         <Route path="/patient/register" element={<PatientRegister />} />
+        <Route path="/patient/forgot-password" element={<ForgotPassword />} />
         {/* Public payment link — no auth required, accessible via SMS */}
         <Route path="/pay/:billingId" element={<PaymentPage />} />
+        <Route path="/teleconsult/:joinCode" element={<TeleconsultRoom />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Patient branch — separate from staff, uses PatientAuthContext */}
@@ -161,6 +187,8 @@ function App() {
             <Route path="/patient/support" element={<HelpSupportPage />} />
             <Route path="/patient/feedback" element={<PatientFeedbackPage />} />
             <Route path="/patient/notifications" element={<PatientNotificationsPage />} />
+            <Route path="/patient/telemedicine" element={<TelemedicinePage />} />
+            <Route path="/patient/health-timeline" element={<PatientHealthTimeline />} />
           </Route>
         </Route>
 
@@ -197,6 +225,8 @@ function App() {
             <Route path="/doctor/referrals" element={<DoctorReferralsPage />} />
             <Route path="/doctor/critical-labs" element={<CriticalLabResultsPage />} />
             <Route path="/doctor/follow-ups" element={<DoctorFollowUpsPage />} />
+            <Route path="/doctor/telemedicine" element={<TelemedicineDoctorPage />} />
+            <Route path="/doctor/mobile" element={<DoctorMobileDashboard />} />
             <Route path="/specialist-directory" element={<SpecialistDirectoryPage />} />
 
             {/* Hospital Administrator Operations Routes */}
@@ -211,7 +241,21 @@ function App() {
             <Route path="/admin/emergency" element={<EmergencyOperationsPage />} />
             <Route path="/admin/operating-theatre" element={<OperatingTheatrePage />} />
             <Route path="/admin/audit-logs" element={<AuditLogPage />} />
+            <Route path="/admin/insurance-claims" element={<InsuranceClaimsPage />} />
+            <Route path="/admin/feedback" element={<FeedbackReviewPage />} />
+            <Route path="/admin/executive-dashboard" element={<ExecutiveDashboard />} />
+            <Route path="/admin/supply-chain/grn" element={<SupplyChainGRNPage />} />
+            <Route path="/admin/supply-chain/transfers" element={<InterStoreTransferPage />} />
             <Route path="/admin/settings" element={<HospitalSettingsPage />} />
+
+            {/* Emergency Department — Integrated Hospital-Wide */}
+            <Route path="/emergency/dashboard" element={<EmergencyDashboard />} />
+            <Route path="/emergency/queue" element={<EmergencyQueuePage />} />
+            <Route path="/emergency/register" element={<EmergencyRegistrationPage />} />
+            <Route path="/emergency/patients/:id" element={<EmergencyPatientProfilePage />} />
+            <Route path="/emergency/beds" element={<EmergencyBedsPage />} />
+            <Route path="/emergency/reports" element={<EmergencyReportsPage />} />
+            <Route path="/emergency" element={<EmergencyDashboard />} />
 
             {/* Receptionist & Front Desk Operations Routes */}
             <Route path="/reception/waiting-room" element={<WaitingRoomPage />} />
@@ -226,28 +270,30 @@ function App() {
             <Route path="/reception/refunds" element={<RefundsManagementPage />} />
 
             {/* Pharmacy & Dispensing Operations Routes */}
-            <Route path="/pharmacy/queue" element={<PharmacyQueuePage />} />
-            <Route path="/pharmacy/dispense" element={<PrescriptionDispensePage />} />
-            <Route path="/pharmacy/dispense/:id" element={<PrescriptionDispensePage />} />
-            <Route path="/pharmacy/prescriptions-history" element={<PrescriptionHistoryPage />} />
-            <Route path="/pharmacy/inventory" element={<MedicineInventoryPage />} />
-            <Route path="/pharmacy/stock" element={<StockManagementPage />} />
-            <Route path="/pharmacy/batches" element={<BatchManagementPage />} />
-            <Route path="/pharmacy/expiry" element={<ExpiryManagementPage />} />
-            <Route path="/pharmacy/alerts" element={<LowStockAlertsPage />} />
-            <Route path="/pharmacy/suppliers" element={<SuppliersManagementPage />} />
-            <Route path="/pharmacy/purchase-orders" element={<PurchaseOrdersPage />} />
-            <Route path="/pharmacy/returns" element={<PharmacyReturnsPage />} />
-            <Route path="/pharmacy/patients" element={<PharmacyPatientsPage />} />
-            <Route path="/pharmacy/billing" element={<PharmacyBillingPage />} />
-            <Route path="/pharmacy/analytics" element={<PharmacyAnalyticsPage />} />
-            <Route path="/pharmacy/staff" element={<PharmacyStaffPage />} />
+<Route path="/pharmacy/queue" element={<PharmacyQueuePage />} />
+              <Route path="/pharmacy/dispense/:id?" element={<PrescriptionDispensePage />} />
+              <Route path="/pharmacy/history" element={<PrescriptionHistoryPage />} />
+              <Route path="/pharmacy/verification" element={<PharmacistVerificationWorkbench />} />
+              <Route path="/pharmacy/inventory" element={<MedicineInventoryPage />} />
+              <Route path="/pharmacy/stock" element={<StockManagementPage />} />
+              <Route path="/pharmacy/batches" element={<BatchManagementPage />} />
+              <Route path="/pharmacy/expiry" element={<ExpiryManagementPage />} />
+              <Route path="/pharmacy/alerts" element={<LowStockAlertsPage />} />
+              <Route path="/pharmacy/suppliers" element={<SuppliersManagementPage />} />
+              <Route path="/pharmacy/purchase-orders" element={<PurchaseOrdersPage />} />
+              <Route path="/pharmacy/returns" element={<PharmacyReturnsPage />} />
+              <Route path="/pharmacy/patients" element={<PharmacyPatientsPage />} />
+              <Route path="/pharmacy/billing" element={<PharmacyBillingPage />} />
+              <Route path="/pharmacy/analytics" element={<PharmacyAnalyticsPage />} />
+              <Route path="/pharmacy/staff" element={<PharmacyStaffPage />} />
 
             {/* Diagnostic Services (Pathology & Radiology) Routes */}
             <Route path="/diagnostic/requests" element={<TestRequestsPage />} />
             <Route path="/diagnostic/samples" element={<SampleCollectionPage />} />
             <Route path="/diagnostic/workbench" element={<TechnicianWorkspacePage />} />
+            <Route path="/diagnostic/auto-verify" element={<LabAutoVerificationDashboard />} />
             <Route path="/diagnostic/radiology" element={<RadiologyImagingPage />} />
+            <Route path="/diagnostic/radiology-workbench" element={<RadiologyWorkbench />} />
             <Route path="/diagnostic/review" element={<SpecialistReviewPage />} />
             <Route path="/diagnostic/reports" element={<DiagnosticReportsPage />} />
             <Route path="/diagnostic/critical" element={<CriticalResultsPage />} />
@@ -262,9 +308,11 @@ function App() {
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/ward-map" element={<WardMapPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
+  </PrintModalProvider>
   );
 }
 

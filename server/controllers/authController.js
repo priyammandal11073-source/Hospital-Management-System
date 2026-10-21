@@ -71,6 +71,12 @@ const DEMO_ACCOUNTS = {
   "nurse@hospital.com": { id: "000000000000000000000004", name: "Nurse Priya Singh", role: "nurse", email: "nurse@hospital.com", defaultPassword: "nurse123" },
   "pharmacist@hospital.com": { id: "000000000000000000000006", name: "Ananya Deshmukh", role: "pharmacist", email: "pharmacist@hospital.com", designation: "Chief Pharmacist", department: "Pharmacy & Medication Services", defaultPassword: "pharmacist123" },
   "john@example.com": { id: "000000000000000000000005", name: "John Doe", role: "patient", email: "john@example.com", defaultPassword: "patient123" },
+  "emergency@hospital.com": { id: "000000000000000000000007", name: "Dr. Emergency Coordinator", role: "emergency", email: "emergency@hospital.com", designation: "Emergency Department Coordinator", department: "Emergency & Trauma", defaultPassword: "emergency123" },
+  "diagnostics@hospital.com": { id: "000000000000000000000008", name: "Diagnostic Admin", role: "diagnostic_admin", email: "diagnostics@hospital.com", defaultPassword: "diagnostic123" },
+  "pathologist@hospital.com": { id: "000000000000000000000009", name: "Dr. Pathologist", role: "pathologist", email: "pathologist@hospital.com", defaultPassword: "pathologist123" },
+  "radiologist@hospital.com": { id: "000000000000000000000010", name: "Dr. Radiologist", role: "radiologist", email: "radiologist@hospital.com", defaultPassword: "radiologist123" },
+  "labtech@hospital.com": { id: "000000000000000000000011", name: "Lab Technician", role: "lab_technician", email: "labtech@hospital.com", defaultPassword: "labtech123" },
+  "radtech@hospital.com": { id: "000000000000000000000012", name: "Radiology Technician", role: "radiology_technician", email: "radtech@hospital.com", defaultPassword: "radtech123" },
 };
 
 // POST /api/auth/login
@@ -87,7 +93,7 @@ export const login = async (req, res) => {
     // Check if database is offline / blocked by MongoDB Atlas IP whitelist
     if (mongoose.connection.readyState !== 1) {
       const demoUser = DEMO_ACCOUNTS[normalizedEmail];
-      if (demoUser) {
+      if (demoUser && password === (demoUser.defaultPassword || "password123")) {
         const token = jwt.sign(
           { id: demoUser.id, role: demoUser.role, type: demoUser.role === "patient" ? "patient" : "staff", doctorId: demoUser.doctorId },
           process.env.JWT_SECRET || "super-secret-key-hospital-management-system-2026",
@@ -99,9 +105,7 @@ export const login = async (req, res) => {
           isOfflineDemo: true,
         });
       }
-      return res.status(503).json({
-        message: "Database connection failed: MongoDB Atlas has blocked your IP (152.56.133.183). Please add 0.0.0.0/0 to your MongoDB Atlas Network Access IP whitelist.",
-      });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     let user = await User.findOne({ email: normalizedEmail });

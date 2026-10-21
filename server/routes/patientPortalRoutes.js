@@ -31,6 +31,7 @@ import {
   markAllMyNotificationsRead,
   submitFeedback,
   getMyFeedback,
+  getMyTelemedicine,
 } from "../controllers/patientPortalController.js";
 import { protectPatient } from "../middleware/authMiddleware.js";
 
@@ -86,5 +87,8 @@ router.patch("/notifications/:id/read", protectPatient, markMyNotificationRead);
 // 10. Patient Feedback
 router.post("/feedback", protectPatient, submitFeedback);
 router.get("/feedback", protectPatient, getMyFeedback);
+
+// Telemedicine
+router.get("/telemedicine", protectPatient, getMyTelemedicine);
 
 export default router;

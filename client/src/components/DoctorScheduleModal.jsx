@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { updateDoctorSchedule, addDoctorLeave, removeDoctorLeave } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 const DAYS_OF_WEEK = [
   "Monday",
@@ -14,7 +15,6 @@ const DAYS_OF_WEEK = [
 
 export default function DoctorScheduleModal({ doctor, onClose, onUpdated }) {
   const { user } = useAuth();
-  if (user?.role === "nurse") return null;
 
   const [activeTab, setActiveTab] = useState("weekly"); // 'weekly' | 'leaves'
   const [saving, setSaving] = useState(false);
@@ -46,6 +46,8 @@ export default function DoctorScheduleModal({ doctor, onClose, onUpdated }) {
     endDate: "",
     reason: "",
   });
+
+  if (user?.role === "nurse") return null;
 
   const handleToggleDay = (dayIndex) => {
     setSchedule((prev) => {
@@ -127,7 +129,7 @@ export default function DoctorScheduleModal({ doctor, onClose, onUpdated }) {
         <div className="p-5 bg-gradient-to-r from-teal-700 to-slate-800 text-white flex items-center justify-between">
           <div>
             <h3 className="text-base font-black">
-              Doctor Schedule & Availability — Dr. {doctor.name}
+              Doctor Schedule & Availability — {getDoctorDisplayName(doctor)}
             </h3>
             <p className="text-xs text-teal-100 mt-0.5">
               {doctor.specialization} · {doctor.department}
@@ -358,7 +360,7 @@ export default function DoctorScheduleModal({ doctor, onClose, onUpdated }) {
                 <h4 className="font-bold text-slate-900 mb-2">Scheduled Off-Duty Leaves</h4>
                 {leaves.length === 0 ? (
                   <p className="text-slate-400 italic py-4 text-center">
-                    No leaves currently scheduled for Dr. {doctor.name}.
+                    No leaves currently scheduled for {getDoctorDisplayName(doctor)}.
                   </p>
                 ) : (
                   <div className="space-y-2">

@@ -14,6 +14,7 @@ import Inventory from "../models/Inventory.js";
 import Billing from "../models/Billing.js";
 import AuditLog from "../models/AuditLog.js";
 import Notification from "../models/Notification.js";
+import { formatDoctorName } from "../utils/doctorHelper.js";
 import {
   getFileReadStream,
   deleteFileFromStorage,
@@ -287,7 +288,7 @@ export const createDiagnosticRequest = async (req, res) => {
       patientName: patientDoc.name,
       patientIdStr: patientDoc.patientId || patientDoc.abhaId,
       doctor: doctorDoc?._id || null,
-      doctorName: doctorDoc ? `Dr. ${doctorDoc.name}` : req.user?.name || "Attending Physician",
+      doctorName: doctorDoc ? formatDoctorName(doctorDoc.name) : (req.user?.name ? formatDoctorName(req.user.name) : "Attending Physician"),
       department: doctorDoc?.department || "General Medicine",
       appointment: appointment || null,
       test: testDoc._id,

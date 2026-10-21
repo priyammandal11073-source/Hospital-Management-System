@@ -9,6 +9,7 @@ import UpiPaymentBox from "../components/UpiPaymentBox.jsx";
 import InsurancePaymentBox from "../components/InsurancePaymentBox.jsx";
 import PaymentMethodSelect from "../components/PaymentMethodSelect.jsx";
 import { getBillingById, createRazorpayOrder, verifyRazorpayPayment, payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
+import { formatDoctorName } from "../utils/doctorName.js";
 
 const STATUS_COLORS = {
   paid: "bg-emerald-100 text-emerald-800 border-emerald-300",
@@ -261,7 +262,7 @@ function PaymentPage() {
   const invoiceNumber = `INV-${idStr ? idStr.slice(-6).toUpperCase() : "NIVORA"}`;
   const isPaid = billing.paymentStatus === "paid";
   const docName = billing.appointment?.doctor?.name
-    ? `Dr. ${billing.appointment.doctor.name}`
+    ? formatDoctorName(billing.appointment.doctor.name)
     : "Doctor";
   const apptDate = billing.appointment?.appointmentDate
     ? new Date(billing.appointment.appointmentDate).toLocaleDateString("en-IN", {

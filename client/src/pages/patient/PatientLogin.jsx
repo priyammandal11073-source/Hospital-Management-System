@@ -4,7 +4,6 @@ import { usePatientAuth } from "../../context/PatientAuthContext.jsx";
 import HospitalLogo from "../../components/HospitalLogo.jsx";
 import AuthBrandPanel from "../../components/AuthBrandPanel.jsx";
 
-const DEMO_PATIENT = { email: "john@example.com", password: "patient123" };
 
 function PatientLogin() {
   const navigate = useNavigate();
@@ -12,6 +11,7 @@ function PatientLogin() {
   const { isAuthenticated, loading, login } = usePatientAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState(location.state?.message || "");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,7 +47,7 @@ function PatientLogin() {
     if (successMessage) setSuccessMessage("");
     setIsSubmitting(true);
     try {
-      await login(email, password);
+      await login(email, password, rememberMe);
       navigate("/patient/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Unable to log in. Please try again.");
@@ -56,21 +56,6 @@ function PatientLogin() {
     }
   };
 
-  const handleDemoLogin = async () => {
-    setError("");
-    if (successMessage) setSuccessMessage("");
-    setEmail(DEMO_PATIENT.email);
-    setPassword(DEMO_PATIENT.password);
-    setIsSubmitting(true);
-    try {
-      await login(DEMO_PATIENT.email, DEMO_PATIENT.password);
-      navigate("/patient/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.message || "Demo login failed.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <main className="relative min-h-screen bg-[#faf7f4] py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans overflow-hidden">
@@ -159,9 +144,17 @@ function PatientLogin() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="p-password">
-                    Password
-                  </label>
+                  <div className="mb-1 flex items-center justify-between">
+                    <label className="block text-xs font-medium text-slate-700" htmlFor="p-password">
+                      Password
+                    </label>
+                    <Link
+                      to="/patient/forgot-password"
+                      className="text-xs font-medium text-rose-600 hover:underline"
+                    >
+                      Forgot Password?
+                    </Link>
+                  </div>
                   <input
                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
                     id="p-password"
@@ -173,6 +166,16 @@ function PatientLogin() {
                   />
                 </div>
 
+                <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-600">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-600"
+                  />
+                  Remember me on this device
+                </label>
+
                 {error && (
                   <div className="flex items-center gap-2 rounded border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
                     <svg className="h-4 w-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -182,9 +185,9 @@ function PatientLogin() {
                   </div>
                 )}
 
-                <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                <div className="pt-2">
                   <button
-                    className="flex-1 rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-rose-600/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
+                    className="w-full rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-rose-600/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
                     disabled={isSubmitting}
                     type="submit"
                   >
@@ -196,16 +199,6 @@ function PatientLogin() {
                     ) : (
                       "Sign In →"
                     )}
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={isSubmitting}
-                    onClick={handleDemoLogin}
-                    className="rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition shadow-2xs cursor-pointer flex items-center justify-center"
-                    title="Direct sign-in with demo patient credentials"
-                  >
-                    Demo Entry
                   </button>
                 </div>
               </form>

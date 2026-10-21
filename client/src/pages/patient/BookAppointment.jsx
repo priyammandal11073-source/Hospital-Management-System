@@ -8,6 +8,7 @@ import {
 } from "../../services/api.js";
 import PaymentMethodSelect from "../../components/PaymentMethodSelect.jsx";
 import UpiPaymentBox from "../../components/UpiPaymentBox.jsx";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 const QUICK_REASONS = [
   { label: "🩺 Routine Health Checkup", text: "Routine General Health Checkup" },
@@ -66,14 +67,14 @@ function BookAppointment() {
     };
   }, []);
 
-  // Today formatted as YYYY-MM-DD
-  const todayStr = new Date().toISOString().split("T")[0];
+  // Today formatted as YYYY-MM-DD in user's local timezone
+  const todayStr = new Date().toLocaleDateString("en-CA");
 
   // Helper for quick date chips
   const getDateOffsetStr = (days) => {
     const d = new Date();
     d.setDate(d.getDate() + days);
-    return d.toISOString().split("T")[0];
+    return d.toLocaleDateString("en-CA");
   };
 
   const setQuickDate = (days) => {
@@ -259,7 +260,7 @@ function BookAppointment() {
             <div>
               <h1 className="text-xl font-bold">Appointment Confirmed!</h1>
               <p className="text-emerald-100 text-xs mt-0.5">
-                Doctor: Dr. {selectedDoctorObj?.name || "Consultant"} · Slot: {form.timeSlot}
+                Doctor: {formatDoctorName(selectedDoctorObj?.name, "Consultant")} · Slot: {form.timeSlot}
               </p>
             </div>
           </div>
@@ -348,7 +349,7 @@ function BookAppointment() {
             </div>
             {selectedDoctorObj && (
               <span className="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
-                Selected: Dr. {selectedDoctorObj.name}
+                Selected: {formatDoctorName(selectedDoctorObj.name)}
               </span>
             )}
           </div>
@@ -411,7 +412,7 @@ function BookAppointment() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <p className="text-sm font-black text-slate-900 truncate">
-                          Dr. {doc.name}
+                          {formatDoctorName(doc.name)}
                         </p>
                         {isSelected && (
                           <span className="text-teal-700 text-xs font-black">✓</span>

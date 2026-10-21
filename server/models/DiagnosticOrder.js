@@ -242,19 +242,28 @@ const diagnosticOrderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isEmergency: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    emergencyEncounter: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "EmergencyEncounter",
+    },
   },
   {
     timestamps: true,
   }
 );
 
-diagnosticOrderSchema.index({ orderNumber: 1 }, { unique: true });
 diagnosticOrderSchema.index({ patient: 1, status: 1 });
 diagnosticOrderSchema.index({ diagnosticDepartment: 1, status: 1 });
 diagnosticOrderSchema.index({ doctor: 1, status: 1 });
 diagnosticOrderSchema.index({ priority: 1, requestedDate: -1 });
 diagnosticOrderSchema.index({ status: 1, scheduledDate: 1 });
 diagnosticOrderSchema.index({ isCritical: 1, "criticalDetails.escalationStatus": 1 });
+diagnosticOrderSchema.index({ createdAt: -1 });
 
 const DiagnosticOrder = mongoose.model("DiagnosticOrder", diagnosticOrderSchema);
 

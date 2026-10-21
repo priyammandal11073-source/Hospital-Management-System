@@ -138,6 +138,36 @@ const appointmentSchema = new mongoose.Schema(
       },
       default: "staff",
     },
+    telemedicine: {
+      joinCode: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+      meetLink: {
+        type: String,
+        trim: true,
+        default: "",
+      },
+      status: {
+        type: String,
+        enum: ["scheduled", "live", "ended", "cancelled"],
+        default: "scheduled",
+      },
+      startedAt: {
+        type: Date,
+      },
+      endedAt: {
+        type: Date,
+      },
+    },
+    reminderSent: {
+      type: Boolean,
+      default: false,
+    },
+    reminderSentAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

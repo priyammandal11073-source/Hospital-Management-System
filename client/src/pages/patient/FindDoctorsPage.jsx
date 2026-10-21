@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { getPatientDoctors } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 const DEPARTMENTS = [
   "All",
@@ -117,7 +118,7 @@ export default function FindDoctorsPage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm group-hover:text-blue-700 transition">
-                      Dr. {doc.name}
+                      {formatDoctorName(doc.name)}
                     </h3>
                     <p className="text-xs font-semibold text-blue-600">{doc.specialization}</p>
                     <p className="text-[11px] text-slate-500">{doc.department}</p>
@@ -183,7 +184,7 @@ export default function FindDoctorsPage() {
                   {selectedDoctor.name ? selectedDoctor.name.charAt(0) : "D"}
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-slate-900 text-base">Dr. {selectedDoctor.name}</h3>
+                  <h3 className="font-extrabold text-slate-900 text-base">{formatDoctorName(selectedDoctor.name)}</h3>
                   <p className="text-xs font-semibold text-blue-600">{selectedDoctor.specialization} • {selectedDoctor.department}</p>
                 </div>
               </div>
@@ -240,7 +241,7 @@ export default function FindDoctorsPage() {
                 to={`/patient/appointments/book?doctor=${selectedDoctor._id}`}
                 className="px-4 py-2 rounded-xl bg-blue-600 text-xs font-bold text-white hover:bg-blue-700 transition shadow-xs"
               >
-                Book Appointment With Dr. {selectedDoctor.name} →
+                Book Appointment With {formatDoctorName(selectedDoctor.name)} →
               </Link>
             </div>
           </div>

@@ -1,4 +1,6 @@
 import { downloadDiagnosticReportPdfBlob } from "../services/api.js";
+import { getDoctorDisplayName } from "./doctorName.js";
+import { printHtml, fallbackPopupPrint as printUtilsFallbackPopup } from "./printUtils.js";
 
 /**
  * Format a date string safely to Indian standard format
@@ -38,7 +40,12 @@ export const generateReportHtml = (report) => {
   const patient = report.patient || {};
   const doctor = report.doctor || {};
   const order = report.order || {};
-  const results = Array.isArray(report.testResults) ? report.testResults : [];
+  const results =
+    Array.isArray(report.testResults) && report.testResults.length > 0
+      ? report.testResults
+      : Array.isArray(report.results)
+      ? report.results
+      : [];
   const radiology = report.radiologyStudy || {};
   const signature = report.digitalSignature || {};
 
@@ -47,7 +54,7 @@ export const generateReportHtml = (report) => {
   const patientGender = report.patientGender || patient.gender || "—";
   const patientAbha = report.patientAbhaId || patient.abhaId || "ABDM-VERIFIED";
   const patientPhone = patient.contactNumber || report.patientPhone || "—";
-  const refDoctor = report.doctorName || (doctor.name ? `Dr. ${doctor.name}` : "OPD Consultant");
+  const refDoctor = report.doctorName || (doctor ? getDoctorDisplayName(doctor) : "OPD Consultant");
   const reportNum = report.reportNumber || (report._id ? `RPT-${String(report._id).slice(-6).toUpperCase()}` : "RPT-001");
   const orderNum = order.orderNumber || report.orderNumber || (reportNum ? "ORD-" + reportNum.slice(-6) : "ORD-001");
   const testDateFormatted = formatDate(order.requestedDate || report.testDate || report.reportDate || report.createdAt);
@@ -149,14 +156,15 @@ export const generateReportHtml = (report) => {
     `;
   }
 
-  const conclusionHtml = report.summaryConclusion
+  const conclusionText = report.summaryConclusion || report.clinicalRemarks || report.notes;
+  const conclusionHtml = conclusionText
     ? `
     <div style="margin-top: 16px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px;">
       <div style="font-size: 9px; font-weight: 800; text-transform: uppercase; color: #475569; margin-bottom: 3px;">
         Diagnostic Conclusion / Clinical Correlation
       </div>
       <div style="font-size: 11px; font-weight: 600; color: #0f172a; line-height: 1.5;">
-        ${report.summaryConclusion}
+        ${conclusionText}
       </div>
     </div>
   `
@@ -165,7 +173,9 @@ export const generateReportHtml = (report) => {
   const specialistName =
     signature.signedBy ||
     report.specialistName ||
-    (doctor.name ? `Dr. ${doctor.name}` : "Dr. Senior Pathologist, MD");
+    report.verifiedByName ||
+    (report.verifiedBy?.name || report.verifiedBy?.username || (typeof report.verifiedBy === "string" ? report.verifiedBy : null)) ||
+    (doctor ? getDoctorDisplayName(doctor) : "Dr. Senior Pathologist, MD");
   const specialistRole =
     signature.specialistRole ||
     report.specialistRole ||
@@ -351,6 +361,12 @@ export const generateReportHtml = (report) => {
           <!-- Hospital Letterhead -->
           <div class="hospital-header">
             <div class="hospital-brand">
+              <img 
+                src="/nivora-logo.png" 
+                alt="Nivora Care Hospital" 
+                style="height: 52px; width: 52px; object-fit: contain; border-radius: 10px; border: 1.5px solid #cbd5e1; padding: 2px; background: #ffffff; flex-shrink: 0;" 
+                onerror="this.style.display='none'"
+              />
               <div>
                 <h1 class="hosp-title">NIVORA CARE HOSPITAL</h1>
                 <p class="hosp-sub">
@@ -506,12 +522,11 @@ const fallbackPopupPrint = (html) => {
 };
 
 /**
- * Prints a clinical report in a completely isolated hidden iframe.
- * Prevents any part of the host page from bleeding into the print preview/PDF.
- * Uses a physical off-screen viewport size (1024x768) so browser print engines
- * don't discard it as zero-geometry content.
+/**
+ * Prints a clinical report in a completely isolated hidden iframe using printHtml.
+ * Eliminates host page bleed-through and blank page printing bugs.
  */
-export const printClinicalReport = (report) => {
+export const printClinicalReport = async (report) => {
   if (!report) return;
 
   let html;
@@ -523,82 +538,19 @@ export const printClinicalReport = (report) => {
     return;
   }
 
-  // Remove any stale print iframes
-  const existingIframes = document.querySelectorAll("iframe[data-clinical-print='true']");
-  existingIframes.forEach((el) => {
-    try {
-      el.remove();
-    } catch {}
-  });
-
-  const iframe = document.createElement("iframe");
-  iframe.setAttribute("data-clinical-print", "true");
-  iframe.setAttribute("title", "Clinical Report Print Canvas");
-  iframe.setAttribute("aria-hidden", "true");
-  // Give it an active layout area offscreen
-  iframe.style.position = "fixed";
-  iframe.style.top = "-9999px";
-  iframe.style.left = "-9999px";
-  iframe.style.width = "1024px";
-  iframe.style.height = "768px";
-  iframe.style.border = "0";
-  iframe.style.opacity = "0";
-  iframe.style.pointerEvents = "none";
-  iframe.style.zIndex = "-999";
-  document.body.appendChild(iframe);
-
-  const cleanup = () => {
-    setTimeout(() => {
-      try {
-        if (iframe.parentNode) {
-          iframe.parentNode.removeChild(iframe);
-        }
-      } catch {}
-    }, 2500);
-  };
-
-  const executePrint = () => {
-    try {
-      const win = iframe.contentWindow;
-      if (!win) {
-        fallbackPopupPrint(html);
-        cleanup();
-        return;
-      }
-      win.focus();
-      win.print();
-      cleanup();
-    } catch (e) {
-      console.warn("Iframe printing encountered error, attempting popup fallback:", e);
-      fallbackPopupPrint(html);
-      cleanup();
-    }
-  };
-
+  const reportNum = report.reportNumber || (report._id ? `RPT-${String(report._id).slice(-6).toUpperCase()}` : "RPT-001");
   try {
-    const doc = iframe.contentDocument || iframe.contentWindow?.document;
-    if (!doc) {
-      fallbackPopupPrint(html);
-      cleanup();
-      return;
-    }
-
-    doc.open();
-    doc.write(html);
-    doc.close();
-
-    if (doc.readyState === "complete") {
-      setTimeout(executePrint, 200);
-    } else {
-      iframe.onload = () => setTimeout(executePrint, 200);
-      setTimeout(executePrint, 500); // Safety timeout
-    }
+    await printHtml(html, {
+      title: `Diagnostic Report - ${reportNum}`,
+      waitForImages: true,
+      cleanupDelay: 3000,
+    });
   } catch (err) {
-    console.error("Failed to populate print iframe:", err);
-    fallbackPopupPrint(html);
-    cleanup();
+    console.warn("printHtml failed, falling back to popup print:", err);
+    printUtilsFallbackPopup(html, `Diagnostic Report - ${reportNum}`);
   }
 };
+
 
 /**
  * Opens or downloads the vector PDF from the backend in a new tab/window for native printing

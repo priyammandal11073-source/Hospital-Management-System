@@ -46,6 +46,10 @@ export const restrictTo = (...roles) => (req, res, next) => {
   return next();
 };
 
+// Alias for restrictTo so route files can read more naturally:
+//   router.get("/", protect, requireRole("admin"), handler);
+export const requireRole = restrictTo;
+
 // Verifies the Bearer token for patient-specific routes.
 // Checks that the token type is 'patient' (distinguishes from staff tokens).
 // Attaches decoded patient info to req.patient (distinct from req.user).

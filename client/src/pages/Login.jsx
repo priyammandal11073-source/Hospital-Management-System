@@ -147,7 +147,7 @@ const PORTAL_TYPES = [
         accentColor: "bg-sky-600",
         icon: (
           <svg className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
           </svg>
         ),
       },
@@ -184,11 +184,28 @@ const PORTAL_TYPES = [
       </svg>
     ),
   },
+  {
+    id: "emergency",
+    name: "Emergency",
+    role: "emergency",
+    authType: "staff",
+    tagline: "ER Triage & Resuscitation",
+    badgeBg: "bg-rose-50/90 text-rose-600 border-rose-100 group-hover:bg-rose-600 group-hover:text-white",
+    accentColor: "bg-rose-600",
+    defaultEmail: "emergency@hospital.com",
+    defaultPass: "emergency123",
+    icon: (
+      <svg className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+  },
 ];
 
 function Login() {
   const navigate = useNavigate();
-  const { isAuthenticated, loading, login } = useAuth();
+  const { isAuthenticated, user, loading, login } = useAuth();
   const [step, setStep] = useState(1);
   const [selectedPortal, setSelectedPortal] = useState(PORTAL_TYPES[0]);
   const [email, setEmail] = useState(PORTAL_TYPES[0].defaultEmail);
@@ -208,6 +225,9 @@ function Login() {
   }
 
   if (isAuthenticated) {
+    if (user?.role === "emergency") {
+      return <Navigate to="/emergency/dashboard" replace />;
+    }
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -225,8 +245,12 @@ function Login() {
     setIsSubmitting(true);
 
     try {
-      await login(email, password, selectedPortal.authType);
-      navigate("/dashboard");
+      const loggedUser = await login(email, password, selectedPortal.authType);
+      if (loggedUser?.role === "emergency" || selectedPortal?.id === "emergency") {
+        navigate("/emergency/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Authentication failed. Please verify credentials.");
     } finally {
@@ -234,22 +258,6 @@ function Login() {
     }
   };
 
-  const handleInstantDemoLogin = async (portal) => {
-    setError("");
-    setIsSubmitting(true);
-    setSelectedPortal(portal);
-    setEmail(portal.defaultEmail);
-    setPassword(portal.defaultPass);
-
-    try {
-      await login(portal.defaultEmail, portal.defaultPass, portal.authType);
-      navigate("/dashboard");
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || "Demo login failed.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <main className="relative min-h-screen bg-[#f7f6f3] py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans overflow-hidden">
@@ -275,7 +283,7 @@ function Login() {
             ]}
             stats={[
               { value: "24/7", label: "Care coverage" },
-              { value: "7", label: "Integrated portals" },
+              { value: "8", label: "Integrated portals" },
               { value: "99.9%", label: "System uptime" },
             ]}
           />
@@ -296,39 +304,32 @@ function Login() {
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {PORTAL_TYPES.map((portal) => {
-                    const isDiagnostics = portal.id === "diagnostic";
-                    return (
-                      <button
-                        type="button"
-                        key={portal.id}
-                        onClick={() => handlePortalSelect(portal)}
-                        className={`group relative bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-3 h-32 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/80 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 ${
-                          isDiagnostics
-                            ? "sm:col-span-2 sm:w-full sm:max-w-[calc(50%-0.5rem)] sm:mx-auto lg:col-span-1 lg:col-start-2 lg:max-w-none"
-                            : ""
-                        }`}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {PORTAL_TYPES.map((portal) => (
+                    <button
+                      type="button"
+                      key={portal.id}
+                      onClick={() => handlePortalSelect(portal)}
+                      className="group relative bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-3 h-32 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/80 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
+                    >
+                      <div
+                        className={`h-11 w-11 rounded-xl ${portal.accentColor} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}
                       >
-                        <div
-                          className={`h-11 w-11 rounded-xl ${portal.accentColor} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}
-                        >
-                          {portal.icon}
-                        </div>
+                        {portal.icon}
+                      </div>
 
-                        <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 transition-colors">
-                          {portal.name}
-                        </span>
+                      <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 transition-colors">
+                        {portal.name}
+                      </span>
 
-                        <span
-                          className="absolute top-2.5 right-3 text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                          aria-hidden="true"
-                        >
-                          →
-                        </span>
-                      </button>
-                    );
-                  })}
+                      <span
+                        className="absolute top-2.5 right-3 text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-hidden="true"
+                      >
+                        →
+                      </span>
+                    </button>
+                  ))}
                 </div>
               </section>
             )}
@@ -465,9 +466,9 @@ function Login() {
                     </div>
                   )}
 
-                  <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                  <div className="pt-2">
                     <button
-                      className="flex-1 rounded-lg bg-blue-700 hover:bg-blue-800 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-700/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
+                      className="w-full rounded-lg bg-blue-700 hover:bg-blue-800 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-700/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
                       disabled={isSubmitting}
                       type="submit"
                     >
@@ -479,16 +480,6 @@ function Login() {
                       ) : (
                         "Sign In →"
                       )}
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={isSubmitting}
-                      onClick={() => handleInstantDemoLogin(selectedPortal)}
-                      className="rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition shadow-2xs cursor-pointer flex items-center justify-center"
-                      title="Direct sign-in with demo credentials"
-                    >
-                      Demo Entry
                     </button>
                   </div>
                 </form>

@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { getAppointmentReminders, sendAdministrativeNotification, updateAppointmentStatus } from "../../services/api.js";
+import {
+  getAppointmentReminders,
+  sendAppointmentReminder,
+  updateAppointmentStatus,
+} from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function AppointmentRemindersPage() {
   const [reminders, setReminders] = useState([]);
@@ -26,15 +31,9 @@ export default function AppointmentRemindersPage() {
   const handleSendReminder = async (app) => {
     setActioningId(app._id);
     try {
-      if (app.patient?._id) {
-        await sendAdministrativeNotification({
-          patientId: app.patient._id,
-          title: "Appointment Reminder: Tomorrow",
-          message: `Reminder for your scheduled consultation with Dr. ${app.doctor?.name} tomorrow at ${app.timeSlot}. Please report to OPD reception 15 minutes prior.`,
-          type: "general",
-        });
-      }
-      alert(`Reminder dispatched to ${app.patient?.name} (📞 ${app.patient?.contactNumber || "SMS Gateway"})`);
+      const res = await sendAppointmentReminder(app._id);
+      alert(`${res.message}`);
+      loadReminders();
     } catch (err) {
       alert("Failed to send reminder: " + (err.response?.data?.message || err.message));
     } finally {
@@ -115,7 +114,7 @@ export default function AppointmentRemindersPage() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800">Dr. {app.doctor?.name}</div>
+                      <div className="font-semibold text-slate-800">{formatDoctorName(app.doctor?.name)}</div>
                       <div className="text-[11px] text-slate-500">{app.doctor?.department}</div>
                     </td>
                     <td className="py-3.5 px-4">
@@ -137,13 +136,19 @@ export default function AppointmentRemindersPage() {
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <button
-                          disabled={actioningId === app._id}
-                          onClick={() => handleSendReminder(app)}
-                          className="rounded-lg bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1.5 text-xs font-bold hover:bg-blue-100 transition disabled:opacity-50"
-                        >
-                          📩 Send Reminder
-                        </button>
+                        {app.reminderSent ? (
+                          <span className="rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 px-3 py-1.5 text-xs font-bold">
+                            ✓ Reminder Sent
+                          </span>
+                        ) : (
+                          <button
+                            disabled={actioningId === app._id}
+                            onClick={() => handleSendReminder(app)}
+                            className="rounded-lg bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1.5 text-xs font-bold hover:bg-blue-100 transition disabled:opacity-50 cursor-pointer"
+                          >
+                            📩 Send Reminder
+                          </button>
+                        )}
                         {app.status !== "confirmed" && (
                           <button
                             disabled={actioningId === app._id}

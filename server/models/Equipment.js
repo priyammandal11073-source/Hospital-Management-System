@@ -61,6 +61,11 @@ const equipmentSchema = new mongoose.Schema(
     nextServiceDate: {
       type: Date,
     },
+    serviceIntervalDays: {
+      type: Number,
+      min: 1,
+      default: 90,
+    },
     status: {
       type: String,
       enum: ["operational", "under_maintenance", "out_of_service"],

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { administerMedication } from "../services/api.js";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 export default function MedicationAdminModal({ prescription, onClose, onUpdated }) {
   const [selectedMedIndex, setSelectedMedIndex] = useState(0);
@@ -100,7 +101,7 @@ export default function MedicationAdminModal({ prescription, onClose, onUpdated 
           </div>
           <div>
             <span className="text-slate-500">Prescribing Physician: </span>
-            <span className="font-semibold text-slate-700">Dr. {doctor.name || "Specialist"}</span>
+            <span className="font-semibold text-slate-700">{getDoctorDisplayName(doctor, "Specialist")}</span>
           </div>
           <div>
             <span className="text-slate-500">Diagnosis: </span>

@@ -1,0 +1,45 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  server:
+    build: ./server
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      MONGO_URI: mongodb://mongo:27017/hospital-db
+      CLIENT_URL: http://localhost:8080
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      OTP_TTL_MS: ${OTP_TTL_MS:-300000}
+      # Optional integrations; leave the *_KEY_ID / *_KEY_SECRET values empty
+      # to run in offline demo mode.
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-Hospital Management <no-reply@example.com>}
+    volumes:
+      - pdf-storage:/app/storage
+
+  client:
+    build: ./client
+    restart: unless-stopped
+    depends_on:
+      - server
+    ports:
+      - "8080:80"
+
+volumes:
+  mongo-data:
+  pdf-storage:

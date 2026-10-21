@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getAdminDepartments, createAdminDepartment, getDoctors } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function DepartmentsPage() {
   const [departments, setDepartments] = useState([]);
@@ -145,7 +146,7 @@ export default function DepartmentsPage() {
                 <div className="flex items-center justify-between text-slate-600">
                   <span className="text-slate-400">HOD / Lead:</span>
                   <span className="font-bold text-purple-700">
-                    {dept.headOfDepartment?.name ? `Dr. ${dept.headOfDepartment.name}` : "Assigned Senior Lead"}
+                    {dept.headOfDepartment?.name ? formatDoctorName(dept.headOfDepartment.name) : "Assigned Senior Lead"}
                   </span>
                 </div>
               </div>
@@ -239,11 +240,11 @@ export default function DepartmentsPage() {
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs focus:border-purple-500 focus:outline-none"
                 >
                   <option value="">-- Assign Doctor Lead (Optional) --</option>
-                  {doctors.map((doc) => (
-                    <option key={doc._id} value={doc._id}>
-                      Dr. {doc.name} ({doc.specialization})
-                    </option>
-                  ))}
+                    {doctors.map((doc) => (
+                      <option key={doc._id} value={doc._id}>
+                        {formatDoctorName(doc.name)} ({doc.specialization})
+                      </option>
+                    ))}
                 </select>
               </div>
 

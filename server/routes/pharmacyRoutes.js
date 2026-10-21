@@ -27,8 +27,8 @@ const router = express.Router();
 // All routes require authentication
 router.use(protect);
 
-// Restrict all operational pharmacy management to pharmacist, admin, super_admin
-router.use(restrictTo("pharmacist", "admin", "super_admin"));
+// Restrict operational pharmacy management to pharmacist, admin, super_admin, emergency, doctor
+router.use(restrictTo("pharmacist", "admin", "super_admin", "emergency", "doctor"));
 
 // 1. Telemetry & Analytics
 router.get("/telemetry", getPharmacyTelemetry);

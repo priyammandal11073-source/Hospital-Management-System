@@ -13,7 +13,8 @@ import DiagnosticOrder from "../models/DiagnosticOrder.js";
 import DiagnosticReport from "../models/DiagnosticReport.js";
 import DiagnosticTest from "../models/DiagnosticTest.js";
 import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
-import { resolveDoctorForUser } from "../utils/doctorHelper.js";
+import { checkPrescriptionSafety } from "../services/prescriptionSafetyService.js";
+import { resolveDoctorForUser, formatDoctorName } from "../utils/doctorHelper.js";
 
 // Helper: send error
 const sendError = (res, statusCode, message, err = null) => {
@@ -439,6 +440,30 @@ export const concludeConsultation = async (req, res) => {
     // 2. Handle Prescription if medications provided
     let createdPrescription = null;
     if (prescription && Array.isArray(prescription.medications) && prescription.medications.length > 0) {
+      // Server-side safety check (allergies + drug-drug interactions).
+      const safety = checkPrescriptionSafety({
+        patientAllergies: patient.allergies,
+        medications: prescription.medications,
+      });
+
+      const acknowledged = Boolean(prescription.allergyWarningAcknowledged);
+      if (safety.hasBlocking && !acknowledged) {
+        return res.status(400).json({
+          message: "Prescription contains a medication matching the patient's documented allergy. Acknowledge the allergy warning to continue.",
+          success: false,
+          safetyAlerts: safety.alerts,
+        });
+      }
+
+      // Fold server-derived alerts into the stored warning details so the
+      // pharmacy / dispense flows can surface them even if the UI missed them.
+      const serverAlertText = safety.summary
+        ? `[Safety check] ${safety.summary}`
+        : "";
+      const combinedWarningDetails = [prescription.allergyWarningDetails || "", serverAlertText]
+        .filter(Boolean)
+        .join(" | ");
+
       const rxCount = await Prescription.countDocuments();
       const prescriptionNumber = `RX-${Date.now().toString().slice(-6)}-${String(rxCount + 1).padStart(3, "0")}`;
 
@@ -454,8 +479,8 @@ export const concludeConsultation = async (req, res) => {
         labTestsRecommended: Array.isArray(labOrders) ? labOrders.map((l) => l.testName) : [],
         advice: prescription.advice || "",
         followUpDate: followUpDate ? new Date(followUpDate) : undefined,
-        allergyWarningAcknowledged: Boolean(prescription.allergyWarningAcknowledged),
-        allergyWarningDetails: prescription.allergyWarningDetails || "",
+        allergyWarningAcknowledged: acknowledged,
+        allergyWarningDetails: combinedWarningDetails,
         digitalSignature: {
           signedByName: doctorName,
           designation: doctor?.specialization ? `Specialist in ${doctor.specialization}` : "Consulting Physician",
@@ -506,7 +531,7 @@ export const concludeConsultation = async (req, res) => {
           patientName: patient.name,
           patientIdStr: patient.patientId || patient.abhaId,
           doctor: doctorId,
-          doctorName: `Dr. ${doctorName}`,
+          doctorName: formatDoctorName(doctorName),
           department: doctor?.department || "General Medicine",
           appointment: appointment._id,
           test: testDoc._id,
@@ -525,7 +550,7 @@ export const concludeConsultation = async (req, res) => {
         try {
           await diagnosticSyncService.onDiagnosticRequestCreated(diagOrder, {
             userId: req.user?._id,
-            userName: `Dr. ${doctorName}`,
+            userName: formatDoctorName(doctorName),
             role: "doctor",
           });
         } catch (syncErr) {
@@ -571,7 +596,7 @@ export const concludeConsultation = async (req, res) => {
         await Notification.create({
           user: specialistDoctorDoc.user,
           title: "New Patient Referral",
-          message: `Dr. ${doctorName} has referred patient ${patient.name} (${referral.priority} priority) for ${referral.reason}.`,
+          message: `${formatDoctorName(doctorName)} has referred patient ${patient.name} (${referral.priority} priority) for ${referral.reason}.`,
           type: "appointment",
           relatedId: createdReferral._id,
         }).catch(() => {});
@@ -1133,5 +1158,145 @@ export const getSpecialistDirectory = async (req, res) => {
     return res.status(200).json({ success: true, data: doctors });
   } catch (error) {
     return sendError(res, 500, "Error loading specialist directory", error);
+  }
+};
+
+// ── TELEMEDICINE (VIDEO CONSULTATIONS) ──────────────────────────────────────
+const generateJoinCode = () =>
+  "NV-" + new Date().getTime().toString(36).toUpperCase() + "-" + Math.random().toString(36).slice(2, 7).toUpperCase();
+
+/**
+ * 14. GET /api/doctor-workspace/telemedicine
+ * Upcoming + live teleconsultations for the logged-in doctor
+ */
+export const getMyTeleconsults = async (req, res) => {
+  try {
+    const doctor = await resolveDoctorForUser(req.user);
+    const filter = {
+      appointmentType: "teleconsultation",
+      status: { $in: ["pending", "confirmed", "checked_in", "waiting", "in_consultation"] },
+      appointmentDate: { $gte: new Date(new Date().setDate(new Date().getDate() - 1)) },
+    };
+    if (doctor) filter.doctor = doctor._id;
+
+    const appointments = await Appointment.find(filter)
+      .populate("patient", "name age gender contactNumber email bloodGroup allergies")
+      .populate("doctor", "name specialization department")
+      .sort({ appointmentDate: 1, timeSlot: 1 })
+      .limit(60);
+
+    const liveCount = appointments.filter((a) => a.telemedicine?.status === "live").length;
+
+    return res.status(200).json({
+      success: true,
+      count: appointments.length,
+      liveCount,
+      appointments,
+      doctor: doctor ? { name: doctor.name, _id: doctor._id } : { name: "Administrator" },
+    });
+  } catch (error) {
+    return sendError(res, 500, "Error loading teleconsultations", error);
+  }
+};
+
+/**
+ * 15. POST /api/doctor-workspace/telemedicine/:id/start
+ * Start a live video session for a teleconsultation and notify the patient
+ */
+export const startTeleconsult = async (req, res) => {
+  try {
+    const { id: appointmentId } = req.params;
+    if (!mongoose.isValidObjectId(appointmentId)) {
+      return sendError(res, 400, "Invalid appointment ID");
+    }
+
+    const doctor = await resolveDoctorForUser(req.user);
+    const appointment = await Appointment.findById(appointmentId)
+      .populate("doctor", "name specialization department")
+      .populate("patient", "name contactNumber");
+
+    if (!appointment) return sendError(res, 404, "Appointment not found");
+    if (appointment.appointmentType !== "teleconsultation") {
+      return sendError(res, 400, "Only teleconsultation appointments can start a video session");
+    }
+    if (appointment.status === "cancelled") {
+      return sendError(res, 400, "Cancelled appointments cannot be started");
+    }
+    if (req.user.role === "doctor" && doctor && appointment.doctor?._id?.toString() !== doctor._id.toString()) {
+      return sendError(res, 403, "You can only start your own teleconsultations");
+    }
+
+    const joinCode = appointment.telemedicine?.joinCode || generateJoinCode();
+    const meetLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/teleconsult/${joinCode}`;
+
+    appointment.telemedicine = {
+      joinCode,
+      meetLink,
+      status: "live",
+      startedAt: new Date(),
+    };
+    await appointment.save();
+
+    try {
+      await Notification.create({
+        recipientType: "patient",
+        patient: appointment.patient?._id,
+        title: "Video consultation started",
+        message: `${formatDoctorName(appointment.doctor?.name, "Doctor")} has started your video consultation. Tap Join to connect now.`,
+        type: "telemedicine_session",
+        link: `/patient/telemedicine`,
+      });
+    } catch (notifErr) {
+      console.error("Teleconsult notification error:", notifErr.message);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Teleconsultation started. Patient notified to join.",
+      meetLink,
+      joinCode,
+      appointment,
+    });
+  } catch (error) {
+    return sendError(res, 500, "Error starting teleconsultation", error);
+  }
+};
+
+/**
+ * 16. POST /api/doctor-workspace/telemedicine/:id/end
+ * End a live teleconsultation session for the patient
+ */
+export const endTeleconsult = async (req, res) => {
+  try {
+    const { id: appointmentId } = req.params;
+    if (!mongoose.isValidObjectId(appointmentId)) {
+      return sendError(res, 400, "Invalid appointment ID");
+    }
+
+    const doctor = await resolveDoctorForUser(req.user);
+    const appointment = await Appointment.findById(appointmentId);
+
+    if (!appointment) return sendError(res, 404, "Appointment not found");
+    if (appointment.appointmentType !== "teleconsultation") {
+      return sendError(res, 400, "Only teleconsultations can be ended from this endpoint");
+    }
+    if (req.user.role === "doctor" && doctor && appointment.doctor?.toString() !== doctor._id.toString()) {
+      return sendError(res, 403, "You can only end your own teleconsultations");
+    }
+
+    appointment.telemedicine = {
+      ...(appointment.telemedicine || {}),
+      status: "ended",
+      endedAt: new Date(),
+    };
+    await appointment.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Teleconsultation session ended",
+      appointment,
+    });
+  } catch (error) {
+    return sendError(res, 500, "Error ending teleconsultation", error);
   }
 };

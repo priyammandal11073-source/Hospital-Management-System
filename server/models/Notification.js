@@ -49,6 +49,8 @@ const notificationSchema = new mongoose.Schema(
         "diagnostic_completed",
         "critical_diagnostic",
         "report_amended",
+        "telemedicine_session",
+        "appointment_reminder",
       ],
       default: "general",
     },

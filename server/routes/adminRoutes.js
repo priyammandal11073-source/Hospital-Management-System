@@ -26,6 +26,11 @@ import {
   getAuditLogs,
   getHospitalSettings,
   updateHospitalSettings,
+  getInsuranceClaims,
+  decideInsuranceClaim,
+  getFeedbackReview,
+  reviewFeedback,
+  logPreventiveMaintenance,
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -82,6 +87,17 @@ router.route("/operating-theatre")
 
 // 11. Audit Logs
 router.get("/audit-logs", getAuditLogs);
+
+// 11b. Insurance Claims Desk
+router.get("/insurance-claims", getInsuranceClaims);
+router.patch("/insurance-claims/:billingId/decision", decideInsuranceClaim);
+
+// 11c. Patient Feedback Quality Desk
+router.get("/feedback", getFeedbackReview);
+router.patch("/feedback/:id/review", reviewFeedback);
+
+// 11d. Preventive Maintenance (PM)
+router.post("/equipment/:id/service", logPreventiveMaintenance);
 
 // 12. Institutional Settings
 router.route("/settings")

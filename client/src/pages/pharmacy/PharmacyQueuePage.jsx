@@ -4,6 +4,7 @@ import {
   getPrescriptionQueue,
   flagPrescriptionIssue,
 } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function PharmacyQueuePage() {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -47,7 +48,7 @@ export default function PharmacyQueuePage() {
         reason: flagReason,
         notes: flagNotes,
       });
-      alert(`Prescription RX-${flagModalItem._id.slice(-6).toUpperCase()} flagged to Dr. ${flagModalItem.doctor?.name || "in charge"} and placed on Hold.`);
+      alert(`Prescription RX-${flagModalItem._id.slice(-6).toUpperCase()} flagged to ${formatDoctorName(flagModalItem.doctor?.name, "Physician in charge")} and placed on Hold.`);
       setFlagModalItem(null);
       setFlagNotes("");
       fetchQueue();
@@ -243,7 +244,7 @@ export default function PharmacyQueuePage() {
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="font-semibold text-slate-800">
-                          Dr. {rx.doctor?.name?.replace(/^Dr\.\s*/i, "") || "Specialist"}
+                          {formatDoctorName(rx.doctor?.name, "Specialist")}
                         </div>
                         <div className="text-[11px] text-slate-500">{rx.doctor?.specialization || "Clinical OPD"}</div>
                       </td>
@@ -333,7 +334,7 @@ export default function PharmacyQueuePage() {
                 </div>
                 <div className="text-amber-800 mt-0.5">
                   Patient: <span className="font-semibold">{flagModalItem.patient?.name}</span> | Doctor:{" "}
-                  <span className="font-semibold">Dr. {flagModalItem.doctor?.name}</span>
+                  <span className="font-semibold">{formatDoctorName(flagModalItem.doctor?.name)}</span>
                 </div>
               </div>
 

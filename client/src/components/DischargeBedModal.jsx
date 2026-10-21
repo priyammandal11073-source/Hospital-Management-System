@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { dischargeBed } from "../services/api.js";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 const DISCHARGE_SUMMARIES = [
   "Patient recovered well; discharged with oral medications & home rest",
@@ -101,7 +102,7 @@ function DischargeBedModal({ bed, onClose, onSuccess }) {
                 </p>
               )}
               <p className="text-xs text-slate-600 font-medium mt-1">
-                Attending physician: Dr. {doctor.name || "Consultant"}
+                Attending physician: {getDoctorDisplayName(doctor, "Consultant")}
               </p>
             </div>
             <div className="text-right">

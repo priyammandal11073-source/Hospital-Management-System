@@ -6,6 +6,7 @@ import {
   getPrescriptionQueue,
   flagPrescriptionIssue,
 } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function PharmacyDashboard({ user, refreshKey, onTriggerRefresh }) {
   const navigate = useNavigate();
@@ -420,7 +421,7 @@ export default function PharmacyDashboard({ user, refreshKey, onTriggerRefresh }
                       </td>
                       <td className="px-4 py-3.5">
                         <div className="font-semibold text-slate-800">
-                          Dr. {rx.doctor?.name?.replace(/^Dr\.\s*/i, "") || "Specialist"}
+                          {formatDoctorName(rx.doctor?.name, "Specialist")}
                         </div>
                         <div className="text-[11px] text-slate-500">
                           {rx.doctor?.specialization || "Clinical OPD"}
@@ -740,7 +741,7 @@ export default function PharmacyDashboard({ user, refreshKey, onTriggerRefresh }
                 </div>
                 <div className="text-amber-800 mt-0.5">
                   Patient: <span className="font-semibold">{flagModalItem.patient?.name}</span> | Doctor:{" "}
-                  <span className="font-semibold">Dr. {flagModalItem.doctor?.name}</span>
+                  <span className="font-semibold">{formatDoctorName(flagModalItem.doctor?.name)}</span>
                 </div>
               </div>
 

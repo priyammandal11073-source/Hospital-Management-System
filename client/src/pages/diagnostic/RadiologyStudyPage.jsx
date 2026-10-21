@@ -185,8 +185,8 @@ export default function RadiologyStudyPage() {
           technique,
           findings,
           impression,
-          radiationDose,
-          contrastUsed,
+          radiationDose: studyData?.report?.radiologyStudy?.radiationDose || "0.02 mSv",
+          contrastUsed: studyData?.report?.radiologyStudy?.contrastUsed || "None",
         },
         summaryConclusion: impression,
       };

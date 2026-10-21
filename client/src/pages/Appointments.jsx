@@ -13,8 +13,8 @@ import {
   getDoctors,
   updateAppointmentStatus,
   getPatientVitals,
-  getBillingById,
 } from "../services/api.js";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 const statuses = ["pending", "waiting", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"];
 
@@ -212,7 +212,7 @@ function Appointments() {
               <option value="">All doctors</option>
               {doctors.map((doctor) => (
                 <option key={doctor._id} value={doctor._id}>
-                  Dr. {doctor.name}
+                  {getDoctorDisplayName(doctor)}
                 </option>
               ))}
             </select>
@@ -326,7 +326,9 @@ function Appointments() {
                       <div>
                         <span className="text-[10px] font-bold uppercase text-slate-400 block">Doctor</span>
                         <span className="font-semibold text-slate-800 text-xs">
-                          Dr. {appointment.doctor?.name || "Specialist"}
+                          <span className="font-semibold text-slate-800 text-xs">
+                          {getDoctorDisplayName(appointment.doctor, "Specialist")}
+                        </span>
                         </span>
                         <p className="text-[10px] text-slate-500 truncate">{appointment.doctor?.specialization}</p>
                       </div>
@@ -444,7 +446,7 @@ function Appointments() {
                           🩺
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-800">Dr. {appointment.doctor?.name || "Unknown doctor"}</p>
+                          <p className="font-semibold text-slate-800">{getDoctorDisplayName(appointment.doctor, "Unknown doctor")}</p>
                           <p className="text-xs text-slate-500">{appointment.doctor?.specialization || "Specialist"}</p>
                         </div>
                       </div>

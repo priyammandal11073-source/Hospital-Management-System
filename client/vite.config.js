@@ -9,6 +9,12 @@ export default defineConfig({
       "/api": "http://localhost:5000",
     },
   },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: "./src/test/setup.js",
+    include: ["src/**/*.test.{js,jsx}"],
+  },
   build: {
     chunkSizeWarningLimit: 1000,
     rollupOptions: {

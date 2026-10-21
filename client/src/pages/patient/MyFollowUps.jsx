@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyFollowUps } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 function MyFollowUps() {
   const [followUps, setFollowUps] = useState([]);
@@ -101,7 +102,7 @@ function MyFollowUps() {
                     </div>
 
                     <h3 className="text-base font-bold text-slate-900 mt-1">
-                      Dr. {f.doctor?.name || f.doctorName || "Consultant"}
+                      {formatDoctorName(f.doctor?.name || f.doctorName, "Consultant")}
                     </h3>
                     <p className="text-xs font-semibold text-blue-700">
                       {f.doctor?.specialization || f.specialization || "General Medicine"}

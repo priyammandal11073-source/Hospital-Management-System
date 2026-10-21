@@ -5,6 +5,7 @@ import {
   downloadDiagnosticReportPdfBlob,
 } from "../../services/api.js";
 import { printClinicalReport } from "../../utils/printReport.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function CriticalLabResultsPage() {
   const [reports, setReports] = useState([]);
@@ -226,7 +227,7 @@ export default function CriticalLabResultsPage() {
                 {rep.doctorReviewStatus === "reviewed" && (
                   <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center justify-between">
                     <div>
-                      <span className="font-bold">Reviewed by Dr. {rep.doctor?.name || "Attending Physician"}</span>
+                      <span className="font-bold">Reviewed by {formatDoctorName(rep.doctor?.name, "Attending Physician")}</span>
                       {rep.doctorReviewNotes && (
                         <p className="text-[11px] text-emerald-700 mt-0.5">Note: {rep.doctorReviewNotes}</p>
                       )}

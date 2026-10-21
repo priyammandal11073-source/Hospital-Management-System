@@ -12,6 +12,8 @@ import DiagnosticOrder from "../models/DiagnosticOrder.js";
 import DiagnosticTest from "../models/DiagnosticTest.js";
 import Equipment from "../models/Equipment.js";
 import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
+import { sendSms } from "../services/smsService.js";
+import { formatDoctorName } from "../utils/doctorHelper.js";
 
 // Helper: log audit action
 const logReceptionistAudit = async (req, action, details = "") => {
@@ -176,152 +178,162 @@ export const getFrontDeskWorkQueue = async (req, res) => {
 
     const queueItems = [];
 
-    // 1. Online Bookings requiring confirmation
-    if (!category || category === "all" || category === "online_booking") {
-      const pendingOnline = await Appointment.find({
-        bookedBy: "patient",
-        status: "pending",
-      })
-        .populate("patient", "name contactNumber email")
-        .populate("doctor", "name specialization department")
-        .sort({ createdAt: -1 })
-        .limit(10);
+    // Build all category queries up front so they run concurrently against
+    // MongoDB, instead of five sequential round-trips (each with populates).
+    const enableAll = !category || category === "all";
+    const shouldRun = (key) =>
+      enableAll ||
+      (key === "pendingOnline" && category === "online_booking") ||
+      (key === "pendingCheckins" && category === "waiting_checkin") ||
+      (key === "waiting" && category === "awaiting_doctor") ||
+      (key === "unpaidBills" && category === "payment") ||
+      (key === "customTasks" && category === "general_desk");
 
-      for (const app of pendingOnline) {
-        queueItems.push({
-          id: `online-${app._id}`,
-          originalId: app._id,
-          category: "online_booking",
-          patient: app.patient?.name || "Patient",
-          contactNumber: app.patient?.contactNumber,
-          task: `Online Booking Confirmation: Dr. ${app.doctor?.name || "Doctor"} (${app.doctor?.department || "OPD"})`,
-          dateTime: app.appointmentDate,
-          timeSlot: app.timeSlot,
-          priority: app.priority || "Normal",
-          status: "Pending",
-          actionType: "confirm_booking",
-          actionLink: `/reception/online-bookings`,
-          metadata: { appointmentId: app._id },
-        });
-      }
+    const [
+      pendingOnline,
+      pendingCheckins,
+      waiting,
+      unpaidBills,
+      customTasks,
+    ] = await Promise.all([
+      shouldRun("pendingOnline") ? (
+        Appointment.find({ bookedBy: "patient", status: "pending" })
+          .populate("patient", "name contactNumber email")
+          .populate("doctor", "name specialization department")
+          .sort({ createdAt: -1 })
+          .limit(10)
+      ) : Promise.resolve([]),
+      shouldRun("pendingCheckins") ? (
+        Appointment.find({
+          appointmentDate: { $gte: todayStart, $lte: todayEnd },
+          status: { $in: ["confirmed", "pending"] },
+          bookedBy: { $ne: "patient" },
+        })
+          .populate("patient", "name contactNumber")
+          .populate("doctor", "name specialization department")
+          .populate("diagnosticOrder", "testName orderNumber assignedRoom priority")
+          .sort({ timeSlot: 1 })
+          .limit(10)
+      ) : Promise.resolve([]),
+      shouldRun("waiting") ? (
+        Appointment.find({
+          appointmentDate: { $gte: todayStart, $lte: todayEnd },
+          status: { $in: ["checked_in", "waiting"] },
+        })
+          .populate("patient", "name contactNumber")
+          .populate("doctor", "name specialization department")
+          .sort({ checkedInAt: 1 })
+          .limit(10)
+      ) : Promise.resolve([]),
+      shouldRun("unpaidBills") ? (
+        Billing.find({ paymentStatus: { $in: ["pending", "partially_paid"] } })
+          .populate("patient", "name contactNumber")
+          .sort({ createdAt: -1 })
+          .limit(10)
+      ) : Promise.resolve([]),
+      shouldRun("customTasks") ? (
+        FrontDeskTask.find({ status: { $ne: "Completed" } })
+          .populate("patient", "name contactNumber")
+          .sort({ dueDate: 1 })
+          .limit(10)
+      ) : Promise.resolve([]),
+    ]);
+
+    // 1. Online Bookings requiring confirmation
+    for (const app of pendingOnline) {
+      queueItems.push({
+        id: `online-${app._id}`,
+        originalId: app._id,
+        category: "online_booking",
+        patient: app.patient?.name || "Patient",
+        contactNumber: app.patient?.contactNumber,
+        task: `Online Booking Confirmation: Dr. ${app.doctor?.name || "Doctor"} (${app.doctor?.department || "OPD"})`,
+        dateTime: app.appointmentDate,
+        timeSlot: app.timeSlot,
+        priority: app.priority || "Normal",
+        status: "Pending",
+        actionType: "confirm_booking",
+        actionLink: `/reception/online-bookings`,
+        metadata: { appointmentId: app._id },
+      });
     }
 
     // 2. Today's Appointments waiting for check-in
-    if (!category || category === "all" || category === "waiting_checkin") {
-      const pendingCheckins = await Appointment.find({
-        appointmentDate: { $gte: todayStart, $lte: todayEnd },
-        status: { $in: ["confirmed", "pending"] },
-        bookedBy: { $ne: "patient" },
-      })
-        .populate("patient", "name contactNumber")
-        .populate("doctor", "name specialization department")
-        .populate("diagnosticOrder", "testName orderNumber assignedRoom priority")
-        .sort({ timeSlot: 1 })
-        .limit(10);
-
-      for (const app of pendingCheckins) {
-        const isDiag = app.isDiagnostic || Boolean(app.diagnosticOrder);
-        queueItems.push({
-          id: `checkin-${app._id}`,
-          originalId: app._id,
-          category: "waiting_checkin",
-          patient: app.patient?.name || "Patient",
-          contactNumber: app.patient?.contactNumber,
-          task: isDiag
-            ? `Diagnostic Check-In: ${app.diagnosticOrder?.testName || app.reasonForVisit} (${app.timeSlot})`
-            : `Arrival Check-In: Dr. ${app.doctor?.name || "Doctor"} (${app.timeSlot})`,
-          dateTime: app.appointmentDate,
-          timeSlot: app.timeSlot,
-          priority: app.priority || "Normal",
-          status: "Pending",
-          actionType: isDiag ? "check_in_diagnostic" : "check_in",
-          actionLink: `/reception/waiting-room`,
-          metadata: { appointmentId: app._id, diagnosticOrderId: app.diagnosticOrder?._id },
-        });
-      }
+    for (const app of pendingCheckins) {
+      const isDiag = app.isDiagnostic || Boolean(app.diagnosticOrder);
+      queueItems.push({
+        id: `checkin-${app._id}`,
+        originalId: app._id,
+        category: "waiting_checkin",
+        patient: app.patient?.name || "Patient",
+        contactNumber: app.patient?.contactNumber,
+        task: isDiag
+          ? `Diagnostic Check-In: ${app.diagnosticOrder?.testName || app.reasonForVisit} (${app.timeSlot})`
+          : `Arrival Check-In: Dr. ${app.doctor?.name || "Doctor"} (${app.timeSlot})`,
+        dateTime: app.appointmentDate,
+        timeSlot: app.timeSlot,
+        priority: app.priority || "Normal",
+        status: "Pending",
+        actionType: isDiag ? "check_in_diagnostic" : "check_in",
+        actionLink: `/reception/waiting-room`,
+        metadata: { appointmentId: app._id, diagnosticOrderId: app.diagnosticOrder?._id },
+      });
     }
 
     // 3. Patients checked in and awaiting doctor
-    if (!category || category === "all" || category === "awaiting_doctor") {
-      const waiting = await Appointment.find({
-        appointmentDate: { $gte: todayStart, $lte: todayEnd },
-        status: { $in: ["checked_in", "waiting"] },
-      })
-        .populate("patient", "name contactNumber")
-        .populate("doctor", "name specialization department")
-        .sort({ checkedInAt: 1 })
-        .limit(10);
-
-      for (const app of waiting) {
-        queueItems.push({
-          id: `waiting-${app._id}`,
-          originalId: app._id,
-          category: "awaiting_doctor",
-          patient: app.patient?.name || "Patient",
-          contactNumber: app.patient?.contactNumber,
-          task: `In Queue: Token ${app.tokenNumber || "Pending"} • Dr. ${app.doctor?.name || "Doctor"}`,
-          dateTime: app.checkedInAt || app.appointmentDate,
-          timeSlot: app.timeSlot,
-          priority: app.priority || "Normal",
-          status: "In Progress",
-          actionType: "call_patient",
-          actionLink: `/reception/waiting-room`,
-          metadata: { appointmentId: app._id, tokenNumber: app.tokenNumber },
-        });
-      }
+    for (const app of waiting) {
+      queueItems.push({
+        id: `waiting-${app._id}`,
+        originalId: app._id,
+        category: "awaiting_doctor",
+        patient: app.patient?.name || "Patient",
+        contactNumber: app.patient?.contactNumber,
+        task: `In Queue: Token ${app.tokenNumber || "Pending"} • Dr. ${app.doctor?.name || "Doctor"}`,
+        dateTime: app.checkedInAt || app.appointmentDate,
+        timeSlot: app.timeSlot,
+        priority: app.priority || "Normal",
+        status: "In Progress",
+        actionType: "call_patient",
+        actionLink: `/reception/waiting-room`,
+        metadata: { appointmentId: app._id, tokenNumber: app.tokenNumber },
+      });
     }
 
     // 4. Pending cashier payments
-    if (!category || category === "all" || category === "payment") {
-      const unpaidBills = await Billing.find({
-        paymentStatus: { $in: ["pending", "partially_paid"] },
-      })
-        .populate("patient", "name contactNumber")
-        .sort({ createdAt: -1 })
-        .limit(10);
-
-      for (const bill of unpaidBills) {
-        const invoiceNum = String(bill._id || "").slice(-6).toUpperCase();
-        const amountStr = Number(bill.totalAmount || 0).toFixed(2);
-        queueItems.push({
-          id: `bill-${bill._id}`,
-          originalId: bill._id,
-          category: "payment",
-          patient: bill.patient?.name || "Patient",
-          contactNumber: bill.patient?.contactNumber,
-          task: `Settle Invoice #${invoiceNum} • ₹${amountStr}`,
-          dateTime: bill.createdAt,
-          priority: "Normal",
-          status: "Pending",
-          actionType: "collect_payment",
-          actionLink: `/billing`,
-          metadata: { billingId: bill._id, amount: bill.totalAmount || 0 },
-        });
-      }
+    for (const bill of unpaidBills) {
+      const invoiceNum = String(bill._id || "").slice(-6).toUpperCase();
+      const amountStr = Number(bill.totalAmount || 0).toFixed(2);
+      queueItems.push({
+        id: `bill-${bill._id}`,
+        originalId: bill._id,
+        category: "payment",
+        patient: bill.patient?.name || "Patient",
+        contactNumber: bill.patient?.contactNumber,
+        task: `Settle Invoice #${invoiceNum} • ₹${amountStr}`,
+        dateTime: bill.createdAt,
+        priority: "Normal",
+        status: "Pending",
+        actionType: "collect_payment",
+        actionLink: `/billing`,
+        metadata: { billingId: bill._id, amount: bill.totalAmount || 0 },
+      });
     }
 
     // 5. Custom desk tasks
-    if (!category || category === "all" || category === "general_desk") {
-      const customTasks = await FrontDeskTask.find({ status: { $ne: "Completed" } })
-        .populate("patient", "name contactNumber")
-        .sort({ dueDate: 1 })
-        .limit(10);
-
-      for (const t of customTasks) {
-        queueItems.push({
-          id: `custom-${t._id}`,
-          originalId: t._id,
-          category: t.category,
-          patient: t.patient?.name || t.patientName || "Administrative",
-          task: t.taskTitle,
-          dateTime: t.dueDate,
-          priority: t.priority,
-          status: t.status,
-          actionType: "custom_task",
-          actionLink: t.actionLink || "#",
-          metadata: { taskId: t._id },
-        });
-      }
+    for (const t of customTasks) {
+      queueItems.push({
+        id: `custom-${t._id}`,
+        originalId: t._id,
+        category: t.category,
+        patient: t.patient?.name || t.patientName || "Administrative",
+        task: t.taskTitle,
+        dateTime: t.dueDate,
+        priority: t.priority,
+        status: t.status,
+        actionType: "custom_task",
+        actionLink: t.actionLink || "#",
+        metadata: { taskId: t._id },
+      });
     }
 
     return res.status(200).json({ success: true, count: queueItems.length, queue: queueItems });
@@ -521,7 +533,7 @@ export const createWalkInDiagnostic = async (req, res) => {
       patientName: patient.name,
       patientIdStr: patient.patientId || patient.abhaId,
       doctor: doctor?._id || null,
-      doctorName: doctor ? `Dr. ${doctor.name}` : "Walk-in Desk Staff",
+      doctorName: doctor ? formatDoctorName(doctor.name) : "Walk-in Desk Staff",
       department: doctor?.department || "Diagnostic Services",
       test: test._id,
       testCode: test.testCode,
@@ -1214,5 +1226,73 @@ export const getAppointmentReminders = async (req, res) => {
   } catch (error) {
     console.error("Reminders queue error:", error);
     return res.status(500).json({ message: "Failed to fetch reminders" });
+  }
+};
+
+// POST /api/receptionist/reminders/:appointmentId/send
+// Dispatches an SMS (email-to-SMS gateway or simulated console fallback) plus
+// an in-app notification for tomorrow's scheduled appointment, then flags the
+// appointment as reminderSent so the desk doesn't re-broadcast it.
+export const sendAppointmentReminder = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+
+    if (!mongoose.isValidObjectId(appointmentId)) {
+      return res.status(400).json({ message: "Invalid appointment ID" });
+    }
+
+    const appointment = await Appointment.findById(appointmentId)
+      .populate("patient", "name contactNumber email")
+      .populate("doctor", "name specialization department");
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+    if (appointment.reminderSent) {
+      return res.status(400).json({ message: "A reminder has already been sent for this appointment." });
+    }
+
+    const patientPhone = appointment.patient?.contactNumber;
+    const doctorName = appointment.doctor?.name || "consulting doctor";
+    const dateStr = new Date(appointment.appointmentDate).toLocaleDateString("en-IN", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+
+    const message =
+      `Dear ${appointment.patient?.name || "Patient"}, this is a reminder for your ` +
+      `appointment with Dr. ${doctorName} on ${dateStr} at ${appointment.timeSlot}. ` +
+      `Please report to Nivora Care Hospital reception 15 minutes early. -Nivora Care`;
+
+    let smsResult = { sent: false, method: "none" };
+    if (patientPhone) {
+      smsResult = await sendSms(patientPhone, message);
+    }
+
+    await Notification.create({
+      recipientType: "patient",
+      patient: appointment.patient?._id,
+      title: "Appointment Reminder",
+      message,
+      type: "appointment_reminder",
+    });
+
+    appointment.reminderSent = true;
+    appointment.reminderSentAt = new Date();
+    await appointment.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Reminder dispatched to ${appointment.patient?.name || "patient"}${
+        patientPhone ? ` via ${smsResult.method}` : ""
+      }.`,
+      sms: smsResult,
+      appointment,
+    });
+  } catch (error) {
+    console.error("Reminder send error:", error);
+    return res.status(500).json({ message: "Failed to send appointment reminder" });
   }
 };

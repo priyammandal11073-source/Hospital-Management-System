@@ -4,6 +4,7 @@ import PrescriptionModal from "../components/PrescriptionModal.jsx";
 import MedicationAdminModal from "../components/MedicationAdminModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getPrescriptions, getPrescriptionById, deletePrescription } from "../services/api.js";
+import { getDoctorDisplayName, formatDoctorName } from "../utils/doctorName.js";
 
 const formatDate = (date) =>
   date
@@ -98,7 +99,7 @@ function Prescriptions() {
           </h1>
           <p className="text-sm font-medium text-slate-600 mt-1">
             {isDoctor
-              ? `Digital clinical prescriptions authored by Dr. ${user?.name?.replace(/^Dr\.\s*/i, "") || "Doctor"}`
+              ? `Digital clinical prescriptions authored by ${formatDoctorName(user?.name, "Doctor")}`
               : "Generate, print, and share digital clinical prescriptions on official Nivora Care letterhead"}
           </p>
         </div>
@@ -284,7 +285,7 @@ function Prescriptions() {
 
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-slate-900">
-                          Dr. {doctor.name || "Consultant"}
+                          {getDoctorDisplayName(doctor, "Consultant")}
                         </div>
                         <div className="text-xs text-slate-500">
                           {doctor.specialization || doctor.department || "OPD"}

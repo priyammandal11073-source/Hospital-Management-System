@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import PrescriptionModal from "../../components/PrescriptionModal.jsx";
 import { getMyPrescriptions } from "../../services/api.js";
+import { getDoctorDisplayName } from "../../utils/doctorName.js";
 
 const formatDate = (date) =>
   date
@@ -99,7 +100,7 @@ function MyPrescriptions() {
                       </div>
 
                       <p className="font-bold text-slate-900 mt-0.5">
-                        Dr. {doctor.name || "Doctor"} — {doctor.specialization || "General Medicine"}
+                        {getDoctorDisplayName(doctor, "Doctor")} — {doctor.specialization || "General Medicine"}
                       </p>
 
                       <p className="text-xs text-slate-700 mt-0.5">

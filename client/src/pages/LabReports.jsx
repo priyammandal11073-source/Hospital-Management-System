@@ -8,6 +8,7 @@ import {
   getDoctors,
 } from "../services/api.js";
 import { printClinicalReport } from "../utils/printReport.js";
+import { formatDoctorName } from "../utils/doctorName.js";
 
 const CATEGORIES = [
   "Hematology",
@@ -317,7 +318,7 @@ export default function LabReports() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-slate-700 whitespace-nowrap">
-                      {report.doctor ? `Dr. ${report.doctor.name}` : "Central Lab"}
+                      {report.doctor ? formatDoctorName(report.doctor.name) : "Central Lab"}
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       <span
@@ -419,7 +420,7 @@ export default function LabReports() {
                     <option value="">Central Diagnostics / External</option>
                     {doctors.map((d) => (
                       <option key={d._id} value={d._id}>
-                        Dr. {d.name} ({d.specialization})
+                        {formatDoctorName(d.name)} ({d.specialization})
                       </option>
                     ))}
                   </select>
@@ -645,7 +646,7 @@ export default function LabReports() {
                 <div>
                   <p className="text-slate-400 text-[10px] uppercase">Referring Doctor</p>
                   <p className="font-bold text-slate-900 text-sm">
-                    {previewReport.doctor ? `Dr. ${previewReport.doctor.name}` : "Central Lab"}
+                    {previewReport.doctor ? formatDoctorName(previewReport.doctor.name) : "Central Lab"}
                   </p>
                   <p className="text-slate-500 text-[11px]">Category: {previewReport.category}</p>
                 </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyReferrals } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 function MyReferrals() {
   const [referrals, setReferrals] = useState([]);
@@ -101,11 +102,11 @@ function MyReferrals() {
 
                     <h3 className="text-base font-bold text-slate-900 mt-1">
                       Referral to {r.toSpecialty || r.specialization || "Specialist"}
-                      {r.toDoctor?.name && ` (Dr. ${r.toDoctor.name})`}
+                      {r.toDoctor?.name && ` (${formatDoctorName(r.toDoctor.name)})`}
                     </h3>
 
                     <p className="text-xs text-slate-600 mt-1">
-                      Referred by: <strong className="text-slate-800">Dr. {r.fromDoctor?.name || r.referringDoctor || "Attending Physician"}</strong>
+                      Referred by: <strong className="text-slate-800">{formatDoctorName(r.fromDoctor?.name || r.referringDoctor, "Attending Physician")}</strong>
                       {r.department && ` (${r.department})`}
                     </p>
 

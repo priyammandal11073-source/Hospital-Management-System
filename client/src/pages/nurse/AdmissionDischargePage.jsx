@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getInpatientsWithCare, createNursingNote } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function AdmissionDischargePage() {
   const [searchParams] = useSearchParams();
@@ -233,7 +234,7 @@ export default function AdmissionDischargePage() {
                 </div>
                 <p className="text-xs text-slate-400 mt-1">
                   <strong>Diagnosis / Reason:</strong> {selectedPatient.admissionReason || "General Medical Care"} •{" "}
-                  <strong>Attending:</strong> Dr. {selectedPatient.attendingDoctor?.name || "Assigned"}
+                  <strong>Attending:</strong> {formatDoctorName(selectedPatient.attendingDoctor?.name, "Assigned")}
                 </p>
               </div>
             </div>

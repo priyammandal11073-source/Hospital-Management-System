@@ -9,7 +9,9 @@ import PatientClinicalProfileModal from "../components/nurse/PatientClinicalProf
 import DoctorPatientProfileModal from "../components/doctor/DoctorPatientProfileModal.jsx";
 import PharmacyDashboard from "./pharmacy/PharmacyDashboard.jsx";
 import DiagnosticDashboard from "./diagnostic/DiagnosticDashboard.jsx";
+import EmergencyDashboard from "./emergency/EmergencyDashboard.jsx";
 import UniversalPaymentModal from "../components/UniversalPaymentModal.jsx";
+import { formatDoctorName } from "../utils/doctorName.js";
 import {
   cancelMyAppointment,
   getAppointments,
@@ -37,6 +39,7 @@ import {
   getFrontDeskWorkQueue,
   confirmOnlineBooking,
 } from "../services/api.js";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 const formatDate = (date) =>
   new Date(date).toLocaleDateString("en-IN", {
@@ -569,7 +572,7 @@ function AdminDashboard({ user, refreshKey, onTriggerRefresh }) {
                     <div>
                       <p className="font-semibold text-slate-800 text-xs">{a.patient?.name}</p>
                       <p className="text-[11px] text-slate-500">
-                        Dr. {a.doctor?.name} • <span className="capitalize">{a.doctor?.specialization || "Consultant"}</span>
+                        {formatDoctorName(a.doctor?.name)} • <span className="capitalize">{a.doctor?.specialization || "Consultant"}</span>
                       </p>
                     </div>
                   </div>
@@ -712,7 +715,7 @@ function AdminDashboard({ user, refreshKey, onTriggerRefresh }) {
                             onClick={() => setShowSearchModal(false)}
                             className="flex items-center justify-between p-2 rounded-xl hover:bg-indigo-50/60 transition text-xs"
                           >
-                            <span className="font-bold text-slate-800">Dr. {d.name}</span>
+                            <span className="font-bold text-slate-800">{formatDoctorName(d.name)}</span>
                             <span className="text-slate-400">{d.specialization} • {d.department}</span>
                           </Link>
                         ))}
@@ -910,7 +913,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
             </div>
 
             <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Welcome, {(doctor?.name || user?.name || "Doctor").startsWith("Dr.") ? (doctor?.name || user?.name) : `Dr. ${doctor?.name || user?.name}`}
+              Welcome, {doctor?.name ? getDoctorDisplayName(doctor) : (user?.name || "Doctor")}
             </h1>
 
             <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-emerald-100/90">
@@ -1144,7 +1147,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           <div>
             <h2 className="text-base font-bold text-slate-800">My Consultation Queue & Live Triage</h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Patients queued exclusively for Dr. {doctor?.name || user?.name} with automated vital signs alerts
+              Patients queued exclusively for {doctor?.name ? getDoctorDisplayName(doctor) : user?.name} with automated vital signs alerts
             </p>
           </div>
           <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-500/20">
@@ -1829,7 +1832,7 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
                     <div>
                       <p className="font-bold text-slate-800 text-xs">{q.patient?.name || "Patient"}</p>
                       <p className="text-[11px] text-slate-500">
-                        Dr. {q.doctor?.name} • {q.doctor?.department} • Slot: {q.timeSlot}
+                        {formatDoctorName(q.doctor?.name)} • {q.doctor?.department} • Slot: {q.timeSlot}
                       </p>
                     </div>
                   </div>
@@ -1865,7 +1868,7 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
                     <div>
                       <p className="font-bold text-slate-800 text-xs">{a.patient?.name}</p>
                       <p className="text-[11px] text-slate-500">
-                        Dr. {a.doctor?.name} ({a.doctor?.department}) • {a.timeSlot}
+                        {formatDoctorName(a.doctor?.name)} ({a.doctor?.department}) • {a.timeSlot}
                       </p>
                     </div>
                     <button
@@ -2052,7 +2055,7 @@ function PatientPortalDashboard({ user, refreshKey, onTriggerRefresh }) {
                     {a.timeSlot ? a.timeSlot.slice(0, 5) : "AM"}
                   </div>
                   <div>
-                    <p className="font-bold text-slate-800">Dr. {a.doctor?.name}</p>
+                    <p className="font-bold text-slate-800">{formatDoctorName(a.doctor?.name)}</p>
                     <p className="text-xs text-slate-500">Consultation with {a.doctor?.specialization} • {formatDate(a.appointmentDate)}</p>
                   </div>
                 </div>
@@ -2882,6 +2885,10 @@ function Dashboard() {
         onTriggerRefresh={handleTriggerRefresh}
       />
     );
+  }
+
+  if (role === "emergency") {
+    return <EmergencyDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
   }
 
   // Default to Admin Executive Portal

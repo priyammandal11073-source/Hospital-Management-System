@@ -14,6 +14,9 @@ import {
   acknowledgeCriticalLabResult,
   getFollowUpsDue,
   getSpecialistDirectory,
+  getMyTeleconsults,
+  startTeleconsult,
+  endTeleconsult,
 } from "../controllers/doctorClinicalController.js";
 
 const router = express.Router();
@@ -50,5 +53,10 @@ router.get("/follow-ups", getFollowUpsDue);
 
 // Hospital Specialist Directory
 router.get("/specialist-directory", getSpecialistDirectory);
+
+// Telemedicine (Video Consultations)
+router.get("/telemedicine", getMyTeleconsults);
+router.post("/telemedicine/:id/start", startTeleconsult);
+router.post("/telemedicine/:id/end", endTeleconsult);
 
 export default router;

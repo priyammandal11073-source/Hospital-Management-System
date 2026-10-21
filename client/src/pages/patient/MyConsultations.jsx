@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyConsultations, getMyConsultationSummary } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 function MyConsultations() {
   const [consultations, setConsultations] = useState([]);
@@ -124,7 +125,7 @@ function MyConsultations() {
                     </div>
 
                     <h3 className="text-base font-bold text-slate-900 mt-1">
-                      Dr. {c.doctor?.name || "Attending Specialist"}
+                      {formatDoctorName(c.doctor?.name, "Attending Specialist")}
                     </h3>
                     <p className="text-xs font-semibold text-blue-700">
                       {c.doctor?.specialization || "General Medicine"}
@@ -181,7 +182,7 @@ function MyConsultations() {
                 <div>
                   <p className="text-[11px] font-bold uppercase text-slate-400">Doctor</p>
                   <p className="font-bold text-slate-800">
-                    Dr. {selectedSummary.appointment?.doctor?.name}
+                    {formatDoctorName(selectedSummary.appointment?.doctor?.name)}
                   </p>
                   <p className="text-xs text-slate-500">
                     {selectedSummary.appointment?.doctor?.specialization}

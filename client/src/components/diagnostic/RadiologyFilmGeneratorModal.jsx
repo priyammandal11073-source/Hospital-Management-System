@@ -8,8 +8,6 @@ export default function RadiologyFilmGeneratorModal({
   report,
   availableImages = [],
 }) {
-  if (!isOpen) return null;
-
   const [selectedLayout, setSelectedLayout] = useState("4-up");
   const [selectedImageIds, setSelectedImageIds] = useState(
     availableImages.map((img) => img.fileId || img._id)
@@ -42,6 +40,8 @@ export default function RadiologyFilmGeneratorModal({
       document.body.classList.remove("printing-film-mode");
     };
   }, []);
+
+  if (!isOpen) return null;
 
   const toggleImageSelection = (id) => {
     setSelectedImageIds((prev) =>

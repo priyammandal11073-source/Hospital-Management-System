@@ -4,7 +4,7 @@ import Prescription from "../models/Prescription.js";
 import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
 import Appointment from "../models/Appointment.js";
-import { resolveDoctorForUser } from "../utils/doctorHelper.js";
+import { resolveDoctorForUser, formatDoctorName } from "../utils/doctorHelper.js";
 
 const generateRxNumber = () => {
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -80,7 +80,7 @@ export const createPrescription = async (req, res) => {
       advice: advice ? advice.trim() : "",
       followUpDate: followUpDate || undefined,
       digitalSignature: {
-        signedByName: `Dr. ${doctorRecord.name}`,
+        signedByName: formatDoctorName(doctorRecord.name),
         designation: `${doctorRecord.specialization} (${doctorRecord.department})`,
         signedAt: new Date(),
       },

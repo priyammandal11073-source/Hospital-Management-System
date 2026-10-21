@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import InvoiceModal from "../../components/InvoiceModal.jsx";
 import { getMyBillings } from "../../services/api.js";
+import ActionMenu from "../../components/ui/ActionMenu.jsx";
 
 const statusClasses = { pending: "bg-yellow-100 text-yellow-800", paid: "bg-green-100 text-green-800", partially_paid: "bg-orange-100 text-orange-800" };
 
@@ -69,21 +70,65 @@ function MyBillings() {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSelectedInvoice(b)}
-                      type="button"
-                      className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-blue-50 border border-blue-200 px-3.5 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
-                    >
-                      📄 View / print
-                    </button>
-                    {b.paymentStatus !== "paid" && (
-                      <a
-                        href={`/pay/${b._id}`}
-                        className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-teal-600 px-3.5 py-2 text-xs font-bold text-white hover:bg-teal-700 transition shadow-2xs"
-                      >
-                        💳 Pay Now
-                      </a>
-                    )}
+                    <ActionMenu
+                      triggerLabel="Actions"
+                      triggerIcon={
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                        </svg>
+                      }
+                      items={[
+                        {
+                          label: "View / Print",
+                          icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>,
+                          primary: true,
+                          onClick: () => setSelectedInvoice(b),
+                        },
+                        {
+                          label: "Download PDF",
+                          icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>,
+                          onClick: () => {
+                            setSelectedInvoice(b);
+                            setTimeout(() => {
+                              const printBtn = document.querySelector('button[title="Print or Save as PDF"]');
+                              printBtn?.click();
+                            }, 300);
+                          },
+                        },
+                        {
+                          label: "Email Invoice",
+                          icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+                          disabled: !b.patient?.email,
+                          onClick: () => {
+                            setSelectedInvoice(b);
+                            setTimeout(() => {
+                              const emailBtn = document.querySelector('button[title^="Send invoice to"]');
+                              emailBtn?.click();
+                            }, 300);
+                          },
+                        },
+                        {
+                          label: "WhatsApp",
+                          icon: <span className="text-sm">💬</span>,
+                          disabled: !b.patient?.contactNumber,
+                          onClick: () => {
+                            setSelectedInvoice(b);
+                            setTimeout(() => {
+                              const waLink = document.querySelector('a[href^="https://wa.me/"]');
+                              waLink?.click();
+                            }, 300);
+                          },
+                        },
+                        { divider: true },
+                        ...(b.paymentStatus !== "paid" ? [{
+                          label: "Pay Now",
+                          icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2M17 9h2a2 2 0 000-4H5a2 2 0 000 4h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2z" /></svg>,
+                          primary: true,
+                          onClick: () => window.location.href = `/pay/${b._id}`,
+                        }] : []),
+                      ]}
+                      align="right"
+                    />
                   </div>
                 </div>
               </li>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getOnlineBookings, confirmOnlineBooking } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function OnlineBookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -120,7 +121,7 @@ export default function OnlineBookingsPage() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800">Dr. {app.doctor?.name}</div>
+                      <div className="font-semibold text-slate-800">{formatDoctorName(app.doctor?.name)}</div>
                       <div className="text-[11px] text-slate-500">{app.doctor?.department}</div>
                     </td>
                     <td className="py-3.5 px-4">

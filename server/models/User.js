@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema(
           "radiologist",
           "diagnostic_admin",
           "accountant",
+          "emergency",
           "patient",
         ],
         message: "Invalid user role",

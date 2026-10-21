@@ -40,6 +40,7 @@ import StockTransaction from "./models/StockTransaction.js";
 import Supplier from "./models/Supplier.js";
 import User from "./models/User.js";
 import Vitals from "./models/Vitals.js";
+import EmergencyEncounter from "./models/EmergencyEncounter.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, ".env"), override: true });
@@ -90,6 +91,7 @@ export const seedDatabase = async () => {
       HospitalSetting.deleteMany({}),
       Notification.deleteMany({}),
       Feedback.deleteMany({}),
+      EmergencyEncounter.deleteMany({}),
       AuditLog.deleteMany({}),
     ]);
     console.log("Existing collections cleared.");
@@ -225,6 +227,26 @@ export const seedDatabase = async () => {
       role: "pharmacist",
       designation: "Chief Pharmacist & Formulary Head",
       department: "Pharmacy & Medication Services",
+      status: "active",
+    });
+
+    const emergencyUser = await User.create({
+      name: "Dr. Emergency Coordinator",
+      email: "emergency@hospital.com",
+      password: "emergency123",
+      role: "emergency",
+      designation: "Emergency Department Coordinator",
+      department: "Emergency & Trauma",
+      status: "active",
+    });
+
+    const diagnosticAdminUser = await User.create({
+      name: "Diagnostic Admin",
+      email: "diagnostics@hospital.com",
+      password: "diagnostic123",
+      role: "diagnostic_admin",
+      designation: "Diagnostic Center Administrator",
+      department: "Diagnostics",
       status: "active",
     });
 
@@ -1985,6 +2007,147 @@ export const seedDatabase = async () => {
       { user: pharmacistUser._id, userName: pharmacistUser.name, role: "pharmacist", action: "DISPENSE_MEDICATION", module: "inventory", details: "Dispensed prescription RX-2026-1042 (Receipt: DISP-2026-0001)", ipAddress: "127.0.0.1" },
     ]);
 
+    // ──────────────────────────────────────────────────────────────────────────
+    // 20. EMERGENCY DEPARTMENT DEMO ENCOUNTERS (7 realistic scenarios)
+    // ──────────────────────────────────────────────────────────────────────────
+    console.log("20. Seeding Emergency Department encounters...");
+    const erNow = new Date();
+    const er1hAgo = new Date(erNow.getTime() - 60 * 60 * 1000);
+    const er2hAgo = new Date(erNow.getTime() - 2 * 60 * 60 * 1000);
+    const er3hAgo = new Date(erNow.getTime() - 3 * 60 * 60 * 1000);
+
+    // Ensure emergency beds have at least some available; reuse existing beds
+    await EmergencyEncounter.create([
+      {
+        emergencyId: `ER-${erNow.getFullYear()}-000001`,
+        tokenNumber: "ER-T001",
+        patient: pVikram._id,
+        arrivalTime: er1hAgo,
+        arrivalMode: "ambulance",
+        chiefComplaint: "Acute chest pain radiating to left arm, diaphoresis",
+        priority: "critical",
+        triageStatus: "triaged",
+        triage: { chiefComplaint: "Acute chest pain", symptoms: "Retrosternal pressure, SOB, sweating", bloodPressureSys: 92, bloodPressureDia: 60, heartRate: 118, respiratoryRate: 24, spo2: 88, temperature: 99.1, consciousnessLevel: "Alert", painScore: 9, relevantHistory: "CAD post-PTCA", triageNotes: "Immediate resuscitation bay, ECG shows ST elevation", triagedByName: "Sister Mary", triagedAt: er1hAgo },
+        status: "under_treatment",
+        location: "ER Resuscitation Bay 1",
+        assignedDoctor: docCardio._id,
+        assignedDoctorName: docCardio.name,
+        assignedNurseName: nurseUser1.name,
+        vitalsHistory: [{ bloodPressureSys: 92, bloodPressureDia: 60, heartRate: 118, respiratoryRate: 24, spo2: 88, temperature: 99.1, painScore: 9, consciousnessLevel: "Alert", recordedBy: "Sister Mary", notes: "Triage" }],
+        clinicalNotes: [{ note: "STEMI suspected, loaded Aspirin 325mg, Clopidogrel 600mg, Heparin bolus. Cardiology alerted. Cath lab on standby.", byName: docCardio.name, byRole: "doctor", at: er1hAgo }],
+        timeline: [{ event: "Emergency arrival", details: "Ambulance", by: "Emergency Desk", at: er1hAgo }, { event: "Triage completed", details: "Critical, Pain 9/10", by: "Sister Mary", at: er1hAgo }],
+        knownAllergies: pVikram.allergies,
+        knownConditions: pVikram.medicalHistory,
+        emergencyContact: pVikram.emergencyContact || { name: "Anjali Mehta", phone: "+91 98765 43219", relationship: "Spouse" },
+        createdBy: emergencyUser._id,
+        createdByName: emergencyUser.name,
+      },
+      {
+        emergencyId: `ER-${erNow.getFullYear()}-000002`,
+        tokenNumber: "ER-T002",
+        patient: pSanjay._id,
+        arrivalTime: er2hAgo,
+        arrivalMode: "walk_in",
+        chiefComplaint: "Severe headache, slurred speech, left side weakness",
+        priority: "critical",
+        triageStatus: "awaiting_triage",
+        status: "awaiting_triage",
+        location: "ER Triage Bay",
+        knownAllergies: [],
+        knownConditions: pSanjay.medicalHistory,
+        timeline: [{ event: "Emergency arrival", details: "Walk-in", by: "Reception", at: er2hAgo }],
+        createdBy: receptionistUser._id,
+        createdByName: receptionistUser.name,
+      },
+      {
+        emergencyId: `ER-${erNow.getFullYear()}-000003`,
+        tokenNumber: "ER-T003",
+        patient: pKavita._id,
+        arrivalTime: er2hAgo,
+        arrivalMode: "ambulance",
+        chiefComplaint: "Fall from height, severe knee pain, deformity",
+        priority: "urgent",
+        triageStatus: "triaged",
+        triage: { chiefComplaint: "Trauma fall", symptoms: "Bilateral knee pain, swelling", bloodPressureSys: 128, bloodPressureDia: 82, heartRate: 92, respiratoryRate: 18, spo2: 97, temperature: 98.4, consciousnessLevel: "Alert", painScore: 7, triageNotes: "Immobilized, X-ray pending", triagedByName: "Nurse Priya Singh", triagedAt: er2hAgo },
+        status: "awaiting_doctor",
+        location: "ER Bay 2",
+        vitalsHistory: [{ bloodPressureSys: 128, bloodPressureDia: 82, heartRate: 92, respiratoryRate: 18, spo2: 97, temperature: 98.4, painScore: 7, consciousnessLevel: "Alert", recordedBy: "Nurse Priya Singh" }],
+        timeline: [{ event: "Emergency arrival", details: "Ambulance", by: "ER Desk", at: er2hAgo }, { event: "Triage completed", details: "Urgent", by: "Nurse Priya Singh", at: er2hAgo }],
+        createdBy: emergencyUser._id,
+        createdByName: emergencyUser.name,
+      },
+      {
+        emergencyId: `ER-${erNow.getFullYear()}-000004`,
+        tokenNumber: "ER-T004",
+        patient: pPriya._id,
+        arrivalTime: er3hAgo,
+        arrivalMode: "walk_in",
+        chiefComplaint: "Acute exacerbation asthma, wheeze, SpO2 89%",
+        priority: "urgent",
+        triageStatus: "triaged",
+        triage: { chiefComplaint: "Asthma exacerbation", symptoms: "Wheeze, cough", bloodPressureSys: 118, bloodPressureDia: 76, heartRate: 102, respiratoryRate: 28, spo2: 89, temperature: 100.2, consciousnessLevel: "Alert", painScore: 3, triageNotes: "Nebulization started", triagedByName: "Sister Mary", triagedAt: er3hAgo },
+        status: "under_treatment",
+        location: "ER Bay 3",
+        assignedDoctor: docPed._id,
+        assignedDoctorName: docPed.name,
+        vitalsHistory: [{ bloodPressureSys: 118, bloodPressureDia: 76, heartRate: 102, respiratoryRate: 28, spo2: 89, temperature: 100.2, painScore: 3, consciousnessLevel: "Alert", recordedBy: "Sister Mary" }],
+        timeline: [{ event: "Emergency arrival", details: "Walk-in", by: "ER Desk", at: er3hAgo }, { event: "Triage completed", details: "Urgent", by: "Sister Mary", at: er3hAgo }, { event: "Doctor assigned", details: docPed.name, by: "ER Coordinator", at: er2hAgo }],
+        createdBy: receptionistUser._id,
+        createdByName: receptionistUser.name,
+      },
+      {
+        emergencyId: `ER-${erNow.getFullYear()}-000005`,
+        tokenNumber: "ER-T005",
+        patient: pAmit._id,
+        arrivalTime: er2hAgo,
+        arrivalMode: "transfer",
+        chiefComplaint: "High grade fever, chills, hypotension 88/60",
+        priority: "urgent",
+        triageStatus: "triaged",
+        triage: { chiefComplaint: "Sepsis suspected", symptoms: "Fever, chills, foot ulcer", bloodPressureSys: 88, bloodPressureDia: 60, heartRate: 110, respiratoryRate: 22, spo2: 93, temperature: 101.8, consciousnessLevel: "Verbal", painScore: 5, triageNotes: "Septic workup, blood cultures", triagedByName: "Dr. Arvind Verma", triagedAt: er2hAgo },
+        status: "awaiting_diagnostics",
+        location: "ER Bay 4",
+        assignedDoctor: docMed._id,
+        assignedDoctorName: docMed.name,
+        timeline: [{ event: "Emergency arrival", details: "Transfer from General Ward", by: "Ward Nurse", at: er2hAgo }],
+        createdBy: emergencyUser._id,
+        createdByName: emergencyUser.name,
+      },
+      {
+        emergencyId: `ER-${erNow.getFullYear()}-000006`,
+        tokenNumber: "ER-T006",
+        patient: pMeera._id,
+        arrivalTime: er3hAgo,
+        arrivalMode: "walk_in",
+        chiefComplaint: "Lower abdominal pain, vaginal spotting at 30 weeks",
+        priority: "less_urgent",
+        triageStatus: "triaged",
+        triage: { chiefComplaint: "AP pain pregnancy", symptoms: "Mild cramping, spotting", bloodPressureSys: 110, bloodPressureDia: 72, heartRate: 88, respiratoryRate: 18, spo2: 98, temperature: 98.6, consciousnessLevel: "Alert", painScore: 4, triageNotes: "Fetal heart present, USG ordered", triagedByName: "Dr. Sunita Reddy", triagedAt: er3hAgo },
+        status: "under_observation",
+        location: "ER Observation Bay 1",
+        assignedDoctor: docObgyn._id,
+        assignedDoctorName: docObgyn.name,
+        observation: { notes: "Continuous FHR monitoring, IV fluids, steroid cover", startedAt: er2hAgo, status: "active" },
+        timeline: [{ event: "Emergency arrival", details: "Walk-in", by: "ER Desk", at: er3hAgo }, { event: "Observation started", details: "FHR monitoring", by: docObgyn.name, at: er2hAgo }],
+        createdBy: emergencyUser._id,
+        createdByName: emergencyUser.name,
+      },
+      {
+        emergencyId: `ER-${erNow.getFullYear()}-000007`,
+        tokenNumber: "ER-T007",
+        patient: pDeepak._id,
+        arrivalTime: new Date(erNow.getTime() - 4 * 60 * 60 * 1000),
+        arrivalMode: "police",
+        chiefComplaint: "Road traffic accident, laceration forearm, bleeding controlled",
+        priority: "non_urgent",
+        triageStatus: "awaiting_triage",
+        status: "registered",
+        location: "ER Triage Bay",
+        createdBy: receptionistUser._id,
+        createdByName: receptionistUser.name,
+      },
+    ]);
+
     console.log("\n========================================================");
     console.log("Database seeded successfully with complete relational healthcare data!");
     console.log("========================================================");
@@ -2001,6 +2164,7 @@ export const seedDatabase = async () => {
     console.log("  10. Receptionist:receptionist@hospital.com/ receptionist123");
     console.log("  11. Nurse:       nurse@hospital.com       / nurse123");
     console.log("  12. Pharmacist:  pharmacist@hospital.com  / pharmacist123");
+    console.log("  13. Emergency:   emergency@hospital.com   / emergency123");
     console.log("\nPatient Portal Logins (http://localhost:5173/patient/login):");
     console.log("  1. Rahul Sharma: john@example.com         / patient123 (Hypertension/Cardiac)");
     console.log("  2. Priya Patel:  alice@example.com        / patient123 (Asthma/Allergy)");

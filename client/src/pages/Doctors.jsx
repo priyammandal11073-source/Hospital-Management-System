@@ -3,6 +3,7 @@ import DoctorForm from "../components/DoctorForm.jsx";
 import DoctorScheduleModal from "../components/DoctorScheduleModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { deleteDoctor, getDoctors } from "../services/api.js";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 const specializations = ["Cardiology", "Dermatology", "Neurology", "Orthopedics", "Pediatrics"];
 const departments = ["Cardiology", "Medicine", "Neurology", "Orthopedics", "Pediatrics"];
@@ -60,7 +61,7 @@ function Doctors() {
   };
 
   const handleDelete = async (doctor) => {
-    if (!window.confirm(`Delete Dr. ${doctor.name}? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete ${getDoctorDisplayName(doctor)}? This cannot be undone.`)) return;
 
     setError("");
 
@@ -164,7 +165,7 @@ function Doctors() {
                       Dr
                     </div>
                     <div>
-                      <h3 className="font-bold text-slate-900 text-sm leading-tight">Dr. {doctor.name}</h3>
+                      <h3 className="font-bold text-slate-900 text-sm leading-tight">{getDoctorDisplayName(doctor)}</h3>
                       <p className="text-xs text-slate-500">{doctor.email || "Hospital specialist"}</p>
                     </div>
                   </div>
@@ -205,7 +206,7 @@ function Doctors() {
                   {isAdmin && (
                     <>
                       <button
-                        aria-label={`Edit Dr. ${doctor.name}`}
+                        aria-label={`Edit ${getDoctorDisplayName(doctor)}`}
                         className="rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 hover:bg-blue-100 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
                         onClick={() => {
                           setSelectedDoctor(doctor);
@@ -217,7 +218,7 @@ function Doctors() {
                         ✎ Edit
                       </button>
                       <button
-                        aria-label={`Delete Dr. ${doctor.name}`}
+                        aria-label={`Delete ${getDoctorDisplayName(doctor)}`}
                         className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-600 hover:text-white transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
                         onClick={() => handleDelete(doctor)}
                         title="Delete doctor"
@@ -254,7 +255,7 @@ function Doctors() {
                           Dr
                         </div>
                         <div>
-                          <p className="font-bold text-slate-800">Dr. {doctor.name}</p>
+                          <p className="font-bold text-slate-800">{getDoctorDisplayName(doctor)}</p>
                           <p className="text-xs text-slate-500">{doctor.email || "Hospital specialist"}</p>
                         </div>
                       </div>
@@ -293,7 +294,7 @@ function Doctors() {
                       {isAdmin && (
                         <>
                           <button
-                            aria-label={`Edit Dr. ${doctor.name}`}
+aria-label={`Edit ${getDoctorDisplayName(doctor)}`}
                             className="rounded-lg border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition shadow-2xs"
                             onClick={() => {
                               setSelectedDoctor(doctor);
@@ -305,7 +306,7 @@ function Doctors() {
                             ✎ Edit
                           </button>
                           <button
-                            aria-label={`Delete Dr. ${doctor.name}`}
+aria-label={`Delete ${getDoctorDisplayName(doctor)}`}
                             className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs"
                             onClick={() => handleDelete(doctor)}
                             title="Delete doctor"

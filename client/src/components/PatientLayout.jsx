@@ -26,6 +26,8 @@ function PatientLayout() {
   }, [location.pathname]);
 
   // Lock body scroll when mobile drawer is open
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
@@ -36,6 +38,39 @@ function PatientLayout() {
       document.body.style.overflow = "";
     };
   }, [mobileOpen]);
+
+  // Real-time observer to detect any open modal across patient portal pages
+  useEffect(() => {
+    const checkModal = () => {
+      const overlays = document.querySelectorAll(".fixed.inset-0, [role='dialog']");
+      let found = false;
+      for (const el of overlays) {
+        if (el.getAttribute("aria-hidden") === "true") continue;
+        if (el.classList.contains("pointer-events-none")) continue;
+        if (el.classList.contains("-z-10")) continue;
+        if (el.classList.contains("animate-backdrop-fade") && !el.classList.contains("z-50")) continue;
+        found = true;
+        break;
+      }
+      setIsModalOpen(found);
+      if (found) setMobileOpen(false);
+    };
+
+    checkModal();
+
+    const observer = new MutationObserver(() => {
+      checkModal();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["class", "style", "aria-hidden"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleLogout = () => {
     patientLogout();
@@ -53,7 +88,7 @@ function PatientLayout() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#faf6f3] via-[#f6f4f2] to-[#f0eef4] flex flex-col font-sans">
       {/* ================= AMBIENT LIQUID-GLASS BACKGROUND ORBS ================= */}
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="glass-ambient -top-24 -left-24 h-96 w-96 bg-rose-400/20"></div>
         <div className="glass-ambient top-1/4 -right-32 h-[30rem] w-[30rem] bg-cyan-400/15"></div>
         <div className="glass-ambient bottom-0 left-1/3 h-80 w-80 bg-pink-300/15"></div>
@@ -61,7 +96,14 @@ function PatientLayout() {
       </div>
 
       {/* ================= TOP HOSPITAL BRANDING HEADER ================= */}
-      <header className="sticky top-0 z-40 border-b border-white/60 bg-white/60 backdrop-blur-2xl shadow-xs px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5">
+      <header
+        className={`sticky top-0 border-b px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 shadow-xs transition-all duration-200 ${
+          isModalOpen
+            ? "z-0 opacity-20 pointer-events-none select-none blur-[1.5px] bg-slate-100/40 border-slate-300/40"
+            : "z-20 border-white/60 bg-white/60 backdrop-blur-2xl"
+        }`}
+        aria-hidden={isModalOpen}
+      >
         <div className="flex items-center justify-between gap-2 max-w-full">
           {/* Hospital Logo & Brand Title */}
           <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-shrink">
@@ -148,7 +190,7 @@ function PatientLayout() {
       </header>
 
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
-      <div className="flex flex-1 flex-col lg:flex-row relative">
+      <div className="flex flex-1 flex-col lg:flex-row">
         {/* Mobile Backdrop Overlay */}
         {mobileOpen && (
           <div
@@ -231,6 +273,18 @@ function PatientLayout() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                 </svg>
                 <span>Consultation History</span>
+              </NavLink>
+              <NavLink className={navLinkClass} to="/patient/telemedicine">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                <span>Video Consultations</span>
+              </NavLink>
+              <NavLink className={navLinkClass} to="/patient/health-timeline">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Health Timeline</span>
               </NavLink>
               <NavLink className={navLinkClass} to="/patient/doctors">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -384,7 +438,7 @@ function PatientLayout() {
         </aside>
 
         {/* Main Content Pane */}
-        <main className="relative z-[1] flex-1 min-w-0 bg-transparent p-3 sm:p-5 lg:p-8 overflow-x-hidden">
+        <main className="flex-1 min-w-0 bg-transparent p-3 sm:p-5 lg:p-8 overflow-x-hidden">
           <Outlet />
         </main>
       </div>

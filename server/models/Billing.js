@@ -116,6 +116,10 @@ const billingSchema = new mongoose.Schema(
         message: "Please provide a valid payment method",
       },
     },
+    invoiceNumber: {
+      type: String,
+      trim: true,
+    },
     receiptNumber: {
       type: String,
       trim: true,
@@ -178,13 +182,19 @@ const billingSchema = new mongoose.Schema(
   }
 );
 
-// Keep the stored invoice total in sync with its itemized charges.
+// Keep the stored invoice total in sync with its itemized charges and assign invoiceNumber if absent.
 // `pre('validate')` runs before required-field validation for totalAmount.
 billingSchema.pre("validate", function calculateTotalAmount() {
-  this.totalAmount = this.itemizedCharges.reduce(
+  this.totalAmount = (this.itemizedCharges || []).reduce(
     (total, charge) => total + charge.cost,
     0
   );
+
+  if (!this.invoiceNumber) {
+    const year = new Date().getFullYear();
+    const randomSuffix = Math.floor(100000 + Math.random() * 900000);
+    this.invoiceNumber = `INV-${year}-${randomSuffix}`;
+  }
 });
 
 // Compound indexes for fast patient billing history, payment status queries, and references

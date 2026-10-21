@@ -6,6 +6,7 @@ import {
   getSpecialistDirectory,
   getPatients,
 } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function DoctorReferralsPage() {
   const [activeTab, setActiveTab] = useState("inbound"); // "inbound" | "outbound"
@@ -214,8 +215,8 @@ export default function DoctorReferralsPage() {
                   <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
                     <span>
                       {activeTab === "inbound"
-                        ? `From: Dr. ${ref.referringDoctorName}`
-                        : `To: Dr. ${ref.specialistDoctorName} (${ref.department})`}
+                        ? `From: ${formatDoctorName(ref.referringDoctorName)}`
+                        : `To: ${formatDoctorName(ref.specialistDoctorName)} (${ref.department})`}
                     </span>
                     <span>{new Date(ref.createdAt).toLocaleDateString()}</span>
                   </div>
@@ -309,7 +310,7 @@ export default function DoctorReferralsPage() {
                     <option value="">-- Choose Colleague --</option>
                     {specialists.map((doc) => (
                       <option key={doc._id} value={doc._id}>
-                        Dr. {doc.name} ({doc.department} - {doc.specialization})
+                        {formatDoctorName(doc.name)} ({doc.department} - {doc.specialization})
                       </option>
                     ))}
                   </select>

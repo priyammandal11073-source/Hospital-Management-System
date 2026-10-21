@@ -16,23 +16,63 @@ import {
   YAxis,
 } from "recharts";
 import { useAuth } from "../context/AuthContext.jsx";
+import { usePrintModal } from "../context/PrintModalContext.jsx";
+import { generateGeneralHospitalReportHtml } from "../utils/printTemplates.js";
 import {
   getAppointments,
   getDoctors,
   getRevenueSummary,
   getRevenueAnalytics,
 } from "../services/api.js";
+import { getDoctorDisplayName } from "../utils/doctorName.js";
 
 const PIE_COLORS = ["#0F766E", "#0284C7", "#10B981", "#8B5CF6", "#F59E0B", "#64748B"];
 const statuses = ["pending", "confirmed", "completed", "cancelled"];
 
 export default function Reports() {
   const { user, loading } = useAuth();
+  const { openPrintPreview } = usePrintModal();
   const [reportData, setReportData] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeView, setActiveView] = useState("revenue"); // 'revenue' | 'appointments'
+
+  const handlePrintRevenueSummary = () => {
+    if (!reportData) return;
+    const rev = reportData.revenue || {};
+    const methods = analytics?.paymentMethods || [];
+
+    const html = generateGeneralHospitalReportHtml({
+      title: "Hospital Financial & Revenue Audit Report",
+      subtitle: "Consolidated Billing Collections & Departmental Revenue Analysis",
+      metrics: [
+        { label: "Total Gross Revenue", value: `₹${Number(rev.totalRevenue || 0).toLocaleString("en-IN")}`, color: "#0f766e" },
+        { label: "Today's Collections", value: `₹${Number(rev.todayRevenue || 0).toLocaleString("en-IN")}`, color: "#0284c7" },
+        { label: "Pending Invoices", value: `₹${Number(rev.pendingAmount || 0).toLocaleString("en-IN")}`, color: "#d97706" },
+        { label: "Total Bills Settled", value: `${rev.totalBills || 0}`, color: "#166534" },
+      ],
+      tables: [
+        {
+          title: "Payment Method Collections Distribution",
+          headers: ["Payment Mode", "Transaction Count", "Gross Amount (INR)", "% of Total"],
+          rows: methods.map(m => [
+            m._id?.toUpperCase() || "OTHER",
+            String(m.count || 0),
+            `₹${Number(m.value || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}`,
+            `${rev.totalRevenue > 0 ? Math.round((m.value / rev.totalRevenue) * 100) : 0}%`,
+          ]),
+        },
+      ],
+      notes: "Official hospital financial summary audited and compiled from the central billing registry. All transactions are logged with digital audit trails.",
+    });
+
+    openPrintPreview({
+      title: "Hospital Financial & Revenue Audit Report",
+      htmlContent: html,
+      refNumber: `FIN-AUDIT-${Date.now().toString().slice(-6)}`,
+    });
+  };
 
   useEffect(() => {
     if (user?.role !== "admin") return;
@@ -377,10 +417,10 @@ export default function Reports() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 text-right">
+              <div className="pt-4 border-t border-slate-100 text-right no-print print:hidden">
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={handlePrintRevenueSummary}
                   className="w-full sm:w-auto text-xs font-bold text-teal-700 hover:text-teal-900 bg-teal-50 min-h-[44px] px-4 py-2 rounded-xl border border-teal-200 inline-flex items-center justify-center gap-1.5 transition"
                 >
                   🖨️ Export Revenue Summary
@@ -436,7 +476,7 @@ export default function Reports() {
                       👨‍⚕️
                     </div>
                     <div>
-                      <p className="font-bold text-slate-800">Dr. {doctor.name}</p>
+                      <p className="font-bold text-slate-800">{getDoctorDisplayName(doctor)}</p>
                       <p className="text-[11px] text-slate-500">{doctor.specialization}</p>
                     </div>
                   </div>

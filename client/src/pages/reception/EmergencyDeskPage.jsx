@@ -7,6 +7,7 @@ import {
   allocateBed,
   getDoctors,
 } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function EmergencyDeskPage() {
   const [emergencyBeds, setEmergencyBeds] = useState([]);
@@ -243,7 +244,7 @@ export default function EmergencyDeskPage() {
                 >
                   {doctors.map((d) => (
                     <option key={d._id} value={d._id}>
-                      Dr. {d.name} ({d.department || d.specialization})
+                      {formatDoctorName(d.name)} ({d.department || d.specialization})
                     </option>
                   ))}
                 </select>

@@ -75,7 +75,7 @@ router.get("/tests/:id", getDiagnosticTestById);
 router.get("/requests", getDiagnosticRequests);
 router.post(
   "/requests",
-  restrictTo("admin", "doctor", "receptionist", "diagnostic_admin", "nurse"),
+  restrictTo("admin", "doctor", "receptionist", "diagnostic_admin", "nurse", "emergency"),
   createDiagnosticRequest
 );
 router.patch("/requests/:id/status", updateRequestStatus);
@@ -84,12 +84,12 @@ router.patch("/requests/:id/status", updateRequestStatus);
 router.get("/samples", getDiagnosticSamples);
 router.post(
   "/samples/collect",
-  restrictTo("admin", "diagnostic_admin", "lab_technician", "nurse"),
+  restrictTo("admin", "diagnostic_admin", "lab_technician", "nurse", "emergency"),
   collectDiagnosticSample
 );
 router.patch(
   "/samples/:id/status",
-  restrictTo("admin", "diagnostic_admin", "lab_technician", "nurse"),
+  restrictTo("admin", "diagnostic_admin", "lab_technician", "nurse", "emergency"),
   updateSampleStatus
 );
 

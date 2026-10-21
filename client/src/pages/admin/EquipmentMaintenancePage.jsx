@@ -5,13 +5,21 @@ import {
   getAdminMaintenanceOrders,
   createAdminMaintenanceOrder,
   updateAdminMaintenanceOrderStatus,
+  logPreventiveMaintenance,
 } from "../../services/api.js";
 
 const STATUS_BADGES = {
   operational: "bg-emerald-50 text-emerald-700 ring-emerald-500/20",
   under_maintenance: "bg-amber-50 text-amber-700 ring-amber-500/20",
   out_of_order: "bg-rose-50 text-rose-700 ring-rose-500/20",
+  out_of_service: "bg-rose-50 text-rose-700 ring-rose-500/20",
   calibration_due: "bg-blue-50 text-blue-700 ring-blue-500/20",
+};
+
+const PM_BADGES = {
+  overdue: "bg-rose-100 text-rose-800 ring-rose-300",
+  due_soon: "bg-amber-100 text-amber-800 ring-amber-300",
+  on_schedule: "bg-emerald-50 text-emerald-700 ring-emerald-500/20",
 };
 
 const PRIORITY_BADGES = {
@@ -29,6 +37,7 @@ export default function EquipmentMaintenancePage() {
   const [successMsg, setSuccessMsg] = useState("");
 
   const [showCreateOrderModal, setShowCreateOrderModal] = useState(false);
+  const [pm, setPm] = useState({ portfolio: 0, overdueCount: 0, dueSoonCount: 0 });
   const [newOrder, setNewOrder] = useState({
     equipmentId: "",
     department: "Emergency & Trauma",
@@ -46,10 +55,30 @@ export default function EquipmentMaintenancePage() {
       ]);
       setEquipment(eqRes.equipment || []);
       setOrders(ordRes.orders || []);
+      setPm(eqRes.pm || { portfolio: equipment.length, overdueCount: 0, dueSoonCount: 0 });
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load biomedical data.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleLogPm = async (eq) => {
+    const technician = window.prompt(
+      `Logging preventive maintenance for "${eq.name}"\nAssign technician:`,
+      "Biomedical Team 1"
+    );
+    if (technician === null) return;
+    try {
+      const res = await logPreventiveMaintenance(eq._id, {
+        technicianName: technician.trim() || "Biomedical Team 1",
+        notes: `Routine preventive maintenance serviced by ${technician.trim() || "Biomedical Team 1"}`,
+      });
+      setSuccessMsg(res.message || "Preventive maintenance logged.");
+      await loadData();
+      setTimeout(() => setSuccessMsg(""), 4000);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to log preventive maintenance.");
     }
   };
 
@@ -141,7 +170,7 @@ export default function EquipmentMaintenancePage() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200/80 shadow-2xs">
           <p className="text-[11px] font-bold text-slate-400 uppercase">Tracked Assets</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{stats.totalEq}</p>
+          <p className="text-2xl font-black text-slate-900 mt-1">{pm.portfolio || equipment.length}</p>
           <span className="text-[10px] text-slate-500">Biomedical inventory</span>
         </div>
         <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200/80 shadow-2xs">
@@ -150,14 +179,14 @@ export default function EquipmentMaintenancePage() {
           <span className="text-[10px] text-emerald-600 font-medium">{stats.operational} units active</span>
         </div>
         <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200/80 shadow-2xs">
-          <p className="text-[11px] font-bold text-amber-600 uppercase">Active Work Orders</p>
-          <p className="text-2xl font-black text-amber-700 mt-1">{stats.pendingTickets}</p>
-          <span className="text-[10px] text-amber-600 font-medium">Under repair / inspection</span>
+          <p className="text-[11px] font-bold text-amber-600 uppercase">Due For Service</p>
+          <p className="text-2xl font-black text-amber-700 mt-1">{pm.dueSoonCount || 0}</p>
+          <span className="text-[10px] text-amber-600 font-medium">Within the next 7 days</span>
         </div>
         <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200/80 shadow-2xs">
-          <p className="text-[11px] font-bold text-blue-600 uppercase">Calibration Standard</p>
-          <p className="text-2xl font-black text-blue-700 mt-1">NABH / ISO</p>
-          <span className="text-[10px] text-blue-600 font-medium">Compliance valid</span>
+          <p className="text-[11px] font-bold text-rose-600 uppercase">Overdue PM</p>
+          <p className="text-2xl font-black text-rose-700 mt-1">{pm.overdueCount || 0}</p>
+          <span className="text-[10px] text-rose-600 font-medium">Need service attention</span>
         </div>
       </div>
 
@@ -193,47 +222,70 @@ export default function EquipmentMaintenancePage() {
                   <th className="px-4 py-3">Location & Dept</th>
                   <th className="px-4 py-3">Last Maintenance</th>
                   <th className="px-4 py-3">Next Calibration</th>
+                  <th className="px-4 py-3">PM Status</th>
                   <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {isLoading ? (
                   <tr>
-                    <td colSpan="6" className="px-4 py-8 text-center text-slate-400">
+                    <td colSpan="8" className="px-4 py-8 text-center text-slate-400">
                       Loading biomedical equipment database...
                     </td>
                   </tr>
                 ) : equipment.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-4 py-8 text-center text-slate-500">
+                    <td colSpan="8" className="px-4 py-8 text-center text-slate-500">
                       No biomedical machinery recorded.
                     </td>
                   </tr>
                 ) : (
                   equipment.map((eq) => (
-                    <tr key={eq._id} className="hover:bg-slate-50/70 transition">
+                    <tr key={eq._id} className={`hover:bg-slate-50/70 transition ${eq.pmStatus === "overdue" ? "bg-rose-50/50" : ""}`}>
                       <td className="px-4 py-3">
                         <p className="font-bold text-slate-900">{eq.name}</p>
-                        <p className="text-[11px] text-slate-400">{eq.model || "Hospital Standard"}</p>
+                        <p className="text-[11px] text-slate-400">{eq.modelNumber || "Hospital Standard"}</p>
                       </td>
                       <td className="px-4 py-3 font-mono text-[11px] text-slate-600">
-                        <div>{eq.equipmentCode}</div>
-                        <div className="text-[10px] text-slate-400">SN: {eq.serialNumber || "—"}</div>
+                        <div>{eq.equipmentId}</div>
+                        <div className="text-[10px] text-slate-400">MFG: {eq.manufacturer || "—"}</div>
                       </td>
                       <td className="px-4 py-3 text-slate-700 font-medium">
                         <div>{eq.department}</div>
                         <div className="text-[10px] text-slate-400">{eq.location}</div>
                       </td>
                       <td className="px-4 py-3 text-slate-500 font-mono text-[11px]">
-                        {eq.lastMaintenanceDate ? new Date(eq.lastMaintenanceDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                        {eq.lastServiceDate ? new Date(eq.lastServiceDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
                       </td>
                       <td className="px-4 py-3 text-slate-600 font-mono text-[11px]">
-                        {eq.nextMaintenanceDate ? new Date(eq.nextMaintenanceDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                        {eq.dueForServiceOn ? new Date(eq.dueForServiceOn).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold capitalize ring-1 ${PM_BADGES[eq.pmStatus] || PM_BADGES.on_schedule}`}>
+                          {eq.pmStatus === "overdue"
+                            ? "⚠ Overdue"
+                            : eq.pmStatus === "due_soon"
+                            ? "Due soon"
+                            : eq.pmStatus === "on_schedule"
+                            ? "On schedule"
+                            : "—"}
+                        </span>
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold capitalize ring-1 ${STATUS_BADGES[eq.status] || STATUS_BADGES.operational}`}>
                           {eq.status?.replace("_", " ")}
                         </span>
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleLogPm(eq)}
+                          disabled={eq.status === "under_maintenance"}
+                          className="rounded-lg border border-teal-300 bg-teal-50 px-3 py-1.5 text-[11px] font-bold text-teal-700 hover:bg-teal-100 transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          {eq.pmStatus === "overdue" ? "Service Now" : "Log PM"}
+                        </button>
                       </td>
                     </tr>
                   ))

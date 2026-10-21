@@ -22,6 +22,6 @@ router.patch("/:id/checklist", protect, updateAppointmentChecklist);
 router
   .route("/:id")
   .get(protect, getAppointmentById)
-  .delete(protect, restrictTo("admin", "receptionist", "nurse"), deleteAppointment);
+  .delete(protect, restrictTo("admin", "receptionist", "nurse", "doctor"), deleteAppointment);
 
 export default router;

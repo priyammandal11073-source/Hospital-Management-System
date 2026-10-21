@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getPatients, getPrescriptionQueue } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 export default function PharmacyPatientsPage() {
   const [patients, setPatients] = useState([]);
@@ -187,7 +188,7 @@ export default function PharmacyPatientsPage() {
                           </span>
                         </div>
                         <p className="text-slate-600 mt-1">
-                          Doctor: Dr. {rx.doctor?.name || "Specialist"} • Diagnosis: {rx.diagnosis || "OPD Consultation"}
+                          Doctor: {formatDoctorName(rx.doctor?.name, "Specialist")} • Diagnosis: {rx.diagnosis || "OPD Consultation"}
                         </p>
                         <div className="mt-2 border-t border-slate-200/80 pt-2 space-y-1">
                           {(rx.medicines || []).map((m, idx) => (

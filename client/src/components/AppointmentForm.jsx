@@ -7,24 +7,10 @@ import {
 import { useAuth } from "../context/AuthContext.jsx";
 import PaymentMethodSelect from "./PaymentMethodSelect.jsx";
 import UpiPaymentBox from "./UpiPaymentBox.jsx";
+import { getDoctorDisplayName, formatDoctorName } from "../utils/doctorName.js";
 
 function AppointmentForm({ onCancel, onSuccess }) {
   const { user } = useAuth();
-  if (user?.role === "nurse") {
-    return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-800">
-        <p className="font-bold">⚠️ Access Restricted</p>
-        <p className="mt-1">Nurses do not have permission to book new patient appointments. Please contact front desk reception.</p>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="mt-4 rounded-lg bg-amber-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
-        >
-          Close
-        </button>
-      </div>
-    );
-  }
 
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -87,6 +73,22 @@ function AppointmentForm({ onCancel, onSuccess }) {
         patient.contactNumber.toLowerCase().includes(query)
     );
   }, [patients, patientSearch]);
+
+  if (user?.role === "nurse") {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center text-sm text-amber-800">
+        <p className="font-bold">⚠️ Access Restricted</p>
+        <p className="mt-1">Nurses do not have permission to book new patient appointments. Please contact front desk reception.</p>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="mt-4 rounded-lg bg-amber-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+        >
+          Close
+        </button>
+      </div>
+    );
+  }
 
   const selectedDoctor = doctors.find((doctor) => doctor._id === formData.doctor);
 
@@ -222,7 +224,7 @@ function AppointmentForm({ onCancel, onSuccess }) {
           <option value="">Select doctor</option>
           {doctors.map((doctor) => (
             <option key={doctor._id} value={doctor._id}>
-              Dr. {doctor.name} — {doctor.specialization}
+              {formatDoctorName(doctor)} — {doctor.specialization}
             </option>
           ))}
         </select>
@@ -230,7 +232,7 @@ function AppointmentForm({ onCancel, onSuccess }) {
 
       {selectedDoctor && (
         <div className="rounded-xl bg-teal-50/70 border border-teal-200/80 p-4 text-xs text-teal-950">
-          <p className="font-bold text-sm text-teal-900">Dr. {selectedDoctor.name}'s availability</p>
+          <p className="font-bold text-sm text-teal-900">{formatDoctorName(selectedDoctor.name)}'s availability</p>
           <p className="mt-1">
             <span className="font-semibold text-teal-800">Days: </span>
             {selectedDoctor.availableDays?.join(", ") || "Not set"}

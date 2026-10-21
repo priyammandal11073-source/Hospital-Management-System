@@ -27,7 +27,7 @@ router
   .route("/:id")
   .get(getBillingById);
 
-router.patch("/:id/payment", protect, restrictTo("admin", "receptionist"), updatePaymentStatus);
+router.patch("/:id/payment", protect, restrictTo("admin", "receptionist", "nurse", "pharmacist", "doctor", "emergency"), updatePaymentStatus);
 router.post("/:id/send-email", protect, restrictTo("admin", "receptionist"), sendBillingEmail);
 router.post("/:id/send-sms", protect, restrictTo("admin", "receptionist"), sendPaymentLinkSmsHandler);
 

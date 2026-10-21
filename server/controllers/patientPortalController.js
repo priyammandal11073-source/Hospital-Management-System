@@ -94,7 +94,7 @@ export const getMyAppointments = async (req, res) => {
 // POST /api/patient-portal/appointments
 export const bookMyAppointment = async (req, res) => {
   try {
-    const { doctor, appointmentDate, timeSlot, reasonForVisit, paymentMethod } = req.body;
+    const { doctor, appointmentDate, timeSlot, reasonForVisit, paymentMethod, appointmentType } = req.body;
 
     if (!doctor || !appointmentDate || !timeSlot || !reasonForVisit) {
       return res.status(400).json({
@@ -105,6 +105,11 @@ export const bookMyAppointment = async (req, res) => {
     if (!mongoose.isValidObjectId(doctor)) {
       return res.status(400).json({ message: "Invalid doctor ID" });
     }
+
+    const validAppointmentTypes = ["opd", "teleconsultation", "follow_up"];
+    const resolvedType = validAppointmentTypes.includes(appointmentType)
+      ? appointmentType
+      : "opd";
 
     if (typeof timeSlot !== "string" || typeof reasonForVisit !== "string") {
       return res.status(400).json({ message: "Time slot and reason for visit must be text" });
@@ -136,6 +141,7 @@ export const bookMyAppointment = async (req, res) => {
       reasonForVisit: reasonForVisit.trim(),
       status: "pending",
       bookedBy: "patient",
+      appointmentType: resolvedType,
     });
 
     // Auto-create an OPD billing record for immediate payment.
@@ -1771,6 +1777,46 @@ export const getMyFeedback = async (req, res) => {
     return res.status(200).json({ success: true, feedback: feedbackList });
   } catch (error) {
     return res.status(500).json({ message: "Unable to fetch feedback history" });
+  }
+};
+
+// ── TELEMEDICINE (VIDEO CONSULTATIONS) ──────────────────────────────────────
+// GET /api/patient-portal/telemedicine
+export const getMyTelemedicine = async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoAppointments = [
+        {
+          _id: "demo_tel_1",
+          doctor: { name: "Dr. Sarah Jenkins", specialization: "Cardiology", department: "Cardiology" },
+          appointmentDate: new Date(Date.now() + 2 * 3600 * 1000),
+          timeSlot: "10:30 AM",
+          status: "confirmed",
+          reasonForVisit: "Cardiovascular follow-up",
+          appointmentType: "teleconsultation",
+          telemedicine: {
+            joinCode: "DEMO2345",
+            meetLink: "/teleconsult/DEMO2345",
+            status: "scheduled",
+          },
+        },
+      ];
+      return res.status(200).json({ success: true, appointments: demoAppointments, isOfflineDemo: true });
+    }
+
+    const now = new Date();
+    const appointments = await Appointment.find({
+      patient: req.patient.id,
+      appointmentType: "teleconsultation",
+      status: { $in: ["pending", "confirmed", "checked_in", "waiting", "in_consultation"] },
+    })
+      .populate("doctor", "name specialization department contactNumber email")
+      .sort({ appointmentDate: 1, timeSlot: 1 })
+      .limit(30);
+
+    return res.status(200).json({ success: true, appointments, now });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to fetch telemedicine appointments" });
   }
 };
 

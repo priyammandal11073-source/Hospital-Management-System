@@ -6,6 +6,7 @@ import {
   getDoctors,
   getPatients,
 } from "../../services/api.js";
+import { formatDoctorName } from "../../utils/doctorName.js";
 
 const STATUS_BADGES = {
   scheduled: "bg-blue-50 text-blue-700 ring-blue-500/20",
@@ -238,7 +239,7 @@ export default function OperatingTheatrePage() {
                       {p.patient?.name || "Patient"}
                     </td>
                     <td className="px-4 py-3 text-slate-700 font-semibold">
-                      {p.leadSurgeon?.name ? `Dr. ${p.leadSurgeon.name}` : "Lead Surgeon"}
+                      {p.leadSurgeon?.name ? formatDoctorName(p.leadSurgeon.name) : "Lead Surgeon"}
                     </td>
                     <td className="px-4 py-3 text-slate-600 font-mono text-[11px]">
                       {p.estimatedDurationMinutes} mins
@@ -302,7 +303,7 @@ export default function OperatingTheatrePage() {
                   >
                     <option value="">-- Assign Surgeon --</option>
                     {doctors.map((doc) => (
-                      <option key={doc._id} value={doc._id}>Dr. {doc.name} ({doc.specialization})</option>
+                      <option key={doc._id} value={doc._id}>{formatDoctorName(doc.name)} ({doc.specialization})</option>
                     ))}
                   </select>
                 </div>

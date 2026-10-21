@@ -47,6 +47,8 @@
 | 🔐 | [Portal Login Pages](#portal-logins) | Dedicated sign-in screens for every staff role plus the patient portal |
 | ⚙️ | [Installation & Setup](#installation-setup) | Prerequisites and step-by-step start commands |
 | 🔑 | [Environment Variables](#environment-variables) | Complete `.env` guide for client and server |
+| 🧪 | [Automated Tests & CI](#automated-tests-ci) | Vitest unit/integration suites plus GitHub Actions checks |
+| 🐳 | [Docker & Deployment](#docker-deployment) | Full-stack `docker-compose` setup and Procfile |
 | 🧪 | [Demo Test Accounts](#demo-test-accounts) | Pre-seeded credentials for instant testing across all roles |
 | 🧪 | [Automated System Diagnostics](#verification-diagnostics) | 24-point optimization & security verification suite |
 | 📂 | [Project Structure](#project-structure) | Tree map of frontend, backend and documentation |
@@ -629,19 +631,104 @@ npm run dev
 
 ## <a id="environment-variables"></a>🔑 Environment Variables
 
+Both packages ship a documented example file you copy into place:
+
+```bash
+cp server/.env.example server/.env
+cp client/.env.example client/.env
+```
+
 ### Server Configuration (`server/.env`)
 ```env
 PORT=5000
 MONGO_URI=mongodb://127.0.0.1:27017/hospital-db
 JWT_SECRET=nivora-care-hospital-super-secure-secret-key-2026
-OPD_FEE=500
+NODE_ENV=development
 CLIENT_URL=http://localhost:5173
+OPD_FEE=300
+OTP_TTL_MS=300000
+SMS_GATEWAY_DOMAIN=
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=
+SMTP_FROM=Hospital Management <no-reply@example.com>
+SMTP_SECURE=false
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
 ```
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `PORT` | HTTP port for the Express API | `5000` |
+| `MONGO_URI` | MongoDB connection string | — |
+| `JWT_SECRET` | Signs JSON Web Tokens (use a long random string) | — |
+| `NODE_ENV` | `development` / `production` / `test` | `development` |
+| `CLIENT_URL` | Frontend origin allowed by CORS | `http://localhost:5173` |
+| `OPD_FEE` | Default OPD consultation charge | `300` |
+| `OTP_TTL_MS` | Patient OTP lifetime in milliseconds | `300000` |
+| `SMS_GATEWAY_DOMAIN` | SMS gateway for OTP texts; empty → OTPs logged to console | empty |
+| `SMTP_*` | Nodemailer transport; empty → e-mails logged to console | empty |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Razorpay test keypair | empty |
+| `RAZORPAY_WEBHOOK_SECRET` | Verifies `payment.captured` webhooks | empty |
+
+> When integration credentials are unset the server runs in **offline demo mode**: authentication falls back to the seeded demo accounts, payment signatures are optional, and OTPs/e-mails are printed to the server console instead of being delivered.
 
 ### Client Configuration (`client/.env`)
 ```env
 VITE_API_BASE_URL=http://localhost:5000
 ```
+
+---
+
+## <a id="automated-tests-ci"></a>🧪 Automated Tests & CI
+
+Both packages are covered by **Vitest**, and a **GitHub Actions** pipeline runs lint, tests and builds on every push/PR to `main` (`.github/workflows/node-ci.yml`).
+
+### Running tests locally
+```bash
+# Server — HTTP integration tests (health, 404, login validation, offline
+# demo auth) plus unit tests for JWT/RBAC middleware, the OTP service and
+# the Zod validators.
+cd server && npm test
+
+# Client — portal-selection, Diagnostics sub-role tile and credentials-flow
+# tests rendered with @testing-library/react.
+cd client && npm test
+```
+
+### Linting
+```bash
+cd server && npm run lint   # ESLint flat config (Node.js / ESM)
+cd client && npm run lint   # ESLint flat config (React + React Hooks)
+```
+
+The CI workflow also confirms every server `.js` file parses via `node --check`.
+
+---
+
+## <a id="docker-deployment"></a>🐳 Docker & Deployment
+
+The root `docker-compose.yml` runs the complete stack — **MongoDB**, the **Express API** and the **nginx-served React build**:
+
+```bash
+docker compose up --build
+```
+
+| Service | Address |
+|---|---|
+| Web app | http://localhost:8080 (nginx proxies `/api` → `server:5000`) |
+| REST API | http://localhost:5000 |
+| MongoDB | localhost:27017 |
+
+Persistent volumes keep MongoDB data and generated PDFs (`server/storage/`) across restarts. Optional integrations are passed through the environment before `up`:
+
+```bash
+JWT_SECRET=change-me RAZORPAY_KEY_ID=... RAZORPAY_KEY_SECRET=... docker compose up --build
+```
+
+For worker-style platforms (Render, Railway, Heroku) the root `Procfile` starts the API as the web process: `web: cd server && npm start`.
 
 ---
 
