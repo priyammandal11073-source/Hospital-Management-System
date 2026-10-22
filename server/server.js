@@ -7,9 +7,14 @@ const app = createApp();
 const startServer = async () => {
   await connectDB();
 
-  app.listen(env.port, () => {
-    console.log(`Server running on port ${env.port} [${env.nodeEnv}]`);
-  });
+  // Listen on port when running locally or standalone container
+  if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
+    app.listen(env.port, () => {
+      console.log(`Server running on port ${env.port} [${env.nodeEnv}]`);
+    });
+  }
 };
 
 startServer();
+
+export default app;

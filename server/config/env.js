@@ -57,7 +57,17 @@ const env = Object.freeze({
   jwtSecret: requireVar("JWT_SECRET"),
 
   // ── Client ──────────────────────────────────────────────────────────────
-  clientUrl: optionalVar("CLIENT_URL", "http://localhost:5173"),
+  clientUrl: optionalVar(
+    "CLIENT_URL",
+    optionalVar(
+      "CLIENT_SERVICE_URL",
+      process.env.VERCEL_PROJECT_PRODUCTION_URL
+        ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+        : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:5173"
+    )
+  ),
 
   // ── Appointments ────────────────────────────────────────────────────────
   opdFee: optionalInt("OPD_FEE", 500),
