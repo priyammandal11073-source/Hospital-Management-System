@@ -51,7 +51,12 @@ function PatientLogin() {
       await login(email, password, rememberMe);
       navigate("/patient/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Unable to log in. Please try again.");
+      const serverMsg = err.response?.data?.message;
+      if (serverMsg === "Protected by Vercel Authentication" || err.response?.data?.protection) {
+        setError("Deployment is protected by Vercel Authentication. Please disable Deployment Protection in your Vercel Project Settings.");
+      } else {
+        setError(serverMsg || "Unable to log in. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }

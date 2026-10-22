@@ -252,7 +252,12 @@ function Login() {
         navigate("/dashboard");
       }
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Authentication failed. Please verify credentials.");
+      const serverMsg = requestError.response?.data?.message;
+      if (serverMsg === "Protected by Vercel Authentication" || requestError.response?.data?.protection) {
+        setError("Deployment is protected by Vercel Authentication. Please disable Deployment Protection in your Vercel Project Settings.");
+      } else {
+        setError(serverMsg || "Authentication failed. Please verify credentials.");
+      }
     } finally {
       setIsSubmitting(false);
     }

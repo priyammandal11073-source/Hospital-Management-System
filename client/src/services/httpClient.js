@@ -10,6 +10,7 @@ const httpClient = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 // Add the saved JWT to every request sent through this shared client.
