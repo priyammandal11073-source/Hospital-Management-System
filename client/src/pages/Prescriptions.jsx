@@ -380,7 +380,7 @@ function Prescriptions() {
                             <button
                               type="button"
                               onClick={() => handleDelete(rx._id)}
-                              disabled={isDeletingId === rx._id}
+                              disabled={isDeleting && prescriptionToDelete === rx._id}
                               className="p-1.5 text-rose-500 hover:text-rose-700 rounded-lg hover:bg-rose-50 disabled:opacity-50 transition-colors"
                               title="Delete prescription"
                             >

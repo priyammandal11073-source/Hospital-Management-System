@@ -14,6 +14,9 @@ export default defineConfig({
     globals: true,
     setupFiles: "./src/test/setup.js",
     include: ["src/**/*.test.{js,jsx}"],
+    pool: "threads",
+    fileParallelism: false,
+    isolate: false,
   },
   build: {
     chunkSizeWarningLimit: 1000,
