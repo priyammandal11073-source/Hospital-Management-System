@@ -10,6 +10,7 @@ import InsurancePaymentBox from "../components/InsurancePaymentBox.jsx";
 import PaymentMethodSelect from "../components/PaymentMethodSelect.jsx";
 import { getBillingById, createRazorpayOrder, verifyRazorpayPayment, payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
 import { formatDoctorName } from "../utils/doctorName.js";
+import env from "../config/env.js";
 
 const STATUS_COLORS = {
   paid: "bg-emerald-100 text-emerald-800 border-emerald-300",
@@ -98,7 +99,7 @@ function PaymentPage() {
         const rzpIdStr = String(billing._id || billing.id || "");
         const invoiceNumber = `INV-${rzpIdStr ? rzpIdStr.slice(-6).toUpperCase() : "NIVORA"}`;
         const options = {
-          key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TZavagxglGTRZp",
+          key: orderData.keyId || env.razorpayKeyId,
           amount: orderData.amount,
           currency: orderData.currency || "INR",
           name: "Nivora Care Hospital",

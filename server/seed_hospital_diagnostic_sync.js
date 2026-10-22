@@ -27,8 +27,9 @@ import Notification from "./models/Notification.js";
 import AuditLog from "./models/AuditLog.js";
 
 import { diagnosticSyncService } from "./services/diagnosticSyncService.js";
+import env from "./config/env.js";
 
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = env.mongo.uri;
 
 async function seedDiagnosticIntegration() {
   console.log("==========================================================================");

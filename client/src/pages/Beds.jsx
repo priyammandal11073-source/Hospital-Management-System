@@ -6,6 +6,7 @@ import CreateBedModal from "../components/CreateBedModal.jsx";
 import { getBeds, getBedSummary, updateBedStatus, deleteBed } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getDoctorDisplayName } from "../utils/doctorName.js";
+import { PageHeader, ConfirmDialog } from "../components/ui/index.js";
 
 const WARDS = [
   "All wards",
@@ -52,6 +53,8 @@ function Beds() {
   const [transferringBed, setTransferringBed] = useState(null);
   const [dischargingBed, setDischargingBed] = useState(null);
   const [updatingBedId, setUpdatingBedId] = useState(null);
+  const [bedToDelete, setBedToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchBedsData = async () => {
     setIsLoading(true);
@@ -92,15 +95,21 @@ function Beds() {
     }
   };
 
-  const handleDeleteBed = async (bed) => {
-    if (!window.confirm(`Are you sure you want to remove bed ${bed.bedNumber} from ${bed.ward}?`)) {
-      return;
-    }
+  const handleDeleteBed = (bed) => {
+    setBedToDelete(bed);
+  };
+
+  const confirmDeleteBed = async () => {
+    if (!bedToDelete) return;
+    setIsDeleting(true);
     try {
-      await deleteBed(bed._id);
+      await deleteBed(bedToDelete._id);
+      setBedToDelete(null);
       fetchBedsData();
     } catch (err) {
       alert(err.response?.data?.message || "Failed to delete bed");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -131,36 +140,31 @@ function Beds() {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Ward & bed allocation manager
-          </h1>
-          <p className="text-sm font-medium text-slate-600 mt-1">
-            Real-time visual inpatient bed occupancy, ward transfers, and clinical admissions
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <button
-            type="button"
-            onClick={() => setIsCreateOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-teal-600 hover:bg-teal-700 text-white transition-colors shadow-sm"
-          >
-            <span>+ Add new bed</span>
-          </button>
-          <button
-            type="button"
-            onClick={fetchBedsData}
-            className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 hover:text-slate-900 transition-colors shadow-2xs"
-          >
-            <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            <span>Refresh occupancy</span>
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Ward & bed allocation manager"
+        subtitle="Real-time visual inpatient bed occupancy, ward transfers, and clinical admissions"
+        action={
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsCreateOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-teal-600 hover:bg-teal-700 text-white transition-colors shadow-sm"
+            >
+              <span>+ Add new bed</span>
+            </button>
+            <button
+              type="button"
+              onClick={fetchBedsData}
+              className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold rounded-xl bg-white border border-slate-300 text-slate-800 hover:bg-slate-100 hover:text-slate-900 transition-colors shadow-2xs"
+            >
+              <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              <span>Refresh occupancy</span>
+            </button>
+          </div>
+        }
+      />
 
       {/* Occupancy Analytics & Stats */}
       {summary && (
@@ -565,6 +569,23 @@ function Beds() {
           }}
         />
       )}
+
+      {/* Modern Accessible Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={Boolean(bedToDelete)}
+        title="Remove Bed"
+        message={
+          bedToDelete
+            ? `Are you sure you want to remove bed ${bedToDelete.bedNumber} from ${bedToDelete.ward}? This action cannot be undone.`
+            : ""
+        }
+        confirmText="Remove Bed"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={confirmDeleteBed}
+        onCancel={() => setBedToDelete(null)}
+      />
     </div>
   );
 }

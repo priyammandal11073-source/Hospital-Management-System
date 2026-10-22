@@ -41,11 +41,9 @@ import Supplier from "./models/Supplier.js";
 import User from "./models/User.js";
 import Vitals from "./models/Vitals.js";
 import EmergencyEncounter from "./models/EmergencyEncounter.js";
+import env from "./config/env.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, ".env"), override: true });
-
-const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/hospital-db";
+const mongoUri = env.mongo.uri;
 
 export const seedDatabase = async () => {
   try {

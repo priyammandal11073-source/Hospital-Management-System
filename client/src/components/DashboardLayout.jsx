@@ -3,7 +3,10 @@ import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-do
 import { useAuth } from "../context/AuthContext.jsx";
 import HospitalLogo from "./HospitalLogo.jsx";
 import NotificationBell from "./NotificationBell.jsx";
+import Footer from "./Footer.jsx";
 import { formatDoctorName } from "../utils/doctorName.js";
+import MobileBottomNav from "./mobile/MobileBottomNav.jsx";
+import MobileMenuSheet from "./mobile/MobileMenuSheet.jsx";
 
 const navLinkClass = ({ isActive }) =>
   `group flex items-center gap-2.5 rounded-md px-3 py-2 text-xs font-semibold transition-all duration-150 ${
@@ -112,6 +115,15 @@ const PORTAL_CONFIG = {
     tagColor: "text-sky-700",
     roleDesc: "Radiology Technologist",
   },
+  emergency: {
+    label: "Emergency portal",
+    title: "Emergency & Trauma Center",
+    badge: "Emergency Department",
+    badgeClass: "bg-rose-50 text-rose-800 border border-rose-200",
+    avatarBg: "bg-rose-700 text-white",
+    tagColor: "text-rose-700",
+    roleDesc: "Emergency Physician / Triage",
+  },
 };
 
 function DashboardLayout() {
@@ -131,13 +143,19 @@ function DashboardLayout() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
     } else {
       document.body.style.overflow = "";
     }
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [mobileOpen]);
 
@@ -212,11 +230,11 @@ function DashboardLayout() {
             <button
               type="button"
               onClick={() => setMobileOpen((prev) => !prev)}
-              className="inline-flex lg:hidden items-center justify-center p-1.5 sm:p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer touch-target flex-shrink-0"
+              className="inline-flex lg:hidden items-center justify-center h-9 w-9 rounded-xl text-slate-700 hover:text-slate-900 bg-white/70 hover:bg-slate-100 border border-slate-200/80 transition active:scale-90 cursor-pointer touch-target flex-shrink-0"
               aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={mobileOpen}
             >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {mobileOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -229,6 +247,13 @@ function DashboardLayout() {
               <HospitalLogo variant="full" className="hidden sm:flex" />
               <HospitalLogo variant="icon" className="sm:hidden" />
             </Link>
+
+            {/* Mobile role indicator pill */}
+            <span className={`inline-flex xl:hidden items-center rounded px-2 py-0.5 text-[10px] font-bold truncate max-w-[120px] ${config.badgeClass}`}>
+              {role === "doctor" && user?.name
+                ? formatDoctorName(user.name)
+                : config.badge.split(" ")[0]}
+            </span>
 
             <div className="hidden xl:flex items-center gap-2 border-l border-slate-200/80 pl-3">
               <span className={`inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold truncate max-w-[240px] ${config.badgeClass}`}>
@@ -251,12 +276,25 @@ function DashboardLayout() {
               <span>Switch portal</span>
             </Link>
 
-            {/* Emergency Hotline */}
+            {/* Emergency Hotline (Desktop) */}
             <div className="hidden 2xl:flex items-center gap-1.5 rounded-md bg-rose-50 border border-rose-200 px-2.5 py-1 text-xs font-semibold text-rose-700 flex-shrink-0">
               <span className="h-2 w-2 rounded-full bg-rose-600"></span>
-              <span className="font-bold text-[11px] uppercase tracking-wider">Emergency:</span>
-              <span className="font-mono text-rose-900 font-bold">108 / 112</span>
+              <span className="font-mono text-rose-900 font-bold">
+                <a href="tel:108" className="hover:underline" title="Call Emergency Ambulance">108</a> / <a href="tel:112" className="hover:underline" title="Call National Emergency">112</a>
+              </span>
             </div>
+
+            {/* Emergency Quick Dial (Mobile) */}
+            <a
+              href="tel:108"
+              className="flex 2xl:hidden items-center justify-center h-8 w-8 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 active:scale-95 transition"
+              title="Call 108 Emergency"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
+              </span>
+            </a>
 
             {/* Current Date Badge */}
             <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-white/60 border border-white/70 px-2.5 py-1 rounded-md flex-shrink-0 backdrop-blur-md">
@@ -302,46 +340,11 @@ function DashboardLayout() {
 
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
       <div className="flex flex-1 flex-col lg:flex-row">
-        {/* Mobile Frosted Backdrop Overlay */}
-        {mobileOpen && (
-          <div
-            className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden animate-backdrop-fade"
-            onClick={() => setMobileOpen(false)}
-            aria-hidden="true"
-          />
-        )}
-
-        {/* Sliding Navigation Sidebar (Drawer on mobile/tablet, Docked sticky on desktop) */}
+        {/* Desktop Docked Navigation Sidebar */}
         <aside
-          onClick={(e) => {
-            if (e.target.closest("a")) setMobileOpen(false);
-          }}
-          className={`
-            glass-panel p-3.5 text-slate-800 flex flex-col justify-between overflow-y-auto
-            ${
-              mobileOpen
-                ? "fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full shadow-2xl animate-drawer-in flex"
-                : "hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px]"
-            }
-          `}
+          className="hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] glass-panel p-3.5 text-slate-800 flex-col justify-between overflow-y-auto"
           aria-label="Portal navigation sidebar"
         >
-          {/* Mobile Drawer Header with Close Button */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200/70 mb-3 lg:hidden">
-            <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
-              <HospitalLogo variant="full" />
-            </Link>
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-white/80 transition touch-target flex items-center justify-center"
-              aria-label="Close menu"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
           <div>
             {/* Sidebar Section Title */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
@@ -1051,7 +1054,7 @@ function DashboardLayout() {
                     </svg>
                     <span>Dispensing</span>
                   </NavLink>
-                  <NavLink className={navLinkClass} to="/pharmacy/prescriptions-history">
+                  <NavLink className={navLinkClass} to="/pharmacy/history">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                     </svg>
@@ -1086,11 +1089,11 @@ function DashboardLayout() {
                     </svg>
                     <span>Expiry Management</span>
                   </NavLink>
-                  <NavLink className={navLinkClass} to="/pharmacy/low-stock">
+                  <NavLink className={navLinkClass} to="/pharmacy/alerts">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
-                    <span>Low Stock</span>
+                    <span>Low Stock Alerts</span>
                   </NavLink>
 
                   {/* Category 4: Purchasing */}
@@ -1109,17 +1112,17 @@ function DashboardLayout() {
                     </svg>
                     <span>Purchase Orders</span>
                   </NavLink>
-                  <NavLink className={navLinkClass} to="/pharmacy/stock-receiving">
+                  <NavLink className={navLinkClass} to="/pharmacy/stock">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
-                    <span>Stock Receiving</span>
+                    <span>Stock Receiving (GRN)</span>
                   </NavLink>
                   <NavLink className={navLinkClass} to="/pharmacy/returns">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
                     </svg>
-                    <span>Returns</span>
+                    <span>Returns & Quarantine</span>
                   </NavLink>
 
                   {/* Category 5: Patients */}
@@ -1130,13 +1133,7 @@ function DashboardLayout() {
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <span>Patient Search</span>
-                  </NavLink>
-                  <NavLink className={navLinkClass} to="/pharmacy/patient-history">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                    <span>Pharmacy History</span>
+                    <span>Patient Search & Rx History</span>
                   </NavLink>
 
                   {/* Category 6: Finance */}
@@ -1147,19 +1144,13 @@ function DashboardLayout() {
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <span>Pharmacy Billing</span>
+                    <span>Pharmacy Billing & Receipts</span>
                   </NavLink>
-                  <NavLink className={navLinkClass} to="/pharmacy/receipts">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>Receipts</span>
-                  </NavLink>
-                  <NavLink className={navLinkClass} to="/pharmacy/refunds">
+                  <NavLink className={navLinkClass} to="/pharmacy/returns">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
                     </svg>
-                    <span>Refunds</span>
+                    <span>Refunds & Adjustments</span>
                   </NavLink>
 
                   {/* Category 7: Reports */}
@@ -1170,19 +1161,13 @@ function DashboardLayout() {
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    <span>Pharmacy Analytics</span>
+                    <span>Pharmacy Analytics & Reports</span>
                   </NavLink>
-                  <NavLink className={navLinkClass} to="/pharmacy/reports">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                    </svg>
-                    <span>Reports</span>
-                  </NavLink>
-                  <NavLink className={navLinkClass} to="/pharmacy/stock-ledger">
+                  <NavLink className={navLinkClass} to="/pharmacy/batches">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
-                    <span>Stock Ledger</span>
+                    <span>Stock Ledger & Valuation</span>
                   </NavLink>
 
                   {/* Category 8: Staff */}
@@ -1193,13 +1178,7 @@ function DashboardLayout() {
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                     </svg>
-                    <span>Pharmacy Staff</span>
-                  </NavLink>
-                  <NavLink className={navLinkClass} to="/pharmacy/shifts">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>Shifts</span>
+                    <span>Pharmacy Staff & Shifts</span>
                   </NavLink>
                 </>
               ) : ["diagnostic_admin", "pathologist", "radiologist", "lab_technician", "radiology_technician"].includes(role) ? (
@@ -1228,24 +1207,18 @@ function DashboardLayout() {
                     </svg>
                     <span>Appointment Bookings</span>
                   </NavLink>
-                  <NavLink className={navLinkClass} to="/diagnostic/walk-in">
+                  <NavLink className={navLinkClass} to="/diagnostic/samples">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
-                    <span>Walk-In Registration</span>
+                    <span>Sample Collection (Phlebotomy)</span>
                   </NavLink>
 
                   {/* Category 3: Laboratory / Pathology */}
                   <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600">
                     Laboratory & Pathology
                   </div>
-                  <NavLink className={navLinkClass} to="/diagnostic/samples">
-                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
-                    <span>Sample Collection (Phlebotomy)</span>
-                  </NavLink>
-                  <NavLink className={navLinkClass} to="/diagnostic/lab-workstation">
+                  <NavLink className={navLinkClass} to="/diagnostic/workbench">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
@@ -1279,7 +1252,7 @@ function DashboardLayout() {
                   <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600">
                     Reports & Verification
                   </div>
-                  <NavLink className={navLinkClass} to="/diagnostic/specialist-review">
+                  <NavLink className={navLinkClass} to="/diagnostic/review">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
@@ -1297,7 +1270,7 @@ function DashboardLayout() {
                     </svg>
                     <span>Print Center & Film Bureau</span>
                   </NavLink>
-                  <NavLink className={navLinkClass} to="/diagnostic/critical-alerts">
+                  <NavLink className={navLinkClass} to="/diagnostic/critical">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
@@ -1332,7 +1305,7 @@ function DashboardLayout() {
                     </svg>
                     <span>Diagnostic Billing</span>
                   </NavLink>
-                  <NavLink className={navLinkClass} to="/diagnostic/audit-logs">
+                  <NavLink className={navLinkClass} to="/diagnostic/audit">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
@@ -1443,10 +1416,34 @@ function DashboardLayout() {
         </aside>
 
         {/* Main Content Pane */}
-        <main className="flex-1 min-w-0 bg-transparent p-4 sm:p-6 lg:p-7 overflow-x-hidden">
+        <main className="flex-1 min-w-0 bg-transparent p-3 sm:p-5 lg:p-7 pb-24 lg:pb-7 overflow-x-hidden">
           <Outlet />
         </main>
       </div>
+
+      {/* Global Enterprise Portal Footer (Positioned below the side panel & main workspace) */}
+      <div className="w-full px-4 sm:px-6 lg:px-7 pb-20 lg:pb-6 pt-2">
+        <Footer />
+      </div>
+
+      {/* ================= NATIVE MOBILE BOTTOM NAVIGATION ================= */}
+      <MobileBottomNav
+        role={role}
+        user={user}
+        mobileOpen={mobileOpen}
+        onToggleMenu={() => setMobileOpen((prev) => !prev)}
+        isModalOpen={isModalOpen}
+      />
+
+      {/* ================= HIGHLY OPTIMIZED MOBILE MENU SHEET ================= */}
+      <MobileMenuSheet
+        isOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        role={role}
+        user={user}
+        onLogout={handleLogout}
+        isPatient={false}
+      />
     </div>
   );
 }

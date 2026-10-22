@@ -9,18 +9,17 @@ import {
   restrictTo,
 } from "../middleware/authMiddleware.js";
 import { errorHandler, notFoundHandler } from "../middleware/errorMiddleware.js";
-
-process.env.JWT_SECRET = process.env.JWT_SECRET || "test-secret";
+import env from "../config/env.js";
 
 const staffToken = jwt.sign(
   { id: "u1", role: "admin", type: "staff" },
-  process.env.JWT_SECRET,
+  env.jwtSecret,
   { expiresIn: "1h" }
 );
 
 const patientToken = jwt.sign(
   { id: "p1", type: "patient" },
-  process.env.JWT_SECRET,
+  env.jwtSecret,
   { expiresIn: "1h" }
 );
 

@@ -128,7 +128,87 @@ const RadiologyWorkbench = () => {
     return { total, stat, urgent, inProgress, pendingReport, totalDose };
   }, [studies]);
 
-  const handleSelect = (study) => { setActiveStudy(study); setDictation({ listening: false, transcript: "" }); };
+  const [sliceIndex, setSliceIndex] = useState(1);
+  const [zoom, setZoom] = useState(1);
+  const [windowPreset, setWindowPreset] = useState("Default");
+  const [cinePlaying, setCinePlaying] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState(null);
+  const [reportFields, setReportFields] = useState({
+    technique: "",
+    findings: "",
+    impression: "",
+    recommendations: "Clinical correlation recommended."
+  });
+
+  useEffect(() => {
+    let timer;
+    if (cinePlaying && activeStudy?.images > 1) {
+      timer = setInterval(() => {
+        setSliceIndex((prev) => (prev >= activeStudy.images ? 1 : prev + 1));
+      }, 250);
+    }
+    return () => clearInterval(timer);
+  }, [cinePlaying, activeStudy]);
+
+  const handleSelect = (study) => {
+    setActiveStudy(study);
+    setSliceIndex(1);
+    setCinePlaying(false);
+    setDictation({ listening: false, transcript: "" });
+    setReportFields({
+      technique: `Technique: ${study.modality} ${study.bodyPart} performed ${study.contrast ? "with IV contrast" : "without contrast"}.`,
+      findings: study.findings || "",
+      impression: study.impression || "",
+      recommendations: "Clinical correlation recommended."
+    });
+    setFeedbackMessage(null);
+  };
+
+  const handleCycleWindowPreset = () => {
+    const presets = ["Default", "Bone", "Soft Tissue", "Lung"];
+    const next = presets[(presets.indexOf(windowPreset) + 1) % presets.length];
+    setWindowPreset(next);
+  };
+
+  const handleCycleZoom = () => {
+    const zooms = [1, 1.25, 1.5, 2];
+    const next = zooms[(zooms.indexOf(zoom) + 1) % zooms.length];
+    setZoom(next);
+  };
+
+  const handleSaveToReport = () => {
+    if (!dictation.transcript.trim()) {
+      setFeedbackMessage({ type: "info", text: "Dictation transcript is empty. Type in the box or click Start Dictation." });
+      return;
+    }
+    setReportFields(prev => ({
+      ...prev,
+      findings: prev.findings ? `${prev.findings}\n${dictation.transcript.trim()}` : dictation.transcript.trim()
+    }));
+    setDictation(d => ({ ...d, transcript: "" }));
+    setFeedbackMessage({ type: "success", text: "Dictated notes appended to report findings." });
+  };
+
+  const handleClearDictation = () => {
+    setDictation(d => ({ ...d, transcript: "" }));
+    setFeedbackMessage({ type: "info", text: "Dictation transcript cleared." });
+  };
+
+  const handleSavePreliminary = () => {
+    if (!activeStudy) return;
+    const updated = { ...activeStudy, reportStatus: "preliminary" };
+    setActiveStudy(updated);
+    setStudies(prev => prev.map(s => s.id === updated.id ? updated : s));
+    setFeedbackMessage({ type: "success", text: `Preliminary report saved for ${updated.accession}. Status updated.` });
+  };
+
+  const handleSignFinal = () => {
+    if (!activeStudy) return;
+    const updated = { ...activeStudy, reportStatus: "final", radiologist: activeStudy.radiologist || "Dr. Staff Radiologist" };
+    setActiveStudy(updated);
+    setStudies(prev => prev.map(s => s.id === updated.id ? updated : s));
+    setFeedbackMessage({ type: "success", text: `Report finalized & digitally signed for ${updated.accession}. Dispatched to EHR.` });
+  };
 
   const startDictation = () => {
     if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) {
@@ -297,19 +377,169 @@ const RadiologyWorkbench = () => {
                 </div>
               </div>
 
-              {/* PACS Viewer Placeholder */}
-              <div className="rounded-xl bg-slate-900 border border-slate-700 p-6 text-center relative">
-                <div className="absolute top-2 right-2 flex gap-1">
-                  <button className="rounded bg-slate-800 px-2 py-1 text-[10px] text-slate-300 hover:bg-slate-700">WL/WW</button>
-                  <button className="rounded bg-slate-800 px-2 py-1 text-[10px] text-slate-300 hover:bg-slate-700">Zoom</button>
-                  <button className="rounded bg-slate-800 px-2 py-1 text-[10px] text-slate-300 hover:bg-slate-700">Cine</button>
+              {/* Notification Feedback Banner */}
+              {feedbackMessage && (
+                <div
+                  role="status"
+                  className={`rounded-xl p-3 text-xs font-semibold flex items-center justify-between transition ${
+                    feedbackMessage.type === "success"
+                      ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+                      : feedbackMessage.type === "error"
+                      ? "bg-rose-50 border border-rose-200 text-rose-800"
+                      : "bg-blue-50 border border-blue-200 text-blue-800"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    {feedbackMessage.type === "success" ? "✓" : "ℹ"} {feedbackMessage.text}
+                  </span>
+                  <button
+                    onClick={() => setFeedbackMessage(null)}
+                    className="text-slate-400 hover:text-slate-700 ml-2 font-bold"
+                  >
+                    ✕
+                  </button>
                 </div>
-                <p className="text-6xl mb-2">🖼️</p>
-                <p className="text-slate-400">PACS Viewer</p>
-                <p className="text-xs text-slate-600 mt-1">{activeStudy.images} images · {activeStudy.modality} {activeStudy.bodyPart}</p>
-                <div className="mt-4 flex justify-center gap-2">
-                  <button className="rounded bg-slate-700 px-3 py-1.5 text-xs text-slate-200 hover:bg-slate-600">← Prior</button>
-                  <button className="rounded bg-teal-600 px-3 py-1.5 text-xs text-white">Next →</button>
+              )}
+
+              {/* PACS DICOM Image Viewer */}
+              <div className="rounded-xl bg-slate-950 border border-slate-800 p-4 relative overflow-hidden text-slate-100 shadow-inner">
+                {/* Viewer Top Toolbar */}
+                <div className="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span className="text-[11px] font-mono font-semibold tracking-wider text-slate-300">
+                      DICOM 3.0 • {activeStudy.modality}
+                    </span>
+                    {cinePlaying && (
+                      <span className="rounded bg-rose-900/80 border border-rose-600 px-1.5 py-0.2 text-[9px] font-mono text-rose-200 animate-pulse">
+                        ▶ CINE
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={handleCycleWindowPreset}
+                      title="Cycle Window / Level Presets"
+                      className="rounded bg-slate-800 border border-slate-700 px-2 py-1 text-[10px] font-mono text-slate-200 hover:bg-slate-700 transition"
+                    >
+                      WL: {windowPreset}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCycleZoom}
+                      title="Cycle Zoom Factor"
+                      className="rounded bg-slate-800 border border-slate-700 px-2 py-1 text-[10px] font-mono text-slate-200 hover:bg-slate-700 transition"
+                    >
+                      {zoom}x
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCinePlaying(c => !c)}
+                      title={cinePlaying ? "Stop Cine Playback" : "Start Cine Playback"}
+                      className={`rounded px-2.5 py-1 text-[10px] font-mono font-semibold transition ${
+                        cinePlaying
+                          ? "bg-rose-600 text-white"
+                          : "bg-slate-800 border border-slate-700 text-slate-200 hover:bg-slate-700"
+                      }`}
+                    >
+                      {cinePlaying ? "⏸ Pause" : "▶ Cine"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Simulated DICOM Acquisition Viewport */}
+                <div
+                  className="relative rounded-lg bg-black border border-slate-900 aspect-4/3 flex items-center justify-center overflow-hidden"
+                  style={{
+                    filter:
+                      windowPreset === "Bone"
+                        ? "contrast(180%) brightness(120%)"
+                        : windowPreset === "Soft Tissue"
+                        ? "contrast(110%) brightness(95%)"
+                        : windowPreset === "Lung"
+                        ? "contrast(200%) brightness(70%)"
+                        : "none",
+                  }}
+                >
+                  {/* Subtle Scan Matrix Grid */}
+                  <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-30"></div>
+
+                  {/* Anatomical Orientation Tags */}
+                  <span className="absolute top-2 left-1/2 -translate-x-1/2 text-[10px] font-mono text-teal-400/80 font-bold">
+                    A (Anterior)
+                  </span>
+                  <span className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[10px] font-mono text-teal-400/80 font-bold">
+                    P (Posterior)
+                  </span>
+                  <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-teal-400/80 font-bold">
+                    R
+                  </span>
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-mono text-teal-400/80 font-bold">
+                    L
+                  </span>
+
+                  {/* Scaled Center Anatomical Geometry */}
+                  <div
+                    className="relative flex flex-col items-center justify-center transition-transform duration-150"
+                    style={{ transform: `scale(${zoom})` }}
+                  >
+                    <div className="relative rounded-full border-2 border-teal-500/30 p-8 bg-radial from-slate-900/90 to-black">
+                      <div className="h-28 w-28 rounded-full border border-teal-400/40 flex items-center justify-center">
+                        <div className="h-16 w-16 rounded-full border border-dashed border-teal-300/40 flex items-center justify-center text-3xl select-none">
+                          {activeStudy.modality === "CT" ? "🫁" : activeStudy.modality === "MRI" || activeStudy.modality === "MR" ? "🧠" : "🦴"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* DICOM Overlay Readout Details */}
+                  <div className="absolute top-2 left-2 text-[9px] font-mono text-slate-400 leading-tight select-none">
+                    <p className="text-white font-bold">{activeStudy.patient}</p>
+                    <p>{activeStudy.accession}</p>
+                    <p>{activeStudy.modality} • {activeStudy.bodyPart}</p>
+                  </div>
+
+                  <div className="absolute top-2 right-2 text-[9px] font-mono text-slate-400 text-right leading-tight select-none">
+                    <p>kV: 120 / mA: 240</p>
+                    <p>WL: {windowPreset}</p>
+                    <p>Zoom: {zoom}x</p>
+                  </div>
+
+                  <div className="absolute bottom-2 left-2 text-[9px] font-mono text-teal-400 leading-tight select-none">
+                    <p className="font-semibold">
+                      Slice: {sliceIndex} / {activeStudy.images || 1}
+                    </p>
+                    <p className="text-slate-500">Thickness: 1.25mm</p>
+                  </div>
+
+                  <div className="absolute bottom-2 right-2 text-[9px] font-mono text-slate-400 text-right leading-tight select-none">
+                    <p>FOV: 350mm</p>
+                    <p className="text-slate-500">Nivora PACS v2.4</p>
+                  </div>
+                </div>
+
+                {/* Slice Navigation Controls */}
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSliceIndex(s => Math.max(1, s - 1))}
+                    disabled={sliceIndex <= 1}
+                    className="flex-1 rounded-lg bg-slate-800 border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  >
+                    ← Prior Slice
+                  </button>
+                  <span className="text-[11px] font-mono text-slate-400 px-2 select-none">
+                    {sliceIndex} of {activeStudy.images || 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSliceIndex(s => Math.min(activeStudy.images || 1, s + 1))}
+                    disabled={sliceIndex >= (activeStudy.images || 1)}
+                    className="flex-1 rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-500 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                  >
+                    Next Slice →
+                  </button>
                 </div>
               </div>
 
@@ -321,26 +551,83 @@ const RadiologyWorkbench = () => {
                     {dictation.listening ? "🔴 Listening" : "🎤 Ready"}
                   </span>
                 </div>
-                <button onClick={dictation.listening ? () => {} : startDictation} disabled={dictation.listening} className={`w-full rounded-lg px-4 py-3 font-semibold transition ${dictation.listening ? "bg-red-600 text-white animate-pulse cursor-not-allowed" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
+                <button
+                  type="button"
+                  onClick={dictation.listening ? () => setDictation(d => ({ ...d, listening: false })) : startDictation}
+                  className={`w-full rounded-lg px-4 py-3 font-semibold transition ${
+                    dictation.listening
+                      ? "bg-red-600 text-white animate-pulse"
+                      : "bg-blue-600 text-white hover:bg-blue-700"
+                  }`}
+                >
                   {dictation.listening ? "🛑 Stop Recording" : "🎙️ Start Dictation"}
                 </button>
-                <textarea value={dictation.transcript} onChange={e => setDictation(d => ({...d, transcript: e.target.value}))} placeholder="Dictated text appears here... (or type manually)" className="rounded-lg border border-slate-300 p-3 text-sm min-h-[100px] resize-none font-mono text-xs" />
+                <textarea
+                  value={dictation.transcript}
+                  onChange={e => setDictation(d => ({ ...d, transcript: e.target.value }))}
+                  placeholder="Dictated audio appears here in real-time... (or type clinical notes manually)"
+                  className="rounded-lg border border-slate-300 p-3 text-sm min-h-[90px] resize-none font-mono text-xs w-full focus:border-blue-600 focus:outline-none"
+                />
                 <div className="flex gap-2">
-                  <button className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700">✓ Save to Report</button>
-                  <button className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50">🗑️ Clear</button>
+                  <button
+                    type="button"
+                    onClick={handleSaveToReport}
+                    className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition"
+                  >
+                    ✓ Save to Report
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearDictation}
+                    className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition"
+                  >
+                    🗑️ Clear
+                  </button>
                 </div>
               </div>
 
               {/* Report Template */}
               <div className="rounded-xl bg-white border border-slate-200 p-4 space-y-2">
                 <h3 className="font-bold text-slate-800">📝 Report Template</h3>
-                <textarea placeholder="Technique: ..." className="rounded-lg border border-slate-300 p-2 text-sm min-h-[24px] resize-none" defaultValue={`Technique: ${activeStudy.modality} ${activeStudy.bodyPart} performed ${activeStudy.contrast ? "with IV contrast" : "without contrast"}.`} />
-                <textarea placeholder="Findings: ..." className="rounded-lg border border-slate-300 p-2 text-sm min-h-[48px] resize-none" />
-                <textarea placeholder="Impression: ..." className="rounded-lg border border-slate-300 p-2 text-sm min-h-[48px] resize-none" />
-                <textarea placeholder="Recommendations: ..." className="rounded-lg border border-slate-300 p-2 text-sm min-h-[32px] resize-none" defaultValue="Clinical correlation recommended." />
+                <textarea
+                  placeholder="Technique: ..."
+                  className="rounded-lg border border-slate-300 p-2 text-sm min-h-[40px] resize-none w-full focus:border-blue-600 focus:outline-none font-mono text-xs"
+                  value={reportFields.technique}
+                  onChange={e => setReportFields(r => ({ ...r, technique: e.target.value }))}
+                />
+                <textarea
+                  placeholder="Findings: Describe organ morphology, density, lesions..."
+                  className="rounded-lg border border-slate-300 p-2 text-sm min-h-[60px] resize-none w-full focus:border-blue-600 focus:outline-none font-mono text-xs"
+                  value={reportFields.findings}
+                  onChange={e => setReportFields(r => ({ ...r, findings: e.target.value }))}
+                />
+                <textarea
+                  placeholder="Impression: Primary diagnostic conclusions..."
+                  className="rounded-lg border border-slate-300 p-2 text-sm min-h-[50px] resize-none w-full focus:border-blue-600 focus:outline-none font-mono text-xs"
+                  value={reportFields.impression}
+                  onChange={e => setReportFields(r => ({ ...r, impression: e.target.value }))}
+                />
+                <textarea
+                  placeholder="Recommendations: Clinical correlation recommended..."
+                  className="rounded-lg border border-slate-300 p-2 text-sm min-h-[40px] resize-none w-full focus:border-blue-600 focus:outline-none font-mono text-xs"
+                  value={reportFields.recommendations}
+                  onChange={e => setReportFields(r => ({ ...r, recommendations: e.target.value }))}
+                />
                 <div className="flex gap-2 pt-2">
-                  <button className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700">💾 Save Preliminary</button>
-                  <button className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700">✓ Sign Final</button>
+                  <button
+                    type="button"
+                    onClick={handleSavePreliminary}
+                    className="flex-1 rounded-lg bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 transition"
+                  >
+                    💾 Save Preliminary
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSignFinal}
+                    className="flex-1 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition"
+                  >
+                    ✓ Sign Final
+                  </button>
                 </div>
               </div>
             </div>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import HospitalLogo from "../components/HospitalLogo.jsx";
-import AuthBrandPanel from "../components/AuthBrandPanel.jsx";
+import Footer from "../components/Footer.jsx";
 
 const PORTAL_TYPES = [
   {
@@ -259,6 +259,13 @@ function Login() {
   };
 
 
+  const containerMaxWidth =
+    step === 1
+      ? "max-w-4xl"
+      : step === 2 && selectedPortal.subRoles
+      ? "max-w-2xl"
+      : "max-w-md";
+
   return (
     <main className="relative min-h-screen bg-[#f7f6f3] py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans overflow-hidden">
       {/* Decorative soft background shapes */}
@@ -268,237 +275,205 @@ function Login() {
         <div className="absolute -left-24 bottom-0 h-96 w-96 rounded-full bg-sky-100/60 blur-3xl" />
       </div>
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto">
-        <div className="grid gap-8 items-center lg:grid-cols-[0.85fr_1.15fr]">
-          {/* Decorative brand panel */}
-          <AuthBrandPanel
-            accent="blue"
-            badge="Nivora Care HMS"
-            title="Secure Portal Access"
-            subtitle="Sign in to manage clinical workflows, operations, and patient care across every department — from a single secure gateway."
-            features={[
-              "Role-based access for all departments",
-              "Real-time OPD, ward & pharmacy dashboards",
-              "Unified patient records & billing",
-            ]}
-            stats={[
-              { value: "24/7", label: "Care coverage" },
-              { value: "8", label: "Integrated portals" },
-              { value: "99.9%", label: "System uptime" },
-            ]}
-          />
+      <div className={`relative z-10 w-full ${containerMaxWidth} mx-auto transition-all duration-300`}>
+        {/* Centered Brand Header */}
+        <div className="mb-8 flex flex-col items-center justify-center text-center">
+          <HospitalLogo variant="full" to="/" />
+          <p className="mt-2 text-xs uppercase tracking-widest font-semibold text-slate-400">
+            Enterprise Clinical Gateway
+          </p>
+        </div>
 
-          {/* Interactive panel */}
-          <div className="w-full">
-            <div className="mb-6 flex items-center justify-center lg:hidden">
-              <HospitalLogo variant="full" />
+        {/* ================= STEP 1: SELECT PORTAL ================= */}
+        {step === 1 && (
+          <section className="w-full bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-200/50">
+            <div className="mb-6 text-center">
+              <h1 className="font-display text-[1.65rem] font-semibold text-slate-900 tracking-tight">Choose Your Portal</h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Select the department you&apos;d like to access
+              </p>
             </div>
 
-            {/* ================= STEP 1: SELECT PORTAL ================= */}
-            {step === 1 && (
-              <section className="w-full bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-300/40">
-                <div className="mb-6 text-center">
-                  <h1 className="font-display text-[1.75rem] font-semibold text-slate-900">Choose Your Portal</h1>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Select the department you&apos;d like to access
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {PORTAL_TYPES.map((portal) => (
-                    <button
-                      type="button"
-                      key={portal.id}
-                      onClick={() => handlePortalSelect(portal)}
-                      className="group relative bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-3 h-32 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/80 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600"
-                    >
-                      <div
-                        className={`h-11 w-11 rounded-xl ${portal.accentColor} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}
-                      >
-                        {portal.icon}
-                      </div>
-
-                      <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 transition-colors">
-                        {portal.name}
-                      </span>
-
-                      <span
-                        className="absolute top-2.5 right-3 text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                        aria-hidden="true"
-                      >
-                        →
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* ================= STEP 2: SUB-ROLE TILES ONLY (DIAGNOSTICS) ================= */}
-            {step === 2 && selectedPortal.subRoles && (
-              <section className="w-full bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-300/40">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 sm:gap-4">
+              {PORTAL_TYPES.map((portal) => (
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer mb-6"
+                  key={portal.id}
+                  onClick={() => handlePortalSelect(portal)}
+                  className="group relative bg-white hover:bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2 min-h-[7.5rem] transition-all duration-150 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer"
                 >
-                  <span>← Back to portal selection</span>
+                  <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900 flex items-center justify-center transition-all duration-150">
+                    {portal.icon}
+                  </div>
+
+                  <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 tracking-tight">
+                    {portal.name}
+                  </span>
+
+                  <span className="text-[11px] text-slate-400 group-hover:text-slate-500 font-normal line-clamp-1">
+                    {portal.tagline}
+                  </span>
                 </button>
+              ))}
+            </div>
+          </section>
+        )}
 
-                <div className="mb-6 text-center">
-                  <h1 className="font-display text-[1.5rem] font-semibold text-slate-900">Select Specialization</h1>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Choose your role in the Diagnostics department to continue
-                  </p>
-                </div>
+        {/* ================= STEP 2: SUB-ROLE TILES ONLY (DIAGNOSTICS) ================= */}
+        {step === 2 && selectedPortal.subRoles && (
+          <section className="w-full bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-200/50">
+            <button
+              type="button"
+              onClick={() => setStep(1)}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer mb-6"
+            >
+              <span>← Back to portal selection</span>
+            </button>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {selectedPortal.subRoles.map((sr, index) => (
-                    <button
-                      key={sr.role}
-                      type="button"
-                      onClick={() => {
-                        setEmail(sr.email);
-                        setPassword(sr.pass);
-                        setError("");
-                        setStep(3);
-                      }}
-                      className={`group relative bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center text-center gap-3 min-h-[8rem] hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/80 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 ${
-                        index === selectedPortal.subRoles.length - 1
-                          ? "sm:col-span-2 sm:w-full sm:max-w-[calc(50%-0.5rem)] sm:mx-auto"
-                          : ""
-                      }`}
-                    >
-                      <div
-                        className={`h-11 w-11 rounded-xl ${sr.accentColor} flex items-center justify-center text-white shadow-lg transition-transform duration-300 group-hover:scale-110`}
-                      >
-                        {sr.icon}
-                      </div>
-                      <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 transition-colors">
-                        {sr.name}
-                      </span>
-                      <span className="absolute bottom-2 text-[10px] uppercase tracking-wide text-slate-400">
-                        {sr.tagline}
-                      </span>
-                      <span
-                        className="absolute top-2.5 right-3 text-xs text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"
-                        aria-hidden="true"
-                      >
-                        →
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
+            <div className="mb-6 text-center">
+              <h1 className="font-display text-[1.5rem] font-semibold text-slate-900 tracking-tight">Select Specialization</h1>
+              <p className="mt-1 text-sm text-slate-500">
+                Choose your role in the Diagnostics department to continue
+              </p>
+            </div>
 
-            {/* ================= STEP 2 (NO SUB-ROLES) / STEP 3: CREDENTIALS & LOGIN CARD ================= */}
-            {((step === 2 && !selectedPortal.subRoles) || step === 3) && (
-              <section className="w-full bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-300/40">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 sm:gap-4">
+              {selectedPortal.subRoles.map((sr) => (
                 <button
+                  key={sr.role}
                   type="button"
-                  onClick={() => (step === 3 ? setStep(2) : setStep(1))}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-slate-900 transition-colors cursor-pointer mb-5"
+                  onClick={() => {
+                    setEmail(sr.email);
+                    setPassword(sr.pass);
+                    setError("");
+                    setStep(3);
+                  }}
+                  className="group relative bg-white hover:bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2 min-h-[7.5rem] transition-all duration-150 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer"
                 >
-                  <span>{step === 3 ? "← Back to specialization selection" : "← Back to portal selection"}</span>
+                  <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900 flex items-center justify-center transition-all duration-150">
+                    {sr.icon}
+                  </div>
+                  <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 tracking-tight">
+                    {sr.name}
+                  </span>
+                  <span className="text-[11px] text-slate-400 group-hover:text-slate-500 font-normal line-clamp-1">
+                    {sr.tagline}
+                  </span>
                 </button>
+              ))}
+            </div>
+          </section>
+        )}
 
-                {/* Active Portal Header */}
-                <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className={`h-10 w-10 rounded-xl ${selectedPortal.accentColor} flex items-center justify-center text-white flex-shrink-0 shadow-lg`}>
-                      {selectedPortal.icon}
-                    </div>
-                    <div>
-                      <h2 className="text-base font-semibold text-slate-900">
-                        {selectedPortal.name}
-                      </h2>
-                      <p className="text-xs text-slate-500">{selectedPortal.tagline}</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setStep(1)}
-                    className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer"
-                  >
-                    Change
-                  </button>
+        {/* ================= STEP 2 (NO SUB-ROLES) / STEP 3: CREDENTIALS & LOGIN CARD ================= */}
+        {((step === 2 && !selectedPortal.subRoles) || step === 3) && (
+          <section className="w-full bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-200/50">
+            <button
+              type="button"
+              onClick={() => (step === 3 ? setStep(2) : setStep(1))}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer mb-5"
+            >
+              <span>{step === 3 ? "← Back to specialization selection" : "← Back to portal selection"}</span>
+            </button>
+
+            {/* Active Portal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center flex-shrink-0">
+                  {selectedPortal.icon}
                 </div>
+                <div>
+                  <h2 className="text-base font-semibold text-slate-900">
+                    {selectedPortal.name}
+                  </h2>
+                  <p className="text-xs text-slate-500">{selectedPortal.tagline}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              >
+                Change
+              </button>
+            </div>
 
-                {/* Form */}
-                <form className="space-y-4" onSubmit={handleSubmit}>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="email">
-                      {selectedPortal.role === "patient" ? "Patient Email Address" : "Staff Email"}
-                    </label>
-                    <input
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      autoComplete="email"
-                      required
-                    />
-                  </div>
+            {/* Form */}
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="email">
+                  {selectedPortal.role === "patient" ? "Patient Email Address" : "Staff Email"}
+                </label>
+                <input
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  autoComplete="email"
+                  required
+                />
+              </div>
 
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="password">
-                      Password
-                    </label>
-                    <input
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      autoComplete="current-password"
-                      required
-                    />
-                  </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="password">
+                  Password
+                </label>
+                <input
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
 
-                  {error && (
-                    <div className="flex items-center gap-2 rounded border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
-                      <svg className="h-4 w-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <span>{error}</span>
-                    </div>
+              {error && (
+                <div className="flex items-center gap-2 rounded border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
+                  <svg className="h-4 w-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div className="pt-2">
+                <button
+                  className="w-full rounded-lg bg-blue-700 hover:bg-blue-800 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-700/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
+                  disabled={isSubmitting}
+                  type="submit"
+                >
+                  {isSubmitting ? (
+                    <span className="inline-flex items-center gap-2">
+                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                      Authenticating...
+                    </span>
+                  ) : (
+                    "Sign In →"
                   )}
+                </button>
+              </div>
+            </form>
 
-                  <div className="pt-2">
-                    <button
-                      className="w-full rounded-lg bg-blue-700 hover:bg-blue-800 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-700/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
-                      disabled={isSubmitting}
-                      type="submit"
-                    >
-                      {isSubmitting ? (
-                        <span className="inline-flex items-center gap-2">
-                          <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
-                          Authenticating...
-                        </span>
-                      ) : (
-                        "Sign In →"
-                      )}
-                    </button>
-                  </div>
-                </form>
-
-                {/* Patient Registration Link */}
-                {selectedPortal.role === "patient" && (
-                  <div className="mt-5 border-t border-slate-100 pt-4 text-center">
-                    <p className="text-xs text-slate-600">
-                      First time patient?{" "}
-                      <Link to="/patient/register" className="font-medium text-blue-700 hover:underline">
-                        Register as New Patient →
-                      </Link>
-                    </p>
-                  </div>
-                )}
-              </section>
+            {/* Patient Registration Link */}
+            {selectedPortal.role === "patient" && (
+              <div className="mt-5 border-t border-slate-100 pt-4 text-center">
+                <p className="text-xs text-slate-600">
+                  First time patient?{" "}
+                  <Link to="/patient/register" className="font-medium text-blue-700 hover:underline">
+                    Register as New Patient →
+                  </Link>
+                </p>
+              </div>
             )}
-          </div>
-        </div>
+          </section>
+        )}
+      </div>
+
+      <div className="relative z-10 w-full max-w-7xl mx-auto mt-12">
+        <Footer className="rounded-3xl border border-white/80 shadow-lg" />
       </div>
     </main>
   );

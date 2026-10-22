@@ -1,11 +1,12 @@
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import env from "../config/env.js";
 import Patient from "../models/Patient.js";
 import User from "../models/User.js";
 import Doctor from "../models/Doctor.js";
 
 const createToken = (user, doctorId = null) => {
-  if (!process.env.JWT_SECRET) {
+  if (!env.jwtSecret) {
     throw new Error("JWT_SECRET is not configured");
   }
 
@@ -22,7 +23,7 @@ const createToken = (user, doctorId = null) => {
     payload.doctorId = doctorId;
   }
 
-  return jwt.sign(payload, process.env.JWT_SECRET, {
+  return jwt.sign(payload, env.jwtSecret, {
     expiresIn: "7d",
   });
 };
@@ -96,7 +97,7 @@ export const login = async (req, res) => {
       if (demoUser && password === (demoUser.defaultPassword || "password123")) {
         const token = jwt.sign(
           { id: demoUser.id, role: demoUser.role, type: demoUser.role === "patient" ? "patient" : "staff", doctorId: demoUser.doctorId },
-          process.env.JWT_SECRET || "super-secret-key-hospital-management-system-2026",
+          env.jwtSecret,
           { expiresIn: "7d" }
         );
         return res.status(200).json({
@@ -170,7 +171,7 @@ export const login = async (req, res) => {
     if (patient && (await patient.comparePassword(password))) {
       const token = jwt.sign(
         { id: patient._id, role: "patient", type: "patient" },
-        process.env.JWT_SECRET,
+        env.jwtSecret,
         { expiresIn: "7d" }
       );
 

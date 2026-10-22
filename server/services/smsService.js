@@ -13,8 +13,9 @@
  */
 
 import nodemailer from "nodemailer";
+import env from "../config/env.js";
 
-const OPD_FEE = Number(process.env.OPD_FEE || 500);
+const OPD_FEE = env.opdFee;
 
 /**
  * Build the raw payment link for a billing record.
@@ -22,8 +23,7 @@ const OPD_FEE = Number(process.env.OPD_FEE || 500);
  * @returns {string}
  */
 export const buildPaymentLink = (billingId) => {
-  const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-  return `${clientUrl}/pay/${billingId}`;
+  return `${env.clientUrl}/pay/${billingId}`;
 };
 
 /**
@@ -34,7 +34,7 @@ export const buildPaymentLink = (billingId) => {
  * @returns {Promise<{ sent: boolean; method: string; preview?: string }>}
  */
 export const sendSms = async (phoneNumber, message) => {
-  const gateway = process.env.SMS_GATEWAY_DOMAIN;
+  const gateway = env.smsGatewayDomain;
 
   // ── Fallback: just log if no gateway configured ──────────────────────────
   if (!gateway) {
@@ -45,19 +45,16 @@ export const sendSms = async (phoneNumber, message) => {
   }
 
   // ── Email-to-SMS via carrier gateway ─────────────────────────────────────
-  const smtpUser = process.env.SMTP_USER;
-  const smtpPass = process.env.SMTP_PASS;
-
   let transporter;
   let preview;
   let isTest = false;
 
-  if (smtpUser && smtpPass) {
+  if (env.smtp.isConfigured) {
     transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === "true",
-      auth: { user: smtpUser, pass: smtpPass },
+      host: env.smtp.host,
+      port: env.smtp.port,
+      secure: env.smtp.secure,
+      auth: { user: env.smtp.user, pass: env.smtp.pass },
     });
   } else {
     isTest = true;
@@ -80,9 +77,7 @@ export const sendSms = async (phoneNumber, message) => {
   const toAddress = `${phoneNumber.replace(/\D/g, "")}@${gateway}`;
 
   const info = await transporter.sendMail({
-    from:
-      process.env.SMTP_FROM ||
-      `"Nivora Care Hospital" <billing@nivoracare.com>`,
+    from: env.smtp.from || `"Nivora Care Hospital" <billing@nivoracare.com>`,
     to: toAddress,
     subject: "",       // SMS gateways ignore subject
     text: message,     // Plain text only; no HTML in SMS

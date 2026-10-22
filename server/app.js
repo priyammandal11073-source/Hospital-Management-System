@@ -2,6 +2,7 @@ import cors from "cors";
 import express from "express";
 import compression from "compression";
 import mongoose from "mongoose";
+import env from "./config/env.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import billingRoutes from "./routes/billingRoutes.js";
@@ -76,7 +77,7 @@ const createApp = () => {
       message: "Nivora Care Hospital Management System API is healthy",
       timestamp: new Date().toISOString(),
       uptimeSeconds: Math.floor(process.uptime()),
-      environment: process.env.NODE_ENV || "development",
+      environment: env.nodeEnv,
       database: {
         status: dbStatusMap[dbStatus] || "Unknown",
         readyState: dbStatus,

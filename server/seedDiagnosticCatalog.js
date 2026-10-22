@@ -4,9 +4,9 @@ import crypto from "crypto";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { fileURLToPath } from "url";
+import env from "./config/env.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, ".env"), override: true });
 
 import User from "./models/User.js";
 import Patient from "./models/Patient.js";
@@ -497,11 +497,7 @@ async function seedDiagnosticServices() {
   console.log("=== SEEDING DIAGNOSTIC SERVICES PORTAL (PATHOLOGY & RADIOLOGY) ===");
   console.log("==================================================================");
 
-  const mongoUri = process.env.MONGO_URI;
-  if (!mongoUri) {
-    console.error("No MONGO_URI specified!");
-    process.exit(1);
-  }
+  const mongoUri = env.mongo.uri;
 
   await mongoose.connect(mongoUri);
   console.log("✓ Connected to MongoDB Atlas for diagnostic catalog population");

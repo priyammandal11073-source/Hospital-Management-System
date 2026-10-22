@@ -9,6 +9,7 @@ import {
 import PaymentMethodSelect from "../../components/PaymentMethodSelect.jsx";
 import UpiPaymentBox from "../../components/UpiPaymentBox.jsx";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import env from "../../config/env.js";
 
 const QUICK_REASONS = [
   { label: "🩺 Routine Health Checkup", text: "Routine General Health Checkup" },
@@ -142,7 +143,7 @@ function BookAppointment() {
 
       if (window.Razorpay && scriptOK) {
         const options = {
-          key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TZavagxglGTRZp",
+          key: orderData.keyId || env.razorpayKeyId,
           amount: orderData.amount,
           currency: orderData.currency || "INR",
           name: "Nivora Care Hospital",

@@ -1,14 +1,12 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
+import env from "../config/env.js";
 import Billing from "../models/Billing.js";
 
 // Helper to get Razorpay instance
 const getRazorpayInstance = () => {
-  const key_id = process.env.RAZORPAY_KEY_ID;
-  const key_secret = process.env.RAZORPAY_KEY_SECRET;
-
-  if (key_id && key_secret) {
-    return new Razorpay({ key_id, key_secret });
+  if (env.razorpay.isConfigured) {
+    return new Razorpay({ key_id: env.razorpay.keyId, key_secret: env.razorpay.keySecret });
   }
   return null;
 };
@@ -36,7 +34,7 @@ export const createOrder = async (req, res) => {
     }
 
     const razorpay = getRazorpayInstance();
-    const keyId = process.env.RAZORPAY_KEY_ID || "rzp_test_TZavagxglGTRZp";
+    const keyId = env.razorpay.keyId || "rzp_test_TZavagxglGTRZp";
 
     if (razorpay) {
       // Real Razorpay API Order Creation
@@ -103,7 +101,7 @@ export const verifyPayment = async (req, res) => {
       return res.status(404).json({ message: "Billing record not found." });
     }
 
-    const secret = process.env.RAZORPAY_KEY_SECRET;
+    const secret = env.razorpay.keySecret;
 
     // Signature verification is MANDATORY whenever a key secret is configured.
     // Without this an attacker could mark an invoice as paid by posting a fake
@@ -162,7 +160,7 @@ export const verifyPayment = async (req, res) => {
  * exact bytes Razorpay signed. Rejects unsigned/forged payloads with 400.
  */
 export const rzpWebhookHandler = async (req, res) => {
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET || process.env.RAZORPAY_KEY_SECRET;
+  const secret = env.razorpay.webhookSecret;
   const signature = req.headers["x-razorpay-signature"];
   const rawBody = req.body;
 

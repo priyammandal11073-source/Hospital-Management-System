@@ -1,15 +1,16 @@
 import jwt from "jsonwebtoken";
 import mongoose from "mongoose";
+import env from "../config/env.js";
 import Patient from "../models/Patient.js";
 import { generateOtp, normalizeContact, verifyOtp } from "../services/otpService.js";
 import { sendSms } from "../services/smsService.js";
 
 const createToken = (patient) => {
-  if (!process.env.JWT_SECRET) {
+  if (!env.jwtSecret) {
     throw new Error("JWT_SECRET is not configured");
   }
 
-  return jwt.sign({ id: patient._id, type: "patient" }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: patient._id, type: "patient" }, env.jwtSecret, {
     expiresIn: "7d",
   });
 };
@@ -230,7 +231,7 @@ export const loginPatient = async (req, res) => {
       if (normalizedEmail === "john@example.com" || normalizedEmail === "patient@hospital.com") {
         const token = jwt.sign(
           { id: "000000000000000000000005", type: "patient", role: "patient" },
-          process.env.JWT_SECRET || "super-secret-key-hospital-management-system-2026",
+          env.jwtSecret,
           { expiresIn: "7d" }
         );
         return res.status(200).json({

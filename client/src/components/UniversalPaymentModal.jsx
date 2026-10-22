@@ -4,6 +4,7 @@ import UpiPaymentBox from "./UpiPaymentBox.jsx";
 import InsurancePaymentBox from "./InsurancePaymentBox.jsx";
 import CardPaymentBox from "./CardPaymentBox.jsx";
 import { createRazorpayOrder, verifyRazorpayPayment, updatePaymentStatus } from "../services/api.js";
+import env from "../config/env.js";
 
 /**
  * UniversalPaymentModal
@@ -61,7 +62,7 @@ export default function UniversalPaymentModal({
 
       if (window.Razorpay && scriptOK) {
         const options = {
-          key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TZavagxglGTRZp",
+          key: orderData.keyId || env.razorpayKeyId,
           amount: orderData.amount,
           currency: orderData.currency || "INR",
           name: "Nivora Care Hospital",

@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import env from "../config/env.js";
 
 // Verifies the Bearer token before allowing access to a protected route.
 export const protect = (req, res, next) => {
@@ -11,7 +12,7 @@ export const protect = (req, res, next) => {
   const token = authorizationHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.jwtSecret);
     if (decoded.type === "patient" || !decoded.role) {
       return res.status(403).json({ message: "Access denied: Staff credentials required" });
     }
@@ -28,7 +29,7 @@ export const optionalProtect = (req, res, next) => {
   if (authorizationHeader?.startsWith("Bearer ")) {
     const token = authorizationHeader.split(" ")[1];
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, env.jwtSecret);
       req.user = { ...decoded, _id: decoded._id || decoded.id, id: decoded.id || decoded._id };
     } catch {
       // Ignore token verification errors for optional auth
@@ -63,7 +64,7 @@ export const protectPatient = (req, res, next) => {
   const token = authorizationHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.jwtSecret);
 
     // Reject the token if it's a staff token (has 'role' but not 'type: patient')
     if (!decoded.type || decoded.type !== "patient") {
@@ -92,7 +93,7 @@ export const protectStaffOrPatient = (req, res, next) => {
   const token = authorizationHeader.split(" ")[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, env.jwtSecret);
     if (decoded.type === "patient") {
       req.patient = decoded;
     } else {

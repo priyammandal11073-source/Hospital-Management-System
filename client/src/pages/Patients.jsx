@@ -7,6 +7,7 @@ import QrScannerModal from "../components/ui/QrScannerModal.jsx";
 import PatientQrCardModal from "../components/ui/PatientQrCardModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { formatDoctorName } from "../utils/doctorName.js";
+import { PageHeader, ConfirmDialog } from "../components/ui/index.js";
 
 function Patients() {
   const { user } = useAuth();
@@ -23,6 +24,7 @@ function Patients() {
   const [refreshKey, setRefreshKey] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [admittingPatient, setAdmittingPatient] = useState(null);
   const [vitalsPatient, setVitalsPatient] = useState(null);
@@ -32,6 +34,8 @@ function Patients() {
   const [isQrScannerOpen, setIsQrScannerOpen] = useState(false);
   const [qrCardPatient, setQrCardPatient] = useState(null);
   const [qrError, setQrError] = useState("");
+  const [patientToDelete, setPatientToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Administrative Filters
   const [bloodGroupFilter, setBloodGroupFilter] = useState("All");
@@ -92,7 +96,10 @@ function Patients() {
   };
 
   const handleFormSuccess = () => {
+    const isUpdate = Boolean(selectedPatient);
     closeForm();
+    setSuccessMessage(isUpdate ? "Patient record updated successfully." : "New patient registered successfully.");
+    setTimeout(() => setSuccessMessage(""), 5000);
     setRefreshKey((currentKey) => currentKey + 1);
   };
 
@@ -101,18 +108,26 @@ function Patients() {
     setPage(1);
   };
 
-  const handleDelete = async (patient) => {
-    const shouldDelete = window.confirm(`Delete ${patient.name}? This cannot be undone.`);
+  const handleDelete = (patient) => {
+    setPatientToDelete(patient);
+  };
 
-    if (!shouldDelete) return;
-
+  const confirmDeletePatient = async () => {
+    if (!patientToDelete) return;
+    setIsDeleting(true);
     setError("");
 
     try {
-      await deletePatient(patient._id);
+      const patientName = patientToDelete.name;
+      await deletePatient(patientToDelete._id);
+      setPatientToDelete(null);
+      setSuccessMessage(`Patient record for "${patientName}" was removed successfully.`);
+      setTimeout(() => setSuccessMessage(""), 5000);
       setRefreshKey((currentKey) => currentKey + 1);
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to delete patient.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -147,35 +162,33 @@ function Patients() {
 
   return (
     <section>
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">
-            {isDoctor ? "My Assigned Patients" : "Patients Directory"}
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            {isDoctor
-              ? `Patients under the clinical care and consultation of ${formatDoctorName(user?.name, "Doctor")}.`
-              : "Institutional master patient index, digital health records, and admission status."}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            className="rounded-xl border border-teal-200 bg-teal-50 px-4 py-2 text-xs font-bold text-teal-800 hover:bg-teal-100 transition shadow-sm"
-            onClick={() => setIsQrScannerOpen(true)}
-            type="button"
-            title="Scan a patient QR identity card"
-          >
-            📷 Scan QR
-          </button>
-          <button
-            className="rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-700 transition shadow-sm"
-            onClick={openAddForm}
-            type="button"
-          >
-            + Add New Patient
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title={isDoctor ? "My Assigned Patients" : "Patients Directory"}
+        subtitle={
+          isDoctor
+            ? `Patients under the clinical care and consultation of ${formatDoctorName(user?.name, "Doctor")}.`
+            : "Institutional master patient index, digital health records, and admission status."
+        }
+        action={
+          <div className="flex gap-2">
+            <button
+              className="rounded-xl border border-teal-200 bg-teal-50 px-4 py-2 text-xs font-bold text-teal-800 hover:bg-teal-100 transition shadow-sm"
+              onClick={() => setIsQrScannerOpen(true)}
+              type="button"
+              title="Scan a patient QR identity card"
+            >
+              📷 Scan QR
+            </button>
+            <button
+              className="rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-700 transition shadow-sm"
+              onClick={openAddForm}
+              type="button"
+            >
+              + Add New Patient
+            </button>
+          </div>
+        }
+      />
 
       {/* Filter and Search Bar */}
       <div className="mb-4 rounded-xl bg-white p-3 ring-1 ring-slate-200/80 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -231,6 +244,28 @@ function Patients() {
           </div>
         </div>
       </div>
+
+      {successMessage && (
+        <div
+          role="status"
+          className="mb-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 shadow-2xs"
+        >
+          <span className="flex items-center gap-2">
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-200 text-xs text-emerald-800">
+              ✓
+            </span>
+            {successMessage}
+          </span>
+          <button
+            type="button"
+            onClick={() => setSuccessMessage("")}
+            className="text-emerald-600 hover:text-emerald-900 ml-2 font-bold"
+            aria-label="Dismiss message"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {error && (
         <p className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
@@ -738,6 +773,23 @@ function Patients() {
           </div>
         </div>
       )}
+
+      {/* Modern Accessible Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={Boolean(patientToDelete)}
+        title="Delete Patient Record"
+        message={
+          patientToDelete
+            ? `Are you sure you want to delete ${patientToDelete.name}'s medical record? This cannot be undone.`
+            : ""
+        }
+        confirmText="Delete Record"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={confirmDeletePatient}
+        onCancel={() => setPatientToDelete(null)}
+      />
     </section>
   );
 }

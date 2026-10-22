@@ -15,6 +15,7 @@ import DiagnosticTest from "../models/DiagnosticTest.js";
 import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
 import { checkPrescriptionSafety } from "../services/prescriptionSafetyService.js";
 import { resolveDoctorForUser, formatDoctorName } from "../utils/doctorHelper.js";
+import env from "../config/env.js";
 
 // Helper: send error
 const sendError = (res, statusCode, message, err = null) => {
@@ -1227,7 +1228,7 @@ export const startTeleconsult = async (req, res) => {
     }
 
     const joinCode = appointment.telemedicine?.joinCode || generateJoinCode();
-    const meetLink = `${process.env.CLIENT_URL || "http://localhost:5173"}/teleconsult/${joinCode}`;
+    const meetLink = `${env.clientUrl}/teleconsult/${joinCode}`;
 
     appointment.telemedicine = {
       joinCode,

@@ -7,4 +7,6 @@ export { default as PatientBanner } from "./PatientBanner";
 export { default as EmptyStateCard } from "./EmptyStateCard";
 export { default as SkeletonTable } from "./SkeletonTable";
 export { default as PageLoader } from "./PageLoader";
-
+export { default as ConfirmDialog } from "./ConfirmDialog";
+export { default as PageHeader } from "./PageHeader";
+export { default as DataTable } from "./DataTable";

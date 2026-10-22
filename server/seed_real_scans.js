@@ -3,11 +3,9 @@ import path from "path";
 import dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import crypto from "crypto";
+import env from "./config/env.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, ".env"), override: true });
-
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = env.mongo.uri;
 
 async function seedRealFiles() {
   console.log("Connecting to MongoDB...");

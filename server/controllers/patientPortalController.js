@@ -14,8 +14,9 @@ import Feedback from "../models/Feedback.js";
 import DiagnosticReport from "../models/DiagnosticReport.js";
 import DiagnosticOrder from "../models/DiagnosticOrder.js";
 import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
+import env from "../config/env.js";
 
-const OPD_FEE = Number(process.env.OPD_FEE || 500);
+const OPD_FEE = env.opdFee;
 
 // GET /api/patient-portal/me
 export const getMyProfile = async (req, res) => {

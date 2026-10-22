@@ -5,6 +5,7 @@ import MedicationAdminModal from "../components/MedicationAdminModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getPrescriptions, getPrescriptionById, deletePrescription } from "../services/api.js";
 import { getDoctorDisplayName, formatDoctorName } from "../utils/doctorName.js";
+import { PageHeader, ConfirmDialog } from "../components/ui/index.js";
 
 const formatDate = (date) =>
   date
@@ -24,12 +25,14 @@ function Prescriptions() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [prescriptionToEdit, setPrescriptionToEdit] = useState(null);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
   const [administerRx, setAdministerRx] = useState(null);
-  const [isDeletingId, setIsDeletingId] = useState(null);
+  const [prescriptionToDelete, setPrescriptionToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchPrescriptions = async () => {
     setIsLoading(true);
@@ -67,18 +70,24 @@ function Prescriptions() {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this prescription? This action cannot be undone.")) {
-      return;
-    }
-    setIsDeletingId(id);
+  const handleDelete = (id) => {
+    setPrescriptionToDelete(id);
+  };
+
+  const confirmDeletePrescription = async () => {
+    if (!prescriptionToDelete) return;
+    setIsDeleting(true);
+    setError("");
     try {
-      await deletePrescription(id);
-      setPrescriptions((prev) => prev.filter((p) => p._id !== id));
+      await deletePrescription(prescriptionToDelete);
+      setPrescriptions((prev) => prev.filter((p) => p._id !== prescriptionToDelete));
+      setPrescriptionToDelete(null);
+      setSuccessMessage("Prescription record deleted successfully.");
+      setTimeout(() => setSuccessMessage(""), 4500);
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete prescription.");
+      setError(err.response?.data?.message || "Failed to delete prescription.");
     } finally {
-      setIsDeletingId(null);
+      setIsDeleting(false);
     }
   };
 
@@ -92,36 +101,33 @@ function Prescriptions() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            {isDoctor ? "My Clinical Prescriptions (Rx)" : "Clinical Prescriptions (Rx)"}
-          </h1>
-          <p className="text-sm font-medium text-slate-600 mt-1">
-            {isDoctor
-              ? `Digital clinical prescriptions authored by ${formatDoctorName(user?.name, "Doctor")}`
-              : "Generate, print, and share digital clinical prescriptions on official Nivora Care letterhead"}
-          </p>
-        </div>
-
-        {isDoctor ? (
-          <button
-            type="button"
-            onClick={() => {
-              setPrescriptionToEdit(null);
-              setIsFormOpen(true);
-            }}
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-sm shadow-teal-700/20 active:scale-98"
-          >
-            <span className="text-base font-black">℞</span>
-            <span>Generate new prescription</span>
-          </button>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-300 text-xs font-semibold text-slate-600">
-            🔒 Read-only directory (Physicians author Rx)
-          </span>
-        )}
-      </div>
+      <PageHeader
+        title={isDoctor ? "My Clinical Prescriptions (Rx)" : "Clinical Prescriptions (Rx)"}
+        subtitle={
+          isDoctor
+            ? `Digital clinical prescriptions authored by ${formatDoctorName(user?.name, "Doctor")}`
+            : "Generate, print, and share digital clinical prescriptions on official Nivora Care letterhead"
+        }
+        action={
+          isDoctor ? (
+            <button
+              type="button"
+              onClick={() => {
+                setPrescriptionToEdit(null);
+                setIsFormOpen(true);
+              }}
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-xl bg-teal-600 hover:bg-teal-700 text-white transition-all shadow-sm shadow-teal-700/20 active:scale-98"
+            >
+              <span className="text-base font-black">℞</span>
+              <span>Generate new prescription</span>
+            </button>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-300 text-xs font-semibold text-slate-600">
+              🔒 Read-only directory (Physicians author Rx)
+            </span>
+          )
+        }
+      />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -162,9 +168,12 @@ function Prescriptions() {
           <PrescriptionForm
             prescriptionToEdit={prescriptionToEdit}
             onSuccess={(newOrUpdated) => {
+              const wasEdit = Boolean(prescriptionToEdit);
               setIsFormOpen(false);
               setPrescriptionToEdit(null);
               fetchPrescriptions();
+              setSuccessMessage(wasEdit ? "Prescription updated successfully." : "New digital prescription issued and recorded.");
+              setTimeout(() => setSuccessMessage(""), 4500);
               if (newOrUpdated) setSelectedPrescription(newOrUpdated);
             }}
             onCancel={() => {
@@ -172,6 +181,29 @@ function Prescriptions() {
               setPrescriptionToEdit(null);
             }}
           />
+        </div>
+      )}
+
+      {/* Success Banner */}
+      {successMessage && (
+        <div
+          role="status"
+          className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 shadow-2xs"
+        >
+          <span className="flex items-center gap-2">
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-200 text-xs text-emerald-800">
+              ✓
+            </span>
+            {successMessage}
+          </span>
+          <button
+            type="button"
+            onClick={() => setSuccessMessage("")}
+            className="text-emerald-600 hover:text-emerald-900 ml-2 font-bold"
+            aria-label="Dismiss message"
+          >
+            ✕
+          </button>
         </div>
       )}
 
@@ -386,6 +418,19 @@ function Prescriptions() {
           }}
         />
       )}
+
+      {/* Modern Accessible Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={Boolean(prescriptionToDelete)}
+        title="Delete Prescription"
+        message="Are you sure you want to delete this prescription? This action cannot be undone."
+        confirmText="Delete Prescription"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={confirmDeletePrescription}
+        onCancel={() => setPrescriptionToDelete(null)}
+      />
     </div>
   );
 }

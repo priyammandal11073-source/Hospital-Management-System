@@ -45,8 +45,8 @@ function HelpSupportPage() {
         </p>
       </div>
 
-      {/* Emergency Hotlines Grid */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      {/* Emergency Hotlines & Contact Grid */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-rose-200 bg-rose-50/70 p-5 shadow-xs">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-600 text-white text-lg font-black shadow-xs">
@@ -54,7 +54,9 @@ function HelpSupportPage() {
             </div>
             <div>
               <p className="text-xs font-bold text-rose-800 uppercase tracking-wider">Emergency Ambulance</p>
-              <p className="font-mono text-xl font-black text-rose-900 mt-0.5">108 / 112</p>
+              <p className="font-mono text-xl font-black text-rose-900 mt-0.5">
+                <a href="tel:108" className="hover:underline" title="Call Emergency Ambulance">108</a> / <a href="tel:112" className="hover:underline" title="Call National Emergency">112</a>
+              </p>
             </div>
           </div>
           <p className="mt-3 text-xs text-rose-700 font-medium">
@@ -69,7 +71,9 @@ function HelpSupportPage() {
             </div>
             <div>
               <p className="text-xs font-bold text-blue-800 uppercase tracking-wider">Hospital Desk</p>
-              <p className="font-mono text-base font-black text-blue-950 mt-0.5">+91 98765 43210</p>
+              <p className="font-mono text-base font-black text-blue-950 mt-0.5">
+                <a href="tel:+919876543210" className="hover:underline" title="Call Hospital Front Desk">+91 98765 43210</a>
+              </p>
             </div>
           </div>
           <p className="mt-3 text-xs text-blue-700 font-medium">
@@ -84,11 +88,30 @@ function HelpSupportPage() {
             </div>
             <div>
               <p className="text-xs font-bold text-teal-800 uppercase tracking-wider">24/7 Pharmacy Desk</p>
-              <p className="font-mono text-base font-black text-teal-950 mt-0.5">+91 98765 43219</p>
+              <p className="font-mono text-base font-black text-teal-950 mt-0.5">
+                <a href="tel:+919876543219" className="hover:underline" title="Call 24/7 Pharmacy Desk">+91 98765 43219</a>
+              </p>
             </div>
           </div>
           <p className="mt-3 text-xs text-teal-700 font-medium">
             Medicine refill queries, home delivery service, and stock verification.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-indigo-200 bg-indigo-50/70 p-5 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white text-lg font-black shadow-xs">
+              ✉️
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-indigo-800 uppercase tracking-wider">Email Support</p>
+              <p className="font-mono text-xs font-bold text-indigo-950 mt-1 truncate">
+                <a href="mailto:support@nivoracare.com" className="hover:underline" title="Email Hospital Support">support@nivoracare.com</a>
+              </p>
+            </div>
+          </div>
+          <p className="mt-3 text-xs text-indigo-700 font-medium">
+            Clinical queries, insurance verification, and billing clarifications.
           </p>
         </div>
       </div>

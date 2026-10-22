@@ -1,13 +1,19 @@
 // Centralized Error Handling Middleware for Nivora Care HMS
+import AppError from "../utils/AppError.js";
+import env from "../config/env.js";
 
 export const notFoundHandler = (req, res, next) => {
-  const error = new Error(`Resource not found on Nivora Care HMS: ${req.method} ${req.originalUrl}`);
   res.status(404);
+  const error = new AppError(
+    `Resource not found on Nivora Care HMS: ${req.method} ${req.originalUrl}`,
+    404
+  );
   next(error);
 };
 
-export const errorHandler = (err, req, res, next) => {
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+export const errorHandler = (err, req, res, _next) => {
+  // Default to 500 for unexpected errors; use the AppError statusCode when available.
+  let statusCode = err.statusCode || (res.statusCode === 200 ? 500 : res.statusCode);
   let message = err.message || "Internal Server Error";
 
   // Mongoose bad ObjectId CastError
@@ -42,12 +48,17 @@ export const errorHandler = (err, req, res, next) => {
     statusCode = 401;
   }
 
+  // Log unexpected (non-operational) errors in all environments.
+  if (!(err instanceof AppError) && statusCode === 500) {
+    console.error("[Unhandled Error]", err);
+  }
+
   res.status(statusCode).json({
     success: false,
     message,
     statusCode,
     path: req.originalUrl,
     timestamp: new Date().toISOString(),
-    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+    ...(env.isDevelopment && { stack: err.stack }),
   });
 };

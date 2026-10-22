@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createRazorpayOrder, verifyRazorpayPayment, payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
+import env from "../config/env.js";
 
 function loadRazorpayScript() {
   return new Promise((resolve) => {
@@ -58,7 +59,7 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient, autoOpen = t
 
       if (window.Razorpay && scriptOK) {
         const options = {
-          key: orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TZavagxglGTRZp",
+          key: orderData.keyId || env.razorpayKeyId,
           amount: orderData.amount,
           currency: orderData.currency || "INR",
           name: "Nivora Care Hospital",

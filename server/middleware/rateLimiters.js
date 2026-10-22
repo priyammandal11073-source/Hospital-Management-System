@@ -1,4 +1,5 @@
 import rateLimit from "express-rate-limit";
+import env from "../config/env.js";
 
 /**
  * Application rate limiters.
@@ -13,7 +14,7 @@ const responseMessage = (windowMinutes) => ({
   message: `Too many requests from this IP. Please try again in ${windowMinutes} minute(s).`,
 });
 
-const isTestEnv = () => process.env.NODE_ENV === "test";
+const isTestEnv = () => env.isTest;
 
 // POST /api/auth/login and /api/auth/register (15 requests / 15 minutes / IP)
 export const authLimiter = rateLimit({

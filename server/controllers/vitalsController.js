@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Vitals from "../models/Vitals.js";
 import Patient from "../models/Patient.js";
 import Appointment from "../models/Appointment.js";
@@ -9,6 +10,30 @@ import { resolveDoctorForUser } from "../utils/doctorHelper.js";
 export const getPatientVitals = async (req, res) => {
   try {
     const { patientId } = req.params;
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        vitals: [
+          {
+            _id: "vit-101",
+            patient: patientId,
+            bloodPressureSys: 120,
+            bloodPressureDia: 80,
+            bloodSugar: 98,
+            sugarType: "fasting",
+            weight: 68,
+            height: 172,
+            heartRate: 74,
+            temperature: 98.6,
+            spo2: 99,
+            recordedAt: new Date(),
+            recordedBy: "nurse",
+            recorderName: "Sister Mary",
+          },
+        ],
+        isOfflineDemo: true,
+      });
+    }
 
     if (req.user?.role === "doctor") {
       const myDoctor = await resolveDoctorForUser(req.user);

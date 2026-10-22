@@ -15,6 +15,7 @@ import {
   getPatientVitals,
 } from "../services/api.js";
 import { getDoctorDisplayName } from "../utils/doctorName.js";
+import { PageHeader, ConfirmDialog } from "../components/ui/index.js";
 
 const statuses = ["pending", "waiting", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"];
 
@@ -71,7 +72,10 @@ function Appointments() {
   const [updatingId, setUpdatingId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const [paymentBilling, setPaymentBilling] = useState(null);
+  const [appointmentToDelete, setAppointmentToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     let isCurrentRequest = true;
@@ -131,6 +135,8 @@ function Appointments() {
 
     try {
       await updateAppointmentStatus(appointmentId, status);
+      setSuccessMessage(`Appointment status updated to "${statusLabels[status] || status}".`);
+      setTimeout(() => setSuccessMessage(""), 4500);
       setRefreshKey((currentKey) => currentKey + 1);
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to update appointment status.");
@@ -139,49 +145,58 @@ function Appointments() {
     }
   };
 
-  const handleDelete = async (appointment) => {
-    if (!window.confirm("Delete this appointment? This cannot be undone.")) return;
+  const handleDelete = (appointment) => {
+    setAppointmentToDelete(appointment);
+  };
 
+  const confirmDeleteAppointment = async () => {
+    if (!appointmentToDelete) return;
+    setIsDeleting(true);
     setError("");
 
     try {
-      await deleteAppointment(appointment._id);
+      await deleteAppointment(appointmentToDelete._id);
+      setAppointmentToDelete(null);
+      setSuccessMessage("Appointment was cancelled and removed successfully.");
+      setTimeout(() => setSuccessMessage(""), 4500);
       setRefreshKey((currentKey) => currentKey + 1);
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to delete appointment.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   const handleBookingSuccess = () => {
     setIsFormOpen(false);
+    setSuccessMessage("New appointment successfully scheduled.");
+    setTimeout(() => setSuccessMessage(""), 4500);
     setRefreshKey((currentKey) => currentKey + 1);
   };
 
   return (
     <section>
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">
-            {isDoctor ? "My Clinical Consultations" : isNurse ? "Clinical Appointments & Triage" : "Appointments"}
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            {isDoctor
-              ? "Review and manage consultations assigned to your clinical schedule."
-              : isNurse
-              ? "Review outpatient triage queue, conduct safety checklists, and monitor patient vitals."
-              : "Book and manage hospital-wide patient appointments."}
-          </p>
-        </div>
-        {canBook && (
-          <button
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            onClick={() => setIsFormOpen(true)}
-            type="button"
-          >
-            + Book appointment
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title={isDoctor ? "My Clinical Consultations" : isNurse ? "Clinical Appointments & Triage" : "Appointments"}
+        subtitle={
+          isDoctor
+            ? "Review and manage consultations assigned to your clinical schedule."
+            : isNurse
+            ? "Review outpatient triage queue, conduct safety checklists, and monitor patient vitals."
+            : "Book and manage hospital-wide patient appointments."
+        }
+        actions={
+          canBook && (
+            <button
+              className="rounded-xl bg-cyan-600 hover:bg-cyan-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-cyan-900/20 transition-all flex items-center gap-1.5"
+              onClick={() => setIsFormOpen(true)}
+              type="button"
+            >
+              <span className="text-base leading-none">+</span> Book appointment
+            </button>
+          )
+        }
+      />
 
       <div className={`mb-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${isDoctor ? "lg:grid-cols-4" : "lg:grid-cols-5"} gap-3`}>
         <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
@@ -256,6 +271,28 @@ function Appointments() {
         <p className="mb-4 text-xs font-bold text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200">
           Showing patient-booked pending appointments — staff review queue
         </p>
+      )}
+
+      {successMessage && (
+        <div
+          role="status"
+          className="mb-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800 shadow-2xs"
+        >
+          <span className="flex items-center gap-2">
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-200 text-xs text-emerald-800">
+              ✓
+            </span>
+            {successMessage}
+          </span>
+          <button
+            type="button"
+            onClick={() => setSuccessMessage("")}
+            className="text-emerald-600 hover:text-emerald-900 ml-2 font-bold"
+            aria-label="Dismiss message"
+          >
+            ✕
+          </button>
+        </div>
       )}
 
       {error && (
@@ -650,6 +687,23 @@ function Appointments() {
           title="Consultation Fee & Visit Settlement"
         />
       )}
+
+      {/* Modern Accessible Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={Boolean(appointmentToDelete)}
+        title="Cancel & Delete Appointment"
+        message={
+          appointmentToDelete
+            ? `Are you sure you want to delete the appointment for ${appointmentToDelete.patient?.name || "this patient"} on ${appointmentToDelete.appointmentDate ? new Date(appointmentToDelete.appointmentDate).toLocaleDateString() : "the scheduled date"}? This action cannot be undone.`
+            : ""
+        }
+        confirmText="Delete Appointment"
+        cancelText="Keep Appointment"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={confirmDeleteAppointment}
+        onCancel={() => setAppointmentToDelete(null)}
+      />
     </section>
   );
 }

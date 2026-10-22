@@ -1,10 +1,9 @@
-import path from "path";
-import { fileURLToPath } from "url";
-import dotenv from "dotenv";
 import mongoose from "mongoose";
+import env from "./env.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, "../.env"), override: true });
+// Disable Mongoose command buffering so queries fail immediately or switch to fallback
+// instead of hanging incoming Express requests for 10 seconds.
+mongoose.set("bufferCommands", false);
 
 const mongoClientOptions = {
   serverSelectionTimeoutMS: 5000,
@@ -17,25 +16,16 @@ const mongoClientOptions = {
 
 /**
  * Opens the MongoDB connection used by the Express application.
- * MONGO_URI is kept in .env so connection details are not committed to Git.
+ * The connection URI is read from the centralized `env` config module,
+ * which validates the `MONGO_URI` variable at startup.
  */
 const connectDB = async () => {
-  const mongoUri = process.env.MONGO_URI;
-
-  if (!mongoUri) {
-    console.error("\n[!] MongoDB Configuration Error: MONGO_URI is not set in server/.env");
-    console.error("Please add MONGO_URI to your server/.env file, e.g.:");
-    console.error("  MONGO_URI=mongodb://127.0.0.1:27017/hospital-db (Local)");
-    console.error("  or a MongoDB Atlas connection string (Cloud)\n");
-    process.exit(1);
-  }
-
   try {
-    const connection = await mongoose.connect(mongoUri, mongoClientOptions);
+    const connection = await mongoose.connect(env.mongo.uri, mongoClientOptions);
     console.log(`MongoDB connected: ${connection.connection.host}`);
   } catch (error) {
     console.error(`\n[!] MongoDB initial connection warning: ${error.message}`);
-    console.error("The server will remain running on port " + (process.env.PORT || 5000) + " and retry connecting in the background.");
+    console.error("The server will remain running on port " + env.port + " and retry connecting in the background.");
     console.error("Tip: Whitelist your IP in MongoDB Atlas Network Access: https://www.mongodb.com/docs/atlas/security-whitelist/\n");
 
     // Retry in background every 8 seconds
@@ -46,10 +36,10 @@ const connectDB = async () => {
           return;
         }
         console.log("[MongoDB] Attempting reconnection...");
-        const conn = await mongoose.connect(mongoUri, mongoClientOptions);
+        const conn = await mongoose.connect(env.mongo.uri, mongoClientOptions);
         console.log(`[MongoDB] Reconnection successful: ${conn.connection.host}`);
         clearInterval(retryInterval);
-      } catch (err) {
+      } catch {
         // Keep retrying quietly
       }
     }, 8000);
@@ -57,4 +47,3 @@ const connectDB = async () => {
 };
 
 export default connectDB;
-

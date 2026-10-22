@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f766e"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="crossGrad" x1="16" y1="16" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#2dd4bf"/>
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Rounded App Icon Shield Background -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#bgGrad)" stroke="#38bdf8" stroke-opacity="0.25" stroke-width="1.5" filter="url(#softGlow)"/>
+
+  <!-- Clinical Shield Emblem Outline -->
+  <path d="M32 8 C44 8, 50 14, 50 26 C50 42, 32 54, 32 54 C32 54, 14 42, 14 26 C14 14, 20 8, 32 8 Z" fill="#ffffff" fill-opacity="0.08" stroke="#ffffff" stroke-opacity="0.2" stroke-width="1.5"/>
+
+  <!-- Official Medical Cross with Rounded Shoulders -->
+  <path d="M26 18 H38 V26 H46 V38 H38 V46 H26 V38 H18 V26 H26 Z" fill="url(#crossGrad)" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
+
+  <!-- Dynamic ECG Vital Pulse Wave through Center -->
+  <path d="M12 32 H22 L25 25 L29 39 L33 27 L36 35 L39 32 H52" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

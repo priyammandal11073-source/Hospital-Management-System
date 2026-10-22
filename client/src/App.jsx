@@ -6,6 +6,7 @@ import PatientProtectedRoute from "./components/PatientProtectedRoute.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageLoader from "./components/ui/PageLoader.jsx";
 import { PrintModalProvider } from "./context/PrintModalContext.jsx";
+import usePageTitle from "./hooks/usePageTitle.js";
 
 // Core Staff & Common Pages (Lazy Loaded)
 const Appointments = lazy(() => import("./pages/Appointments.jsx"));
@@ -150,6 +151,8 @@ const PathologyReportGeneratorPage = lazy(() => import("./pages/diagnostic/Patho
 const RadiologyStudyPage = lazy(() => import("./pages/diagnostic/RadiologyStudyPage.jsx"));
 
 function App() {
+  usePageTitle();
+
   return (
     <PrintModalProvider>
       <Suspense fallback={<PageLoader />}>
@@ -305,6 +308,26 @@ function App() {
             <Route path="/diagnostic/print-center" element={<DiagnosticPrintCenterPage />} />
             <Route path="/diagnostic/reports/new/:orderId" element={<PathologyReportGeneratorPage />} />
             <Route path="/diagnostic/study/:studyId" element={<RadiologyStudyPage />} />
+
+            {/* Backward-Compatible Route Aliases to Prevent Broken Links */}
+            <Route path="/pharmacy/dispense" element={<PrescriptionDispensePage />} />
+            <Route path="/pharmacy/prescriptions-history" element={<Navigate to="/pharmacy/history" replace />} />
+            <Route path="/pharmacy/low-stock" element={<Navigate to="/pharmacy/alerts" replace />} />
+            <Route path="/pharmacy/stock-receiving" element={<Navigate to="/pharmacy/stock" replace />} />
+            <Route path="/pharmacy/patient-history" element={<Navigate to="/pharmacy/patients" replace />} />
+            <Route path="/pharmacy/receipts" element={<Navigate to="/pharmacy/billing" replace />} />
+            <Route path="/pharmacy/refunds" element={<Navigate to="/pharmacy/returns" replace />} />
+            <Route path="/pharmacy/reports" element={<Navigate to="/pharmacy/analytics" replace />} />
+            <Route path="/pharmacy/stock-ledger" element={<Navigate to="/pharmacy/batches" replace />} />
+            <Route path="/pharmacy/shifts" element={<Navigate to="/pharmacy/staff" replace />} />
+
+            <Route path="/diagnostics" element={<Navigate to="/diagnostic/requests" replace />} />
+            <Route path="/diagnostic/appointments" element={<Navigate to="/diagnostic/requests" replace />} />
+            <Route path="/diagnostic/walk-in" element={<Navigate to="/diagnostic/samples" replace />} />
+            <Route path="/diagnostic/lab-workstation" element={<Navigate to="/diagnostic/workbench" replace />} />
+            <Route path="/diagnostic/specialist-review" element={<Navigate to="/diagnostic/review" replace />} />
+            <Route path="/diagnostic/critical-alerts" element={<Navigate to="/diagnostic/critical" replace />} />
+            <Route path="/diagnostic/audit-logs" element={<Navigate to="/diagnostic/audit" replace />} />
           </Route>
         </Route>
 

@@ -4,6 +4,7 @@ import DoctorScheduleModal from "../components/DoctorScheduleModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { deleteDoctor, getDoctors } from "../services/api.js";
 import { getDoctorDisplayName } from "../utils/doctorName.js";
+import { PageHeader, ConfirmDialog } from "../components/ui/index.js";
 
 const specializations = ["Cardiology", "Dermatology", "Neurology", "Orthopedics", "Pediatrics"];
 const departments = ["Cardiology", "Medicine", "Neurology", "Orthopedics", "Pediatrics"];
@@ -23,6 +24,8 @@ function Doctors() {
   const [scheduleDoctor, setScheduleDoctor] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [doctorToDelete, setDoctorToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     let isCurrentRequest = true;
@@ -60,45 +63,50 @@ function Doctors() {
     setRefreshKey((currentKey) => currentKey + 1);
   };
 
-  const handleDelete = async (doctor) => {
-    if (!window.confirm(`Delete ${getDoctorDisplayName(doctor)}? This cannot be undone.`)) return;
+  const handleDelete = (doctor) => {
+    setDoctorToDelete(doctor);
+  };
 
+  const confirmDeleteDoctor = async () => {
+    if (!doctorToDelete) return;
+    setIsDeleting(true);
     setError("");
 
     try {
-      await deleteDoctor(doctor._id);
+      await deleteDoctor(doctorToDelete._id);
+      setDoctorToDelete(null);
       setRefreshKey((currentKey) => currentKey + 1);
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Unable to delete doctor.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
     <section>
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">
-            {isDoctor ? "My Schedule & Availability" : "Doctors Directory"}
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            {isDoctor
-              ? "Manage your weekly consultation shifts, slot durations, and planned leaves."
-              : "View doctor profiles, specialties, and clinical availability."}
-          </p>
-        </div>
-        {isAdmin && (
-          <button
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            onClick={() => {
-              setSelectedDoctor(null);
-              setIsFormOpen(true);
-            }}
-            type="button"
-          >
-            + Add doctor
-          </button>
-        )}
-      </div>
+      <PageHeader
+        title={isDoctor ? "My Schedule & Availability" : "Doctors Directory"}
+        subtitle={
+          isDoctor
+            ? "Manage your weekly consultation shifts, slot durations, and planned leaves."
+            : "View doctor profiles, specialties, and clinical availability."
+        }
+        action={
+          isAdmin ? (
+            <button
+              className="rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-blue-700 transition shadow-sm"
+              onClick={() => {
+                setSelectedDoctor(null);
+                setIsFormOpen(true);
+              }}
+              type="button"
+            >
+              + Add Doctor
+            </button>
+          ) : null
+        }
+      />
 
       {!isDoctor && (
         <div className="mb-5 grid max-w-2xl gap-3 sm:grid-cols-2">
@@ -364,6 +372,23 @@ aria-label={`Delete ${getDoctorDisplayName(doctor)}`}
           }}
         />
       )}
+
+      {/* Modern Accessible Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={Boolean(doctorToDelete)}
+        title="Delete Doctor"
+        message={
+          doctorToDelete
+            ? `Are you sure you want to delete ${getDoctorDisplayName(doctorToDelete)}? This cannot be undone.`
+            : ""
+        }
+        confirmText="Delete Doctor"
+        cancelText="Cancel"
+        variant="danger"
+        loading={isDeleting}
+        onConfirm={confirmDeleteDoctor}
+        onCancel={() => setDoctorToDelete(null)}
+      />
     </section>
   );
 }

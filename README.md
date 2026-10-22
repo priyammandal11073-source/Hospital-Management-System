@@ -34,8 +34,9 @@
 
 | | Section | Description |
 |---|---|---|
+| 📚 | [Project Documentation](#project-documentation) | Core architectural specifications, PRD, design system, AI rules & tracking |
 | 🏥 | [Overview](#overview) | System objectives, the architectural problem solved, and key value drivers |
-| ⚡ | [System Highlights](#system-highlights) | At-a-glance capability matrix across all 7 hospital departments |
+| ⚡ | [System Highlights](#system-highlights) | At-a-glance capability matrix across all 8 hospital departments |
 | 🏢 | [Hospital Portals](#hospital-portals) | In-depth feature, workflow and screen breakdown per portal |
 | 🔄 | [Cross-Portal Workflows](#cross-portal-workflows) | Event-driven data synchronization across clinical & financial departments |
 | 🔁 | [Real-World Workflows](#real-world-workflows) | Step-by-step lifecycles for Pathology, Radiology CT and Medication MAR |
@@ -43,7 +44,7 @@
 | 🗄️ | [Database Schema & Indexing](#database-schema) | High-performance compound & partial index configurations |
 | 📁 | [Medical File Storage](#medical-file-storage) | Dynamic PDF reports, thermal film generator & static asset CDN |
 | 🔒 | [Security & Access Control](#security-access-control) | RBAC middleware, JWT auth, IDOR guards & rejection tests |
-| 🖼️ | [Screenshot Gallery](#complete-screenshot-gallery) | Collapsible visual catalog of all 7 portals |
+| 🖼️ | [Screenshot Gallery](#complete-screenshot-gallery) | Collapsible visual catalog of all 8 portals |
 | 🔐 | [Portal Login Pages](#portal-logins) | Dedicated sign-in screens for every staff role plus the patient portal |
 | ⚙️ | [Installation & Setup](#installation-setup) | Prerequisites and step-by-step start commands |
 | 🔑 | [Environment Variables](#environment-variables) | Complete `.env` guide for client and server |
@@ -54,6 +55,21 @@
 | 📂 | [Project Structure](#project-structure) | Tree map of frontend, backend and documentation |
 | 🔮 | [Future Improvements](#future-improvements) | Roadmap — FHIR/HL7, AI screening, telemedicine, IoT |
 | 👨‍💻 | [Author & License](#author-license) | Project creator, GitHub profile and MIT license |
+
+---
+
+## <a id="project-documentation"></a>📚 Project Documentation & Vibe-Coding Workflow
+
+Nivora Care includes comprehensive, living architectural specifications and development workflow documents:
+
+| Document | Purpose & Contents |
+|---|---|
+| [**`PRD.md`**](./PRD.md) | **Product Requirements Document**: User personas, feature capabilities across all 8 portals, non-functional requirements, clinical workflows, and acceptance criteria. |
+| [**`ARCHITECTURE.md`**](./ARCHITECTURE.md) | **System Architecture**: High-level component diagrams, N-tier request pipeline, 43 Mongoose domain models, security authorization flows, and build infrastructure. |
+| [**`DESIGN.md`**](./DESIGN.md) | **Design System**: Editorial clinical aesthetic, color palette, Fraunces serif typography, touch targets, and reusable UI components (`ConfirmDialog`, `PageHeader`, `DataTable`). |
+| [**`RULES.md`**](./RULES.md) | **AI Coding Rules & Workflows**: Guidelines for future AI development sessions, error handling standards, pre-change checklist, and post-change checklist. |
+| [**`MEMORY.md`**](./MEMORY.md) | **Project Context & Decisions**: Concise architectural decision records (ADRs), critical file paths, Windows line-ending handling, and active technical context. |
+| [**`TRACKER.md`**](./TRACKER.md) | **Development Progress Tracker**: Verified completed milestones, active in-progress tasks, future roadmap, and test verification health metrics. |
 
 ---
 
@@ -642,7 +658,7 @@ cp client/.env.example client/.env
 ```env
 PORT=5000
 MONGO_URI=mongodb://127.0.0.1:27017/hospital-db
-JWT_SECRET=nivora-care-hospital-super-secure-secret-key-2026
+JWT_SECRET=your-secure-jwt-secret-key-min-32-chars
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 OPD_FEE=300
@@ -688,14 +704,21 @@ Both packages are covered by **Vitest**, and a **GitHub Actions** pipeline runs 
 
 ### Running tests locally
 ```bash
-# Server — HTTP integration tests (health, 404, login validation, offline
-# demo auth) plus unit tests for JWT/RBAC middleware, the OTP service and
-# the Zod validators.
+# Server — 65 automated tests across 5 Vitest suites (HTTP integration tests,
+# auth middleware, role-based protection, OTP service, Zod request validators,
+# offline demo fallbacks, and error handling pipeline).
 cd server && npm test
 
-# Client — portal-selection, Diagnostics sub-role tile and credentials-flow
-# tests rendered with @testing-library/react.
+# Client — 15 automated tests across 3 Vitest suites (portal-selection,
+# doctor title prefix formatting, print service, and credentials-flow).
 cd client && npm test
+```
+
+### Full Verification Commands
+```bash
+npm run test:all    # Runs both server (65 tests) and client (15 tests)
+npm run lint:all    # ESLint flat checks across server and client
+npm run build --prefix client  # Validates React 19 production bundle
 ```
 
 ### Linting
@@ -809,7 +832,13 @@ Hospital-Management-System/
 ├── docs/                           # Documentation resources & screenshots
 │   └── screenshots/                # Comprehensive operational screenshot gallery
 │
-└── README.md                       # Project Documentation Page
+├── PRD.md                          # Product Requirements Document & Portal Matrix
+├── ARCHITECTURE.md                 # System Architecture, Schemas & Request Pipeline
+├── DESIGN.md                       # Design System, Theme Tokens & Reusable UI Components
+├── RULES.md                        # AI Development Rules, Guardrails & Pre/Post Checklists
+├── MEMORY.md                       # Architectural Decisions (ADRs), Tech Debt & Context
+├── TRACKER.md                      # Development Progress Tracker & Verification Metrics
+└── README.md                       # Project Setup, Operations & Portal Catalog
 ```
 
 ---

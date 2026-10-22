@@ -4,6 +4,9 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { usePatientAuth } from "../context/PatientAuthContext.jsx";
 import HospitalLogo from "./HospitalLogo.jsx";
 import NotificationBell from "./NotificationBell.jsx";
+import Footer from "./Footer.jsx";
+import MobileBottomNav from "./mobile/MobileBottomNav.jsx";
+import MobileMenuSheet from "./mobile/MobileMenuSheet.jsx";
 
 const navLinkClass = ({ isActive }) =>
   `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
@@ -25,17 +28,23 @@ function PatientLayout() {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  // Lock body scroll when mobile drawer is open
+  // Lock body scroll and listen for Escape key when mobile drawer is open
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+
     if (mobileOpen) {
       document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleKeyDown);
     } else {
       document.body.style.overflow = "";
     }
     return () => {
       document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [mobileOpen]);
 
@@ -111,11 +120,11 @@ function PatientLayout() {
             <button
               type="button"
               onClick={() => setMobileOpen((prev) => !prev)}
-              className="inline-flex lg:hidden items-center justify-center p-1.5 sm:p-2 rounded-xl text-slate-700 hover:text-slate-900 hover:bg-slate-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer touch-target flex-shrink-0"
+              className="inline-flex lg:hidden items-center justify-center h-9 w-9 rounded-xl text-slate-700 hover:text-slate-900 bg-white/70 hover:bg-slate-100 border border-slate-200/80 transition active:scale-90 cursor-pointer touch-target flex-shrink-0"
               aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={mobileOpen}
             >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {mobileOpen ? (
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 ) : (
@@ -128,6 +137,12 @@ function PatientLayout() {
               <HospitalLogo variant="full" className="hidden sm:flex" />
               <HospitalLogo variant="icon" className="sm:hidden" />
             </Link>
+
+            {/* Mobile role pill */}
+            <span className="inline-flex xl:hidden items-center rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-bold text-rose-700 border border-rose-200">
+              Patient
+            </span>
+
             <span className="hidden h-7 w-px bg-slate-200 xl:inline-block" />
             <span className="hidden rounded-full bg-rose-50/90 px-2.5 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-400/30 xl:inline-flex items-center gap-1.5 flex-shrink-0 backdrop-blur-md">
               <span className="h-2 w-2 rounded-full bg-rose-500 animate-pulse"></span>
@@ -137,15 +152,29 @@ function PatientLayout() {
 
           {/* Right Section: 24/7 Emergency, Date, Notifications, Patient Profile, Logout - ALWAYS IN VIEW */}
           <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
-            {/* Emergency Hotline Pill */}
+            {/* Emergency Hotline Pill (Desktop) */}
             <div className="hidden 2xl:flex items-center gap-2 rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 ring-1 ring-rose-300/60 shadow-xs flex-shrink-0">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
               </span>
               <span className="font-bold">24/7 Emergency:</span>
-              <span className="font-mono text-rose-800 font-bold">108 / 112</span>
+              <span className="font-mono text-rose-800 font-bold">
+                <a href="tel:108" className="hover:underline">108</a> / <a href="tel:112" className="hover:underline">112</a>
+              </span>
             </div>
+
+            {/* Emergency Quick Dial (Mobile) */}
+            <a
+              href="tel:108"
+              className="flex 2xl:hidden items-center justify-center h-8 w-8 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 active:scale-95 transition"
+              title="Call 108 Emergency"
+            >
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
+              </span>
+            </a>
 
             {/* Current Date Badge */}
             <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-white/60 backdrop-blur-md border border-white/70 px-3 py-1 rounded-full flex-shrink-0">
@@ -191,46 +220,11 @@ function PatientLayout() {
 
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
       <div className="flex flex-1 flex-col lg:flex-row">
-        {/* Mobile Backdrop Overlay */}
-        {mobileOpen && (
-          <div
-            className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-sm lg:hidden animate-backdrop-fade"
-            onClick={() => setMobileOpen(false)}
-            aria-hidden="true"
-          />
-        )}
-
-        {/* Sliding Navigation Sidebar */}
+        {/* Desktop Docked Navigation Sidebar */}
         <aside
-          onClick={(e) => {
-            if (e.target.closest("a")) setMobileOpen(false);
-          }}
-          className={`
-            glass-panel p-4 text-slate-800 flex flex-col justify-between overflow-y-auto
-            ${
-              mobileOpen
-                ? "fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] h-full shadow-2xl animate-drawer-in flex"
-                : "hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:min-h-[calc(100vh-65px)] lg:sticky lg:top-[65px]"
-            }
-          `}
+          className="hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:min-h-[calc(100vh-65px)] lg:sticky lg:top-[65px] glass-panel p-4 text-slate-800 flex-col justify-between overflow-y-auto"
           aria-label="Patient portal navigation"
         >
-          {/* Mobile Drawer Header with Close Button */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200/70 mb-3 lg:hidden">
-            <Link to="/patient/dashboard" onClick={() => setMobileOpen(false)}>
-              <HospitalLogo variant="full" />
-            </Link>
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-white/80 transition touch-target flex items-center justify-center"
-              aria-label="Close menu"
-            >
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
           <div>
             {/* Sidebar Section Title */}
             <div className="mb-4 flex items-center justify-between px-2 pt-1">
@@ -414,9 +408,9 @@ function PatientLayout() {
               <span>Emergency & helplines</span>
             </div>
             <p className="mt-1.5 text-[11px] text-slate-600 leading-snug">
-              Ambulance: <strong className="text-rose-600">108 / 102</strong><br />
-              National helpline: <strong className="text-rose-600">112</strong><br />
-              Health helpline: <strong className="text-sky-700">1075</strong> (MoHFW)
+              Ambulance: <a href="tel:108" className="text-rose-600 font-bold hover:underline">108</a> / <a href="tel:102" className="text-rose-600 font-bold hover:underline">102</a><br />
+              National helpline: <a href="tel:112" className="text-rose-600 font-bold hover:underline">112</a><br />
+              Health helpline: <a href="tel:1075" className="text-sky-700 font-bold hover:underline">1075</a> (MoHFW)
             </p>
             <div className="mt-3 border-t border-slate-200/70 pt-2 flex items-center justify-between text-[10px] text-slate-500">
               <span>NABH accredited</span>
@@ -438,10 +432,34 @@ function PatientLayout() {
         </aside>
 
         {/* Main Content Pane */}
-        <main className="flex-1 min-w-0 bg-transparent p-3 sm:p-5 lg:p-8 overflow-x-hidden">
+        <main className="flex-1 min-w-0 bg-transparent p-3 sm:p-5 lg:p-8 pb-24 lg:pb-8 overflow-x-hidden">
           <Outlet />
         </main>
       </div>
+
+      {/* Global Enterprise Portal Footer (Positioned below the side panel & main workspace) */}
+      <div className="w-full px-3 sm:px-5 lg:px-8 pb-20 lg:pb-6 pt-2">
+        <Footer />
+      </div>
+
+      {/* ================= NATIVE MOBILE BOTTOM NAVIGATION ================= */}
+      <MobileBottomNav
+        role="patient"
+        user={patient}
+        mobileOpen={mobileOpen}
+        onToggleMenu={() => setMobileOpen((prev) => !prev)}
+        isModalOpen={isModalOpen}
+      />
+
+      {/* ================= HIGHLY OPTIMIZED MOBILE MENU SHEET ================= */}
+      <MobileMenuSheet
+        isOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+        role="patient"
+        user={patient}
+        onLogout={handleLogout}
+        isPatient={true}
+      />
     </div>
   );
 }

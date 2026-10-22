@@ -7,7 +7,9 @@
  * production deployment swap this out for a Redis-backed store.
  */
 
-const OTP_TTL_MS = Number(process.env.OTP_TTL_MS || 5 * 60 * 1000);
+import env from "../config/env.js";
+
+const OTP_TTL_MS = env.otpTtlMs;
 const MAX_ATTEMPTS = 5;
 
 const store = new Map();

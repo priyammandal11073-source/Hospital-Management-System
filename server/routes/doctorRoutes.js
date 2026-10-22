@@ -11,6 +11,12 @@ import {
   removeDoctorLeave,
 } from "../controllers/doctorController.js";
 import { protect, restrictTo, optionalProtect } from "../middleware/authMiddleware.js";
+import { validate } from "../middleware/validate.js";
+import {
+  createDoctorSchema,
+  updateDoctorSchema,
+  addDoctorLeaveSchema,
+} from "../validators/doctorValidators.js";
 
 const router = express.Router();
 
@@ -19,13 +25,13 @@ router.get("/me", protect, restrictTo("doctor"), getCurrentDoctorProfile);
 
 router
   .route("/")
-  .post(protect, restrictTo("admin"), createDoctor)
+  .post(protect, restrictTo("admin"), validate(createDoctorSchema), createDoctor)
   .get(optionalProtect, getAllDoctors);
 
 router
   .route("/:id")
   .get(optionalProtect, getDoctorById)
-  .put(protect, restrictTo("admin", "doctor"), updateDoctor)
+  .put(protect, restrictTo("admin", "doctor"), validate(updateDoctorSchema), updateDoctor)
   .delete(protect, restrictTo("admin"), deleteDoctor);
 
 router
@@ -34,7 +40,7 @@ router
 
 router
   .route("/:id/leaves")
-  .post(protect, restrictTo("admin", "doctor"), addDoctorLeave);
+  .post(protect, restrictTo("admin", "doctor"), validate(addDoctorLeaveSchema), addDoctorLeave);
 
 router
   .route("/:id/leaves/:leaveIndex")

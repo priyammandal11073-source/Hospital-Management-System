@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { registerPatient, sendRegistrationOtp } from "../../services/api.js";
 import HospitalLogo from "../../components/HospitalLogo.jsx";
 import AuthBrandPanel from "../../components/AuthBrandPanel.jsx";
+import Footer from "../../components/Footer.jsx";
 
 const RESEND_COOLDOWN_SECONDS = 30;
 
@@ -446,6 +447,10 @@ function PatientRegister() {
             </p>
           </div>
         </div>
+      </div>
+
+      <div className="relative z-10 w-full max-w-7xl mx-auto mt-12">
+        <Footer className="rounded-3xl border border-white/80 shadow-lg" />
       </div>
     </main>
   );
