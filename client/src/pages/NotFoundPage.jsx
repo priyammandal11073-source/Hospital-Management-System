@@ -108,7 +108,7 @@ const NotFoundPage = () => {
             </Link>
 
             <Link
-              to="/patient/help-support"
+              to="/patient/support"
               className="group p-4 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-indigo-50/60 hover:border-indigo-300 transition shadow-2xs"
             >
               <div className="flex items-center gap-3">

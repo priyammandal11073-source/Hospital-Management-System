@@ -215,26 +215,28 @@ export default function MyLabReports() {
               </div>
 
               {/* Results Table */}
-              <table className="w-full text-left">
-                <thead className="bg-slate-100 text-slate-600 font-bold border-b">
-                  <tr>
-                    <th className="py-2 px-3">Test Parameter</th>
-                    <th className="py-2 px-3">Observed Result</th>
-                    <th className="py-2 px-3">Units</th>
-                    <th className="py-2 px-3">Reference Range</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {previewReport.testResults?.map((res, i) => (
-                    <tr key={i}>
-                      <td className="py-2 px-3 font-semibold text-slate-800">{res.parameter}</td>
-                      <td className="py-2 px-3 font-black text-teal-800">{res.result}</td>
-                      <td className="py-2 px-3 text-slate-600">{res.unit}</td>
-                      <td className="py-2 px-3 text-slate-500">{res.referenceRange}</td>
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-left min-w-[420px]">
+                  <thead className="bg-slate-100 text-slate-600 font-bold border-b">
+                    <tr>
+                      <th className="py-2.5 px-3">Test Parameter</th>
+                      <th className="py-2.5 px-3">Observed Result</th>
+                      <th className="py-2.5 px-3">Units</th>
+                      <th className="py-2.5 px-3">Reference Range</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {previewReport.testResults?.map((res, i) => (
+                      <tr key={i} className="hover:bg-slate-50/70">
+                        <td className="py-2 px-3 font-semibold text-slate-800">{res.parameter}</td>
+                        <td className="py-2 px-3 font-black text-teal-800">{res.result}</td>
+                        <td className="py-2 px-3 text-slate-600">{res.unit}</td>
+                        <td className="py-2 px-3 text-slate-500">{res.referenceRange}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
               {/* Remarks */}
               {previewReport.summaryConclusion && (

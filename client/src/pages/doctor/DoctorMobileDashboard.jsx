@@ -64,7 +64,7 @@ const DoctorMobileDashboard = () => {
   const handleQuickAction = (action) => {
     switch (action) {
       case "teleconsult":
-        navigate("/teleconsult");
+        navigate("/doctor/telemedicine");
         break;
       case "prescribe":
         navigate("/prescriptions");
@@ -87,7 +87,7 @@ const DoctorMobileDashboard = () => {
         showFeedback("Navigated to on-call duty roster", "info");
         break;
       case "messages":
-        navigate("/patient-portal/messages");
+        navigate("/doctor/follow-ups");
         break;
       default:
         break;
@@ -114,7 +114,7 @@ const DoctorMobileDashboard = () => {
   };
 
   const handleJoinCall = (joinCode) => {
-    navigate(joinCode ? `/teleconsult/${joinCode}` : "/teleconsult");
+    navigate(joinCode ? `/teleconsult/${joinCode}` : "/doctor/telemedicine");
   };
 
   const handleQuickPrescribe = (drugText) => {
@@ -251,7 +251,7 @@ const DoctorMobileDashboard = () => {
                     {
                       label: "Message Patient",
                       icon: <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h4M8 12l-2-2m2 2l2-2m-4 4v6M8 12V4m-2 8l4-4m-4 4l4 4" /></svg>,
-                      onClick: () => navigate("/patient-portal/messages"),
+                      onClick: () => navigate("/doctor/telemedicine"),
                     },
                   ]}
                   align="right"

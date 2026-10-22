@@ -108,15 +108,16 @@ export default function EmergencyDashboard() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
+            type="button"
             onClick={() => setAutoRefresh(v => !v)}
-            className={`rounded-xl px-3 py-1.5 text-xs font-semibold border flex items-center gap-1.5 transition ${autoRefresh ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}
+            className={`rounded-xl px-3 py-1.5 text-xs font-semibold border flex items-center gap-1.5 transition cursor-pointer touch-target active:scale-95 ${autoRefresh ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-600 border-slate-200"}`}
           >
             <span className={`h-2 w-2 rounded-full ${autoRefresh ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}></span>
             {autoRefresh ? "Auto-Refresh (30s)" : "Paused"}
           </button>
-          <Link to="/emergency/register" className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 text-xs font-bold shadow transition">+ Emergency Registration</Link>
-          <Link to="/emergency/queue" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold hover:bg-slate-50 transition">View Queue</Link>
-          <button onClick={() => load()} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50 transition">Refresh</button>
+          <Link to="/emergency/register" className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 text-xs font-bold shadow-xs transition active:scale-95 cursor-pointer touch-target">+ Emergency Registration</Link>
+          <Link to="/emergency/queue" className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold hover:bg-slate-50 transition active:scale-95 cursor-pointer touch-target">View Queue</Link>
+          <button type="button" onClick={() => load()} className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs hover:bg-slate-50 transition active:scale-95 cursor-pointer touch-target">Refresh</button>
         </div>
       </div>
 
@@ -181,7 +182,7 @@ export default function EmergencyDashboard() {
                       <td className="px-3 py-2.5"><StatusBadge status={e.status} /></td>
                       <td className="px-3 py-2.5 text-slate-600">{e.location}</td>
                       <td className="px-3 py-2.5 text-right">
-                        <Link to={`/emergency/patients/${e._id}`} className="rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 text-[11px] font-bold transition shadow-xs">Open</Link>
+                        <Link to={`/emergency/patients/${e._id}`} className="rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-3 py-1.5 text-[11px] font-bold transition shadow-xs active:scale-95 inline-block">Open</Link>
                       </td>
                     </tr>
                   );

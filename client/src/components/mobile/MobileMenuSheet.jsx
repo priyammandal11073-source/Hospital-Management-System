@@ -200,21 +200,43 @@ export default function MobileMenuSheet({
                 Quick Shortcuts
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {navConfig.quickActions.map((qa) => (
-                  <Link
-                    key={qa.label}
-                    to={qa.to}
-                    onClick={onClose}
-                    className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-50 transition active:scale-95 text-center shadow-2xs group"
-                  >
-                    <div className="h-8 w-8 rounded-lg bg-slate-100 group-hover:bg-blue-50 text-slate-700 group-hover:text-blue-600 flex items-center justify-center mb-1 transition">
-                      <MobileIcon name={qa.iconName} className="h-4 w-4" />
-                    </div>
-                    <span className="text-[11px] font-bold text-slate-800 truncate w-full">
-                      {qa.label}
-                    </span>
-                  </Link>
-                ))}
+                {navConfig.quickActions.map((qa) => {
+                  const isExternal = qa.to?.startsWith("tel:") || qa.to?.startsWith("http");
+                  const content = (
+                    <>
+                      <div className="h-8 w-8 rounded-lg bg-slate-100 group-hover:bg-blue-50 text-slate-700 group-hover:text-blue-600 flex items-center justify-center mb-1 transition">
+                        <MobileIcon name={qa.iconName} className="h-4 w-4" />
+                      </div>
+                      <span className="text-[11px] font-bold text-slate-800 truncate w-full">
+                        {qa.label}
+                      </span>
+                    </>
+                  );
+
+                  if (isExternal) {
+                    return (
+                      <a
+                        key={qa.label}
+                        href={qa.to}
+                        onClick={onClose}
+                        className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-50 transition active:scale-95 text-center shadow-2xs group cursor-pointer touch-target"
+                      >
+                        {content}
+                      </a>
+                    );
+                  }
+
+                  return (
+                    <Link
+                      key={qa.label}
+                      to={qa.to}
+                      onClick={onClose}
+                      className="flex flex-col items-center justify-center p-2.5 rounded-xl bg-white border border-slate-200/80 hover:bg-slate-50 transition active:scale-95 text-center shadow-2xs group cursor-pointer touch-target"
+                    >
+                      {content}
+                    </Link>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -304,24 +326,22 @@ export default function MobileMenuSheet({
 
                 <div className="space-y-1.5">
                   {cat.items.map((item) => {
+                    const isExternal = item.to?.startsWith("tel:") || item.to?.startsWith("http");
                     const isActive =
                       item.to === "/dashboard" ||
                       item.to === "/patient/dashboard" ||
                       item.to === "/emergency/dashboard"
                         ? location.pathname === item.to
-                        : location.pathname.startsWith(item.to);
+                        : item.to === location.pathname || location.pathname.startsWith(item.to + "/");
 
-                    return (
-                      <NavLink
-                        key={item.to + item.label}
-                        to={item.to}
-                        onClick={onClose}
-                        className={`group rounded-xl p-3 flex items-center justify-between gap-3 border transition-all duration-150 active:scale-[0.98] ${
-                          isActive
-                            ? "bg-blue-50/80 border-blue-300 shadow-xs ring-1 ring-blue-500/20"
-                            : "bg-white border-slate-200/70 hover:border-slate-300 hover:bg-slate-50/70 shadow-2xs"
-                        }`}
-                      >
+                    const itemClass = `group rounded-xl p-3 flex items-center justify-between gap-3 border transition-all duration-150 active:scale-[0.98] cursor-pointer touch-target ${
+                      isActive
+                        ? "bg-blue-50/80 border-blue-300 shadow-xs ring-1 ring-blue-500/20"
+                        : "bg-white border-slate-200/70 hover:border-slate-300 hover:bg-slate-50/70 shadow-2xs"
+                    }`;
+
+                    const itemBody = (
+                      <>
                         <div className="flex items-center gap-3 min-w-0">
                           <div
                             className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
@@ -368,6 +388,30 @@ export default function MobileMenuSheet({
                             </svg>
                           )}
                         </div>
+                      </>
+                    );
+
+                    if (isExternal) {
+                      return (
+                        <a
+                          key={item.to + item.label}
+                          href={item.to}
+                          onClick={onClose}
+                          className={itemClass}
+                        >
+                          {itemBody}
+                        </a>
+                      );
+                    }
+
+                    return (
+                      <NavLink
+                        key={item.to + item.label}
+                        to={item.to}
+                        onClick={onClose}
+                        className={itemClass}
+                      >
+                        {itemBody}
                       </NavLink>
                     );
                   })}

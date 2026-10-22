@@ -164,6 +164,7 @@ function App() {
         {/* Public payment link — no auth required, accessible via SMS */}
         <Route path="/pay/:billingId" element={<PaymentPage />} />
         <Route path="/teleconsult/:joinCode" element={<TeleconsultRoom />} />
+        <Route path="/teleconsult" element={<Navigate to="/doctor/telemedicine" replace />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Patient branch — separate from staff, uses PatientAuthContext */}
@@ -188,6 +189,7 @@ function App() {
             <Route path="/patient/documents" element={<MyDocuments />} />
             <Route path="/patient/profile" element={<PatientProfilePage />} />
             <Route path="/patient/support" element={<HelpSupportPage />} />
+            <Route path="/patient/help-support" element={<Navigate to="/patient/support" replace />} />
             <Route path="/patient/feedback" element={<PatientFeedbackPage />} />
             <Route path="/patient/notifications" element={<PatientNotificationsPage />} />
             <Route path="/patient/telemedicine" element={<TelemedicinePage />} />
@@ -224,6 +226,7 @@ function App() {
 
             {/* Doctor Clinical Workspace Routes */}
             <Route path="/doctor/consultation/:appointmentId" element={<ConsultationWorkspace />} />
+            <Route path="/doctor/consultation" element={<Navigate to="/appointments" replace />} />
             <Route path="/doctor/orders" element={<DoctorWorkspaceOrdersPage />} />
             <Route path="/doctor/referrals" element={<DoctorReferralsPage />} />
             <Route path="/doctor/critical-labs" element={<CriticalLabResultsPage />} />
@@ -271,6 +274,7 @@ function App() {
             <Route path="/reception/reports" element={<ReceptionReportsPage />} />
             <Route path="/reception/work-queue" element={<FrontDeskWorkQueuePage />} />
             <Route path="/reception/refunds" element={<RefundsManagementPage />} />
+            <Route path="/reception/admissions" element={<AdmissionsManagementPage />} />
 
             {/* Pharmacy & Dispensing Operations Routes */}
 <Route path="/pharmacy/queue" element={<PharmacyQueuePage />} />
@@ -296,6 +300,7 @@ function App() {
             <Route path="/diagnostic/workbench" element={<TechnicianWorkspacePage />} />
             <Route path="/diagnostic/auto-verify" element={<LabAutoVerificationDashboard />} />
             <Route path="/diagnostic/radiology" element={<RadiologyImagingPage />} />
+            <Route path="/diagnostic/radiology/:id" element={<RadiologyWorkbench />} />
             <Route path="/diagnostic/radiology-workbench" element={<RadiologyWorkbench />} />
             <Route path="/diagnostic/review" element={<SpecialistReviewPage />} />
             <Route path="/diagnostic/reports" element={<DiagnosticReportsPage />} />

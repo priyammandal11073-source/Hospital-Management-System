@@ -1422,7 +1422,7 @@ function DashboardLayout() {
       </div>
 
       {/* Global Enterprise Portal Footer (Positioned below the side panel & main workspace) */}
-      <div className="w-full px-4 sm:px-6 lg:px-7 pb-20 lg:pb-6 pt-2">
+      <div className="w-full px-4 sm:px-6 lg:px-7 pb-24 lg:pb-6 pt-2">
         <Footer />
       </div>
 

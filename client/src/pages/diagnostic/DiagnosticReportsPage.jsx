@@ -362,38 +362,40 @@ export default function DiagnosticReportsPage() {
               {/* PATHOLOGY: PARAMETERS & REFERENCE RANGES */}
               {activeReportModal.department === "Pathology" && (
                 <div className="space-y-3">
-                  <table className="w-full text-left border-collapse text-xs">
-                    <thead>
-                      <tr className="border-b-2 border-slate-300 text-[11px] font-bold uppercase text-slate-700">
-                        <th className="py-2">Investigation Analyte</th>
-                        <th className="py-2">Observed Value</th>
-                        <th className="py-2">Units</th>
-                        <th className="py-2">Biological Reference Range</th>
-                        <th className="py-2 text-right">Interpretation</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 font-medium">
-                      {(activeReportModal.testResults || []).map((t, idx) => (
-                        <tr key={idx}>
-                          <td className="py-2 font-bold text-slate-900">{t.parameter}</td>
-                          <td className="py-2 font-black text-slate-950 text-sm">{t.result}</td>
-                          <td className="py-2 text-slate-600">{t.unit}</td>
-                          <td className="py-2 text-slate-600">{t.referenceRange}</td>
-                          <td className="py-2 text-right">
-                            {t.status === "critical" ? (
-                              <span className="font-black text-rose-600 animate-pulse">*** CRITICAL ***</span>
-                            ) : t.status === "high" ? (
-                              <span className="font-bold text-amber-700">HIGH (H)</span>
-                            ) : t.status === "low" ? (
-                              <span className="font-bold text-blue-700">LOW (L)</span>
-                            ) : (
-                              <span className="text-emerald-700 font-semibold">Normal</span>
-                            )}
-                          </td>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className="border-b-2 border-slate-300 text-[11px] font-bold uppercase text-slate-700">
+                          <th className="py-2">Investigation Analyte</th>
+                          <th className="py-2">Observed Value</th>
+                          <th className="py-2">Units</th>
+                          <th className="py-2">Biological Reference Range</th>
+                          <th className="py-2 text-right">Interpretation</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 font-medium">
+                        {(activeReportModal.testResults || []).map((t, idx) => (
+                          <tr key={idx}>
+                            <td className="py-2 font-bold text-slate-900">{t.parameter}</td>
+                            <td className="py-2 font-black text-slate-950 text-sm">{t.result}</td>
+                            <td className="py-2 text-slate-600">{t.unit}</td>
+                            <td className="py-2 text-slate-600">{t.referenceRange}</td>
+                            <td className="py-2 text-right">
+                              {t.status === "critical" ? (
+                                <span className="font-black text-rose-600 animate-pulse">*** CRITICAL ***</span>
+                              ) : t.status === "high" ? (
+                                <span className="font-bold text-amber-700">HIGH (H)</span>
+                              ) : t.status === "low" ? (
+                                <span className="font-bold text-blue-700">LOW (L)</span>
+                              ) : (
+                                <span className="text-emerald-700 font-semibold">Normal</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
 

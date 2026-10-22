@@ -23,7 +23,7 @@ export default function MobileBottomNav({
     if (tabPath === "/dashboard" || tabPath === "/patient/dashboard" || tabPath === "/emergency/dashboard") {
       return location.pathname === tabPath;
     }
-    return location.pathname.startsWith(tabPath);
+    return location.pathname === tabPath || location.pathname.startsWith(tabPath + "/");
   };
 
   return (

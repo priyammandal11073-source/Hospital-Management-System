@@ -37,7 +37,7 @@ export default function Footer({ className = "" }) {
             </h3>
             <ul className="mt-3.5 space-y-2 text-xs">
               <li>
-                <Link to="/doctor/consultation" className="hover:text-blue-700 transition">
+                <Link to="/appointments" className="hover:text-blue-700 transition">
                   Doctor Clinical EHR
                 </Link>
               </li>

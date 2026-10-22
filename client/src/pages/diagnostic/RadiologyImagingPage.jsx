@@ -155,8 +155,8 @@ export default function RadiologyImagingPage() {
                       <span>Inspect</span>
                     </button>
                     <Link
-                      to={`/diagnostic/radiology/${st.orderNumber || st._id}`}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 text-xs font-bold transition shadow-xs"
+                      to={`/diagnostic/radiology-workbench?id=${st.orderNumber || st._id}`}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 text-xs font-bold transition shadow-xs active:scale-95"
                     >
                       <span>Study Workspace →</span>
                     </Link>

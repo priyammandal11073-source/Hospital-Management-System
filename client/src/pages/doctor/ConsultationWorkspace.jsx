@@ -574,8 +574,8 @@ export default function ConsultationWorkspace() {
 
               {/* Added Medications Table */}
               {medications.length > 0 && (
-                <div className="border border-slate-200 rounded-md overflow-hidden">
-                  <table className="w-full text-xs text-left">
+                <div className="border border-slate-200 rounded-md overflow-hidden overflow-x-auto">
+                  <table className="w-full text-xs text-left min-w-[500px]">
                     <thead className="bg-slate-50 text-slate-700 text-[11px] uppercase font-semibold border-b border-slate-200">
                       <tr>
                         <th className="px-3 py-2">Medicine</th>

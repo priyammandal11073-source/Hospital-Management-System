@@ -405,36 +405,38 @@ export default function PrescriptionDispensePage() {
           </div>
 
           {/* Medication Items Table */}
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-slate-200 text-[10px] font-bold uppercase text-slate-400">
-                <th className="py-2">Item Description</th>
-                <th className="py-2">Batch #</th>
-                <th className="py-2 text-center">Qty</th>
-                <th className="py-2 text-right">Unit Rate</th>
-                <th className="py-2 text-right">Amount</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {(prescription.medications || prescription.medicines || []).map((m, i) => {
-                const qty = quantities[m._id || `med_${i}`] || 10;
-                const rate = 15.5; // Demo rate
-                const amount = qty * rate;
-                return (
-                  <tr key={i} className="py-2">
-                    <td className="py-2.5">
-                      <p className="font-bold text-slate-800">{m.name}</p>
-                      <p className="text-[10px] text-slate-400">{m.dosage} • {m.instructions}</p>
-                    </td>
-                    <td className="py-2.5 font-mono text-slate-600">BAT-2026-09A</td>
-                    <td className="py-2.5 text-center font-semibold text-slate-800">{qty}</td>
-                    <td className="py-2.5 text-right text-slate-600">₹{rate.toFixed(2)}</td>
-                    <td className="py-2.5 text-right font-bold text-slate-900">₹{amount.toFixed(2)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left min-w-[500px]">
+              <thead>
+                <tr className="border-b border-slate-200 text-[10px] font-bold uppercase text-slate-400">
+                  <th className="py-2">Item Description</th>
+                  <th className="py-2">Batch #</th>
+                  <th className="py-2 text-center">Qty</th>
+                  <th className="py-2 text-right">Unit Rate</th>
+                  <th className="py-2 text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {(prescription.medications || prescription.medicines || []).map((m, i) => {
+                  const qty = quantities[m._id || `med_${i}`] || 10;
+                  const rate = 15.5; // Demo rate
+                  const amount = qty * rate;
+                  return (
+                    <tr key={i} className="py-2">
+                      <td className="py-2.5">
+                        <p className="font-bold text-slate-800">{m.name}</p>
+                        <p className="text-[10px] text-slate-400">{m.dosage} • {m.instructions}</p>
+                      </td>
+                      <td className="py-2.5 font-mono text-slate-600">BAT-2026-09A</td>
+                      <td className="py-2.5 text-center font-semibold text-slate-800">{qty}</td>
+                      <td className="py-2.5 text-right text-slate-600">₹{rate.toFixed(2)}</td>
+                      <td className="py-2.5 text-right font-bold text-slate-900">₹{amount.toFixed(2)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
           {/* Footer & Totals */}
           <div className="border-t border-slate-200 pt-4 flex items-center justify-between">

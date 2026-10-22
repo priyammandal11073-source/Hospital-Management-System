@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import ActionMenu from "../../components/ui/ActionMenu.jsx";
 import { getDoctorDisplayName } from "../../utils/doctorName.js";
 import { usePrintModal } from "../../context/PrintModalContext.jsx";
 import { generateGeneralHospitalReportHtml } from "../../utils/printTemplates.js";
 
 const RadiologyWorkbench = () => {
+  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const targetId = id || searchParams.get("id");
   const { openPrintPreview } = usePrintModal();
   const [studies, setStudies] = useState([]);
   const [activeStudy, setActiveStudy] = useState(null);
@@ -84,7 +88,7 @@ const RadiologyWorkbench = () => {
 
   useEffect(() => {
     setTimeout(() => {
-      setStudies([
+      const mockStudies = [
         { id: "STU001", accession: "ACC-2024-001234", patient: "Rahul Sharma", age: 45, gender: "M", modality: "CT", bodyPart: "Chest", priority: "stat", status: "scheduled", requestedBy: "Dr. Patel", requestedAt: "2024-01-15 08:30", clinicalIndication: "R/O pulmonary embolism", contrast: true, radiationDose: null, images: 120, radiologist: null, reportStatus: "pending" },
         { id: "STU002", accession: "ACC-2024-001235", patient: "Priya Patel", age: 32, gender: "F", modality: "MRI", bodyPart: "Brain", priority: "urgent", status: "in_progress", requestedBy: "Dr. Singh", requestedAt: "2024-01-15 09:15", clinicalIndication: "Headache, R/O mass", contrast: true, radiationDose: null, images: 240, radiologist: "Dr. Radiologist", reportStatus: "dictating" },
         { id: "STU003", accession: "ACC-2024-001236", patient: "Amit Singh", age: 67, gender: "M", modality: "XR", bodyPart: "Chest", priority: "routine", status: "completed", requestedBy: "Dr. Kumar", requestedAt: "2024-01-15 07:00", clinicalIndication: "Cough, fever", contrast: false, radiationDose: "0.1 mSv", images: 2, radiologist: "Dr. Radiologist", reportStatus: "final" },
@@ -92,10 +96,17 @@ const RadiologyWorkbench = () => {
         { id: "STU005", accession: "ACC-2024-001238", patient: "Vikram Mehta", age: 55, gender: "M", modality: "CT", bodyPart: "Abdomen/Pelvis", priority: "urgent", status: "scheduled", requestedBy: "Dr. Mehta", requestedAt: "2024-01-15 09:45", clinicalIndication: "Flank pain, R/O stone", contrast: true, radiationDose: null, images: 0, radiologist: null, reportStatus: "pending" },
         { id: "STU006", accession: "ACC-2024-001239", patient: "Neha Gupta", age: 41, gender: "F", modality: "MR", bodyPart: "Spine Lumbar", priority: "urgent", status: "in_progress", requestedBy: "Dr. Joshi", requestedAt: "2024-01-15 08:00", clinicalIndication: "Back pain, radiculopathy", contrast: false, radiationDose: null, images: 180, radiologist: "Dr. Radiologist", reportStatus: "preliminary" },
         { id: "STU007", accession: "ACC-2024-001240", patient: "Rajesh Kumar", age: 72, gender: "M", modality: "XR", bodyPart: "Hip Bilateral", priority: "routine", status: "completed", requestedBy: "Dr. Reddy", requestedAt: "2024-01-15 06:30", clinicalIndication: "Hip pain, R/O fracture", contrast: false, radiationDose: "0.5 mSv", images: 4, radiologist: "Dr. Radiologist", reportStatus: "final" },
-      ]);
+      ];
+      setStudies(mockStudies);
+      if (targetId) {
+        const found = mockStudies.find(
+          s => s.id === targetId || s.accession === targetId || s.id?.toLowerCase() === targetId.toLowerCase()
+        );
+        if (found) setActiveStudy(found);
+      }
       setIsLoading(false);
     }, 200);
-  }, []);
+  }, [targetId]);
 
   const priorityMeta = { stat: { label: "STAT", cls: "bg-rose-500 text-white animate-pulse" }, urgent: { label: "URGENT", cls: "bg-amber-500 text-white" }, routine: { label: "Routine", cls: "bg-slate-400 text-white" } };
   const statusMeta = { scheduled: { label: "Scheduled", cls: "bg-blue-50 text-blue-700" }, in_progress: { label: "In Progress", cls: "bg-amber-50 text-amber-700" }, completed: { label: "Completed", cls: "bg-emerald-50 text-emerald-700" } };
