@@ -950,8 +950,11 @@ export const downloadMedicalFile = async (req, res) => {
     const fileRecord = await DiagnosticFile.findOne({ fileId });
     if (!fileRecord) return res.status(404).json({ message: "File not found" });
 
-    if (req.patient && fileRecord.patient.toString() !== req.patient.id?.toString()) {
-      return res.status(403).json({ message: "Access denied: Unauthorized access to patient file" });
+    if (req.patient) {
+      const patientId = req.patient.id || req.patient._id;
+      if (patientId && fileRecord.patient.toString() !== patientId.toString()) {
+        return res.status(403).json({ message: "Access denied: Unauthorized access to patient file" });
+      }
     }
 
     const stream = getFileReadStream(fileRecord.fileName);

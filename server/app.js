@@ -35,8 +35,49 @@ import { apiLimiter } from "./middleware/rateLimiters.js";
 const createApp = () => {
   const app = express();
 
+  // Security hardening: Disable fingerprinting
+  app.disable("x-powered-by");
+
+  // Security hardening: Standard HTTP response protection headers
+  app.use((req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "SAMEORIGIN");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    res.setHeader("X-XSS-Protection", "0");
+    if (env.isProduction) {
+      res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    }
+    next();
+  });
+
+  // Security hardening: Strict CORS origin validation
+  const allowedOrigins = [
+    env.clientUrl,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ].filter(Boolean);
+
+  const corsOptions = {
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, curl, or same-origin/supertest)
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      // Allow localhost with any port in development
+      if (env.isDevelopment && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("CORS policy: Access denied for this origin."), false);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  };
+
   // Middleware that applies to every incoming request.
-  app.use(cors());
+  app.use(cors(corsOptions));
   app.use(compression());
   app.use(express.json());
   app.use("/api", apiLimiter);

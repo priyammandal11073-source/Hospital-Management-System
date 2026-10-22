@@ -103,6 +103,14 @@ export const verifyPayment = async (req, res) => {
 
     const secret = env.razorpay.keySecret;
 
+    // In production, razorpay key secret is strictly mandatory.
+    // Never allow unverified payments when running in production mode.
+    if (env.isProduction && !secret) {
+      return res.status(500).json({
+        message: "Payment processing error: Razorpay gateway secret is not configured in production.",
+      });
+    }
+
     // Signature verification is MANDATORY whenever a key secret is configured.
     // Without this an attacker could mark an invoice as paid by posting a fake
     // payment id. The key secret is only absent in development/test mode where

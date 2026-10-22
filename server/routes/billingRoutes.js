@@ -9,7 +9,7 @@ import {
   sendPaymentLinkSmsHandler,
   updatePaymentStatus,
 } from "../controllers/billingController.js";
-import { protect, restrictTo } from "../middleware/authMiddleware.js";
+import { protect, restrictTo, optionalProtect } from "../middleware/authMiddleware.js";
 import { validate } from "../middleware/validate.js";
 import {
   createBillingSchema,
@@ -35,7 +35,7 @@ router.get("/analytics", protect, getRevenueAnalytics);
 
 router
   .route("/:id")
-  .get(getBillingById);
+  .get(optionalProtect, getBillingById);
 
 router.patch(
   "/:id/payment",

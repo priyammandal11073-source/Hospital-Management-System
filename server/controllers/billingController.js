@@ -28,38 +28,76 @@ const parseDate = (value, endOfDay = false) => {
   return date;
 };
 
+// Helper to strip sensitive patient address and clinical notes from public billing links
+const sanitizeBillingForPublic = (billing) => {
+  const plain = billing?.toObject ? billing.toObject() : { ...billing };
+
+  if (plain.patient) {
+    const rawName = plain.patient.name || "Patient";
+    const rawContact = plain.patient.contactNumber || "";
+    const rawEmail = plain.patient.email || "";
+
+    plain.patient = {
+      _id: plain.patient._id,
+      name: rawName,
+      contactNumber: rawContact ? rawContact.replace(/(\d{2,4})\d{4}(\d{2,4})/, "$1****$2") : "",
+      email: rawEmail ? rawEmail.replace(/^(.)(.*)(@.*)$/, (_, a, b, c) => `${a}***${c}`) : "",
+    };
+  }
+
+  if (plain.appointment) {
+    delete plain.appointment.reasonForVisit;
+    if (plain.appointment.doctor) {
+      delete plain.appointment.doctor.contactNumber;
+      delete plain.appointment.doctor.email;
+    }
+  }
+
+  return plain;
+};
+
 // POST /api/billing
 export const createBilling = asyncHandler(async (req, res) => {
-  const { patient, appointment, itemizedCharges } = req.body;
+  const { patient, appointment, itemizedCharges, paymentMethod, paymentStatus } = req.body;
 
-  if (!patient || !appointment || !itemizedCharges) {
-    throw new AppError("Patient, appointment, and itemized charges are required", 400);
+  if (!patient || !itemizedCharges) {
+    throw new AppError("Patient and itemized charges are required", 400);
   }
 
-  if (!mongoose.isValidObjectId(patient) || !mongoose.isValidObjectId(appointment)) {
-    throw new AppError("Invalid patient or appointment ID", 400);
+  if (!mongoose.isValidObjectId(patient)) {
+    throw new AppError("Invalid patient ID", 400);
   }
 
-  if (!Array.isArray(itemizedCharges)) {
-    throw new AppError("Itemized charges must be an array", 400);
+  if (appointment && !mongoose.isValidObjectId(appointment)) {
+    throw new AppError("Invalid appointment ID", 400);
   }
 
-  // Verify references and ensure the appointment belongs to the billed patient.
-  const [existingPatient, existingAppointment] = await Promise.all([
-    Patient.findById(patient),
-    Appointment.findOne({ _id: appointment, patient }),
-  ]);
+  if (!Array.isArray(itemizedCharges) || itemizedCharges.length === 0) {
+    throw new AppError("Itemized charges must be a non-empty array", 400);
+  }
 
+  const existingPatient = await Patient.findById(patient);
   if (!existingPatient) {
     throw new AppError("Patient not found", 404);
   }
 
-  if (!existingAppointment) {
-    throw new AppError("Appointment not found for this patient", 404);
+  if (appointment) {
+    const existingAppointment = await Appointment.findOne({ _id: appointment, patient });
+    if (!existingAppointment) {
+      throw new AppError("Appointment not found for this patient", 404);
+    }
   }
 
+  const billingData = {
+    patient,
+    itemizedCharges,
+  };
+  if (appointment) billingData.appointment = appointment;
+  if (paymentMethod) billingData.paymentMethod = paymentMethod;
+  if (paymentStatus) billingData.paymentStatus = paymentStatus;
+
   // Billing's pre-validation hook calculates totalAmount from these line items.
-  const billing = await Billing.create({ patient, appointment, itemizedCharges });
+  const billing = await Billing.create(billingData);
 
   return res.status(201).json({
     message: "Billing record created successfully",
@@ -194,7 +232,16 @@ export const getBillingById = asyncHandler(async (req, res) => {
       paymentMethod: "upi",
       createdAt: new Date(),
     };
-    return res.status(200).json({ billing: demoBilling, isOfflineDemo: true });
+    const isAuthorizedStaff = Boolean(req.user && req.user.role);
+    const patientId = req.patient?.id || req.patient?._id;
+    const isOwnerPatient = Boolean(
+      patientId && String(demoBilling.patient._id) === String(patientId)
+    );
+    const resultBilling = (isAuthorizedStaff || isOwnerPatient)
+      ? demoBilling
+      : sanitizeBillingForPublic(demoBilling);
+
+    return res.status(200).json({ billing: resultBilling, isOfflineDemo: true });
   }
 
   const billing = await Billing.findById(req.params.id)
@@ -210,7 +257,20 @@ export const getBillingById = asyncHandler(async (req, res) => {
     throw new AppError("Billing record not found", 404);
   }
 
-  return res.status(200).json({ billing });
+  const isAuthorizedStaff = Boolean(req.user && req.user.role);
+  const patientId = req.patient?.id || req.patient?._id;
+  const isOwnerPatient = Boolean(
+    patientId && billing.patient && (
+      billing.patient._id?.toString() === patientId.toString() ||
+      billing.patient.toString() === patientId.toString()
+    )
+  );
+
+  const resultBilling = (isAuthorizedStaff || isOwnerPatient)
+    ? billing
+    : sanitizeBillingForPublic(billing);
+
+  return res.status(200).json({ billing: resultBilling });
 });
 
 // PATCH /api/billing/:id/payment

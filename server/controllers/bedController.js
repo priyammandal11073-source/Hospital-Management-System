@@ -181,16 +181,28 @@ export const allocateBed = asyncHandler(async (req, res) => {
     throw new AppError("Invalid patient or doctor ID", 400);
   }
 
-  const bed = await Bed.findById(id);
-  if (!bed) {
-    throw new AppError("Bed not found", 404);
-  }
-
-  if (bed.status !== "available") {
-    throw new AppError(
-      `Bed ${bed.bedNumber} is currently ${bed.status}. Only available beds can be allocated.`,
-      400
-    );
+  // Seamless offline fallback when database connection is unavailable
+  if (mongoose.connection.readyState !== 1) {
+    const bed = mockDatabase.demoBeds.find((b) => b._id === id);
+    if (!bed) throw new AppError("Bed not found", 404);
+    if (bed.status !== "available") {
+      throw new AppError(`Bed ${bed.bedNumber} is currently ${bed.status}. Only available beds can be allocated.`, 409);
+    }
+    bed.status = "occupied";
+    bed.currentAdmission = {
+      patient: mockDatabase.getPatientById(patient) || { _id: patient, name: "Patient" },
+      attendingDoctor: mockDatabase.getDoctorById(attendingDoctor) || { _id: attendingDoctor, name: "Doctor" },
+      admittedAt: new Date(),
+      admissionReason: admissionReason.trim(),
+      expectedDischargeDate: expectedDischargeDate ? new Date(expectedDischargeDate) : undefined,
+      emergencyContact: emergencyContact ? emergencyContact.trim() : "",
+      notes: notes ? notes.trim() : "",
+    };
+    return res.status(200).json({
+      message: `Patient successfully admitted to bed ${bed.bedNumber}`,
+      bed,
+      isOfflineDemo: true,
+    });
   }
 
   // Check if patient is already admitted in another bed
@@ -206,25 +218,43 @@ export const allocateBed = asyncHandler(async (req, res) => {
     );
   }
 
-  bed.status = "occupied";
-  bed.currentAdmission = {
-    patient,
-    attendingDoctor,
-    admittedAt: new Date(),
-    admissionReason: admissionReason.trim(),
-    expectedDischargeDate: expectedDischargeDate ? new Date(expectedDischargeDate) : undefined,
-    emergencyContact: emergencyContact ? emergencyContact.trim() : "",
-    notes: notes ? notes.trim() : "",
-  };
+  // Atomic reservation: ensures no concurrent transaction can double-allocate this bed
+  const updatedBed = await Bed.findOneAndUpdate(
+    { _id: id, status: "available" },
+    {
+      $set: {
+        status: "occupied",
+        currentAdmission: {
+          patient,
+          attendingDoctor,
+          admittedAt: new Date(),
+          admissionReason: admissionReason.trim(),
+          expectedDischargeDate: expectedDischargeDate ? new Date(expectedDischargeDate) : undefined,
+          emergencyContact: emergencyContact ? emergencyContact.trim() : "",
+          notes: notes ? notes.trim() : "",
+        },
+      },
+    },
+    { new: true }
+  );
 
-  await bed.save();
+  if (!updatedBed) {
+    const currentBed = await Bed.findById(id);
+    if (!currentBed) {
+      throw new AppError("Bed not found", 404);
+    }
+    throw new AppError(
+      `Bed ${currentBed.bedNumber} is currently ${currentBed.status}. Only available beds can be allocated.`,
+      409
+    );
+  }
 
-  const populated = await Bed.findById(bed._id)
+  const populated = await Bed.findById(updatedBed._id)
     .populate("currentAdmission.patient", "name age gender contactNumber email abhaId bloodGroup address")
     .populate("currentAdmission.attendingDoctor", "name specialization department contactNumber email");
 
   return res.status(200).json({
-    message: `Patient successfully admitted to bed ${bed.bedNumber}`,
+    message: `Patient successfully admitted to bed ${updatedBed.bedNumber}`,
     bed: populated,
   });
 });

@@ -24,6 +24,15 @@ describe("Health & API surface", () => {
     expect(res.body.database.isOfflineDemoFallbackActive).toBe(true);
   });
 
+  it("applies standard HTTP security headers and disables x-powered-by", async () => {
+    const res = await request(app).get("/api/health");
+
+    expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    expect(res.headers["x-frame-options"]).toBe("SAMEORIGIN");
+    expect(res.headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+    expect(res.headers["x-powered-by"]).toBeUndefined();
+  });
+
   it("returns a 404 JSON payload for unknown routes", async () => {
     const res = await request(app).get("/api/does-not-exist");
 
