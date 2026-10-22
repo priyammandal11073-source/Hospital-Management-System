@@ -268,10 +268,10 @@ function Beds() {
               key={f.id}
               type="button"
               onClick={() => setSelectedStatus(f.id)}
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg transition-colors whitespace-nowrap ${
+              className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 whitespace-nowrap cursor-pointer ${
                 selectedStatus === f.id
-                  ? "bg-slate-900 text-white shadow-xs"
-                  : "bg-white text-slate-700 border border-slate-300 hover:bg-slate-100 hover:text-slate-900"
+                  ? "bg-blue-50 text-blue-700 border border-blue-200/90 font-bold shadow-2xs"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
               }`}
             >
               {f.label}
@@ -510,7 +510,7 @@ function Beds() {
                       type="button"
                       onClick={() => handleStatusChange(bed._id, "available")}
                       disabled={updatingBedId === bed._id}
-                      className="w-full py-2 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-900 text-white transition-colors shadow-2xs"
+                      className="w-full py-2 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-all active:scale-95 shadow-2xs cursor-pointer"
                     >
                       {updatingBedId === bed._id ? "Updating..." : "✓ Return to service"}
                     </button>

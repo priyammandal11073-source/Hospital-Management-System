@@ -82,7 +82,7 @@ export default function MobileBottomNav({
           <div
             className={`relative flex items-center justify-center h-8 w-11 rounded-full transition-all duration-200 ${
               mobileOpen
-                ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 ring-2 ring-blue-500/30"
+                ? "bg-blue-50 text-blue-700 ring-1 ring-blue-200/80 shadow-2xs font-semibold"
                 : "text-slate-600 group-hover:bg-slate-100"
             }`}
           >

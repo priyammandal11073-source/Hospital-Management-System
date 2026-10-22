@@ -278,7 +278,7 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm overflow-y-auto"
       role="dialog"
     >
-      <div className="relative max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-xl bg-white shadow-2xl">
+      <div className="relative max-h-[95vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-xl border border-slate-200/80 animate-pop-in">
         {/* Action Header (Hidden during print) */}
         <header className="no-print sticky top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b bg-slate-50 px-6 py-4">
           <div className="flex items-center gap-2">
@@ -293,7 +293,7 @@ Emergency: 108 / 112 | Billing Desk: +91 98765 43210`;
             <button
               onClick={handlePrint}
               type="button"
-              className="inline-flex items-center gap-1.5 rounded-md bg-slate-800 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-slate-700 transition"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-white border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-2xs hover:bg-slate-50 transition-all active:scale-95 cursor-pointer"
               title="Print or Save as PDF"
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

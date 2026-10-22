@@ -167,22 +167,22 @@ export default function UniversalPaymentModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-4 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-3 sm:p-4 backdrop-blur-md animate-backdrop-fade">
+      <div className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-xl border border-slate-200/80 animate-pop-in">
         {/* Modal Top Header */}
-        <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 px-6 py-5 text-white flex items-center justify-between">
+        <div className="bg-white border-b border-slate-100 px-6 py-5 text-slate-900 flex items-center justify-between">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-teal-500/20 px-3 py-0.5 text-[11px] font-bold text-teal-300 border border-teal-400/30">
+            <div className="inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-0.5 text-[11px] font-semibold text-teal-700 border border-teal-200">
               <span>💳 Central Hospital Payment Gateway</span>
               <span>•</span>
               <span className="font-mono">{invoiceNumber}</span>
             </div>
-            <h2 className="mt-1.5 text-xl sm:text-2xl font-black text-white tracking-tight">{title}</h2>
+            <h2 className="mt-1.5 text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">{title}</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white font-bold transition text-sm cursor-pointer"
+            className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 font-bold transition text-sm cursor-pointer active:scale-90"
             aria-label="Close"
           >
             ✕
@@ -273,12 +273,12 @@ export default function UniversalPaymentModal({
 
       {/* Sub-modal: UPI & Dynamic QR */}
       {showUpiModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200 relative">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-4 animate-backdrop-fade">
+          <div className="w-full max-w-xl rounded-2xl bg-white shadow-xl overflow-hidden border border-slate-200/80 relative animate-pop-in">
             <button
               type="button"
               onClick={() => setShowUpiModal(false)}
-              className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition cursor-pointer"
+              className="absolute top-4 right-4 z-10 h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center font-bold text-sm transition-all active:scale-90 cursor-pointer"
             >
               ✕
             </button>
@@ -293,12 +293,12 @@ export default function UniversalPaymentModal({
 
       {/* Sub-modal: Health Insurance / TPA */}
       {showInsuranceModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200 relative">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-4 animate-backdrop-fade">
+          <div className="w-full max-w-xl rounded-2xl bg-white shadow-xl overflow-hidden border border-slate-200/80 relative animate-pop-in">
             <button
               type="button"
               onClick={() => setShowInsuranceModal(false)}
-              className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition cursor-pointer"
+              className="absolute top-4 right-4 z-10 h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center font-bold text-sm transition-all active:scale-90 cursor-pointer"
             >
               ✕
             </button>
@@ -313,12 +313,12 @@ export default function UniversalPaymentModal({
 
       {/* Sub-modal: Card direct fallback */}
       {showCardModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200 relative">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-4 animate-backdrop-fade">
+          <div className="w-full max-w-xl rounded-2xl bg-white shadow-xl overflow-hidden border border-slate-200/80 relative animate-pop-in">
             <button
               type="button"
               onClick={() => setShowCardModal(false)}
-              className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition cursor-pointer"
+              className="absolute top-4 right-4 z-10 h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center font-bold text-sm transition-all active:scale-90 cursor-pointer"
             >
               ✕
             </button>

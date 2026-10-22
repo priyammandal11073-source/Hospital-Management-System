@@ -527,10 +527,10 @@ function Billing() {
       {isFormOpen && (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-2.5 sm:p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-2.5 sm:p-4 backdrop-blur-md animate-backdrop-fade"
           role="dialog"
         >
-          <div className="modal-viewport w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-2xl border border-slate-200">
+          <div className="modal-viewport w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-xl border border-slate-200/80 animate-pop-in">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-xl font-bold text-slate-800">Generate Patient Bill</h2>
               <button
@@ -564,11 +564,11 @@ function Billing() {
       {smsBilling && (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-4 animate-backdrop-fade"
           role="dialog"
         >
           <form
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl space-y-4"
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200/80 space-y-4 animate-pop-in"
             onSubmit={handleSendSms}
           >
             <h2 className="text-xl font-semibold text-slate-800">📲 Send Payment Link via SMS</h2>

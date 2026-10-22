@@ -44,7 +44,7 @@ function ActionMenu({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen(!open)}
-        className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition shadow-2xs ${open ? "bg-slate-100 text-slate-700" : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"} ${triggerClassName}`}
+        className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all active:scale-95 shadow-2xs ${open ? "bg-slate-100 text-slate-700" : "bg-white text-slate-600 ring-1 ring-slate-200/80 hover:bg-slate-50"} ${triggerClassName}`}
         aria-expanded={open}
         aria-haspopup="true"
         title={triggerLabel}
@@ -55,14 +55,14 @@ function ActionMenu({
           </svg>
         )}
         {triggerLabel && <span>{triggerLabel}</span>}
-        <svg className={`h-3.5 w-3.5 transition ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className={`h-3.5 w-3.5 transition-transform duration-150 ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
 
       {open && (
         <div
-          className={`absolute z-50 mt-1.5 min-w-[180px] rounded-xl bg-white shadow-lg ring-1 ring-slate-200/80 py-1 ${align === "right" ? "right-0" : "left-0"}`}
+          className={`absolute z-50 mt-1.5 min-w-[180px] rounded-xl bg-white/95 backdrop-blur-md shadow-md ring-1 ring-slate-200/80 py-1 animate-dropdown-in ${align === "right" ? "right-0" : "left-0"}`}
           role="menu"
         >
           {items.map((item, idx) => (
@@ -74,7 +74,7 @@ function ActionMenu({
                 type="button"
                 disabled={item.disabled}
                 onClick={(e) => handleItemClick(item, e)}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium transition ${
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium transition-all active:scale-98 ${
                   item.danger
                     ? "text-rose-700 hover:bg-rose-50"
                     : item.primary

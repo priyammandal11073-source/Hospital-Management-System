@@ -9,10 +9,10 @@ import MobileBottomNav from "./mobile/MobileBottomNav.jsx";
 import MobileMenuSheet from "./mobile/MobileMenuSheet.jsx";
 
 const navLinkClass = ({ isActive }) =>
-  `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200 ${
+  `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-98 ${
     isActive
-      ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-md shadow-rose-500/25 ring-1 ring-rose-400/40"
-      : "text-slate-600 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm"
+      ? "bg-rose-50/90 text-rose-700 border border-rose-200/90 font-bold shadow-2xs"
+      : "text-slate-600 hover:bg-white/80 hover:text-slate-900 hover:border hover:border-slate-200/60"
   }`;
 
 function PatientLayout() {
@@ -191,7 +191,7 @@ function PatientLayout() {
 
             {/* Patient Profile Card */}
             <div className="flex items-center gap-1.5 rounded-lg border border-white/70 bg-white/70 backdrop-blur-md p-1 sm:px-2.5 sm:py-1 shadow-2xs flex-shrink-0">
-              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-gradient-to-tr from-rose-500 to-pink-600 text-xs font-bold text-white uppercase shadow-sm flex-shrink-0">
+              <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-rose-50 text-xs font-bold text-rose-700 border border-rose-200 uppercase shadow-2xs flex-shrink-0">
                 {patient?.name ? patient.name.charAt(0) : "P"}
               </div>
               <div className="text-left hidden lg:block">

@@ -57,14 +57,14 @@ export default function PatientClinicalProfileModal({ patientId, onClose, onRefr
   return (
     <div
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-3 sm:p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-3 sm:p-4 overflow-y-auto animate-backdrop-fade"
       role="dialog"
     >
-      <div className="relative flex flex-col max-h-[92vh] w-full max-w-5xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+      <div className="relative flex flex-col max-h-[92vh] w-full max-w-5xl rounded-2xl bg-white shadow-xl border border-slate-200/80 overflow-hidden animate-pop-in">
         {/* Header Bar */}
-        <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-6 py-4">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-white px-6 py-4">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-600 text-white font-bold text-lg shadow-2xs">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-700 border border-teal-200 font-bold text-lg shadow-2xs">
               {profile?.patient?.name ? profile.patient.name.charAt(0) : "P"}
             </span>
             <div>
@@ -91,7 +91,7 @@ export default function PatientClinicalProfileModal({ patientId, onClose, onRefr
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
+            className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all active:scale-90 cursor-pointer"
             title="Close Profile"
           >
             ✕

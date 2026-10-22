@@ -302,7 +302,7 @@ function Login() {
                   onClick={() => handlePortalSelect(portal)}
                   className="group relative bg-white hover:bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2 min-h-[7.5rem] transition-all duration-150 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer"
                 >
-                  <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900 flex items-center justify-center transition-all duration-150">
+                  <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200 flex items-center justify-center transition-all duration-150">
                     {portal.icon}
                   </div>
 
@@ -350,7 +350,7 @@ function Login() {
                   }}
                   className="group relative bg-white hover:bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2 min-h-[7.5rem] transition-all duration-150 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer"
                 >
-                  <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900 flex items-center justify-center transition-all duration-150">
+                  <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200 flex items-center justify-center transition-all duration-150">
                     {sr.icon}
                   </div>
                   <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 tracking-tight">
@@ -441,7 +441,7 @@ function Login() {
 
               <div className="pt-2">
                 <button
-                  className="w-full rounded-lg bg-blue-700 hover:bg-blue-800 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-700/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
+                  className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-2.5 text-sm font-medium text-white shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center"
                   disabled={isSubmitting}
                   type="submit"
                 >

@@ -43,27 +43,27 @@ export default function DoctorPatientProfileModal({ patientId, onClose, onStartC
   const referrals = profileData?.referrals || [];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-3 sm:p-6 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-5xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-3 sm:p-6 backdrop-blur-md animate-backdrop-fade overflow-y-auto">
+      <div className="relative w-full max-w-5xl rounded-2xl bg-white shadow-xl border border-slate-200/80 overflow-hidden my-auto max-h-[92vh] flex flex-col animate-pop-in">
         {/* Header Bar */}
-        <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
+        <div className="bg-white px-6 py-4 flex items-center justify-between border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white shadow-sm text-base">
+            <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-bold text-base shadow-2xs">
               {patient.name ? patient.name.charAt(0).toUpperCase() : "P"}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-bold text-white tracking-tight">{patient.name || "Patient Record"}</h2>
-                <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <h2 className="text-lg font-bold text-slate-900 tracking-tight">{patient.name || "Patient Record"}</h2>
+                <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   {patient.patientId || "PID"}
                 </span>
                 {patient.bloodGroup && (
-                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                     {patient.bloodGroup}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500">
                 {patient.gender ? `${patient.gender}, ` : ""}{patient.age ? `${patient.age} yrs • ` : ""}Phone: {patient.phone || "N/A"}
               </p>
             </div>
@@ -77,7 +77,7 @@ export default function DoctorPatientProfileModal({ patientId, onClose, onStartC
                   onClose();
                   onStartConsultation(patient._id);
                 }}
-                className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-sm transition flex items-center gap-1.5"
+                className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-2xs transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
               >
                 <span>🩺</span>
                 <span>Open Consultation</span>
@@ -86,7 +86,7 @@ export default function DoctorPatientProfileModal({ patientId, onClose, onStartC
             <button
               type="button"
               onClick={onClose}
-              className="h-8 w-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition"
+              className="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-all active:scale-90 cursor-pointer"
             >
               ✕
             </button>

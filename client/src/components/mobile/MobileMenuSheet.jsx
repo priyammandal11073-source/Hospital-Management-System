@@ -249,8 +249,8 @@ export default function MobileMenuSheet({
               onClick={() => setSelectedCategory("all")}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 cursor-pointer ${
                 selectedCategory === "all"
-                  ? "bg-slate-900 text-white shadow-xs"
-                  : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                  ? "bg-blue-50 text-blue-700 border border-blue-200/90 font-bold shadow-2xs"
+                  : "bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50"
               }`}
             >
               All Sections
@@ -262,8 +262,8 @@ export default function MobileMenuSheet({
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 cursor-pointer ${
                   selectedCategory === cat.id
-                    ? "bg-slate-900 text-white shadow-xs"
-                    : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
+                    ? "bg-blue-50 text-blue-700 border border-blue-200/90 font-bold shadow-2xs"
+                    : "bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 {cat.name}
@@ -326,7 +326,7 @@ export default function MobileMenuSheet({
                           <div
                             className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
                               isActive
-                                ? "bg-blue-600 text-white shadow-xs"
+                                ? "bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs"
                                 : "bg-slate-100 text-slate-600 group-hover:bg-slate-200"
                             }`}
                           >

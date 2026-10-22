@@ -57,26 +57,26 @@ export default function MedicationAdminModal({ prescription, onClose, onUpdated 
   return (
     <div
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-4 overflow-y-auto animate-backdrop-fade"
       role="dialog"
     >
-      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden my-8">
+      <div className="relative w-full max-w-3xl rounded-2xl bg-white shadow-xl border border-slate-200/80 overflow-hidden my-8 animate-pop-in">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-teal-700 via-cyan-800 to-slate-900 px-6 py-5 text-white flex items-center justify-between">
+        <div className="bg-white border-b border-slate-100 px-6 py-5 text-slate-900 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 border border-white/20 text-xl font-bold">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-700 border border-teal-200 text-xl font-bold">
               💊
             </div>
             <div>
               <div className="inline-flex items-center gap-2">
-                <span className="rounded bg-teal-400/20 text-teal-200 px-2 py-0.5 text-[11px] font-mono font-bold tracking-wide">
+                <span className="rounded bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 text-[11px] font-mono font-semibold tracking-wide">
                   eMAR Dose Tracker
                 </span>
-                <span className="text-xs text-teal-100/75">
+                <span className="text-xs text-slate-500">
                   Rx #{prescription.prescriptionNumber}
                 </span>
               </div>
-              <h2 className="text-base font-bold text-white mt-0.5">
+              <h2 className="text-base font-bold text-slate-900 mt-0.5">
                 Medication Administration Record
               </h2>
             </div>
@@ -84,7 +84,7 @@ export default function MedicationAdminModal({ prescription, onClose, onUpdated 
           <button
             onClick={onClose}
             type="button"
-            className="rounded-lg p-1 text-slate-300 hover:bg-white/10 hover:text-white transition"
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-all active:scale-90 cursor-pointer"
           >
             ✕
           </button>

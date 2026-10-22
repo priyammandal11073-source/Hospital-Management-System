@@ -94,10 +94,10 @@ export default function DataTable({
   };
 
   return (
-    <div className={`bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden ${className}`}>
+    <div className={`bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden ${className}`}>
       {/* Top Toolbar */}
       {(searchable || toolbarExtra) && (
-        <div className="p-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {searchable ? (
             <div className="relative flex-1 max-w-sm">
               <input
@@ -108,10 +108,10 @@ export default function DataTable({
                   setCurrentPage(1);
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all"
+                className="w-full bg-slate-50/80 border border-slate-200 rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
               />
               <svg
-                className="w-4 h-4 text-slate-500 absolute left-3 top-3"
+                className="w-4 h-4 text-slate-400 absolute left-3 top-3"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -127,7 +127,7 @@ export default function DataTable({
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200 text-xs"
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 text-xs active:scale-90"
                 >
                   Clear
                 </button>
@@ -155,8 +155,8 @@ export default function DataTable({
             />
           </div>
         ) : (
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-800/50 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
+          <table className="w-full text-left text-sm text-slate-700">
+            <thead className="bg-slate-50/75 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200/80 font-medium">
               <tr>
                 {columns.map((col) => {
                   const isSortable = col.sortable !== false;
@@ -166,12 +166,12 @@ export default function DataTable({
                       key={col.key}
                       onClick={() => isSortable && handleSort(col.key)}
                       style={{ width: col.width }}
-                      className={`px-4 py-3.5 font-semibold ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"} ${isSortable ? "cursor-pointer select-none hover:text-slate-200" : ""}`}
+                      className={`px-4 py-3.5 font-semibold ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"} ${isSortable ? "cursor-pointer select-none hover:text-slate-900 transition-colors" : ""}`}
                     >
                       <div className={`inline-flex items-center gap-1.5 ${col.align === "right" ? "justify-end" : col.align === "center" ? "justify-center" : "justify-start"}`}>
                         <span>{col.header}</span>
                         {isSortable && (
-                          <span className="text-[10px] text-slate-500">
+                          <span className="text-[10px] text-slate-400">
                             {isSorted ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}
                           </span>
                         )}
@@ -181,7 +181,7 @@ export default function DataTable({
                 })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100">
               {paginatedData.map((row, idx) => {
                 const rowKey = keyExtractor(row, idx);
                 const isClickable = Boolean(onRowClick);
@@ -189,7 +189,7 @@ export default function DataTable({
                   <tr
                     key={rowKey}
                     onClick={() => isClickable && onRowClick(row)}
-                    className={`transition-colors ${isClickable ? "cursor-pointer hover:bg-slate-800/50" : "hover:bg-slate-800/30"}`}
+                    className={`transition-colors duration-150 ${isClickable ? "cursor-pointer hover:bg-slate-50/80 active:bg-slate-100/60" : "hover:bg-slate-50/40"}`}
                   >
                     {columns.map((col) => (
                       <td
@@ -209,7 +209,7 @@ export default function DataTable({
 
       {/* Pagination Footer */}
       {pagination && !loading && totalItems > 0 && (
-        <div className="p-4 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-400">
+        <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 bg-slate-50/30">
           <div className="flex items-center gap-2">
             <span>Rows per page:</span>
             <select
@@ -218,7 +218,7 @@ export default function DataTable({
                 setPageSize(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+              className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none focus:border-blue-500"
             >
               {pageSizeOptions.map((opt) => (
                 <option key={opt} value={opt}>
@@ -236,18 +236,18 @@ export default function DataTable({
               type="button"
               disabled={currentPage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors"
+              className="px-3 py-1.5 bg-white hover:bg-slate-50 disabled:opacity-40 border border-slate-200 rounded-lg transition-all text-slate-700 active:scale-95 shadow-2xs"
             >
               Previous
             </button>
-            <span className="px-2 text-slate-300 font-medium">
+            <span className="px-2 text-slate-600 font-medium">
               {currentPage} / {totalPages}
             </span>
             <button
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:hover:bg-slate-800 border border-slate-700 rounded-lg transition-colors"
+              className="px-3 py-1.5 bg-white hover:bg-slate-50 disabled:opacity-40 border border-slate-200 rounded-lg transition-all text-slate-700 active:scale-95 shadow-2xs"
             >
               Next
             </button>

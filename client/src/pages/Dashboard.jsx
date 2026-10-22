@@ -992,10 +992,10 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
               {alt.actionLink && (
                 <Link
                   to={alt.actionLink}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap self-start sm:self-auto ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95 whitespace-nowrap self-start sm:self-auto ${
                     alt.level === "danger"
-                      ? "bg-rose-600 hover:bg-rose-700 text-white shadow-xs"
-                      : "bg-slate-900 hover:bg-slate-800 text-white"
+                      ? "bg-rose-600 hover:bg-rose-500 text-white shadow-xs"
+                      : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80 shadow-2xs"
                   }`}
                 >
                   Action Required →
@@ -2211,53 +2211,53 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
     <div className="space-y-6">
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 rounded-xl bg-slate-900 text-white px-4 py-3 text-sm font-semibold shadow-2xl flex items-center gap-3 border border-slate-700 animate-slide-in">
+        <div className="fixed top-5 right-5 z-50 rounded-xl bg-white/95 backdrop-blur-md text-slate-800 px-4 py-3 text-sm font-semibold shadow-xl flex items-center gap-3 border border-slate-200/80 animate-toast-in">
           <span>✅</span>
           <span>{toastMessage}</span>
-          <button onClick={() => setToastMessage("")} className="text-slate-400 hover:text-white font-bold ml-2">×</button>
+          <button onClick={() => setToastMessage("")} className="text-slate-400 hover:text-slate-700 font-bold ml-2 cursor-pointer active:scale-90">×</button>
         </div>
       )}
 
       {/* Station Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-6 sm:p-8 text-white shadow-md border border-slate-800">
+      <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/80 p-6 sm:p-8 text-slate-900 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 border border-indigo-400/30 px-3 py-1 text-xs font-semibold text-indigo-300">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 rounded-full bg-teal-50 border border-teal-200 px-3 py-1 text-xs font-semibold text-teal-700">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span>Clinical Nursing Station</span>
               <span className="opacity-40">•</span>
               <span>24/7 Ward Telemetry Active</span>
             </div>
-            <h1 className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+            <h1 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
               Inpatient Floor Care & Clinical Station
             </h1>
-            <p className="mt-1 text-sm text-slate-300 leading-relaxed">
-              Nurse Station Duty: <strong className="text-white">{user?.name}</strong>. Real-time telemetry, acute severity alerts, eMAR medication rounds, and doctor directives.
+            <p className="mt-1 text-sm text-slate-600 leading-relaxed">
+              Nurse Station Duty: <strong className="text-slate-800">{user?.name}</strong>. Real-time telemetry, acute severity alerts, eMAR medication rounds, and doctor directives.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/nurse/vitals"
-              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-xs font-bold text-white shadow-sm transition-colors flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-xs font-semibold text-white shadow-xs transition-all active:scale-95 flex items-center gap-1.5"
             >
               <span>📊</span> Record Vitals
             </Link>
             <Link
               to="/nurse/handover"
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 border border-slate-700 transition-colors flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 transition-all active:scale-95 shadow-2xs flex items-center gap-1.5"
             >
               <span>🔄</span> Shift Handover
             </Link>
             <Link
               to="/nurse/admission-discharge"
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 border border-slate-700 transition-colors flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 transition-all active:scale-95 shadow-2xs flex items-center gap-1.5"
             >
               <span>📋</span> Admit / Discharge
             </Link>
             <button
               onClick={onTriggerRefresh}
-              className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 border border-slate-700 transition-colors"
+              className="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 transition-all active:scale-95 shadow-2xs cursor-pointer"
               title="Refresh telemetry"
             >
               ↻ Refresh

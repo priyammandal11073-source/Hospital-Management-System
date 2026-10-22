@@ -190,6 +190,123 @@ textarea:disabled,
 
 
 /* =========================================================================
+   UNIVERSAL TACTILE CLICK & TASK PERFORMANCE ANIMATIONS
+   Applies to every interactive element and task across all portals.
+   ========================================================================= */
+
+/* Click animation for every clickable control across all portals */
+button:not(:disabled):active,
+a[href]:active,
+[role="button"]:not(:disabled):active,
+[role="tab"]:active,
+[role="menuitem"]:active,
+input[type="submit"]:not(:disabled):active,
+input[type="button"]:not(:disabled):active,
+input[type="reset"]:not(:disabled):active,
+.clickable:active,
+.cursor-pointer:active,
+.touch-target:active,
+.btn:not(:disabled):active {
+  transform: scale(0.965) translateY(0.5px) !important;
+  transition: transform 0.08s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Micro-interaction hover transitions for all interactive elements */
+button:not(:disabled),
+a[href],
+[role="button"]:not(:disabled),
+[role="tab"],
+[role="menuitem"],
+.clickable,
+.touch-target,
+.btn {
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.16s ease,
+              border-color 0.16s ease,
+              box-shadow 0.16s ease,
+              color 0.16s ease;
+}
+
+/* Subtle micro-elevation on hover for interactive controls */
+button:not(:disabled):hover,
+a[href]:hover,
+[role="button"]:not(:disabled):hover {
+  transform: translateY(-0.5px);
+}
+
+/* Checkbox and Radio tactile toggle animation */
+input[type="checkbox"],
+input[type="radio"] {
+  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.12s ease,
+              border-color 0.12s ease;
+}
+input[type="checkbox"]:active,
+input[type="radio"]:active {
+  transform: scale(0.88);
+}
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  animation: checkPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes checkPop {
+  0% { transform: scale(0.82); }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* Modal and Task Dialogue Spring Animations */
+@keyframes taskPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes taskToastIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes taskDropdownIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-pop-in {
+  animation: taskPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-toast-in {
+  animation: taskToastIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-dropdown-in {
+  animation: taskDropdownIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top;
+  will-change: transform, opacity;
+}
+
+/* =========================================================================
    SLIDING NAVIGATION & DRAWER ANIMATIONS
    ========================================================================= */
 @keyframes drawerSlideIn {
@@ -331,36 +448,47 @@ textarea:disabled,
 }
 
 /* =========================================================================
-   LIQUID GLASS (GLASSMORPHISM) SURFACES
-   Frosted, translucent panels that blur the ambient background behind them.
+   LIQUID GLASS (GLASSMORPHISM) SURFACES - MINIMALIST AESTHETIC
+   Frosted, translucent surfaces with refined hairline borders and gentle lift.
    ========================================================================= */
 @layer components {
   .glass-panel {
-    background: rgba(255, 255, 255, 0.6);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.65);
+    background: rgba(255, 255, 255, 0.72);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(226, 232, 240, 0.75);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.7),
-      0 1px 2px rgba(15, 23, 42, 0.03),
-      0 8px 24px -12px rgba(15, 23, 42, 0.08);
+      inset 0 1px 0 rgba(255, 255, 255, 0.8),
+      0 1px 2px rgba(15, 23, 42, 0.02),
+      0 6px 16px -8px rgba(15, 23, 42, 0.04);
   }
 
   .glass-card {
-    background: rgba(255, 255, 255, 0.82);
-    -webkit-backdrop-filter: blur(18px) saturate(170%);
-    backdrop-filter: blur(18px) saturate(170%);
-    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.88);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(16px) saturate(160%);
+    border: 1px solid rgba(226, 232, 240, 0.8);
     box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.85),
-      0 1px 2px rgba(15, 23, 42, 0.03),
-      0 10px 24px -16px rgba(15, 23, 42, 0.08);
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 1px 2px rgba(15, 23, 42, 0.02),
+      0 4px 12px -4px rgba(15, 23, 42, 0.04);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.18s ease;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(203, 213, 225, 0.9);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 2px 4px rgba(15, 23, 42, 0.02),
+      0 8px 20px -6px rgba(15, 23, 42, 0.06);
   }
 
   .glass-inset {
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.8),
-      0 8px 30px rgba(15, 23, 42, 0.06);
+      0 4px 16px rgba(15, 23, 42, 0.03);
   }
 
   .glass-ambient {
@@ -628,5 +756,18 @@ body:has([role="dialog"]:not([aria-hidden="true"])) header.sticky {
   pointer-events: none !important;
   opacity: 0.20 !important;
   filter: blur(1.5px) !important;
+}
+
+/* =========================================================================
+   UNIVERSAL SOFT MODAL BACKDROP (PREVENTS HARSH PITCH-BLACK SCRIMS)
+   ========================================================================= */
+.modal-backdrop,
+.animate-backdrop-fade,
+.fixed.inset-0.bg-slate-900\/60,
+.fixed.inset-0.bg-slate-950\/60,
+.fixed.inset-0.bg-slate-950\/70 {
+  background-color: rgba(15, 23, 42, 0.38) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+  backdrop-filter: blur(6px) !important;
 }
 

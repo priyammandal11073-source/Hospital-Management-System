@@ -123,22 +123,22 @@ export default function DoctorScheduleModal({ doctor, onClose, onUpdated }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-4 animate-backdrop-fade">
+      <div className="w-full max-w-2xl rounded-2xl bg-white shadow-xl border border-slate-200/80 overflow-hidden flex flex-col max-h-[90vh] animate-pop-in">
         {/* Header */}
-        <div className="p-5 bg-gradient-to-r from-teal-700 to-slate-800 text-white flex items-center justify-between">
+        <div className="p-5 bg-white border-b border-slate-100 text-slate-900 flex items-center justify-between">
           <div>
-            <h3 className="text-base font-black">
+            <h3 className="text-base font-bold text-slate-900">
               Doctor Schedule & Availability — {getDoctorDisplayName(doctor)}
             </h3>
-            <p className="text-xs text-teal-100 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               {doctor.specialization} · {doctor.department}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="h-8 w-8 rounded-full bg-white/20 hover:bg-white/30 text-white flex items-center justify-center font-bold text-sm"
+            className="h-8 w-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center font-bold text-sm transition-all active:scale-90 cursor-pointer"
           >
             ✕
           </button>
@@ -349,7 +349,7 @@ export default function DoctorScheduleModal({ doctor, onClose, onUpdated }) {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold px-4 py-2 text-xs shadow-sm transition disabled:opacity-50"
+                  className="rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold px-4 py-2 text-xs shadow-xs transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
                   + Add Doctor Leave
                 </button>

@@ -336,10 +336,10 @@ aria-label={`Delete ${getDoctorDisplayName(doctor)}`}
       {isFormOpen && (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-2.5 sm:p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-2.5 sm:p-4 backdrop-blur-md animate-backdrop-fade"
           role="dialog"
         >
-          <div className="modal-viewport w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-2xl border border-slate-200">
+          <div className="modal-viewport w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-xl border border-slate-200/80 animate-pop-in">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-xl font-bold text-slate-800">
                 {selectedDoctor ? "Edit doctor profile" : "Add new doctor"}

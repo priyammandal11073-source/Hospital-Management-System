@@ -17,11 +17,11 @@ export default function PatientBanner({
   const isAdmitted = patient?.isAdmitted;
 
   return (
-    <div className={`glass-card rounded-2xl shadow-lg shadow-slate-300/40 overflow-hidden ${className}`}>
+    <div className={`glass-card rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden ${className}`}>
       <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Patient Identity Block */}
         <div className="flex items-start sm:items-center gap-3.5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-900 text-white font-bold text-lg flex-shrink-0">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-700 border border-blue-200/80 font-bold text-lg flex-shrink-0">
             {patient?.name ? patient.name.charAt(0).toUpperCase() : "P"}
           </div>
           <div>

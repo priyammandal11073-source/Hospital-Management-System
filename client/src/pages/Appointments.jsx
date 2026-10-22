@@ -566,10 +566,10 @@ function Appointments() {
       {canBook && isFormOpen && (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-2.5 sm:p-4 backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-2.5 sm:p-4 backdrop-blur-md animate-backdrop-fade"
           role="dialog"
         >
-          <div className="modal-viewport w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-2xl border border-slate-200">
+          <div className="modal-viewport w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-xl border border-slate-200/80 animate-pop-in">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-xl font-bold text-slate-800">Book new consultation</h2>
               <button
@@ -593,10 +593,10 @@ function Appointments() {
       {rxAppointment && (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-4 overflow-y-auto animate-backdrop-fade"
           role="dialog"
         >
-          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto">
+          <div className="max-h-[92vh] w-full max-w-4xl overflow-y-auto animate-pop-in">
             <PrescriptionForm
               initialAppointment={rxAppointment}
               initialPatient={rxAppointment.patient}
@@ -644,10 +644,10 @@ function Appointments() {
       {vitalsPatient && (
         <div
           aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs p-4 overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-4 overflow-y-auto animate-backdrop-fade"
           role="dialog"
         >
-          <div className="relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
+          <div className="relative max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl bg-white p-6 shadow-xl border border-slate-200/80 animate-pop-in">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
               <div>
                 <h3 className="text-base font-bold text-slate-900">
