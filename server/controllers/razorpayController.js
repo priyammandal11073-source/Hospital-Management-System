@@ -14,7 +14,7 @@ const getRazorpayInstance = () => {
 /**
  * @desc    Create Razorpay order for an invoice
  * @route   POST /api/razorpay/create-order
- * @access  Public
+ * @access  Protected (Patient owner or authorized staff)
  */
 export const createOrder = async (req, res) => {
   try {
@@ -28,13 +28,50 @@ export const createOrder = async (req, res) => {
       return res.status(404).json({ message: "Billing invoice not found." });
     }
 
+    // Ownership & Authorization:
+    // Only the patient who owns the invoice, or authorized clinical/desk staff, may create payment orders
+    const patientUser = req.patient;
+    const staffUser = req.user;
+    const billingPatientId = billing.patient?._id ? billing.patient._id.toString() : billing.patient?.toString();
+
+    if (patientUser) {
+      const requesterPatientId = (patientUser._id || patientUser.id)?.toString();
+      if (!billingPatientId || billingPatientId !== requesterPatientId) {
+        return res.status(403).json({
+          success: false,
+          message: "Forbidden: You can only create payment orders for your own billing records.",
+        });
+      }
+    } else if (staffUser) {
+      const ALLOWED_BILLING_STAFF = ["admin", "receptionist", "pharmacist", "emergency", "doctor"];
+      if (!ALLOWED_BILLING_STAFF.includes(staffUser.role)) {
+        return res.status(403).json({
+          success: false,
+          message: "Forbidden: Staff role not authorized for billing operations.",
+        });
+      }
+    } else {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required to create a payment order.",
+      });
+    }
+
     const amountInPaise = Math.round(Number(billing.totalAmount || 0) * 100);
     if (amountInPaise <= 0) {
       return res.status(400).json({ message: "Invalid billing amount." });
     }
 
+    // Fail closed in production if Razorpay credentials are missing
+    if (env.isProduction && !env.razorpay.isConfigured) {
+      return res.status(503).json({
+        success: false,
+        message: "Payment gateway error: Razorpay credentials are not configured in production.",
+      });
+    }
+
     const razorpay = getRazorpayInstance();
-    const keyId = env.razorpay.keyId || "rzp_test_TZavagxglGTRZp";
+    const keyId = env.razorpay.keyId;
 
     if (razorpay) {
       // Real Razorpay API Order Creation
@@ -62,14 +99,16 @@ export const createOrder = async (req, res) => {
           contact: billing.patient?.contactNumber || "",
         },
       });
-    } else {
-      // Standard Client-Side Test Checkout (order_id omitted so Razorpay SDK handles transaction in test mode without 400 error)
+    }
+
+    // In development / test environment only: allow local non-production testing
+    if (env.isDevelopment || env.isTest) {
       return res.status(200).json({
         success: true,
         orderId: null,
         amount: amountInPaise,
         currency: "INR",
-        keyId,
+        keyId: keyId || "rzp_test_simulated",
         patientDetails: {
           name: billing.patient?.name || "",
           email: billing.patient?.email || "",
@@ -77,6 +116,11 @@ export const createOrder = async (req, res) => {
         },
       });
     }
+
+    return res.status(503).json({
+      success: false,
+      message: "Razorpay payment gateway is not configured.",
+    });
   } catch (error) {
     console.error("Error creating Razorpay order:", error);
     res.status(500).json({ message: error.message || "Failed to create Razorpay order." });
@@ -86,7 +130,7 @@ export const createOrder = async (req, res) => {
 /**
  * @desc    Verify Razorpay payment signature & update invoice status
  * @route   POST /api/razorpay/verify-payment
- * @access  Public
+ * @access  Protected (Patient owner or authorized staff)
  */
 export const verifyPayment = async (req, res) => {
   try {
@@ -101,20 +145,45 @@ export const verifyPayment = async (req, res) => {
       return res.status(404).json({ message: "Billing record not found." });
     }
 
+    // Ownership & Authorization:
+    const patientUser = req.patient;
+    const staffUser = req.user;
+    const billingPatientId = billing.patient?._id ? billing.patient._id.toString() : billing.patient?.toString();
+
+    if (patientUser) {
+      const requesterPatientId = (patientUser._id || patientUser.id)?.toString();
+      if (!billingPatientId || billingPatientId !== requesterPatientId) {
+        return res.status(403).json({
+          success: false,
+          message: "Forbidden: You can only verify payments for your own billing records.",
+        });
+      }
+    } else if (staffUser) {
+      const ALLOWED_BILLING_STAFF = ["admin", "receptionist", "pharmacist", "emergency", "doctor"];
+      if (!ALLOWED_BILLING_STAFF.includes(staffUser.role)) {
+        return res.status(403).json({
+          success: false,
+          message: "Forbidden: Staff role not authorized for billing verification.",
+        });
+      }
+    } else {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication required to verify payments.",
+      });
+    }
+
     const secret = env.razorpay.keySecret;
 
     // In production, razorpay key secret is strictly mandatory.
     // Never allow unverified payments when running in production mode.
     if (env.isProduction && !secret) {
-      return res.status(500).json({
+      return res.status(503).json({
         message: "Payment processing error: Razorpay gateway secret is not configured in production.",
       });
     }
 
     // Signature verification is MANDATORY whenever a key secret is configured.
-    // Without this an attacker could mark an invoice as paid by posting a fake
-    // payment id. The key secret is only absent in development/test mode where
-    // the client runs a local (non-authoritative) checkout.
     if (secret) {
       if (!razorpayOrderId || !razorpaySignature) {
         return res.status(400).json({

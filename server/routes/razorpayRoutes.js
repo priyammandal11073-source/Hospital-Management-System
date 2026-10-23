@@ -1,12 +1,14 @@
 import express from "express";
 import { createOrder, rzpWebhookHandler, verifyPayment } from "../controllers/razorpayController.js";
+import { protectStaffOrPatient } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// The webhook needs the raw JSON body to verify the HMAC signature, so it uses
-// express.raw inline rather than the app-level express.json parser.
+// Webhook endpoint (also registered before global express.json in app.js)
 router.post("/webhook", express.raw({ type: "application/json" }), rzpWebhookHandler);
-router.post("/create-order", createOrder);
-router.post("/verify-payment", verifyPayment);
+
+// Order creation & payment verification strictly require authenticated caller (patient owner or staff)
+router.post("/create-order", protectStaffOrPatient, createOrder);
+router.post("/verify-payment", protectStaffOrPatient, verifyPayment);
 
 export default router;

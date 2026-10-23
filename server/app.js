@@ -25,6 +25,7 @@ import diagnosticRoutes from "./routes/diagnosticRoutes.js";
 import emergencyRoutes from "./routes/emergencyRoutes.js";
 import { notFoundHandler, errorHandler } from "./middleware/errorMiddleware.js";
 import { apiLimiter } from "./middleware/rateLimiters.js";
+import { rzpWebhookHandler } from "./controllers/razorpayController.js";
 
 /**
  * Builds the Express application with all routes and error handling wired up.
@@ -77,57 +78,23 @@ const createApp = () => {
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
   };
 
-  // Middleware that applies to every incoming request.
-  app.use(cors(corsOptions));
-  app.use(compression());
-  app.use(express.json());
-  // ── Health & Readiness Probes (decisions decoupled for cloud orchestrators) ─
-  const getDbReadiness = () => {
-    const dbStatus = mongoose.connection.readyState;
-    const dbStatusMap = {
-      0: "Disconnected",
-      1: "Connected",
-      2: "Connecting",
-      3: "Disconnecting",
-    };
-    return {
-      status: dbStatusMap[dbStatus] || "Unknown",
-      readyState: dbStatus,
-      isConnected: dbStatus === 1,
-    };
-  };
-
-  // /health: Process liveness probe. Confirms Node/Express is responsive.
-  // CRITICAL REQUIREMENT: Must NOT depend on database availability (configured in Render health check).
+  // Register unthrottled health & ready endpoints BEFORE apiLimiter so cloud probes never exhaust rate limits
   const livenessHandler = (req, res) => {
-    const db = getDbReadiness();
     res.status(200).json({
       status: "ok",
       service: "nivora-care-hospital",
       timestamp: new Date().toISOString(),
-      uptimeSeconds: Math.floor(process.uptime()),
-      environment: env.nodeEnv,
-      database: {
-        status: db.status,
-        readyState: db.readyState,
-      },
     });
   };
 
-  // /ready: Database readiness probe. Returns HTTP 200 ONLY when MongoDB is connected, otherwise 503.
   const readinessHandler = (req, res) => {
-    const db = getDbReadiness();
-    if (db.isConnected) {
+    const isConnected = mongoose.connection.readyState === 1;
+    if (isConnected) {
       return res.status(200).json({
         ready: true,
         status: "ready",
         service: "nivora-care-hospital",
         timestamp: new Date().toISOString(),
-        uptimeSeconds: Math.floor(process.uptime()),
-        database: {
-          status: db.status,
-          readyState: db.readyState,
-        },
       });
     }
 
@@ -136,20 +103,22 @@ const createApp = () => {
       status: "not_ready",
       service: "nivora-care-hospital",
       timestamp: new Date().toISOString(),
-      uptimeSeconds: Math.floor(process.uptime()),
-      database: {
-        status: db.status,
-        readyState: db.readyState,
-      },
-      message: "Database connection not ready. Offline demo fallback active for application requests.",
+      message: "Database connection not ready.",
     });
   };
 
-  // Register unthrottled health & ready endpoints BEFORE apiLimiter so cloud probes never exhaust rate limits
   app.get("/health", livenessHandler);
   app.get("/ready", readinessHandler);
   app.get("/api/ready", readinessHandler);
 
+  // Razorpay webhook signature verification requires the untouched raw body Buffer.
+  // Registered BEFORE global express.json() so the HMAC digest matches Razorpay's signature.
+  app.post("/api/razorpay/webhook", express.raw({ type: "application/json" }), rzpWebhookHandler);
+
+  // Middleware that applies to remaining incoming requests.
+  app.use(cors(corsOptions));
+  app.use(compression());
+  app.use(express.json());
   app.use("/api", apiLimiter);
 
   app.use("/api/auth", authRoutes);
@@ -173,38 +142,8 @@ const createApp = () => {
   app.use("/api/diagnostics", diagnosticRoutes);
   app.use("/api/emergency", emergencyRoutes);
 
-  // Diagnostic health check reporting connectivity and portal readiness across all 8 portals
-  app.get("/api/health", (req, res) => {
-    const db = getDbReadiness();
-
-    res.status(200).json({
-      success: true,
-      message: "Nivora Care Hospital Management System API is healthy",
-      timestamp: new Date().toISOString(),
-      uptimeSeconds: Math.floor(process.uptime()),
-      environment: env.nodeEnv,
-      database: {
-        status: db.status,
-        readyState: db.readyState,
-        isOfflineDemoFallbackActive: !db.isConnected,
-      },
-      portals: {
-        adminPortal: { status: "Operational", baseRoute: "/api/admin" },
-        doctorPortal: { status: "Operational", baseRoute: "/api/doctor-workspace" },
-        nursePortal: { status: "Operational", baseRoute: "/api/nurse" },
-        receptionistPortal: { status: "Operational", baseRoute: "/api/receptionist" },
-        patientPortal: { status: "Operational", baseRoute: "/api/patient-portal" },
-        pharmacyPortal: { status: "Operational", baseRoute: "/api/pharmacy" },
-        diagnosticPortal: { status: "Operational", baseRoute: "/api/diagnostics" },
-        emergencyPortal: { status: "Operational", baseRoute: "/api/emergency" },
-      },
-      systemMetrics: {
-        memoryUsageMB: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-        nodeVersion: process.version,
-        pid: process.pid,
-      },
-    });
-  });
+  // Liveness probe on /api/health without environmental or internal system disclosure
+  app.get("/api/health", livenessHandler);
 
   // 404 handler for undefined endpoints
   app.use(notFoundHandler);
