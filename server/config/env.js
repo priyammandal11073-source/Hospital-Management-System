@@ -65,7 +65,7 @@ const env = Object.freeze({
         ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
         : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:5173"
+        : "https://hospital-management-system-nine-gilt.vercel.app"
     )
   ),
 

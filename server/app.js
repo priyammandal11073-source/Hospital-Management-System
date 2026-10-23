@@ -53,6 +53,7 @@ const createApp = () => {
   // Security hardening: Strict CORS origin validation
   const allowedOrigins = [
     env.clientUrl,
+    "https://hospital-management-system-nine-gilt.vercel.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
