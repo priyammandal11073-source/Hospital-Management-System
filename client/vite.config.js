@@ -5,8 +5,12 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      // Requests beginning with /api are forwarded to the Express server.
-      "/api": "http://localhost:5000",
+      // Requests beginning with /api are forwarded to the live Render backend
+      "/api": {
+        target: process.env.VITE_PROXY_TARGET || "https://nivora-care-hospital.onrender.com",
+        changeOrigin: true,
+        secure: true,
+      },
     },
   },
   test: {
