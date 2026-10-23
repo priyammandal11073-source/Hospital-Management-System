@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import { toast } from "../utils/toast.js";
 
 const TeleconsultRoom = () => {
   const { joinCode } = useParams();
@@ -8,7 +9,7 @@ const TeleconsultRoom = () => {
     if (navigator.clipboard) {
       navigator.clipboard
         .writeText(window.location.href)
-        .then(() => alert("Video consult link copied. Share it with the patient."))
+        .then(() => toast.success("Video consult link copied to clipboard. Share it with the patient."))
         .catch(() => {});
     }
   };

@@ -8,6 +8,7 @@ import PatientQrCardModal from "../components/ui/PatientQrCardModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { formatDoctorName } from "../utils/doctorName.js";
 import { PageHeader, ConfirmDialog } from "../components/ui/index.js";
+import { toast } from "../utils/toast.js";
 
 function Patients() {
   const { user } = useAuth();
@@ -98,7 +99,9 @@ function Patients() {
   const handleFormSuccess = () => {
     const isUpdate = Boolean(selectedPatient);
     closeForm();
-    setSuccessMessage(isUpdate ? "Patient record updated successfully." : "New patient registered successfully.");
+    const msg = isUpdate ? "Patient record updated successfully." : "New patient registered successfully.";
+    setSuccessMessage(msg);
+    toast.success(msg);
     setTimeout(() => setSuccessMessage(""), 5000);
     setRefreshKey((currentKey) => currentKey + 1);
   };
@@ -121,11 +124,15 @@ function Patients() {
       const patientName = patientToDelete.name;
       await deletePatient(patientToDelete._id);
       setPatientToDelete(null);
-      setSuccessMessage(`Patient record for "${patientName}" was removed successfully.`);
+      const msg = `Patient record for "${patientName}" was removed successfully.`;
+      setSuccessMessage(msg);
+      toast.success(msg);
       setTimeout(() => setSuccessMessage(""), 5000);
       setRefreshKey((currentKey) => currentKey + 1);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Unable to delete patient.");
+      const errMsg = requestError.response?.data?.message || "Unable to delete patient.";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setIsDeleting(false);
     }

@@ -10,3 +10,4 @@ export { default as PageLoader } from "./PageLoader";
 export { default as ConfirmDialog } from "./ConfirmDialog";
 export { default as PageHeader } from "./PageHeader";
 export { default as DataTable } from "./DataTable";
+export { default as Toaster } from "./Toaster";

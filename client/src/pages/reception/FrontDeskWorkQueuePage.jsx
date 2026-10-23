@@ -10,6 +10,7 @@ import {
   checkInPatient,
 } from "../../services/api.js";
 import UniversalPaymentModal from "../../components/UniversalPaymentModal.jsx";
+import { toast } from "../../utils/toast.js";
 
 export default function FrontDeskWorkQueuePage() {
   const [workQueue, setWorkQueue] = useState([]);
@@ -41,9 +42,10 @@ export default function FrontDeskWorkQueuePage() {
     setActioningId(appointmentId);
     try {
       await confirmOnlineBooking(appointmentId, { action: "confirm" });
+      toast.success("Online booking confirmed successfully.");
       fetchQueue();
     } catch (err) {
-      alert("Failed to confirm: " + (err.response?.data?.message || err.message));
+      toast.error("Failed to confirm: " + (err.response?.data?.message || err.message));
     } finally {
       setActioningId(null);
     }
@@ -53,9 +55,10 @@ export default function FrontDeskWorkQueuePage() {
     setActioningId(billingId);
     try {
       await updatePaymentStatus(billingId, { paymentStatus: "paid", paymentMethod: "cash" });
+      toast.success("Payment recorded as cash.");
       fetchQueue();
     } catch (err) {
-      alert("Payment settlement failed: " + (err.response?.data?.message || err.message));
+      toast.error("Payment settlement failed: " + (err.response?.data?.message || err.message));
     } finally {
       setActioningId(null);
     }
@@ -66,10 +69,10 @@ export default function FrontDeskWorkQueuePage() {
     setActioningId(targetId);
     try {
       const resData = await checkInPatient(targetId);
-      alert(`Patient Checked In! Token: ${resData?.tokenNumber || "DX-Ready"}. Status updated to 'Patient Ready'.`);
+      toast.success(`Patient Checked In! Token: ${resData?.tokenNumber || "DX-Ready"}. Status updated to 'Patient Ready'.`);
       fetchQueue();
     } catch (err) {
-      alert("Check-in failed: " + (err.response?.data?.message || err.message));
+      toast.error("Check-in failed: " + (err.response?.data?.message || err.message));
     } finally {
       setActioningId(null);
     }
@@ -114,17 +117,17 @@ export default function FrontDeskWorkQueuePage() {
   const submitWalkIn = async (e) => {
     e.preventDefault();
     if (!walkInForm.patientId || !walkInForm.testId) {
-      alert("Please select both a patient and a diagnostic test.");
+      toast.warning("Please select both a patient and a diagnostic test.");
       return;
     }
     setWalkInSubmitting(true);
     try {
       const res = await createWalkInDiagnostic(walkInForm);
-      alert(`Walk-in Diagnostic Registered & Checked In! Token: ${res.tokenNumber || "DX-Ready"}`);
+      toast.success(`Walk-in Diagnostic Registered & Checked In! Token: ${res.tokenNumber || "DX-Ready"}`);
       setShowWalkInModal(false);
       fetchQueue();
     } catch (err) {
-      alert("Walk-in diagnostic failed: " + (err.response?.data?.message || err.message));
+      toast.error("Walk-in diagnostic failed: " + (err.response?.data?.message || err.message));
     } finally {
       setWalkInSubmitting(false);
     }

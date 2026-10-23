@@ -5,7 +5,8 @@ import MedicationAdminModal from "../components/MedicationAdminModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getPrescriptions, getPrescriptionById, deletePrescription } from "../services/api.js";
 import { getDoctorDisplayName, formatDoctorName } from "../utils/doctorName.js";
-import { PageHeader, ConfirmDialog } from "../components/ui/index.js";
+import { PageHeader, ConfirmDialog, SkeletonTable } from "../components/ui/index.js";
+import { toast } from "../utils/toast.js";
 
 const formatDate = (date) =>
   date
@@ -83,9 +84,12 @@ function Prescriptions() {
       setPrescriptions((prev) => prev.filter((p) => p._id !== prescriptionToDelete));
       setPrescriptionToDelete(null);
       setSuccessMessage("Prescription record deleted successfully.");
+      toast.success("Prescription record deleted successfully.");
       setTimeout(() => setSuccessMessage(""), 4500);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to delete prescription.");
+      const errMsg = err.response?.data?.message || "Failed to delete prescription.";
+      setError(errMsg);
+      toast.error(errMsg);
     } finally {
       setIsDeleting(false);
     }
@@ -242,9 +246,8 @@ function Prescriptions() {
       {/* Prescriptions List / Table */}
       <div className="rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-xs ring-1 ring-slate-200/60">
         {isLoading ? (
-          <div className="flex items-center justify-center p-12 text-slate-500 text-xs font-medium">
-            <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-teal-600 border-r-transparent mr-2" />
-            Loading prescriptions...
+          <div className="p-4">
+            <SkeletonTable rows={5} cols={5} />
           </div>
         ) : error ? (
           <div className="p-8 text-center text-xs font-semibold text-rose-700 bg-rose-50 border-b border-rose-100">

@@ -108,7 +108,7 @@ export default function DataTable({
                   setCurrentPage(1);
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full bg-slate-50/80 border border-slate-200 rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all"
+                className="w-full bg-slate-50/80 border border-slate-200 rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-[border-color,box-shadow] duration-150"
               />
               <svg
                 className="w-4 h-4 text-slate-400 absolute left-3 top-3"
@@ -145,7 +145,7 @@ export default function DataTable({
       <div className="overflow-x-auto">
         {loading ? (
           <div className="p-4">
-            <SkeletonTable rows={pageSize > 10 ? 10 : pageSize} columns={columns.length || 5} />
+            <SkeletonTable rows={pageSize > 10 ? 10 : pageSize} cols={columns.length || 5} />
           </div>
         ) : paginatedData.length === 0 ? (
           <div className="py-8">
@@ -188,8 +188,9 @@ export default function DataTable({
                 return (
                   <tr
                     key={rowKey}
+                    style={{ animationDelay: `${Math.min(idx * 25, 200)}ms` }}
                     onClick={() => isClickable && onRowClick(row)}
-                    className={`transition-colors duration-150 ${isClickable ? "cursor-pointer hover:bg-slate-50/80 active:bg-slate-100/60" : "hover:bg-slate-50/40"}`}
+                    className={`animate-row-stagger transition-colors duration-150 ${isClickable ? "cursor-pointer hover:bg-slate-50/80 active:bg-slate-100/60" : "hover:bg-slate-50/40"}`}
                   >
                     {columns.map((col) => (
                       <td

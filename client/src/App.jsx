@@ -5,6 +5,7 @@ import PatientLayout from "./components/PatientLayout.jsx";
 import PatientProtectedRoute from "./components/PatientProtectedRoute.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageLoader from "./components/ui/PageLoader.jsx";
+import Toaster from "./components/ui/Toaster.jsx";
 import { PrintModalProvider } from "./context/PrintModalContext.jsx";
 import usePageTitle from "./hooks/usePageTitle.js";
 
@@ -340,6 +341,7 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
+    <Toaster />
   </PrintModalProvider>
   );
 }

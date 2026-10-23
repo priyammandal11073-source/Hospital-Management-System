@@ -10,6 +10,15 @@
   --sar: env(safe-area-inset-right, 0px);
   --sab: env(safe-area-inset-bottom, 0px);
   --sal: env(safe-area-inset-left, 0px);
+
+  /* Emil Kowalski Craft Motion & Easing Tokens */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.15);
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-drawer: 280ms;
 }
 
 /* =========================================================================
@@ -40,9 +49,34 @@ body::before {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* Comprehensive Accessible Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
   body::before {
     display: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Retain gentle opacity fades for state clarity without spatial motion strain */
+  .animate-pop-in,
+  .animate-toast-in,
+  .animate-dropdown-in,
+  .animate-drawer-in,
+  .animate-sheet-up {
+    transform: none !important;
+    animation: reducedFade 150ms ease forwards !important;
+  }
+
+  @keyframes reducedFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }
 
@@ -191,10 +225,10 @@ textarea:disabled,
 
 /* =========================================================================
    UNIVERSAL TACTILE CLICK & TASK PERFORMANCE ANIMATIONS
-   Applies to every interactive element and task across all portals.
+   Applies to interactive controls with Emil Kowalski asymmetric timing.
    ========================================================================= */
 
-/* Click animation for every clickable control across all portals */
+/* Press animation: deliberate 80ms press */
 button:not(:disabled):active,
 a[href]:active,
 [role="button"]:not(:disabled):active,
@@ -207,11 +241,11 @@ input[type="reset"]:not(:disabled):active,
 .cursor-pointer:active,
 .touch-target:active,
 .btn:not(:disabled):active {
-  transform: scale(0.965) translateY(0.5px) !important;
-  transition: transform 0.08s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transform: scale(0.97) translateY(0.5px);
+  transition: transform 80ms linear;
 }
 
-/* Micro-interaction hover transitions for all interactive elements */
+/* Release & Hover transitions: snappy var(--ease-out) */
 button:not(:disabled),
 a[href],
 [role="button"]:not(:disabled),
@@ -220,47 +254,49 @@ a[href],
 .clickable,
 .touch-target,
 .btn {
-  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 0.16s ease,
-              border-color 0.16s ease,
-              box-shadow 0.16s ease,
-              color 0.16s ease;
+  transition: transform 150ms var(--ease-out),
+              background-color 150ms ease,
+              border-color 150ms ease,
+              box-shadow 150ms ease,
+              color 150ms ease;
 }
 
-/* Subtle micro-elevation on hover for interactive controls */
-button:not(:disabled):hover,
-a[href]:hover,
-[role="button"]:not(:disabled):hover {
-  transform: translateY(-0.5px);
+/* Subtle micro-elevation strictly gated for fine pointer/mouse devices */
+@media (hover: hover) and (pointer: fine) {
+  button:not(:disabled):hover,
+  a[href]:hover,
+  [role="button"]:not(:disabled):hover {
+    transform: translateY(-0.5px);
+  }
 }
 
 /* Checkbox and Radio tactile toggle animation */
 input[type="checkbox"],
 input[type="radio"] {
-  transition: transform 0.12s cubic-bezier(0.16, 1, 0.3, 1),
-              background-color 0.12s ease,
-              border-color 0.12s ease;
+  transition: transform 120ms var(--ease-out),
+              background-color 120ms ease,
+              border-color 120ms ease;
 }
 input[type="checkbox"]:active,
 input[type="radio"]:active {
-  transform: scale(0.88);
+  transform: scale(0.90);
 }
 input[type="checkbox"]:checked,
 input[type="radio"]:checked {
-  animation: checkPop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: checkPop 0.16s var(--ease-spring);
 }
 
 @keyframes checkPop {
-  0% { transform: scale(0.82); }
-  60% { transform: scale(1.1); }
+  0% { transform: scale(0.90); }
+  60% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
-/* Modal and Task Dialogue Spring Animations */
+/* Modal and Task Dialogue Spring Animations (Scale 0.97 + Opacity) */
 @keyframes taskPopIn {
   0% {
     opacity: 0;
-    transform: scale(0.95) translateY(6px);
+    transform: scale(0.97) translateY(4px);
   }
   100% {
     opacity: 1;
@@ -271,7 +307,7 @@ input[type="radio"]:checked {
 @keyframes taskToastIn {
   0% {
     opacity: 0;
-    transform: translateY(-10px) scale(0.96);
+    transform: translateY(-8px) scale(0.97);
   }
   100% {
     opacity: 1;
@@ -282,7 +318,7 @@ input[type="radio"]:checked {
 @keyframes taskDropdownIn {
   0% {
     opacity: 0;
-    transform: scale(0.95) translateY(-4px);
+    transform: scale(0.96) translateY(-3px);
   }
   100% {
     opacity: 1;
@@ -290,19 +326,35 @@ input[type="radio"]:checked {
   }
 }
 
+@keyframes taskRowStagger {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-pop-in {
-  animation: taskPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: taskPopIn 180ms var(--ease-out) forwards;
   will-change: transform, opacity;
 }
 
 .animate-toast-in {
-  animation: taskToastIn 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: taskToastIn 200ms var(--ease-out) forwards;
   will-change: transform, opacity;
 }
 
 .animate-dropdown-in {
-  animation: taskDropdownIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  transform-origin: top;
+  animation: taskDropdownIn 150ms var(--ease-out) forwards;
+  transform-origin: var(--dropdown-origin, top right);
+  will-change: transform, opacity;
+}
+
+.animate-row-stagger {
+  animation: taskRowStagger 180ms var(--ease-out) forwards;
   will-change: transform, opacity;
 }
 

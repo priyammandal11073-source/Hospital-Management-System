@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getBillings, processBillingRefund } from "../../services/api.js";
+import { toast } from "../../utils/toast.js";
 
 export default function RefundsManagementPage() {
   const [invoices, setInvoices] = useState([]);
@@ -34,7 +35,7 @@ export default function RefundsManagementPage() {
   const handleRefundSubmit = async (e) => {
     e.preventDefault();
     if (!refundReason.trim()) {
-      alert("Please state the clinical or administrative reason for the refund.");
+      toast.warning("Please state the clinical or administrative reason for the refund.");
       return;
     }
 
@@ -44,11 +45,11 @@ export default function RefundsManagementPage() {
         reason: refundReason.trim(),
         amount: Number(refundAmount),
       });
-      alert(`Refund of ₹${refundAmount} recorded successfully.`);
+      toast.success(`Refund of ₹${refundAmount} recorded successfully.`);
       setRefundModal(null);
       loadInvoices();
     } catch (err) {
-      alert("Failed to process refund: " + (err.response?.data?.message || err.message));
+      toast.error("Failed to process refund: " + (err.response?.data?.message || err.message));
     } finally {
       setIsProcessing(false);
     }

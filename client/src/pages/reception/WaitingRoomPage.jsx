@@ -1,5 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
   getWaitingRoomQueue,
   updateWaitingRoomStatus,
@@ -8,6 +7,8 @@ import {
 import { usePrintModal } from "../../context/PrintModalContext.jsx";
 import { generateQueueTokenSlipHtml } from "../../utils/printTemplates.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import { SkeletonTable } from "../../components/ui/index.js";
+import { toast } from "../../utils/toast.js";
 
 export default function WaitingRoomPage() {
   const { openPrintPreview } = usePrintModal();
@@ -58,9 +59,10 @@ export default function WaitingRoomPage() {
   const handleStatusChange = async (appointmentId, newStatus) => {
     try {
       await updateWaitingRoomStatus(appointmentId, newStatus);
+      toast.success(`Queue status updated to ${newStatus.replace("_", " ")}.`);
       fetchQueue();
     } catch (err) {
-      alert("Failed to update status: " + (err.response?.data?.message || err.message));
+      toast.error("Failed to update status: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -176,8 +178,8 @@ export default function WaitingRoomPage() {
       {/* Queue Table */}
       <div className="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200/80">
         {isLoading ? (
-          <div className="py-20 text-center text-sm font-medium text-slate-400 animate-pulse">
-            Loading real-time waiting hall queue...
+          <div className="p-4">
+            <SkeletonTable rows={5} cols={7} />
           </div>
         ) : queue.length === 0 ? (
           <div className="py-16 text-center">
@@ -200,8 +202,12 @@ export default function WaitingRoomPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {queue.map((item) => (
-                  <tr key={item._id} className="hover:bg-slate-50/70 transition-colors">
+                {queue.map((item, idx) => (
+                  <tr
+                    key={item._id}
+                    style={{ animationDelay: `${Math.min(idx * 25, 200)}ms` }}
+                    className="animate-row-stagger hover:bg-slate-50/70 transition-colors"
+                  >
                     <td className="py-3.5 px-4 font-mono">
                       <span className="inline-block rounded-lg bg-amber-100 border border-amber-300 px-2.5 py-1 text-xs font-black text-amber-900 shadow-xs">
                         {item.tokenNumber}

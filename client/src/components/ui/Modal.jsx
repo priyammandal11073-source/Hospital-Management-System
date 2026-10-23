@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useId } from "react";
 
 const Modal = ({
   isOpen = false,
@@ -9,6 +9,8 @@ const Modal = ({
   hideCancel = false,
   cancelText = "Cancel",
 }) => {
+  const titleId = useId();
+
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape" && isOpen && onClose) {
@@ -34,7 +36,17 @@ const Modal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/35 backdrop-blur-md animate-backdrop-fade">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={title ? titleId : undefined}
+      onClick={(e) => {
+        if (e.target === e.currentTarget && onClose) {
+          onClose();
+        }
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-slate-900/35 backdrop-blur-md animate-backdrop-fade"
+    >
       <div
         className={`
           bg-white/95 backdrop-blur-2xl rounded-2xl shadow-xl w-full mx-auto border border-slate-200/80
@@ -45,15 +57,19 @@ const Modal = ({
       >
         {title && (
           <div className="flex items-center justify-between border-b border-slate-100 px-4 sm:px-6 py-3.5 sm:py-4 bg-white/70 backdrop-blur-md flex-shrink-0">
-            <h3 className="font-semibold text-base sm:text-lg text-slate-900 truncate pr-2">{title}</h3>
+            <h3 id={titleId} className="font-semibold text-base sm:text-lg text-slate-900 truncate pr-2">
+              {title}
+            </h3>
             {onClose && (
               <button
                 type="button"
                 onClick={onClose}
-                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-all touch-target flex items-center justify-center cursor-pointer active:scale-90"
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-[background-color,color] duration-150 touch-target flex items-center justify-center cursor-pointer active:scale-95"
                 aria-label="Close modal"
               >
-                ✕
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             )}
           </div>
@@ -64,7 +80,7 @@ const Modal = ({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 transition-all touch-target cursor-pointer active:scale-95 shadow-2xs"
+              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 transition-[background-color,border-color,transform] duration-150 touch-target cursor-pointer active:scale-95 shadow-2xs"
             >
               {cancelText}
             </button>
