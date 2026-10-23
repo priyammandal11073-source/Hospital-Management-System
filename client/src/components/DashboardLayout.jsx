@@ -165,6 +165,9 @@ function DashboardLayout() {
       const overlays = document.querySelectorAll(".fixed.inset-0, [role='dialog']");
       let found = false;
       for (const el of overlays) {
+        // Exclude mobile navigation drawers and navigation elements
+        if (el.closest("[data-mobile-sheet]") || el.hasAttribute("data-mobile-sheet")) continue;
+        if (el.closest("nav") || el.tagName.toLowerCase() === "nav") continue;
         if (el.getAttribute("aria-hidden") === "true") continue;
         if (el.classList.contains("pointer-events-none")) continue;
         if (el.classList.contains("-z-10")) continue;

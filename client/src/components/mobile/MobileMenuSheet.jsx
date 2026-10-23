@@ -79,9 +79,10 @@ export default function MobileMenuSheet({
       : user?.name || (isPatient ? "Patient" : "Hospital Staff");
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
+    <div data-mobile-sheet="true" className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
       {/* Blurred Backdrop */}
       <div
+        data-mobile-sheet="true"
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-backdrop-fade transition-opacity"
         onClick={onClose}
         aria-hidden="true"
@@ -91,6 +92,7 @@ export default function MobileMenuSheet({
       <div
         role="dialog"
         aria-modal="true"
+        data-mobile-sheet="true"
         aria-label="Portal Navigation Menu"
         className="relative z-10 w-full max-h-[92vh] flex flex-col rounded-t-[32px] bg-[#fbfbfa] border-t border-white/90 shadow-2xl animate-sheet-up overflow-hidden"
       >

@@ -771,3 +771,19 @@ body:has([role="dialog"]:not([aria-hidden="true"])) header.sticky {
   backdrop-filter: blur(6px) !important;
 }
 
+/* =========================================================================
+   MOBILE SAFE AREA & TOUCH TARGET UTILITIES
+   ========================================================= */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+}
+
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+
