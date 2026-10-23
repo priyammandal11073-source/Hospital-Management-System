@@ -30,10 +30,10 @@ router.use(protect);
 router.use(restrictTo("nurse", "doctor", "admin"));
 
 // Dashboard metrics & overview
-router.get("/dashboard-metrics", getNurseDashboardMetrics);
+router.get(["/dashboard-metrics", "/telemetry", "/dashboard"], getNurseDashboardMetrics);
 
 // Inpatient list with clinical care summary
-router.get("/inpatients", getInpatientsWithCare);
+router.get(["/inpatients", "/patients"], getInpatientsWithCare);
 
 // Detailed Clinical Patient Profile
 router.get("/patient-profile/:id", getClinicalPatientProfile);

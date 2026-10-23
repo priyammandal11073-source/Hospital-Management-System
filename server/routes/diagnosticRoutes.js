@@ -61,9 +61,11 @@ router.use(protect);
 
 // 1. Telemetry & Analytics
 router.get("/dashboard", getDiagnosticDashboard);
+router.get("/telemetry", getDiagnosticDashboard);
 
 // 2. Centralized Test Catalog
 router.get("/tests", getDiagnosticTests);
+router.get("/catalog", getDiagnosticTests);
 router.post(
   "/tests",
   restrictTo("admin", "super_admin", "diagnostic_admin", "pathologist", "radiologist"),
@@ -73,6 +75,7 @@ router.get("/tests/:id", getDiagnosticTestById);
 
 // 3. Diagnostic Investigation Requests & Scheduling
 router.get("/requests", getDiagnosticRequests);
+router.get("/orders", getDiagnosticRequests);
 router.post(
   "/requests",
   restrictTo("admin", "doctor", "receptionist", "diagnostic_admin", "nurse", "emergency"),
@@ -95,7 +98,7 @@ router.patch(
 
 // 5. Results Entry (Technician Workspace)
 router.post(
-  "/results",
+  ["/results", "/results/enter"],
   restrictTo("admin", "diagnostic_admin", "lab_technician", "radiology_technician", "pathologist", "radiologist"),
   enterDiagnosticResults
 );

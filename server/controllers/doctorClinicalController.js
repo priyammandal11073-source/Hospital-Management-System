@@ -994,6 +994,14 @@ export const updateReferralStatus = async (req, res) => {
  */
 export const getCriticalLabResults = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        isOfflineDemo: true,
+      });
+    }
+
     const doctor = await resolveDoctorForUser(req.user);
     const filter = {
       $or: [

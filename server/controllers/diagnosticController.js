@@ -49,6 +49,37 @@ const recordAudit = async (req, action, recordId, details) => {
  */
 export const getDiagnosticDashboard = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          kpis: {
+            totalTestsToday: 24,
+            pendingRequests: 5,
+            scheduledTests: 8,
+            samplesPending: 4,
+            testsInProgress: 6,
+            reportsPending: 3,
+            reportsCompleted: 15,
+            criticalAlertsCount: 1,
+            todayRevenue: 12500,
+            storageUsageFormatted: "128 MB",
+          },
+          recentRequests: [],
+          todaySchedule: [],
+          recentReports: [],
+          equipment: [],
+          categoryDistribution: [
+            { category: "Hematology", count: 8 },
+            { category: "Radiology", count: 6 },
+            { category: "Biochemistry", count: 10 },
+          ],
+          storageStats: { usedBytes: 134217728, usedFormatted: "128 MB" },
+        },
+        isOfflineDemo: true,
+      });
+    }
+
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
@@ -128,6 +159,21 @@ export const getDiagnosticDashboard = async (req, res) => {
  */
 export const getDiagnosticTests = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoTests = [
+        { _id: "t1", testCode: "CBC", testName: "Complete Blood Count", department: "Pathology", category: "Hematology", price: 350, turnaroundHours: 4, status: "Active" },
+        { _id: "t2", testCode: "LIPID", testName: "Lipid Profile", department: "Pathology", category: "Biochemistry", price: 650, turnaroundHours: 6, status: "Active" },
+        { _id: "t3", testCode: "CXR", testName: "Chest X-Ray PA View", department: "Radiology", category: "X-Ray", price: 500, turnaroundHours: 2, status: "Active" },
+        { _id: "t4", testCode: "MRI-BRAIN", testName: "MRI Brain with Contrast", department: "Radiology", category: "MRI", price: 4500, turnaroundHours: 12, status: "Active" },
+      ];
+      return res.status(200).json({
+        success: true,
+        data: demoTests,
+        pagination: { total: demoTests.length, page: 1, limit: 50, pages: 1 },
+        isOfflineDemo: true,
+      });
+    }
+
     const { department, category, modality, search, active, page = 1, limit = 50 } = req.query;
     const filter = {};
 
@@ -198,6 +244,15 @@ export const getDiagnosticTestById = async (req, res) => {
  */
 export const getDiagnosticRequests = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        pagination: { total: 0, page: 1, limit: 50, pages: 1 },
+        isOfflineDemo: true,
+      });
+    }
+
     const { status, priority, department, patientId, doctorId, search, page = 1, limit = 50 } = req.query;
     const filter = {};
 

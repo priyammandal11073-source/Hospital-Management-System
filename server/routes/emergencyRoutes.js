@@ -30,6 +30,8 @@ router.use(protect);
 
 // Dashboard & queue must come before :id
 router.get("/dashboard", getEmergencyDashboard);
+router.get("/telemetry", getEmergencyDashboard);
+router.get("/queue", getEmergencyQueue);
 router.get("/reports/summary", getEmergencyReports);
 router.get("/beds", getEmergencyBeds);
 router.get("/search-patients", searchPatientsForEmergency);

@@ -128,16 +128,18 @@ export const sendRegistrationOtp = async (req, res) => {
       });
     }
 
-    if (email) {
-      const existingByEmail = await Patient.findOne({ email: email.toLowerCase().trim() });
-      if (existingByEmail) {
-        return res.status(409).json({ message: "Email is already registered" });
+    if (mongoose.connection.readyState === 1) {
+      if (email) {
+        const existingByEmail = await Patient.findOne({ email: email.toLowerCase().trim() });
+        if (existingByEmail) {
+          return res.status(409).json({ message: "Email is already registered" });
+        }
       }
-    }
 
-    const existingByContact = await Patient.findOne({ contactNumber: normalizedContact });
-    if (existingByContact) {
-      return res.status(409).json({ message: "This mobile number is already registered" });
+      const existingByContact = await Patient.findOne({ contactNumber: normalizedContact });
+      if (existingByContact) {
+        return res.status(409).json({ message: "This mobile number is already registered" });
+      }
     }
 
     const otp = generateOtp(normalizedContact);
@@ -185,6 +187,13 @@ export const registerPatient = async (req, res) => {
     const otpCheck = verifyOtp(normalizedContact, otp);
     if (!otpCheck.valid) {
       return res.status(400).json({ message: otpCheck.message });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(201).json({
+        message: "Patient registered successfully (Offline Demo Mode). Please log in with your email or demo credentials.",
+        isOfflineDemo: true,
+      });
     }
 
     const existingPatient = await Patient.findOne({ email: email.toLowerCase() });

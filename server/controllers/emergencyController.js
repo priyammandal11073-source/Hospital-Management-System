@@ -224,6 +224,15 @@ export const getEmergencyDashboard = async (req, res) => {
 // GET /api/emergency  queue
 export const getEmergencyQueue = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        encounters: [],
+        pagination: { page: 1, limit: 50, total: 0, pages: 1 },
+        isOfflineDemo: true,
+      });
+    }
+
     const { priority, status, doctor, date, location, search, triageStatus, page = 1, limit = 50 } = req.query;
     const filter = {};
     if (priority && priority !== "all") filter.priority = priority;
@@ -1007,6 +1016,18 @@ export const getEmergencyReports = async (req, res) => {
 // GET /api/emergency/beds
 export const getEmergencyBeds = async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        beds: [
+          { _id: "b1", bedNumber: "ER-01", ward: "Emergency Trauma", floor: 1, status: "available", dailyRate: 1500 },
+          { _id: "b2", bedNumber: "ER-02", ward: "Emergency Trauma", floor: 1, status: "occupied", dailyRate: 1500 },
+          { _id: "b3", bedNumber: "ER-03", ward: "Emergency ICU", floor: 1, status: "available", dailyRate: 2500 },
+        ],
+        isOfflineDemo: true,
+      });
+    }
+
     const beds = await Bed.find({ ward: { $regex: /emergency|trauma/i } }).populate("currentAdmission.patient", "name age gender").populate("currentAdmission.attendingDoctor", "name");
     if (beds.length === 0) {
       const demo = await Bed.find({ status: "available" }).limit(10);

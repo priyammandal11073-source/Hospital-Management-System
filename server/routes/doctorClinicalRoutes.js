@@ -26,7 +26,7 @@ router.use(protect);
 router.use(restrictTo("doctor", "admin"));
 
 // Dashboard & Clinical KPIs
-router.get("/dashboard", getDoctorDashboard);
+router.get(["/dashboard", "/worklist", "/telemetry"], getDoctorDashboard);
 
 // Consultation Workspace Bundle & Conclusion
 router.get("/consultation-bundle/:appointmentId", getConsultationBundle);
@@ -45,7 +45,7 @@ router.post("/referrals", createReferral);
 router.patch("/referrals/:id/status", updateReferralStatus);
 
 // Critical Lab Results & Acknowledgment
-router.get("/critical-labs", getCriticalLabResults);
+router.get(["/critical-labs", "/critical-lab-alerts"], getCriticalLabResults);
 router.post("/acknowledge-lab/:reportId", acknowledgeCriticalLabResult);
 
 // Follow-ups due

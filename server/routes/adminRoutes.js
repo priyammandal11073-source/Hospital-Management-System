@@ -39,7 +39,7 @@ const router = express.Router();
 router.use(protect, restrictTo("admin", "super_admin"));
 
 // 1. Executive Telemetry & Global Search
-router.get("/telemetry", getAdminTelemetry);
+router.get(["/telemetry", "/executive-analytics", "/dashboard"], getAdminTelemetry);
 router.get("/search", getGlobalAdminSearch);
 
 // 2. Staff Directory & HR
