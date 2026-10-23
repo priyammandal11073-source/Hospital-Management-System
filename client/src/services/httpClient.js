@@ -49,11 +49,23 @@ const cleanRepeatedDr = (value) => {
   return value;
 };
 
-httpClient.interceptors.response.use((response) => {
-  if (response.data) {
-    response.data = cleanRepeatedDr(response.data);
+httpClient.interceptors.response.use(
+  (response) => {
+    if (response.data) {
+      response.data = cleanRepeatedDr(response.data);
+    }
+    return response;
+  },
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear expired credentials from storage
+      localStorage.removeItem("hms_token");
+      localStorage.removeItem("hms_user");
+      localStorage.removeItem("patient_token");
+      localStorage.removeItem("patient_user");
+    }
+    return Promise.reject(error);
   }
-  return response;
-});
+);
 
 export default httpClient;

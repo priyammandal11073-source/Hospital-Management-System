@@ -6,6 +6,32 @@ const AuthContext = createContext(null);
 const TOKEN_KEY = "hms_token";
 const USER_KEY = "hms_user";
 
+/**
+ * Checks whether a JWT is expired using client-side payload inspection.
+ * Prevents restored stale sessions from lingering in browser storage.
+ */
+const isTokenExpired = (jwtToken) => {
+  if (!jwtToken || typeof jwtToken !== "string") return true;
+  try {
+    const parts = jwtToken.split(".");
+    if (parts.length !== 3) return true;
+    const base64Url = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64Url)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    const parsed = JSON.parse(jsonPayload);
+    if (parsed.exp && parsed.exp * 1000 < Date.now()) {
+      return true;
+    }
+    return false;
+  } catch {
+    return true;
+  }
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
@@ -17,18 +43,25 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem(USER_KEY) || localStorage.getItem("patient_user");
 
     if (savedToken) {
-      setToken(savedToken);
-    }
-
-    if (savedUser) {
-      try {
-        const parsed = JSON.parse(savedUser);
-        if (!parsed.role && parsed.email) {
-          parsed.role = "patient";
-        }
-        setUser(parsed);
-      } catch {
+      if (isTokenExpired(savedToken)) {
+        localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
+        localStorage.removeItem("patient_token");
+        localStorage.removeItem("patient_user");
+      } else {
+        setToken(savedToken);
+        if (savedUser) {
+          try {
+            const parsed = JSON.parse(savedUser);
+            if (!parsed.role && parsed.email) {
+              parsed.role = "patient";
+            }
+            setUser(parsed);
+          } catch {
+            localStorage.removeItem(USER_KEY);
+            localStorage.removeItem("patient_user");
+          }
+        }
       }
     }
 

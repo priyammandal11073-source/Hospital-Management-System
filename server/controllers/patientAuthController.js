@@ -190,9 +190,9 @@ export const registerPatient = async (req, res) => {
     }
 
     if (mongoose.connection.readyState !== 1) {
-      return res.status(201).json({
-        message: "Patient registered successfully (Offline Demo Mode). Please log in with your email or demo credentials.",
-        isOfflineDemo: true,
+      return res.status(503).json({
+        success: false,
+        message: "Database service unavailable. Unable to register patient at this time.",
       });
     }
 
@@ -237,27 +237,9 @@ export const loginPatient = async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
 
     if (mongoose.connection.readyState !== 1) {
-      if (normalizedEmail === "john@example.com" || normalizedEmail === "patient@hospital.com") {
-        const token = jwt.sign(
-          { id: "000000000000000000000005", type: "patient", role: "patient" },
-          env.jwtSecret,
-          { expiresIn: "7d" }
-        );
-        return res.status(200).json({
-          token,
-          patient: {
-            _id: "000000000000000000000005",
-            name: "John Doe",
-            email: normalizedEmail,
-            age: 35,
-            gender: "Male",
-            contactNumber: "9876543210",
-          },
-          isOfflineDemo: true,
-        });
-      }
       return res.status(503).json({
-        message: "Database connection failed: MongoDB Atlas has blocked your IP (152.56.133.183). Please add 0.0.0.0/0 to your MongoDB Atlas Network Access IP whitelist.",
+        success: false,
+        message: "Database service unavailable. Please try again shortly.",
       });
     }
 
@@ -280,9 +262,10 @@ export const loginPatient = async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error.message);
-    if (error.name === "MongooseServerSelectionError" || error.message?.includes("SSL alert number 80") || error.message?.includes("whitelisted")) {
+    if (error.name === "MongooseServerSelectionError" || error.name === "MongoNetworkError") {
       return res.status(503).json({
-        message: "Database connection failed: MongoDB Atlas blocked connection from this IP. Please add 0.0.0.0/0 to your MongoDB Atlas Network Access IP whitelist.",
+        success: false,
+        message: "Database connection failed. Please try again shortly.",
       });
     }
     return res.status(500).json({ message: "Unable to log in: " + (error.message || "Internal server error") });

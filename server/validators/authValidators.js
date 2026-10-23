@@ -17,7 +17,8 @@ const indianMobile = z.string().regex(
   "Enter a valid 10-digit Indian mobile number"
 );
 
-const STAFF_ROLES = [
+const ALLOWED_REGISTRATION_ROLES = [
+  "patient",
   "admin",
   "doctor",
   "nurse",
@@ -28,6 +29,7 @@ const STAFF_ROLES = [
   "radiologist",
   "lab_technician",
   "radiology_technician",
+  "emergency",
 ];
 
 // POST /api/auth/login
@@ -41,7 +43,7 @@ export const registerSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(100),
   email,
   password: strongPassword,
-  role: z.enum(STAFF_ROLES, { message: "Invalid staff role" }),
+  role: z.enum(ALLOWED_REGISTRATION_ROLES, { message: "Invalid role specified" }).optional(),
 });
 
 // POST /api/patient-auth/login
