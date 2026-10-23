@@ -51,17 +51,17 @@ const formatDate = (date) =>
 function MetricCard({ label, value, icon, gradient, badge, badgeColor, to, onClick }) {
   const cardContent = (
     <div
-      className={`group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80 transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-between h-full min-h-[148px] ${
-        to || onClick ? "cursor-pointer hover:ring-2 hover:ring-slate-300" : ""
+      className={`group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/90 transition-[transform,box-shadow,border-color] duration-150 ease-out hover:ring-2 hover:ring-slate-300 active:scale-[0.98] flex flex-col justify-between h-full min-h-[148px] ${
+        to || onClick ? "cursor-pointer" : ""
       }`}
     >
       <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
       <div className="flex items-start justify-between gap-2.5">
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold text-slate-500 line-clamp-2 min-h-[32px] leading-tight" title={label}>{label}</p>
-          <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight truncate">{value}</p>
+          <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight truncate tabular-nums">{value}</p>
         </div>
-        <div className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-sm transition-transform duration-300 group-hover:scale-110`}>
+        <div className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-2xs`}>
           {icon}
         </div>
       </div>

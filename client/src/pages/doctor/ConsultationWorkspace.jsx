@@ -925,11 +925,11 @@ export default function ConsultationWorkspace() {
             </div>
 
             {/* Action Bar */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs flex items-center justify-between">
+            <div className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => navigate("/appointments")}
-                className="px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold transition cursor-pointer touch-target"
+                className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] cursor-pointer touch-target"
               >
                 Cancel & Exit
               </button>
@@ -938,7 +938,7 @@ export default function ConsultationWorkspace() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 rounded-md bg-blue-700 hover:bg-blue-800 text-white text-xs sm:text-sm font-semibold shadow-2xs transition flex items-center gap-2 disabled:opacity-50 cursor-pointer touch-target"
+                  className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs sm:text-sm font-semibold shadow-xs transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] flex items-center gap-2 disabled:opacity-50 cursor-pointer touch-target"
                 >
                   {submitting ? (
                     <>

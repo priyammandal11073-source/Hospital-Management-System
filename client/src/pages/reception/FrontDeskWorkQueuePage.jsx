@@ -150,7 +150,7 @@ export default function FrontDeskWorkQueuePage() {
             <span className="h-2.5 w-2.5 rounded-full bg-amber-500 animate-pulse"></span>
             <span className="text-xs font-bold uppercase tracking-wider text-amber-600">Front Desk Dispatch</span>
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-800">
+          <h1 className="text-2xl font-black font-display tracking-tight text-slate-900">
             Central Front Desk Work Queue
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -161,14 +161,14 @@ export default function FrontDeskWorkQueuePage() {
         <div className="flex items-center gap-2 self-start sm:self-auto">
           <button
             onClick={openWalkInModal}
-            className="min-h-[44px] flex items-center gap-1.5 rounded-xl bg-cyan-600 px-4 py-2 text-xs font-bold text-white hover:bg-cyan-700 shadow-xs transition"
+            className="min-h-[44px] flex items-center gap-1.5 rounded-xl bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-800 shadow-xs transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] cursor-pointer touch-target"
           >
             <span>🔬</span>
             <span>+ Walk-in Diagnostic Test</span>
           </button>
           <button
             onClick={fetchQueue}
-            className="min-h-[44px] flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs transition"
+            className="min-h-[44px] flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] cursor-pointer touch-target"
           >
             <span>🔄</span>
             <span>Refresh Queue</span>
@@ -177,7 +177,7 @@ export default function FrontDeskWorkQueuePage() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200/80 space-y-3">
+      <div className="rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200/90 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Category Filter Tabs */}
           <div className="flex flex-wrap gap-1.5 text-xs">
@@ -191,9 +191,9 @@ export default function FrontDeskWorkQueuePage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveCategory(tab.id)}
-                className={`min-h-[44px] rounded-xl px-3.5 py-2 font-bold transition inline-flex items-center justify-center ${
+                className={`min-h-[44px] rounded-xl px-3.5 py-2 font-bold transition-[background-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] inline-flex items-center justify-center cursor-pointer touch-target ${
                   activeCategory === tab.id
-                    ? "bg-amber-600 text-white shadow-xs"
+                    ? "bg-teal-700 text-white shadow-xs"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
               >

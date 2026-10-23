@@ -30,13 +30,13 @@ const statusLabels = {
 };
 
 const statusClasses = {
-  pending: "bg-yellow-100 text-yellow-800",
-  waiting: "bg-amber-100 text-amber-800",
-  confirmed: "bg-blue-100 text-blue-800",
-  checked_in: "bg-teal-100 text-teal-800",
-  in_consultation: "bg-purple-100 text-purple-800",
-  completed: "bg-green-100 text-green-800",
-  cancelled: "bg-red-100 text-red-800",
+  pending: "bg-amber-50 text-amber-800 border border-amber-200/90",
+  waiting: "bg-amber-50 text-amber-800 border border-amber-200/90",
+  confirmed: "bg-sky-50 text-sky-800 border border-sky-200/90",
+  checked_in: "bg-teal-50 text-teal-800 border border-teal-200/90",
+  in_consultation: "bg-indigo-50 text-indigo-800 border border-indigo-200/90",
+  completed: "bg-emerald-50 text-emerald-800 border border-emerald-200/90",
+  cancelled: "bg-rose-50 text-rose-800 border border-rose-200/90",
 };
 
 function Appointments() {
@@ -489,12 +489,12 @@ function Appointments() {
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5">
-                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700 tabular-nums">
                         {new Date(appointment.appointmentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5">
-                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700 tabular-nums">
                         {appointment.timeSlot}
                       </span>
                     </td>

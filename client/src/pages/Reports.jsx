@@ -184,7 +184,7 @@ export default function Reports() {
       {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-black font-display text-slate-900 tracking-tight flex items-center gap-2">
             <span>📈 Revenue Analytics & Operations</span>
             <span className="text-xs font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
               Executive BI
@@ -200,7 +200,7 @@ export default function Reports() {
           <button
             type="button"
             onClick={() => setActiveView("revenue")}
-            className={`flex-1 sm:flex-none min-h-[44px] px-3.5 py-2 rounded-lg transition flex items-center justify-center gap-1.5 ${
+            className={`flex-1 sm:flex-none min-h-[44px] px-3.5 py-2 rounded-lg transition-[background-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] flex items-center justify-center gap-1.5 ${
               activeView === "revenue"
                 ? "bg-white text-teal-900 shadow-xs"
                 : "text-slate-600 hover:text-slate-900"
@@ -211,7 +211,7 @@ export default function Reports() {
           <button
             type="button"
             onClick={() => setActiveView("appointments")}
-            className={`flex-1 sm:flex-none min-h-[44px] px-3.5 py-2 rounded-lg transition flex items-center justify-center gap-1.5 ${
+            className={`flex-1 sm:flex-none min-h-[44px] px-3.5 py-2 rounded-lg transition-[background-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] flex items-center justify-center gap-1.5 ${
               activeView === "appointments"
                 ? "bg-white text-teal-900 shadow-xs"
                 : "text-slate-600 hover:text-slate-900"
@@ -230,7 +230,7 @@ export default function Reports() {
             Total Collections
           </span>
           <div className="mt-3">
-            <p className="text-2xl font-black font-mono">
+            <p className="text-2xl font-black font-mono tabular-nums">
               ₹{Number(kpis.totalRevenue).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </p>
             <p className="text-[11px] text-teal-200 mt-0.5">
@@ -240,12 +240,12 @@ export default function Reports() {
         </div>
 
         {/* Pending Revenue */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex flex-col justify-between">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
             Outstanding Due
           </span>
           <div className="mt-3">
-            <p className="text-2xl font-black font-mono text-amber-700">
+            <p className="text-2xl font-black font-mono text-amber-700 tabular-nums">
               ₹{Number(kpis.pendingAmount).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </p>
             <p className="text-[11px] text-slate-500 mt-0.5">
@@ -255,12 +255,12 @@ export default function Reports() {
         </div>
 
         {/* Month Revenue */}
-        <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs flex flex-col justify-between">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
             This Month
           </span>
           <div className="mt-3">
-            <p className="text-2xl font-black font-mono text-slate-900">
+            <p className="text-2xl font-black font-mono text-slate-900 tabular-nums">
               ₹{Number(kpis.monthRevenue).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </p>
             <p className="text-[11px] text-emerald-700 font-semibold mt-0.5">

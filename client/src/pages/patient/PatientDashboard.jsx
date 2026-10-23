@@ -49,15 +49,15 @@ function PatientDashboard() {
   return (
     <section className="space-y-6">
       {/* ================= PATIENT HEALTH IDENTITY WELCOME BANNER ================= */}
-      <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-indigo-950 p-6 sm:p-8 text-white shadow-xl">
+      <div className="rounded-3xl bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 p-6 sm:p-8 text-white shadow-xl">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-center gap-4 sm:gap-5">
-            <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 text-2xl sm:text-3xl font-black text-white shadow-lg flex-shrink-0">
+            <div className="flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-2xl bg-gradient-to-tr from-teal-500 to-teal-700 text-2xl sm:text-3xl font-black text-white shadow-lg flex-shrink-0">
               {profile?.name ? profile.name.charAt(0) : "P"}
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-blue-500/25 px-3 py-0.5 text-xs font-bold text-blue-300 ring-1 ring-blue-400/30 uppercase tracking-wider">
+                <span className="rounded-full bg-teal-500/25 px-3 py-0.5 text-xs font-bold text-teal-300 ring-1 ring-teal-400/30 uppercase tracking-wider">
                   Ayushman Bharat ABDM
                 </span>
                 <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
@@ -65,7 +65,7 @@ function PatientDashboard() {
                   Connected
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
+              <h1 className="text-2xl sm:text-3xl font-extrabold font-display tracking-tight mt-1">
                 Welcome, {profile?.name}
               </h1>
               <p className="text-xs sm:text-sm text-slate-300 mt-1">

@@ -13,14 +13,15 @@ const Button = ({
   ...props
 }) => {
   const variants = {
-    default: "bg-blue-600 text-white hover:bg-blue-500 active:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
-    primary: "bg-blue-600 text-white hover:bg-blue-500 active:bg-blue-700 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
-    secondary: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 active:bg-slate-100 focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
-    danger: "bg-rose-600 text-white hover:bg-rose-500 active:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-500/30 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
-    success: "bg-emerald-600 text-white hover:bg-emerald-500 active:bg-emerald-700 focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
-    outline: "border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 active:bg-slate-100 focus-visible:ring-2 focus-visible:ring-slate-200 font-medium",
-    ghost: "text-slate-700 hover:bg-slate-100 active:bg-slate-200 focus-visible:ring-2 focus-visible:ring-slate-300 shadow-none font-medium",
-    link: "underline text-blue-600 hover:text-blue-800 p-0 h-auto shadow-none font-medium",
+    default: "bg-teal-700 text-white hover:bg-teal-800 active:bg-teal-900 focus-visible:ring-2 focus-visible:ring-teal-700/30 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
+    primary: "bg-teal-700 text-white hover:bg-teal-800 active:bg-teal-900 focus-visible:ring-2 focus-visible:ring-teal-700/30 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
+    blue: "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
+    secondary: "bg-white border border-slate-200/90 text-slate-700 hover:bg-slate-50 hover:text-slate-900 active:bg-slate-100 focus-visible:ring-2 focus-visible:ring-slate-300 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
+    danger: "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 focus-visible:ring-2 focus-visible:ring-rose-500/30 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
+    success: "bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 focus-visible:ring-2 focus-visible:ring-emerald-500/30 focus-visible:ring-offset-1 disabled:opacity-50 shadow-2xs font-medium",
+    outline: "border border-slate-200/90 text-slate-700 bg-white hover:bg-slate-50 active:bg-slate-100 focus-visible:ring-2 focus-visible:ring-slate-200 font-medium",
+    ghost: "text-slate-700 hover:bg-slate-100/80 active:bg-slate-200 focus-visible:ring-2 focus-visible:ring-slate-300 shadow-none font-medium",
+    link: "underline text-teal-700 hover:text-teal-900 p-0 h-auto shadow-none font-medium",
   };
 
   const sizes = {

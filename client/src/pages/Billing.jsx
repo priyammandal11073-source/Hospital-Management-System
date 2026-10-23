@@ -34,9 +34,9 @@ const paymentStatusLabels = {
 };
 
 const paymentStatusClasses = {
-  pending: "bg-yellow-100 text-yellow-800 ring-yellow-400/40",
-  paid: "bg-green-100 text-green-800 ring-green-400/40",
-  partially_paid: "bg-orange-100 text-orange-800 ring-orange-400/40",
+  pending: "bg-amber-50 text-amber-800 border border-amber-200/90",
+  paid: "bg-emerald-50 text-emerald-800 border border-emerald-200/90",
+  partially_paid: "bg-orange-50 text-orange-800 border border-orange-200/90",
 };
 
 const formatDate = (date) =>
@@ -421,12 +421,12 @@ function Billing() {
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5">
-                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700 tabular-nums">
                         {formatDate(billing.appointment?.appointmentDate)}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5">
-                      <span className="text-sm font-extrabold text-slate-900">
+                      <span className="text-sm font-extrabold text-slate-900 font-mono tabular-nums">
                         ₹{billing.totalAmount.toFixed(2)}
                       </span>
                     </td>

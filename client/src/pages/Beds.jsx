@@ -171,7 +171,7 @@ function Beds() {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
           <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs ring-1 ring-slate-200/60">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Total hospital beds</p>
-            <p className="text-3xl font-extrabold text-slate-900 mt-1.5">{summary.total}</p>
+            <p className="text-3xl font-extrabold text-slate-900 mt-1.5 tabular-nums">{summary.total}</p>
             <div className="mt-2.5 flex items-center gap-1.5 pt-2 border-t border-slate-100">
               <span className="text-[11px] font-semibold text-slate-600">Across 6 hospital wards</span>
             </div>
@@ -180,15 +180,15 @@ function Beds() {
           <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs ring-1 ring-slate-200/60">
             <div className="flex items-center justify-between">
               <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Occupied beds</p>
-              <span className="text-xs font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+              <span className="text-xs font-extrabold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 tabular-nums">
                 {summary.occupancyRate}%
               </span>
             </div>
-            <p className="text-3xl font-extrabold text-amber-700 mt-1.5">{summary.occupied}</p>
+            <p className="text-3xl font-extrabold text-amber-700 mt-1.5 tabular-nums">{summary.occupied}</p>
             {/* Mini Progress Bar */}
             <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-3 border border-slate-200/60">
               <div
-                className="bg-amber-500 h-full rounded-full transition-all duration-500"
+                className="bg-amber-500 h-full rounded-full transition-[width] duration-300 ease-out"
                 style={{ width: `${summary.occupancyRate}%` }}
               />
             </div>
@@ -196,7 +196,7 @@ function Beds() {
 
           <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs ring-1 ring-slate-200/60">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Available beds</p>
-            <p className="text-3xl font-extrabold text-emerald-700 mt-1.5">{summary.available}</p>
+            <p className="text-3xl font-extrabold text-emerald-700 mt-1.5 tabular-nums">{summary.available}</p>
             <div className="mt-2.5 flex items-center gap-1.5 pt-2 border-t border-slate-100">
               <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                 Ready for admission
@@ -206,9 +206,9 @@ function Beds() {
 
           <div className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs ring-1 ring-slate-200/60">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-500">In cleaning</p>
-            <p className="text-3xl font-extrabold text-yellow-700 mt-1.5">{summary.cleaning}</p>
+            <p className="text-3xl font-extrabold text-amber-700 mt-1.5 tabular-nums">{summary.cleaning}</p>
             <div className="mt-2.5 flex items-center gap-1.5 pt-2 border-t border-slate-100">
-              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold bg-yellow-50 text-yellow-800 border border-yellow-200">
+              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                 Housekeeping active
               </span>
             </div>
@@ -216,7 +216,7 @@ function Beds() {
 
           <div className="col-span-2 lg:col-span-1 p-5 rounded-2xl bg-white border border-slate-200/90 shadow-xs ring-1 ring-slate-200/60">
             <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Maintenance</p>
-            <p className="text-3xl font-extrabold text-slate-700 mt-1.5">{summary.maintenance}</p>
+            <p className="text-3xl font-extrabold text-slate-700 mt-1.5 tabular-nums">{summary.maintenance}</p>
             <div className="mt-2.5 flex items-center gap-1.5 pt-2 border-t border-slate-100">
               <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                 Bio-med service

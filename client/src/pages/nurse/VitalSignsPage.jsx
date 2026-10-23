@@ -317,7 +317,7 @@ export default function VitalSignsPage() {
 
             <button
               type="submit"
-              className="w-full min-h-[44px] rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold py-3 text-xs transition shadow-2xs"
+              className="w-full min-h-[44px] rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold py-3 text-xs transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] shadow-xs cursor-pointer touch-target"
             >
               Save Vital Signs
             </button>
@@ -328,33 +328,33 @@ export default function VitalSignsPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Trend Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-xs">
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Latest BP</span>
-              <span className="text-lg font-black text-slate-900 mt-1 block">
+              <span className="text-lg font-black text-slate-900 mt-1 block tabular-nums">
                 {vitalsHistory[0]?.bloodPressureSys ? `${vitalsHistory[0].bloodPressureSys}/${vitalsHistory[0].bloodPressureDia}` : "—"}
               </span>
               <span className="text-[10px] text-slate-500">mmHg</span>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-xs">
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Heart Rate</span>
-              <span className="text-lg font-black text-slate-900 mt-1 block">
+              <span className="text-lg font-black text-slate-900 mt-1 block tabular-nums">
                 {vitalsHistory[0]?.heartRate ? `${vitalsHistory[0].heartRate} bpm` : "—"}
               </span>
               <span className="text-[10px] text-slate-500">Pulse</span>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-xs">
               <span className="text-[10px] uppercase font-bold text-slate-400 block">SpO2 Oxygen</span>
-              <span className={`text-lg font-black mt-1 block ${vitalsHistory[0]?.spo2 <= 92 ? "text-rose-600 font-bold" : "text-emerald-700"}`}>
+              <span className={`text-lg font-black mt-1 block tabular-nums ${vitalsHistory[0]?.spo2 <= 92 ? "text-rose-600 font-bold" : "text-emerald-700"}`}>
                 {vitalsHistory[0]?.spo2 ? `${vitalsHistory[0].spo2}%` : "—"}
               </span>
               <span className="text-[10px] text-slate-500">Target &gt; 94%</span>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
+            <div className="rounded-xl border border-slate-200/90 bg-white p-4 shadow-xs">
               <span className="text-[10px] uppercase font-bold text-slate-400 block">Temperature</span>
-              <span className="text-lg font-black text-slate-900 mt-1 block">
+              <span className="text-lg font-black text-slate-900 mt-1 block tabular-nums">
                 {vitalsHistory[0]?.temperature ? `${vitalsHistory[0].temperature} °F` : "—"}
               </span>
               <span className="text-[10px] text-slate-500">Oral/Axillary</span>
@@ -362,7 +362,7 @@ export default function VitalSignsPage() {
           </div>
 
           {/* Longitudinal Flowsheet Table / Mobile Cards */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-2xs">
+          <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
             <h3 className="text-sm font-bold text-slate-800 mb-3">Longitudinal Bedside Flowsheet</h3>
 
             {loadingHistory ? (

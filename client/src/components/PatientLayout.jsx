@@ -9,10 +9,10 @@ import MobileBottomNav from "./mobile/MobileBottomNav.jsx";
 import MobileMenuSheet from "./mobile/MobileMenuSheet.jsx";
 
 const navLinkClass = ({ isActive }) =>
-  `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-98 ${
+  `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] ${
     isActive
-      ? "bg-rose-50/90 text-rose-700 border border-rose-200/90 font-bold shadow-2xs"
-      : "text-slate-600 hover:bg-white/80 hover:text-slate-900 hover:border hover:border-slate-200/60"
+      ? "bg-teal-50 text-teal-900 border border-teal-200/90 font-bold shadow-2xs"
+      : "text-slate-600 hover:bg-white/90 hover:text-slate-900 hover:border hover:border-slate-200/80"
   }`;
 
 function PatientLayout() {
@@ -98,21 +98,13 @@ function PatientLayout() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#faf6f3] via-[#f6f4f2] to-[#f0eef4] flex flex-col font-sans">
-      {/* ================= AMBIENT LIQUID-GLASS BACKGROUND ORBS ================= */}
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="glass-ambient -top-24 -left-24 h-96 w-96 bg-rose-400/20"></div>
-        <div className="glass-ambient top-1/4 -right-32 h-[30rem] w-[30rem] bg-cyan-400/15"></div>
-        <div className="glass-ambient bottom-0 left-1/3 h-80 w-80 bg-pink-300/15"></div>
-        <div className="glass-ambient top-2/3 right-1/4 h-72 w-72 bg-blue-300/15"></div>
-      </div>
-
+    <div className="min-h-screen bg-[#f7f6f3] flex flex-col font-sans">
       {/* ================= TOP HOSPITAL BRANDING HEADER ================= */}
       <header
-        className={`sticky top-0 border-b px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 shadow-xs transition-all duration-200 ${
+        className={`sticky top-0 border-b px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 shadow-xs transition-[opacity,background-color,border-color] duration-150 ease-out ${
           isModalOpen
-            ? "z-0 opacity-20 pointer-events-none select-none blur-[1.5px] bg-slate-100/40 border-slate-300/40"
-            : "z-20 border-white/60 bg-white/60 backdrop-blur-2xl"
+            ? "z-0 opacity-20 pointer-events-none select-none blur-[1px] bg-slate-100/40 border-slate-300/40"
+            : "z-20 border-slate-200/80 bg-white/90 backdrop-blur-md"
         }`}
         aria-hidden={isModalOpen}
       >

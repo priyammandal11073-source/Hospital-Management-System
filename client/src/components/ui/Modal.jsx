@@ -49,14 +49,14 @@ const Modal = ({
     >
       <div
         className={`
-          bg-white/95 backdrop-blur-2xl rounded-2xl shadow-xl w-full mx-auto border border-slate-200/80
+          bg-white rounded-2xl shadow-xl w-full mx-auto border border-slate-200/90
           max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2.5rem)] flex flex-col
           overflow-hidden animate-pop-in
           ${className}
         `}
       >
         {title && (
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 sm:px-6 py-3.5 sm:py-4 bg-white/70 backdrop-blur-md flex-shrink-0">
+          <div className="flex items-center justify-between border-b border-slate-100 px-4 sm:px-6 py-3.5 sm:py-4 bg-white flex-shrink-0">
             <h3 id={titleId} className="font-semibold text-base sm:text-lg text-slate-900 truncate pr-2">
               {title}
             </h3>
@@ -76,7 +76,7 @@ const Modal = ({
         )}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1">{children}</div>
         {!hideCancel && onClose && (
-          <div className="border-t border-slate-100 px-4 sm:px-6 py-3 bg-slate-50/60 backdrop-blur-md flex justify-end flex-shrink-0">
+          <div className="border-t border-slate-100 px-4 sm:px-6 py-3 bg-slate-50 flex justify-end flex-shrink-0">
             <button
               type="button"
               onClick={onClose}

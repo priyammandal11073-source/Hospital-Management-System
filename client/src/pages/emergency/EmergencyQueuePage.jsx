@@ -141,7 +141,7 @@ export default function EmergencyQueuePage() {
           />
           <span className="absolute left-3 top-2.5 text-slate-400">🔍</span>
         </div>
-        <button onClick={() => load()} className="rounded-lg bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-xs font-bold transition">Search</button>
+        <button onClick={() => load()} className="rounded-xl bg-teal-700 hover:bg-teal-800 text-white px-4 py-2 text-xs font-bold transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] cursor-pointer touch-target">Search</button>
       </div>
 
       {/* Detailed Filters Bar */}
@@ -171,7 +171,7 @@ export default function EmergencyQueuePage() {
       </div>
 
       {/* Patient Queue Table */}
-      <div className="rounded-2xl bg-white ring-1 ring-slate-200 shadow-sm overflow-hidden">
+      <div className="rounded-2xl bg-white ring-1 ring-slate-200/90 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500">
@@ -198,7 +198,7 @@ export default function EmergencyQueuePage() {
                   const isCrit = e.priority === "critical";
                   return (
                     <tr key={e._id} className={`hover:bg-slate-50/80 transition ${isCrit ? "bg-rose-50/50 border-l-4 border-l-rose-600" : ""}`}>
-                      <td className="px-3 py-2.5 font-mono font-bold text-slate-900 whitespace-nowrap">
+                      <td className="px-3 py-2.5 font-mono font-bold text-slate-900 whitespace-nowrap tabular-nums">
                         <div className="flex items-center gap-1.5">
                           {isCrit && <span className="h-2 w-2 rounded-full bg-rose-600 animate-ping"></span>}
                           <span>{e.tokenNumber}</span>
@@ -207,13 +207,13 @@ export default function EmergencyQueuePage() {
                       </td>
                       <td className="px-3 py-2.5">
                         <div className="font-bold text-slate-900">{e.patient?.name || "Unknown Patient"}</div>
-                        <div className="text-[10px] text-slate-500 font-mono">{e.patient?.patientId || "-"}</div>
+                        <div className="text-[10px] text-slate-500 font-mono tabular-nums">{e.patient?.patientId || "-"}</div>
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap">
-                        <span className="font-medium text-slate-800">{e.patient?.age ? `${e.patient.age}y` : "-"}</span>
+                        <span className="font-medium text-slate-800 tabular-nums">{e.patient?.age ? `${e.patient.age}y` : "-"}</span>
                         <div className="text-[10px] text-slate-500">{e.patient?.gender || "-"}</div>
                       </td>
-                      <td className="px-3 py-2.5 text-[11px] text-slate-600 whitespace-nowrap">
+                      <td className="px-3 py-2.5 text-[11px] text-slate-600 whitespace-nowrap tabular-nums">
                         {new Date(e.arrivalTime).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                         <div className="text-[10px] text-slate-400">{new Date(e.arrivalTime).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}</div>
                       </td>

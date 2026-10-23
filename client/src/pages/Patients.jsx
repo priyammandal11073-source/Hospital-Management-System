@@ -418,14 +418,14 @@ function Patients() {
                   <tr key={patient._id} className="hover:bg-slate-50/60 transition-colors">
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-50 text-purple-700 font-bold text-xs ring-1 ring-purple-500/20 flex-shrink-0">
+                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-50 text-teal-800 font-bold text-xs ring-1 ring-teal-500/20 flex-shrink-0">
                           {patient.name ? patient.name.charAt(0).toUpperCase() : "P"}
                         </div>
                         <div>
                           <div className="flex flex-wrap items-center gap-1.5">
                             <p className="font-bold text-slate-800">{patient.name}</p>
                             {patient.abhaId && (
-                              <span className="rounded bg-sky-50 px-1.5 py-0.2 text-[10px] font-semibold text-sky-700 ring-1 ring-sky-300">
+                              <span className="rounded bg-sky-50 px-1.5 py-0.2 text-[10px] font-semibold text-sky-700 ring-1 ring-sky-300 tabular-nums">
                                 ABHA: {patient.abhaId}
                               </span>
                             )}
@@ -435,12 +435,12 @@ function Patients() {
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5">
-                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
+                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 tabular-nums">
                         {patient.age} yrs • {patient.gender}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5">
-                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700 tabular-nums">
                         {patient.contactNumber ? (patient.contactNumber.startsWith("+91") ? patient.contactNumber : `+91 ${patient.contactNumber}`) : "—"}
                       </span>
                     </td>
@@ -451,7 +451,7 @@ function Patients() {
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5">
                       {patient.isAdmitted ? (
-                        <span className="inline-flex items-center rounded-full bg-purple-50 px-2 py-0.5 text-[10px] font-bold text-purple-700 ring-1 ring-purple-500/20">
+                        <span className="inline-flex items-center rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-bold text-teal-800 ring-1 ring-teal-500/20">
                           🛏️ Inpatient
                         </span>
                       ) : (

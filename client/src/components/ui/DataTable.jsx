@@ -94,7 +94,7 @@ export default function DataTable({
   };
 
   return (
-    <div className={`bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xs overflow-hidden ${className}`}>
+    <div className={`bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden ${className}`}>
       {/* Top Toolbar */}
       {(searchable || toolbarExtra) && (
         <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -108,7 +108,7 @@ export default function DataTable({
                   setCurrentPage(1);
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full bg-slate-50/80 border border-slate-200 rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-[border-color,box-shadow] duration-150"
+                className="w-full bg-slate-50/80 border border-slate-200 rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 transition-[border-color,box-shadow] duration-150"
               />
               <svg
                 className="w-4 h-4 text-slate-400 absolute left-3 top-3"

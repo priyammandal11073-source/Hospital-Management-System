@@ -270,14 +270,14 @@ export default function PrescriptionDispensePage() {
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
           <div className="relative mb-4">
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by Patient Name, Doctor, or Prescription ID..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 pl-10 text-xs focus:border-amber-500 focus:bg-white focus:outline-none"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 pl-10 text-xs focus:border-teal-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-700/20"
             />
             <svg className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -289,7 +289,7 @@ export default function PrescriptionDispensePage() {
               <div key={item._id} className="py-3.5 flex items-center justify-between hover:bg-slate-50 p-2 rounded-xl transition">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-amber-700">RX-{item._id.slice(-6).toUpperCase()}</span>
+                    <span className="font-mono font-bold text-teal-800 tabular-nums">RX-{item._id.slice(-6).toUpperCase()}</span>
                     <span className="font-bold text-slate-900">{item.patient?.name}</span>
                     <span className="text-[10px] text-slate-400">({item.patient?.gender || "—"}, {item.patient?.age || "—"} yrs)</span>
                   </div>
@@ -299,7 +299,7 @@ export default function PrescriptionDispensePage() {
                 </div>
                 <Link
                   to={`/pharmacy/dispense/${item._id}`}
-                  className="rounded-xl bg-amber-500 hover:bg-amber-600 px-4 py-2 text-xs font-bold text-slate-950 transition shadow-xs"
+                  className="rounded-xl bg-teal-700 hover:bg-teal-800 px-4 py-2 text-xs font-bold text-white transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] shadow-xs inline-flex items-center touch-target"
                 >
                   Dispense →
                 </Link>
