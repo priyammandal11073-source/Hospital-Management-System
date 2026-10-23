@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: client/package-lock.json
 
@@ -50,7 +50,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: server/package-lock.json
 
@@ -65,6 +65,10 @@ jobs:
       - name: Test server
         working-directory: server
         run: npm test
+        env:
+          NODE_ENV: test
+          MONGO_URI: mongodb://127.0.0.1:27017/hospital-test-db
+          JWT_SECRET: test-jwt-secret-not-for-production-environment-key-min-32-chars
 
       # Confirms every JavaScript file parses successfully. Skip node_modules:
       # dependencies such as fontkit ship .js with decorators (@cache) that

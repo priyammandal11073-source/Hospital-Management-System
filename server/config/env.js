@@ -7,9 +7,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, "../.env"), override: true });
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
-const requireVar = (name) => {
+const requireVar = (name, testFallback = "") => {
   const value = process.env[name];
   if (!value) {
+    if ((process.env.NODE_ENV === "test" || process.env.VITEST) && testFallback) {
+      return testFallback;
+    }
     console.error(`\n[!] Missing required environment variable: ${name}`);
     console.error(`    Please add ${name} to your server/.env file.`);
     console.error(`    See server/.env.example for reference.\n`);
@@ -50,11 +53,11 @@ const env = Object.freeze({
 
   // ── Database ────────────────────────────────────────────────────────────
   mongo: Object.freeze({
-    uri: requireVar("MONGO_URI"),
+    uri: requireVar("MONGO_URI", "mongodb://127.0.0.1:27017/hospital-test-db"),
   }),
 
   // ── Authentication ──────────────────────────────────────────────────────
-  jwtSecret: requireVar("JWT_SECRET"),
+  jwtSecret: requireVar("JWT_SECRET", "test-jwt-secret-not-for-production"),
 
   // ── Client ──────────────────────────────────────────────────────────────
   clientUrl: optionalVar(
