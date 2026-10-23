@@ -5,7 +5,7 @@ import reactHooks from "eslint-plugin-react-hooks";
 
 export default [
   {
-    ignores: ["node_modules/**", "dist/**", "coverage/**"],
+    ignores: ["node_modules/**", "dist/**", "coverage/**", "android/**"],
   },
   js.configs.recommended,
   react.configs.flat["jsx-runtime"],

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Nivora Care Hospital</string>
+    <string name="title_activity_main">Nivora Care Hospital</string>
+    <string name="package_name">com.nivora.care</string>
+    <string name="custom_url_scheme">com.nivora.care</string>
+</resources>

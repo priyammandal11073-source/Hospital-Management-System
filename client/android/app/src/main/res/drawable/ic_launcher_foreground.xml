@@ -1,0 +1,30 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Medical Shield Outer Contour -->
+    <path
+        android:fillColor="#0F766E"
+        android:pathData="M54,22 C68,22 76,28 76,42 C76,60 54,78 54,78 C54,78 32,60 32,42 C32,28 40,22 54,22 Z" />
+        
+    <!-- Shield Inner Contrast Accent -->
+    <path
+        android:fillColor="#14B8A6"
+        android:pathData="M54,26 C65,26 71,31 71,43 C71,57 54,72 54,72 C54,72 37,57 37,43 C37,31 43,26 54,26 Z" />
+
+    <!-- Pure White Clinical Cross -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,34 L60,34 L60,44 L70,44 L70,56 L60,56 L60,66 L48,66 L48,56 L38,56 L38,44 L48,44 Z" />
+
+    <!-- ECG Heartbeat Vital Wave -->
+    <path
+        android:strokeColor="#0F766E"
+        android:strokeWidth="2.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="#00000000"
+        android:pathData="M35,50 L44,50 L47,43 L52,57 L56,45 L59,53 L62,50 L73,50" />
+</vector>

@@ -1,0 +1,2 @@
+const d=e=>{if(e==null)return"";const t=String(e);return/[",\n]/.test(t)?`"${t.replace(/"/g,'""')}"`:t},i=({headers:e,rows:t})=>{const o=e.map(d).join(","),c=t.map(r=>e.map((s,n)=>d(r[n]??"")).join(","));return[o,...c].join(`\r
+`)},l=({filename:e="export.csv",headers:t,rows:o})=>{const c=i({headers:t,rows:o}),r=new Blob(["\uFEFF"+c],{type:"text/csv;charset=utf-8;"}),s=URL.createObjectURL(r),n=document.createElement("a");n.href=s,n.download=e,document.body.appendChild(n),n.click(),document.body.removeChild(n),URL.revokeObjectURL(s)};export{l as e};

@@ -7,6 +7,7 @@ import {
   createWalkInDiagnostic,
   getDiagnosticTests,
   getPatients,
+  checkInPatient,
 } from "../../services/api.js";
 import UniversalPaymentModal from "../../components/UniversalPaymentModal.jsx";
 
@@ -64,22 +65,11 @@ export default function FrontDeskWorkQueuePage() {
     const targetId = appointmentId || diagnosticOrderId;
     setActioningId(targetId);
     try {
-      const res = await fetch(`/api/receptionist/check-in/${targetId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("hms_token")}`,
-        },
-      });
-      const resData = await res.json();
-      if (res.ok) {
-        alert(`Patient Checked In! Token: ${resData.tokenNumber || "DX-Ready"}. Status updated to 'Patient Ready'.`);
-        fetchQueue();
-      } else {
-        alert("Check-in failed: " + (resData.message || "Unknown error"));
-      }
+      const resData = await checkInPatient(targetId);
+      alert(`Patient Checked In! Token: ${resData?.tokenNumber || "DX-Ready"}. Status updated to 'Patient Ready'.`);
+      fetchQueue();
     } catch (err) {
-      alert("Check-in failed: " + err.message);
+      alert("Check-in failed: " + (err.response?.data?.message || err.message));
     } finally {
       setActioningId(null);
     }

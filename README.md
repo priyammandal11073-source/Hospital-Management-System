@@ -50,6 +50,7 @@
 | 🔑 | [Environment Variables](#environment-variables) | Complete `.env` guide for client and server |
 | 🧪 | [Automated Tests & CI](#automated-tests-ci) | Vitest unit/integration suites plus GitHub Actions checks |
 | 🐳 | [Docker & Deployment](#docker-deployment) | Full-stack `docker-compose` setup and Procfile |
+| 📱 | [Android Mobile Application (Capacitor)](#android-mobile-app) | Capacitor Android application, Studio setup, testing, signed APK & Google Play AAB |
 | 🧪 | [Demo Test Accounts](#demo-test-accounts) | Pre-seeded credentials for instant testing across all roles |
 | 🧪 | [Automated System Diagnostics](#verification-diagnostics) | 24-point optimization & security verification suite |
 | 📂 | [Project Structure](#project-structure) | Tree map of frontend, backend and documentation |
@@ -752,6 +753,146 @@ JWT_SECRET=change-me RAZORPAY_KEY_ID=... RAZORPAY_KEY_SECRET=... docker compose 
 ```
 
 For worker-style platforms (Render, Railway, Heroku) the root `Procfile` starts the API as the web process: `web: cd server && npm start`.
+
+---
+
+## <a id="android-mobile-app"></a>📱 Android Mobile Application (Capacitor)
+
+The **Nivora Care Hospital** web application is wrapped into a native Android application using **Capacitor 8.x**.
+
+- **Application ID:** `com.nivora.care`
+- **Application Name:** `Nivora Care Hospital`
+- **Android Project Directory:** [`client/android/`](./client/android/)
+- **Configuration File:** [`client/capacitor.config.ts`](./client/capacitor.config.ts)
+- **Target Backend:** Connects directly to production backend at `https://nivora-care-hospital.onrender.com/api` without relying on browser proxy rewrites.
+- **Web / Vercel Compatibility:** Browser and Vercel production deployments continue using standard relative `/api` paths seamlessly through environment-based detection.
+
+---
+
+### 1. Prerequisites & Windows Setup
+
+#### Step 1.1 — Install Android Studio
+1. Download **Android Studio** (Koala / Ladybug or later) from [developer.android.com/studio](https://developer.android.com/studio).
+2. Run the installer (`android-studio-*.exe`) and select:
+   - **Android Studio**
+   - **Android Virtual Device (AVD)**
+3. Complete the initial setup wizard selecting the **Standard** installation.
+
+#### Step 1.2 — Install SDK Components via SDK Manager
+1. Open Android Studio → **More Actions** (or **Tools**) → **SDK Manager**.
+2. Under the **SDK Platforms** tab, ensure the following is checked:
+   - **Android 14.0 ("UpsideDownCake")** or **Android 15 / 16** (API Level 34–36)
+3. Under the **SDK Tools** tab, verify and install:
+   - **Android SDK Build-Tools** (latest)
+   - **Android SDK Command-line Tools (latest)**
+   - **Android Emulator**
+   - **Android SDK Platform-Tools**
+4. Click **Apply** to download and install.
+
+#### Step 1.3 — Configure Windows Environment Variables
+Set up `ANDROID_HOME` in Windows System Environment Variables:
+1. Press `Win + R`, type `sysdm.cpl`, and press **Enter**.
+2. Click the **Advanced** tab → **Environment Variables...**.
+3. Under **User variables** (or System variables), click **New...**:
+   - **Variable name:** `ANDROID_HOME`
+   - **Variable value:** `C:\Users\<YourUsername>\AppData\Local\Android\Sdk`
+4. Select the `Path` variable, click **Edit...**, and add two new entries:
+   - `%ANDROID_HOME%\platform-tools`
+   - `%ANDROID_HOME%\emulator`
+5. Click **OK** to save and apply.
+
+---
+
+### 2. Android Build & Sync Scripts
+
+From the repository root or inside `client/`, run:
+
+```powershell
+# Option A — From Workspace Root:
+npm run android:build      # Builds Vite web app in Android mode & syncs Capacitor assets
+npm run android:open       # Launches Android Studio with the client/android project
+npm run android:run        # Builds and runs directly on connected device/emulator
+
+# Option B — Inside client/ Directory:
+cd client
+npm run build:android      # Runs "vite build --mode android && cap sync android"
+npm run android:open       # Runs "cap open android"
+npm run android:run        # Runs "cap run android"
+```
+
+---
+
+### 3. Testing on Emulator or Physical Android Phone
+
+#### Method A — Running on an Android Emulator
+1. In Android Studio, click **Tools** → **Device Manager**.
+2. Click **Create Device**, choose a device profile (e.g., **Pixel 8** or **Pixel 9**), and click **Next**.
+3. Select an Android system image (e.g., API 34+ x86_64), download if prompted, and click **Finish**.
+4. In the top toolbar, select your virtual device in the target dropdown.
+5. Click the green **Run 'app'** button (`Shift + F10`) or press `Ctrl + R`.
+
+#### Method B — Running on a Physical Android Phone
+1. On your Android phone, enable **Developer Options**:
+   - Open **Settings** → **About Phone**.
+   - Tap **Build Number** 7 times until you see *"You are now a developer!"*.
+2. Enable USB Debugging:
+   - Open **Settings** → **System** → **Developer Options**.
+   - Toggle on **USB Debugging**.
+3. Connect your phone to your Windows PC with a high-speed USB data cable.
+4. On your phone screen, tap **Allow USB debugging** (check "Always allow from this computer").
+5. In Android Studio, your device model will appear in the target device dropdown.
+6. Click **Run 'app'** (`Shift + F10`) to deploy and launch the app directly on your phone.
+
+---
+
+### 4. Generating a Signed Release APK (Direct Installation)
+
+To generate an `.apk` file that can be distributed directly to patients or staff phones without Google Play:
+
+1. Open the project in Android Studio (`client/android`).
+2. In the top menu, go to **Build** → **Generate Signed Bundle / APK...**.
+3. Select **APK** and click **Next**.
+4. **Keystore Configuration**:
+   - If you already have a key, click **Choose existing...** and locate your `.jks` file.
+   - If creating a new key, click **Create new...**:
+     - **Key store path:** Choose a secure location outside the repository (e.g., `C:\keystores\nivora-release.jks`).
+     - **Password:** Enter a strong password for the keystore.
+     - **Alias:** e.g., `nivoracare`.
+     - **Password:** Enter key password.
+     - **Validity (years):** At least `25`.
+     - Fill in Certificate details (First and Last Name, Organization: `Nivora Care Hospital`). Click **OK**.
+5. Click **Next**.
+6. **Destination & Build Variant**:
+   - **Build Variants:** Select `release`.
+   - **Signature Versions:** Ensure both **V1 (Jar Signature)** and **V2 (Full APK Signature)** are checked.
+7. Click **Create** (or **Finish**).
+8. Gradle will assemble the release APK. Once complete, click the notification **locate** link, or find the file at:
+   ```
+   client/android/app/release/app-release.apk
+   ```
+9. Transfer `app-release.apk` to any Android phone via USB, Google Drive, or WhatsApp to install.
+
+---
+
+### 5. Generating a Signed .AAB (Google Play Store Upload)
+
+Google Play requires the **Android App Bundle (.aab)** format for all new app releases:
+
+1. In Android Studio, go to **Build** → **Generate Signed Bundle / APK...**.
+2. Select **Android App Bundle** and click **Next**.
+3. Select your release keystore (`.jks`), enter the passwords and key alias, and click **Next**.
+4. Select the **release** destination folder.
+5. Check **Export encrypted key for enrolling in Play App Signing** (recommended by Google Play).
+6. Click **Create** (or **Finish**).
+7. Once the build completes, the signed bundle is ready at:
+   ```
+   client/android/app/release/app-release.aab
+   ```
+8. Go to the [Google Play Console](https://play.google.com/console):
+   - Navigate to your App → **Production** (or **Internal testing**).
+   - Click **Create new release**.
+   - Drag and drop `app-release.aab`.
+   - Add release notes and click **Save** → **Review release** → **Start rollout**.
 
 ---
 
