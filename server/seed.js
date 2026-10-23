@@ -1,9 +1,20 @@
-import dotenv from "dotenv";
-import mongoose from "mongoose";
-import path from "path";
-import { fileURLToPath } from "url";
+/**
+ * ============================================================================
+ * SYNTHETIC DEMO SEED DATA — LOCAL DEVELOPMENT & STAGING TEST FIXTURES ONLY
+ * ============================================================================
+ * WARNING: This script contains purely synthetic, mock patient and clinical
+ * test data. It clears collections and populates mock fixtures.
+ * STRICT ENFORCEMENT: Never run this script in production environments.
+ * ============================================================================
+ */
 
-// Load models
+if (process.env.NODE_ENV === "production") {
+  console.error("\n[FATAL SECURITY VIOLATION] seed.js execution is strictly prohibited in production!");
+  console.error("Aborting immediately to preserve production data integrity.\n");
+  process.exit(1);
+}
+
+import mongoose from "mongoose";
 import Appointment from "./models/Appointment.js";
 import AuditLog from "./models/AuditLog.js";
 import Bed from "./models/Bed.js";
