@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import request from "supertest";
+import mongoose from "mongoose";
 import createApp from "../app.js";
 
 /**
@@ -13,6 +14,46 @@ import createApp from "../app.js";
 const app = createApp();
 
 describe("Health & API surface", () => {
+  it("GET /health returns HTTP 200 regardless of database connectivity (liveness probe)", async () => {
+    const res = await request(app).get("/health");
+
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe("ok");
+    expect(res.body.service).toBe("nivora-care-hospital");
+    expect(typeof res.body.uptimeSeconds).toBe("number");
+    expect(res.body.database).toBeDefined();
+  });
+
+  it("GET /ready returns HTTP 503 when MongoDB is not connected (readiness probe)", async () => {
+    const res = await request(app).get("/ready");
+
+    expect(res.status).toBe(503);
+    expect(res.body.ready).toBe(false);
+    expect(res.body.status).toBe("not_ready");
+    expect(res.body.database.readyState).not.toBe(1);
+  });
+
+  it("GET /api/ready returns HTTP 503 when MongoDB is not connected", async () => {
+    const res = await request(app).get("/api/ready");
+
+    expect(res.status).toBe(503);
+    expect(res.body.ready).toBe(false);
+  });
+
+  it("GET /ready returns HTTP 200 when MongoDB is connected (readyState === 1)", async () => {
+    const readyStateSpy = vi.spyOn(mongoose.connection, "readyState", "get").mockReturnValue(1);
+
+    const res = await request(app).get("/ready");
+
+    expect(res.status).toBe(200);
+    expect(res.body.ready).toBe(true);
+    expect(res.body.status).toBe("ready");
+    expect(res.body.database.status).toBe("Connected");
+    expect(res.body.database.readyState).toBe(1);
+
+    readyStateSpy.mockRestore();
+  });
+
   it("GET /api/health reports the API and all portals as operational", async () => {
     const res = await request(app).get("/api/health");
 
@@ -25,7 +66,7 @@ describe("Health & API surface", () => {
   });
 
   it("applies standard HTTP security headers and disables x-powered-by", async () => {
-    const res = await request(app).get("/api/health");
+    const res = await request(app).get("/health");
 
     expect(res.headers["x-content-type-options"]).toBe("nosniff");
     expect(res.headers["x-frame-options"]).toBe("SAMEORIGIN");

@@ -81,6 +81,75 @@ const createApp = () => {
   app.use(cors(corsOptions));
   app.use(compression());
   app.use(express.json());
+  // ── Health & Readiness Probes (decisions decoupled for cloud orchestrators) ─
+  const getDbReadiness = () => {
+    const dbStatus = mongoose.connection.readyState;
+    const dbStatusMap = {
+      0: "Disconnected",
+      1: "Connected",
+      2: "Connecting",
+      3: "Disconnecting",
+    };
+    return {
+      status: dbStatusMap[dbStatus] || "Unknown",
+      readyState: dbStatus,
+      isConnected: dbStatus === 1,
+    };
+  };
+
+  // /health: Process liveness probe. Confirms Node/Express is responsive.
+  // CRITICAL REQUIREMENT: Must NOT depend on database availability (configured in Render health check).
+  const livenessHandler = (req, res) => {
+    const db = getDbReadiness();
+    res.status(200).json({
+      status: "ok",
+      service: "nivora-care-hospital",
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      environment: env.nodeEnv,
+      database: {
+        status: db.status,
+        readyState: db.readyState,
+      },
+    });
+  };
+
+  // /ready: Database readiness probe. Returns HTTP 200 ONLY when MongoDB is connected, otherwise 503.
+  const readinessHandler = (req, res) => {
+    const db = getDbReadiness();
+    if (db.isConnected) {
+      return res.status(200).json({
+        ready: true,
+        status: "ready",
+        service: "nivora-care-hospital",
+        timestamp: new Date().toISOString(),
+        uptimeSeconds: Math.floor(process.uptime()),
+        database: {
+          status: db.status,
+          readyState: db.readyState,
+        },
+      });
+    }
+
+    return res.status(503).json({
+      ready: false,
+      status: "not_ready",
+      service: "nivora-care-hospital",
+      timestamp: new Date().toISOString(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      database: {
+        status: db.status,
+        readyState: db.readyState,
+      },
+      message: "Database connection not ready. Offline demo fallback active for application requests.",
+    });
+  };
+
+  // Register unthrottled health & ready endpoints BEFORE apiLimiter so cloud probes never exhaust rate limits
+  app.get("/health", livenessHandler);
+  app.get("/ready", readinessHandler);
+  app.get("/api/ready", readinessHandler);
+
   app.use("/api", apiLimiter);
 
   app.use("/api/auth", authRoutes);
@@ -104,15 +173,9 @@ const createApp = () => {
   app.use("/api/diagnostics", diagnosticRoutes);
   app.use("/api/emergency", emergencyRoutes);
 
-  // Diagnostic health check reporting connectivity and portal readiness across all 6 portals
+  // Diagnostic health check reporting connectivity and portal readiness across all 8 portals
   app.get("/api/health", (req, res) => {
-    const dbStatus = mongoose.connection.readyState;
-    const dbStatusMap = {
-      0: "Disconnected",
-      1: "Connected",
-      2: "Connecting",
-      3: "Disconnecting",
-    };
+    const db = getDbReadiness();
 
     res.status(200).json({
       success: true,
@@ -121,9 +184,9 @@ const createApp = () => {
       uptimeSeconds: Math.floor(process.uptime()),
       environment: env.nodeEnv,
       database: {
-        status: dbStatusMap[dbStatus] || "Unknown",
-        readyState: dbStatus,
-        isOfflineDemoFallbackActive: dbStatus !== 1,
+        status: db.status,
+        readyState: db.readyState,
+        isOfflineDemoFallbackActive: !db.isConnected,
       },
       portals: {
         adminPortal: { status: "Operational", baseRoute: "/api/admin" },
