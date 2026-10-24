@@ -1,1 +1,0 @@
-import{h as s}from"./index-DuHlr8me.js";const r=async t=>(await s.get(`/api/vitals/${t}`)).data,e=async t=>(await s.post("/api/vitals",t)).data,o=e,i=async t=>(await s.delete(`/api/vitals/${t}`)).data;export{e as a,i as d,r as g,o as r};

@@ -7,7 +7,7 @@ import {
 import { usePrintModal } from "../../context/PrintModalContext.jsx";
 import { generateQueueTokenSlipHtml } from "../../utils/printTemplates.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
-import { SkeletonTable } from "../../components/ui/index.js";
+import { SkeletonTable, ActionDropdown } from "../../components/ui/index.js";
 import { toast } from "../../utils/toast.js";
 
 export default function WaitingRoomPage() {
@@ -255,47 +255,75 @@ export default function WaitingRoomPage() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        {/* Call Patient Button */}
-                        <button
-                          onClick={() => handleCallPatient(item)}
-                          disabled={callingId === item._id}
-                          className="rounded-lg bg-amber-500 hover:bg-amber-600 text-white px-2.5 py-1 text-xs font-bold transition shadow-xs disabled:opacity-50"
-                          title="Broadcast audio chime and call patient"
-                        >
-                          {callingId === item._id ? "Calling..." : "📢 Call"}
-                        </button>
-
-                        {/* In consultation toggle */}
-                        {item.status !== "in_consultation" && item.status !== "completed" && (
+                      <div className="flex items-center justify-end gap-2">
+                        {item.status === "in_consultation" ? (
                           <button
-                            onClick={() => handleStatusChange(item._id, "in_consultation")}
-                            className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 text-xs font-bold transition"
-                            title="Send patient into consultation room"
-                          >
-                            🚪 In Cabin
-                          </button>
-                        )}
-
-                        {/* Done toggle */}
-                        {item.status === "in_consultation" && (
-                          <button
+                            type="button"
                             onClick={() => handleStatusChange(item._id, "completed")}
-                            className="rounded-lg bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 text-xs font-bold transition"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition"
                             title="Mark consultation completed"
                           >
-                            ✓ Done
+                            <span>✓ Done</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleCallPatient(item)}
+                            disabled={callingId === item._id}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition disabled:opacity-50"
+                            title="Broadcast audio chime and call patient"
+                          >
+                            <span>📢 {callingId === item._id ? "Calling..." : "Call"}</span>
                           </button>
                         )}
 
-                        {/* Print Token Slip */}
-                        <button
-                          onClick={() => setActiveTokenModal({ ...item, checkedInAt: item.checkedInAt || new Date().toISOString() })}
-                          className="rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 px-2 py-1 text-xs font-semibold transition"
-                          title="Print OPD Token Slip"
-                        >
-                          🖨️
-                        </button>
+                        <ActionDropdown
+                          align="right"
+                          items={[
+                            ...(item.status !== "in_consultation" && item.status !== "completed"
+                              ? [
+                                  {
+                                    label: "Send to Cabin (In Consultation)",
+                                    icon: "🚪",
+                                    onClick: () => handleStatusChange(item._id, "in_consultation"),
+                                  },
+                                ]
+                              : []),
+                            ...(item.status === "in_consultation"
+                              ? [
+                                  {
+                                    label: "Call Again (Broadcast Chime)",
+                                    icon: "📢",
+                                    onClick: () => handleCallPatient(item),
+                                  },
+                                ]
+                              : []),
+                            ...(item.status !== "completed"
+                              ? [
+                                  {
+                                    label: "Mark Consultation Done",
+                                    icon: "✓",
+                                    onClick: () => handleStatusChange(item._id, "completed"),
+                                  },
+                                ]
+                              : []),
+                            { divider: true },
+                            {
+                              label: "Print Token Slip",
+                              icon: "🖨️",
+                              onClick: () =>
+                                setActiveTokenModal({
+                                  ...item,
+                                  checkedInAt: item.checkedInAt || new Date().toISOString(),
+                                }),
+                            },
+                            {
+                              label: "Quick Print Preview",
+                              icon: "📄",
+                              onClick: () => handlePrintSlip(item),
+                            },
+                          ]}
+                        />
                       </div>
                     </td>
                   </tr>

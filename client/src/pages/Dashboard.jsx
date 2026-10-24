@@ -11,6 +11,7 @@ import PharmacyDashboard from "./pharmacy/PharmacyDashboard.jsx";
 import DiagnosticDashboard from "./diagnostic/DiagnosticDashboard.jsx";
 import EmergencyDashboard from "./emergency/EmergencyDashboard.jsx";
 import UniversalPaymentModal from "../components/UniversalPaymentModal.jsx";
+import { ActionDropdown } from "../components/ui/index.js";
 import { formatDoctorName } from "../utils/doctorName.js";
 import {
   cancelMyAppointment,
@@ -1163,108 +1164,106 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
         ) : (
           <ul className="mt-4 divide-y divide-slate-100">
             {consultationQueue.map((a, idx) => (
-              <li key={a._id} className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-4 hover:bg-slate-50/70 rounded-xl px-3 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 font-bold text-xs ring-1 ring-emerald-500/20 flex-shrink-0">
+              <li
+                key={a._id}
+                className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-3.5 hover:bg-slate-50/70 rounded-2xl px-3.5 transition-colors border border-transparent hover:border-slate-200/50"
+              >
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-900/[0.04] border border-slate-200/60 text-slate-800 font-semibold text-xs tabular-nums flex-shrink-0 shadow-2xs">
                     {a.queuePosition ? `#${a.queuePosition}` : a.timeSlot ? a.timeSlot.slice(0, 5) : `#${idx + 1}`}
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-bold text-slate-900">{a.patient?.name}</p>
-                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-mono text-slate-600">
+                      <p className="font-semibold text-slate-900 text-sm tracking-tight truncate">{a.patient?.name}</p>
+                      <span className="rounded-full bg-slate-900/[0.04] px-2 py-0.5 text-[11px] font-medium text-slate-600 border border-slate-200/50">
                         {a.patient?.age ? `${a.patient.age}y` : ""} {a.patient?.gender}
                       </span>
                       {a.patient?.bloodGroup && (
-                        <span className="rounded-full bg-rose-50 text-rose-700 px-2 py-0.5 text-[10px] font-bold border border-rose-100">
+                        <span className="rounded-full bg-rose-50 text-rose-700 px-2 py-0.5 text-[11px] font-semibold border border-rose-200/60">
                           {a.patient.bloodGroup}
                         </span>
                       )}
                       {a.isVitalsAbnormal && (
-                        <span className="rounded-full bg-rose-100 text-rose-800 px-2 py-0.5 text-[10px] font-extrabold border border-rose-300 animate-pulse">
-                          ⚠️ Abnormal: {a.abnormalDetails}
+                        <span className="rounded-full bg-rose-50 text-rose-700 px-2.5 py-0.5 text-[11px] font-semibold border border-rose-300 inline-flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                          Abnormal: {a.abnormalDetails}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                       <span className="font-medium text-slate-700">Reason:</span> {a.reasonForVisit || "Routine consultation"} • {formatDate(a.appointmentDate)} • <span className="font-mono text-slate-600">{a.patient?.phone || a.patient?.contactNumber || ""}</span>
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 self-end lg:self-auto">
-                  <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700">
+                <div className="flex flex-wrap items-center gap-2.5 self-end lg:self-auto shrink-0">
+                  <span className="rounded-lg bg-slate-900/[0.04] border border-slate-200/50 px-2.5 py-1 text-xs font-mono font-medium text-slate-700 tabular-nums">
                     {a.timeSlot}
                   </span>
 
-                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold capitalize ring-1 ${
-                    a.status === "completed"
-                      ? "bg-emerald-50 text-emerald-700 ring-emerald-500/20"
-                      : a.status === "in_progress" || a.status === "in_consultation"
-                      ? "bg-purple-50 text-purple-700 ring-purple-500/20"
-                      : a.status === "waiting"
-                      ? "bg-rose-50 text-rose-700 ring-rose-500/20"
-                      : a.status === "confirmed"
-                      ? "bg-blue-50 text-blue-700 ring-blue-500/20"
-                      : "bg-amber-50 text-amber-700 ring-amber-500/20"
-                  }`}>
-                    {a.status}
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/80 border border-slate-200/70 px-2.5 py-1 text-[11px] font-medium text-slate-700 shadow-2xs">
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        a.status === "completed"
+                          ? "bg-emerald-500"
+                          : a.status === "in_progress" || a.status === "in_consultation"
+                          ? "bg-purple-500"
+                          : a.status === "waiting"
+                          ? "bg-rose-500"
+                          : a.status === "confirmed"
+                          ? "bg-blue-500"
+                          : "bg-amber-500"
+                      }`}
+                    />
+                    <span className="capitalize">{a.status?.replace("_", " ")}</span>
                   </span>
 
-                  {/* Primary Action: Start Consultation Workspace */}
+                  {/* Primary Action Button */}
                   <button
                     type="button"
                     onClick={() => navigate(`/doctor/consultation/${a._id}`)}
-                    className="rounded-lg bg-emerald-600 hover:bg-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-sm transition flex items-center gap-1"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
                   >
-                    <span>🩺</span>
                     <span>Start Consult</span>
+                    <span className="text-slate-400">→</span>
                   </button>
 
-                  {/* 360° Chart Button */}
-                  {a.patient && (
-                    <button
-                      onClick={() => setSelectedChartPatientId(a.patient._id)}
-                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-2xs"
-                      title="View 360° patient clinical history chart"
-                      type="button"
-                    >
-                      📋 Chart
-                    </button>
-                  )}
-
-                  {/* Vitals Button */}
-                  {a.patient && (
-                    <button
-                      onClick={() => handleOpenVitals(a.patient)}
-                      className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
-                      title="View or record vitals"
-                      type="button"
-                    >
-                      📊 Vitals
-                    </button>
-                  )}
-
-                  {/* Prescribe Rx Button */}
-                  <button
-                    onClick={() => setRxAppointment(a)}
-                    className="rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition shadow-2xs"
-                    title="Generate prescription for this patient"
-                    type="button"
-                  >
-                    ℞ Rx
-                  </button>
-
-                  {/* Complete Visit Button */}
-                  {a.status !== "completed" && (
-                    <button
-                      disabled={updatingId === a._id}
-                      onClick={() => handleMarkComplete(a._id)}
-                      className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-100 transition shadow-2xs disabled:opacity-50"
-                      type="button"
-                    >
-                      {updatingId === a._id ? "..." : "✓ Conclude"}
-                    </button>
-                  )}
+                  {/* Consolidated Minimal Action Dropdown */}
+                  <ActionDropdown
+                    align="right"
+                    items={[
+                      ...(a.patient
+                        ? [
+                            {
+                              label: "360° Patient Chart",
+                              icon: "📋",
+                              onClick: () => setSelectedChartPatientId(a.patient._id),
+                            },
+                            {
+                              label: "Record / View Vitals",
+                              icon: "📊",
+                              onClick: () => handleOpenVitals(a.patient),
+                            },
+                          ]
+                        : []),
+                      {
+                        label: "Prescribe Medication (Rx)",
+                        icon: "℞",
+                        onClick: () => setRxAppointment(a),
+                      },
+                      ...(a.status !== "completed"
+                        ? [
+                            { divider: true },
+                            {
+                              label: updatingId === a._id ? "Concluding..." : "Conclude Consultation",
+                              icon: "✓",
+                              danger: false,
+                              onClick: () => handleMarkComplete(a._id),
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
                 </div>
               </li>
             ))}

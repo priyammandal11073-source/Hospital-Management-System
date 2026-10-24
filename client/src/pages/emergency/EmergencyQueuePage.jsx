@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { getEmergencyQueue, getDoctors, assignEmergencyDoctor } from "../../services/api.js";
 import { getDoctorDisplayName } from "../../utils/doctorName.js";
+import { ActionDropdown } from "../../components/ui/index.js";
 
 const priorityOptions = ["all", "critical", "urgent", "less_urgent", "non_urgent"];
 const statusOptions = ["all", "arrived", "registered", "awaiting_triage", "triaged", "awaiting_doctor", "under_assessment", "under_treatment", "awaiting_diagnostics", "under_observation", "admitted", "discharged", "transferred"];
@@ -256,12 +257,39 @@ export default function EmergencyQueuePage() {
                         </span>
                       </td>
                       <td className="px-3 py-2.5 text-right whitespace-nowrap">
-                        <Link
-                          to={`/emergency/patients/${e._id}`}
-                          className="inline-flex items-center rounded-lg bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 text-[11px] font-bold transition shadow-xs"
-                        >
-                          Open Profile →
-                        </Link>
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            to={`/emergency/patients/${e._id}`}
+                            className="inline-flex items-center gap-1 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+                          >
+                            <span>Open Profile</span>
+                            <span className="text-slate-400">→</span>
+                          </Link>
+
+                          <ActionDropdown
+                            align="right"
+                            items={[
+                              {
+                                label: "Copy Encounter ID",
+                                icon: "📋",
+                                onClick: () => {
+                                  navigator.clipboard?.writeText(e.emergencyId || e._id);
+                                },
+                              },
+                              ...(e.patient?.phone
+                                ? [
+                                    {
+                                      label: `Call: ${e.patient.phone}`,
+                                      icon: "📞",
+                                      onClick: () => {
+                                        window.open(`tel:${e.patient.phone}`);
+                                      },
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
+                        </div>
                       </td>
                     </tr>
                   );

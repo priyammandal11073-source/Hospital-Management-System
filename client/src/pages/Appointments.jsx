@@ -15,7 +15,7 @@ import {
   getPatientVitals,
 } from "../services/api.js";
 import { getDoctorDisplayName } from "../utils/doctorName.js";
-import { PageHeader, ConfirmDialog } from "../components/ui/index.js";
+import { PageHeader, ConfirmDialog, ActionDropdown } from "../components/ui/index.js";
 
 const statuses = ["pending", "waiting", "confirmed", "checked_in", "in_consultation", "completed", "cancelled"];
 
@@ -512,48 +512,106 @@ function Appointments() {
                       {appointment.reasonForVisit}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setChecklistAppointment(appointment)}
-                        className="mr-2 inline-flex items-center gap-1 rounded-lg bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition shadow-2xs"
-                        title="Nursing triage & pre-procedure checklist"
-                      >
-                        <span>📋 Checklist</span>
-                      </button>
-                      {isDoctor && (
-                        <button
-                          type="button"
-                          onClick={() => setRxAppointment(appointment)}
-                          className="mr-2 inline-flex items-center gap-1 rounded-lg bg-teal-50 border border-teal-200 px-2.5 py-1 text-xs font-semibold text-teal-700 hover:bg-teal-100 transition shadow-2xs"
-                          title="Write clinical prescription for this appointment"
-                        >
-                          <span>℞ Write Rx</span>
-                        </button>
-                      )}
-                      <select
-                        aria-label={`Change status for ${appointment.patient?.name || "appointment"}`}
-                        className="mr-2 rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 shadow-2xs outline-none focus:border-blue-500"
-                        disabled={updatingId === appointment._id}
-                        onChange={(event) => handleStatusChange(appointment._id, event.target.value)}
-                        value={appointment.status}
-                      >
-                        {statuses.map((status) => (
-                          <option key={status} value={status}>
-                            {statusLabels[status] || status}
-                          </option>
-                        ))}
-                      </select>
-                      {canDelete && (
-                        <button
-                          aria-label="Delete appointment"
-                          className="rounded-lg border border-red-200 bg-red-50 p-1.5 text-xs text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs"
-                          onClick={() => handleDelete(appointment)}
-                          title="Delete appointment"
-                          type="button"
-                        >
-                          🗑
-                        </button>
-                      )}
+                      <div className="flex items-center justify-end gap-2">
+                        {isDoctor ? (
+                          <button
+                            type="button"
+                            onClick={() => setRxAppointment(appointment)}
+                            className="inline-flex items-center gap-1 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+                            title="Write clinical prescription for this appointment"
+                          >
+                            <span>℞ Write Rx</span>
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setChecklistAppointment(appointment)}
+                            className="inline-flex items-center gap-1 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+                            title="Nursing triage & pre-procedure checklist"
+                          >
+                            <span>📋 Checklist</span>
+                          </button>
+                        )}
+
+                        <ActionDropdown
+                          align="right"
+                          items={[
+                            ...(isDoctor
+                              ? [
+                                  {
+                                    label: "Pre-procedure Checklist",
+                                    icon: "📋",
+                                    onClick: () => setChecklistAppointment(appointment),
+                                  },
+                                ]
+                              : [
+                                  {
+                                    label: "Clinical Checklist",
+                                    icon: "📋",
+                                    onClick: () => setChecklistAppointment(appointment),
+                                  },
+                                ]),
+                            { divider: true },
+                            ...(appointment.status !== "confirmed"
+                              ? [
+                                  {
+                                    label: "Confirm Appointment",
+                                    icon: "✓",
+                                    onClick: () => handleStatusChange(appointment._id, "confirmed"),
+                                  },
+                                ]
+                              : []),
+                            ...(appointment.status !== "checked_in"
+                              ? [
+                                  {
+                                    label: "Mark Checked-In (Waiting)",
+                                    icon: "🚪",
+                                    onClick: () => handleStatusChange(appointment._id, "checked_in"),
+                                  },
+                                ]
+                              : []),
+                            ...(appointment.status !== "in_consultation"
+                              ? [
+                                  {
+                                    label: "Move to Consultation",
+                                    icon: "🩺",
+                                    onClick: () => handleStatusChange(appointment._id, "in_consultation"),
+                                  },
+                                ]
+                              : []),
+                            ...(appointment.status !== "completed"
+                              ? [
+                                  {
+                                    label: "Mark Completed",
+                                    icon: "✓",
+                                    onClick: () => handleStatusChange(appointment._id, "completed"),
+                                  },
+                                ]
+                              : []),
+                            ...(appointment.status !== "cancelled"
+                              ? [
+                                  {
+                                    label: "Cancel Appointment",
+                                    icon: "✕",
+                                    danger: true,
+                                    onClick: () => handleStatusChange(appointment._id, "cancelled"),
+                                  },
+                                ]
+                              : []),
+                            ...(canDelete
+                              ? [
+                                  { divider: true },
+                                  {
+                                    label: "Delete Record",
+                                    icon: "🗑",
+                                    danger: true,
+                                    onClick: () => handleDelete(appointment),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}

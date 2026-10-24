@@ -5,6 +5,7 @@ import {
   flagPrescriptionIssue,
 } from "../../services/api.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import { ActionDropdown } from "../../components/ui/index.js";
 
 export default function PharmacyQueuePage() {
   const [prescriptions, setPrescriptions] = useState([]);
@@ -271,29 +272,33 @@ export default function PharmacyQueuePage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-4 py-3.5 text-right whitespace-nowrap space-x-1.5">
-                        <Link
-                          to={`/pharmacy/dispense/${rx._id}`}
-                          className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-bold transition shadow-xs ${
-                            isDispensed
-                              ? "border border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
-                              : "bg-amber-500 hover:bg-amber-600 text-slate-950"
-                          }`}
-                        >
-                          {isDispensed ? "View Receipt" : "Verify & Dispense"}
-                        </Link>
-                        {!isDispensed && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setFlagModalItem(rx);
-                              setFlagNotes("");
-                            }}
-                            className="inline-flex items-center gap-1 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 px-2.5 py-1.5 text-xs font-semibold text-rose-700 transition"
+                      <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-2">
+                          <Link
+                            to={`/pharmacy/dispense/${rx._id}`}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
                           >
-                            Flag Doctor
-                          </button>
-                        )}
+                            <span>{isDispensed ? "View Receipt" : "Verify & Dispense"}</span>
+                            <span className="text-slate-400">→</span>
+                          </Link>
+
+                          {!isDispensed && (
+                            <ActionDropdown
+                              align="right"
+                              items={[
+                                {
+                                  label: "Flag Issue to Doctor",
+                                  icon: "🚩",
+                                  danger: true,
+                                  onClick: () => {
+                                    setFlagModalItem(rx);
+                                    setFlagNotes("");
+                                  },
+                                },
+                              ]}
+                            />
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
