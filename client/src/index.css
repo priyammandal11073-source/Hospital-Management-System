@@ -940,5 +940,76 @@ button,
   }
 }
 
+/* =========================================================================
+   EMIL KOWALSKI COLLAPSIBLE SIDEBAR & FLOATING TOOLTIPS
+   ========================================================================= */
+.transition-sidebar {
+  transition: width 200ms cubic-bezier(0.23, 1, 0.32, 1), padding 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: width;
+}
+
+/* Collapsed sidebar layout */
+aside[data-sidebar-collapsed="true"] {
+  width: 72px !important;
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+aside[data-sidebar-collapsed="true"] nav a {
+  justify-content: center !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  gap: 0 !important;
+  position: relative !important;
+}
+
+aside[data-sidebar-collapsed="true"] nav a > span {
+  display: none !important;
+}
+
+/* Category header in collapsed mode transforms into sleek hairline separator */
+aside[data-sidebar-collapsed="true"] nav > div.uppercase,
+aside[data-sidebar-collapsed="true"] .sidebar-category-header {
+  font-size: 0 !important;
+  height: 1px !important;
+  background-color: rgba(203, 213, 225, 0.7) !important;
+  margin: 10px 4px !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+aside[data-sidebar-collapsed="true"] .sidebar-hide-collapsed {
+  display: none !important;
+}
+
+/* Origin-aware floating tooltip on hover in collapsed mode */
+aside[data-sidebar-collapsed="true"] nav a[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%) scale(0.95);
+  transform-origin: left center;
+  background-color: #0f172a;
+  color: #ffffff;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
+  transition: opacity 140ms cubic-bezier(0.23, 1, 0.32, 1), transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+  z-index: 100;
+}
+
+aside[data-sidebar-collapsed="true"] nav a[data-tooltip]:hover::after {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+
+
 
 

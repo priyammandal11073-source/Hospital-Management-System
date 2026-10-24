@@ -133,6 +133,46 @@ function DashboardLayout() {
   const role = user?.role || "admin";
   const config = PORTAL_CONFIG[role] || PORTAL_CONFIG.admin;
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("nivora_sidebar_collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  // Sync collapsed state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("nivora_sidebar_collapsed", String(isSidebarCollapsed));
+    } catch {}
+  }, [isSidebarCollapsed]);
+
+  // Universal keyboard shortcut: Ctrl+B or Cmd+B to toggle sidebar collapse
+  useEffect(() => {
+    const handleShortcut = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setIsSidebarCollapsed((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
+
+  // Auto-populate data-tooltip for sleek origin-anchored CSS tooltips in collapsed mode
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const links = document.querySelectorAll("aside nav a");
+      links.forEach((a) => {
+        const span = a.querySelector("span");
+        if (span && span.textContent && !a.getAttribute("data-tooltip")) {
+          a.setAttribute("data-tooltip", span.textContent.trim());
+        }
+      });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [role, location.pathname]);
 
   // Auto-close sliding drawer when route changes
   useEffect(() => {
@@ -243,6 +283,19 @@ function DashboardLayout() {
               <HospitalLogo variant="icon" className="sm:hidden" />
             </Link>
 
+            {/* Desktop Sidebar Collapse Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+              className="hidden lg:inline-flex items-center justify-center h-8 w-8 rounded-xl text-slate-600 hover:text-slate-900 bg-white/70 hover:bg-white border border-slate-200/80 transition active:scale-95 cursor-pointer shadow-2xs flex-shrink-0"
+              title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
+              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" />
+              </svg>
+            </button>
+
             {/* Mobile role indicator pill */}
             <span className={`inline-flex xl:hidden items-center rounded px-2 py-0.5 text-[10px] font-bold truncate max-w-[120px] ${config.badgeClass}`}>
               {role === "doctor" && user?.name
@@ -332,17 +385,22 @@ function DashboardLayout() {
       <div className="flex flex-1 flex-col lg:flex-row">
         {/* Desktop Docked Navigation Sidebar */}
         <aside
-          className="hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] liquid-glass-sidebar p-3.5 text-slate-800 flex-col justify-between overflow-y-auto"
+          data-sidebar-collapsed={isSidebarCollapsed ? "true" : "false"}
+          className={`hidden lg:flex ${
+            isSidebarCollapsed ? "lg:w-20" : "lg:w-64"
+          } lg:flex-shrink-0 lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] liquid-glass-sidebar p-3.5 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
           aria-label="Portal navigation sidebar"
         >
           <div>
             {/* Sidebar Section Title */}
-            <div className="mb-4 flex items-center justify-between px-2 pt-1">
-              <span className="text-[11px] font-semibold text-slate-500">
-                {config.label}
-              </span>
-              <span className="rounded bg-white/80 border border-slate-200/80 px-1.5 py-0.5 text-[9px] font-mono text-slate-600 capitalize">
-                {role}
+            <div className={`mb-4 flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between"} px-2 pt-1`}>
+              {!isSidebarCollapsed && (
+                <span className="text-[11px] font-semibold text-slate-500 truncate">
+                  {config.label}
+                </span>
+              )}
+              <span className={`rounded bg-white/80 border border-slate-200/80 px-1.5 py-0.5 text-[9px] font-mono text-slate-600 capitalize ${isSidebarCollapsed ? "text-[8px]" : ""}`}>
+                {isSidebarCollapsed ? role.slice(0, 3) : role}
               </span>
             </div>
 
@@ -1379,28 +1437,61 @@ function DashboardLayout() {
             </nav>
           </div>
 
-          {/* Sidebar Footer Badge */}
-          <div className="mt-6 rounded-md bg-white/70 border border-slate-200/70 p-2.5 text-center backdrop-blur-md">
-            <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700">
-              <svg className="h-3.5 w-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>NABH Accredited</span>
-            </div>
-            <p className="mt-0.5 text-[10px] text-slate-500 font-mono">
-              ABDM Connected (HFR/HIP)
-            </p>
-            <div className="mt-2.5 pt-2 border-t border-slate-200/70">
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-1.5 rounded-md bg-white/70 border border-slate-200 hover:bg-rose-50 hover:border-rose-300 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:text-rose-700 transition cursor-pointer touch-target"
-              >
-                <svg className="h-3.5 w-3.5 flex-shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          {/* Sidebar Footer Controls & Collapse Toggle */}
+          <div className="mt-4 pt-3 border-t border-slate-200/70 space-y-2">
+            {/* Bottom Collapse / Expand Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+              className={`w-full flex items-center ${
+                isSidebarCollapsed ? "justify-center px-1" : "justify-between px-2.5"
+              } py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white/60 hover:bg-white border border-slate-200/80 active:scale-[0.97] transition cursor-pointer shadow-2xs`}
+              title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
+              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {!isSidebarCollapsed && (
+                <span className="flex items-center gap-1.5 truncate">
+                  <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                  </svg>
+                  <span>Collapse panel</span>
+                </span>
+              )}
+              {!isSidebarCollapsed && (
+                <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-slate-100 rounded border border-slate-200">
+                  Ctrl+B
+                </kbd>
+              )}
+              {isSidebarCollapsed && (
+                <svg className="h-4 w-4 text-slate-600 rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
                 </svg>
-                <span>Sign Out ({role})</span>
-              </button>
+              )}
+            </button>
+
+            {/* Sidebar Footer Badge */}
+            <div className="sidebar-hide-collapsed rounded-md bg-white/70 border border-slate-200/70 p-2.5 text-center backdrop-blur-md">
+              <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700">
+                <svg className="h-3.5 w-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>NABH Accredited</span>
+              </div>
+              <p className="mt-0.5 text-[10px] text-slate-500 font-mono">
+                ABDM Connected (HFR/HIP)
+              </p>
+              <div className="mt-2 pt-2 border-t border-slate-200/70">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-1.5 rounded-md bg-white/70 border border-slate-200 hover:bg-rose-50 hover:border-rose-300 px-2 py-1.5 text-xs font-semibold text-slate-600 hover:text-rose-700 transition cursor-pointer touch-target"
+                >
+                  <svg className="h-3.5 w-3.5 flex-shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </div>
           </div>
         </aside>

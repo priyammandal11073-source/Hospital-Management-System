@@ -22,6 +22,46 @@ function PatientLayout() {
   const { user: unifiedUser, logout: unifiedLogout } = useAuth();
   const patient = patientAuthPatient || (unifiedUser?.role === "patient" ? unifiedUser : null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("nivora_sidebar_collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
+
+  // Sync collapsed state to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("nivora_sidebar_collapsed", String(isSidebarCollapsed));
+    } catch {}
+  }, [isSidebarCollapsed]);
+
+  // Universal keyboard shortcut: Ctrl+B or Cmd+B to toggle sidebar collapse
+  useEffect(() => {
+    const handleShortcut = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setIsSidebarCollapsed((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleShortcut);
+    return () => window.removeEventListener("keydown", handleShortcut);
+  }, []);
+
+  // Auto-populate data-tooltip for sleek origin-anchored CSS tooltips in collapsed mode
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const links = document.querySelectorAll("aside nav a");
+      links.forEach((a) => {
+        const span = a.querySelector("span");
+        if (span && span.textContent && !a.getAttribute("data-tooltip")) {
+          a.setAttribute("data-tooltip", span.textContent.trim());
+        }
+      });
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 
   // Auto-close drawer on route change
   useEffect(() => {
@@ -133,6 +173,19 @@ function PatientLayout() {
               <HospitalLogo variant="icon" className="sm:hidden" />
             </Link>
 
+            {/* Desktop Sidebar Collapse Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+              className="hidden lg:inline-flex items-center justify-center h-8 w-8 rounded-xl text-slate-600 hover:text-slate-900 bg-white/70 hover:bg-white border border-slate-200/80 transition active:scale-95 cursor-pointer shadow-2xs flex-shrink-0"
+              title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
+              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" />
+              </svg>
+            </button>
+
             {/* Mobile role pill */}
             <span className="inline-flex xl:hidden items-center rounded-full liquid-glass-pill px-2.5 py-0.5 text-[10px] font-semibold text-slate-800">
               Patient
@@ -217,17 +270,22 @@ function PatientLayout() {
       <div className="flex flex-1 flex-col lg:flex-row">
         {/* Desktop Docked Navigation Sidebar */}
         <aside
-          className="hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:min-h-[calc(100vh-65px)] lg:sticky lg:top-[65px] liquid-glass-sidebar p-4 text-slate-800 flex-col justify-between overflow-y-auto"
+          data-sidebar-collapsed={isSidebarCollapsed ? "true" : "false"}
+          className={`hidden lg:flex ${
+            isSidebarCollapsed ? "lg:w-20" : "lg:w-64"
+          } lg:flex-shrink-0 lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] liquid-glass-sidebar p-3.5 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
           aria-label="Patient portal navigation"
         >
           <div>
             {/* Sidebar Section Title */}
-            <div className="mb-4 flex items-center justify-between px-2 pt-1">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
-                Patient services
-              </span>
+            <div className={`mb-4 flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between"} px-2 pt-1`}>
+              {!isSidebarCollapsed && (
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider truncate">
+                  Patient services
+                </span>
+              )}
               <span className="rounded-full liquid-glass-pill px-2 py-0.5 text-[9px] font-semibold text-slate-600">
-                Active
+                {isSidebarCollapsed ? "•" : "Active"}
               </span>
             </div>
 
@@ -394,34 +452,67 @@ function PatientLayout() {
             </nav>
           </div>
 
-          {/* Emergency Assistance Box */}
-          <div className="mt-8 liquid-glass-card p-3.5">
-            <div className="flex items-center gap-2 text-xs font-semibold text-rose-600">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <span>Emergency & helplines</span>
-            </div>
-            <p className="mt-1.5 text-[11px] text-slate-600 leading-snug">
-              Ambulance: <a href="tel:108" className="text-rose-600 font-semibold hover:underline">108</a> / <a href="tel:102" className="text-rose-600 font-semibold hover:underline">102</a><br />
-              National helpline: <a href="tel:112" className="text-rose-600 font-semibold hover:underline">112</a><br />
-              Health helpline: <a href="tel:1075" className="text-slate-800 font-semibold hover:underline">1075</a> (MoHFW)
-            </p>
-            <div className="mt-3 border-t border-slate-200/60 pt-2 flex items-center justify-between text-[10px] text-slate-400">
-              <span>NABH accredited</span>
-              <span className="text-slate-600 font-medium">ABDM compliant</span>
-            </div>
-            <div className="mt-3 pt-3 border-t border-slate-200/60">
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2 liquid-glass-pill px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 active:scale-[0.98] transition cursor-pointer touch-target"
-              >
-                <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          {/* Sidebar Footer Controls & Collapse Toggle */}
+          <div className="mt-4 pt-3 border-t border-slate-200/70 space-y-2">
+            {/* Bottom Collapse / Expand Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setIsSidebarCollapsed((prev) => !prev)}
+              className={`w-full flex items-center ${
+                isSidebarCollapsed ? "justify-center px-1" : "justify-between px-2.5"
+              } py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white/60 hover:bg-white border border-slate-200/80 active:scale-[0.97] transition cursor-pointer shadow-2xs`}
+              title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
+              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {!isSidebarCollapsed && (
+                <span className="flex items-center gap-1.5 truncate">
+                  <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                  </svg>
+                  <span>Collapse panel</span>
+                </span>
+              )}
+              {!isSidebarCollapsed && (
+                <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-slate-100 rounded border border-slate-200">
+                  Ctrl+B
+                </kbd>
+              )}
+              {isSidebarCollapsed && (
+                <svg className="h-4 w-4 text-slate-600 rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
                 </svg>
-                <span>Sign Out (Patient)</span>
-              </button>
+              )}
+            </button>
+
+            {/* Emergency Assistance Box (Hidden when collapsed) */}
+            <div className="sidebar-hide-collapsed liquid-glass-card p-3.5">
+              <div className="flex items-center gap-2 text-xs font-semibold text-rose-600">
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Emergency & helplines</span>
+              </div>
+              <p className="mt-1.5 text-[11px] text-slate-600 leading-snug">
+                Ambulance: <a href="tel:108" className="text-rose-600 font-semibold hover:underline">108</a> / <a href="tel:102" className="text-rose-600 font-semibold hover:underline">102</a><br />
+                National helpline: <a href="tel:112" className="text-rose-600 font-semibold hover:underline">112</a><br />
+                Health helpline: <a href="tel:1075" className="text-slate-800 font-semibold hover:underline">1075</a> (MoHFW)
+              </p>
+              <div className="mt-3 border-t border-slate-200/60 pt-2 flex items-center justify-between text-[10px] text-slate-400">
+                <span>NABH accredited</span>
+                <span className="text-slate-600 font-medium">ABDM compliant</span>
+              </div>
+              <div className="mt-3 pt-3 border-t border-slate-200/60">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 liquid-glass-pill px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 active:scale-[0.98] transition cursor-pointer touch-target"
+                >
+                  <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  <span>Sign Out</span>
+                </button>
+              </div>
             </div>
           </div>
         </aside>
