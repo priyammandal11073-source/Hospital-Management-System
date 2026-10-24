@@ -51,30 +51,29 @@ const formatDate = (date) =>
 function MetricCard({ label, value, icon, gradient, badge, badgeColor, to, onClick }) {
   const cardContent = (
     <div
-      className={`group relative overflow-hidden rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/90 transition-[transform,box-shadow,border-color] duration-150 ease-out hover:ring-2 hover:ring-slate-300 active:scale-[0.98] flex flex-col justify-between h-full min-h-[148px] ${
+      className={`group relative overflow-hidden rounded-2xl liquid-glass-card p-5 transition active:scale-[0.98] flex flex-col justify-between h-full min-h-[144px] ${
         to || onClick ? "cursor-pointer" : ""
       }`}
     >
-      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${gradient}`} />
       <div className="flex items-start justify-between gap-2.5">
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-slate-500 line-clamp-2 min-h-[32px] leading-tight" title={label}>{label}</p>
-          <p className="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight truncate tabular-nums">{value}</p>
+          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider line-clamp-2 min-h-[26px] leading-tight" title={label}>{label}</p>
+          <p className="mt-1 text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight truncate tabular-nums">{value}</p>
         </div>
-        <div className={`flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} text-white shadow-2xs`}>
+        <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl liquid-glass-subtle text-slate-700 group-hover:text-slate-900 transition shadow-2xs">
           {icon}
         </div>
       </div>
-      <div className="mt-3 flex items-center justify-between gap-1.5 pt-2 border-t border-slate-100 min-h-[28px]">
+      <div className="mt-3 flex items-center justify-between gap-1.5 pt-2.5 border-t border-slate-100/80 min-h-[28px]">
         {badge ? (
-          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold truncate max-w-[150px] ${badgeColor}`}>
+          <span className="inline-flex items-center rounded-full liquid-glass-pill px-2.5 py-0.5 text-[10px] font-semibold text-slate-700 truncate max-w-[150px]">
             {badge}
           </span>
         ) : (
           <span />
         )}
         {to && (
-          <span className="text-[10px] font-bold text-slate-400 group-hover:text-slate-800 transition flex items-center gap-0.5 shrink-0 ml-auto">
+          <span className="text-[10px] font-semibold text-slate-400 group-hover:text-slate-900 transition flex items-center gap-0.5 shrink-0 ml-auto">
             Open →
           </span>
         )}

@@ -94,10 +94,10 @@ export default function DataTable({
   };
 
   return (
-    <div className={`bg-white border border-slate-200/90 rounded-2xl shadow-xs overflow-hidden ${className}`}>
+    <div className={`liquid-glass rounded-2xl overflow-hidden ${className}`}>
       {/* Top Toolbar */}
       {(searchable || toolbarExtra) && (
-        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="p-4 border-b border-slate-100/80 bg-white/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {searchable ? (
             <div className="relative flex-1 max-w-sm">
               <input
@@ -108,7 +108,7 @@ export default function DataTable({
                   setCurrentPage(1);
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full bg-slate-50/80 border border-slate-200 rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-600/20 transition-[border-color,box-shadow] duration-150"
+                className="w-full liquid-glass-subtle rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition duration-150"
               />
               <svg
                 className="w-4 h-4 text-slate-400 absolute left-3 top-3"
@@ -156,7 +156,7 @@ export default function DataTable({
           </div>
         ) : (
           <table className="w-full text-left text-sm text-slate-700">
-            <thead className="bg-slate-50/75 text-xs uppercase tracking-wider text-slate-500 border-b border-slate-200/80 font-medium">
+            <thead className="bg-slate-50/50 text-[11px] font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200/60">
               <tr>
                 {columns.map((col) => {
                   const isSortable = col.sortable !== false;
@@ -237,18 +237,18 @@ export default function DataTable({
               type="button"
               disabled={currentPage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1.5 bg-white hover:bg-slate-50 disabled:opacity-40 border border-slate-200 rounded-lg transition-all text-slate-700 active:scale-95 shadow-2xs"
+              className="liquid-glass-pill px-3 py-1.5 disabled:opacity-40 rounded-xl transition text-slate-700 active:scale-95 shadow-xs"
             >
               Previous
             </button>
-            <span className="px-2 text-slate-600 font-medium">
+            <span className="px-2 text-slate-600 font-medium font-mono text-xs">
               {currentPage} / {totalPages}
             </span>
             <button
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1.5 bg-white hover:bg-slate-50 disabled:opacity-40 border border-slate-200 rounded-lg transition-all text-slate-700 active:scale-95 shadow-2xs"
+              className="liquid-glass-pill px-3 py-1.5 disabled:opacity-40 rounded-xl transition text-slate-700 active:scale-95 shadow-xs"
             >
               Next
             </button>

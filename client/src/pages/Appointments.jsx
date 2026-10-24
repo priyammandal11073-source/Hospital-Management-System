@@ -30,13 +30,13 @@ const statusLabels = {
 };
 
 const statusClasses = {
-  pending: "bg-amber-50 text-amber-800 border border-amber-200/90",
-  waiting: "bg-amber-50 text-amber-800 border border-amber-200/90",
-  confirmed: "bg-sky-50 text-sky-800 border border-sky-200/90",
-  checked_in: "bg-teal-50 text-teal-800 border border-teal-200/90",
-  in_consultation: "bg-indigo-50 text-indigo-800 border border-indigo-200/90",
-  completed: "bg-emerald-50 text-emerald-800 border border-emerald-200/90",
-  cancelled: "bg-rose-50 text-rose-800 border border-rose-200/90",
+  pending: "liquid-glass-pill text-amber-700",
+  waiting: "liquid-glass-pill text-amber-700",
+  confirmed: "liquid-glass-pill text-sky-700",
+  checked_in: "liquid-glass-pill text-slate-700",
+  in_consultation: "liquid-glass-pill text-indigo-700",
+  completed: "liquid-glass-pill text-emerald-700",
+  cancelled: "liquid-glass-pill text-rose-700",
 };
 
 function Appointments() {

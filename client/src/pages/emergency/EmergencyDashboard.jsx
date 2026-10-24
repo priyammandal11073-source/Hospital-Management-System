@@ -6,10 +6,10 @@ import { usePrintModal } from "../../context/PrintModalContext.jsx";
 import { generateEmergencyCensusHtml } from "../../utils/printTemplates.js";
 
 const StatCard = ({ label, value, sub, color }) => (
-  <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm">
-    <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">{label}</div>
-    <div className={`mt-1 text-2xl font-black ${color}`}>{value}</div>
-    {sub && <div className="text-[11px] text-slate-500">{sub}</div>}
+  <div className="rounded-2xl liquid-glass-card p-4 transition active:scale-[0.98]">
+    <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{label}</div>
+    <div className={`mt-1 text-2xl font-bold ${color}`}>{value}</div>
+    {sub && <div className="text-[11px] text-slate-500 mt-0.5">{sub}</div>}
   </div>
 );
 

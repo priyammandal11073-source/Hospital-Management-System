@@ -49,22 +49,22 @@ const Modal = ({
     >
       <div
         className={`
-          bg-white rounded-2xl shadow-xl w-full mx-auto border border-slate-200/90
+          liquid-glass-elevated rounded-3xl w-full mx-auto
           max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2.5rem)] flex flex-col
           overflow-hidden animate-pop-in
           ${className}
         `}
       >
         {title && (
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 sm:px-6 py-3.5 sm:py-4 bg-white flex-shrink-0">
-            <h3 id={titleId} className="font-semibold text-base sm:text-lg text-slate-900 truncate pr-2">
+          <div className="flex items-center justify-between border-b border-slate-100/80 px-5 sm:px-7 py-4 bg-white/40 flex-shrink-0">
+            <h3 id={titleId} className="font-semibold text-base sm:text-lg text-slate-900 truncate pr-2 tracking-tight">
               {title}
             </h3>
             {onClose && (
               <button
                 type="button"
                 onClick={onClose}
-                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100 transition-[background-color,color] duration-150 touch-target flex items-center justify-center cursor-pointer active:scale-95"
+                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl liquid-glass-subtle hover:bg-white transition duration-150 touch-target flex items-center justify-center cursor-pointer active:scale-95"
                 aria-label="Close modal"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
@@ -74,13 +74,13 @@ const Modal = ({
             )}
           </div>
         )}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1">{children}</div>
+        <div className="p-5 sm:p-7 overflow-y-auto flex-1">{children}</div>
         {!hideCancel && onClose && (
-          <div className="border-t border-slate-100 px-4 sm:px-6 py-3 bg-slate-50 flex justify-end flex-shrink-0">
+          <div className="border-t border-slate-100/80 px-5 sm:px-7 py-3.5 bg-slate-50/40 flex justify-end flex-shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:bg-slate-50 transition-[background-color,border-color,transform] duration-150 touch-target cursor-pointer active:scale-95 shadow-2xs"
+              className="liquid-glass-pill px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:text-slate-900 transition duration-150 touch-target cursor-pointer active:scale-95 shadow-xs"
             >
               {cancelText}
             </button>

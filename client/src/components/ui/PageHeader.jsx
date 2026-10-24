@@ -17,7 +17,7 @@ export default function PageHeader({
     <div className={`mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${className}`}>
       <div className="flex items-start gap-3.5">
         {icon && (
-          <div className="w-10 h-10 rounded-xl bg-teal-50/80 border border-teal-200/70 flex items-center justify-center text-teal-700 dark:bg-teal-950/40 dark:border-teal-800 dark:text-teal-400 shrink-0 shadow-2xs mt-0.5">
+          <div className="w-10 h-10 rounded-xl liquid-glass-subtle flex items-center justify-center text-slate-800 shrink-0 shadow-2xs mt-0.5">
             {icon}
           </div>
         )}

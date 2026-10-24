@@ -9,119 +9,119 @@ import MobileBottomNav from "./mobile/MobileBottomNav.jsx";
 import MobileMenuSheet from "./mobile/MobileMenuSheet.jsx";
 
 const navLinkClass = ({ isActive }) =>
-  `group flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] ${
+  `group flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-150 ease-out active:scale-[0.98] ${
     isActive
-      ? "bg-teal-50 text-teal-900 border border-teal-200/90 font-bold shadow-2xs"
-      : "text-slate-600 hover:bg-white/90 hover:text-slate-900 hover:border hover:border-slate-200/80"
+      ? "bg-slate-900 text-white font-semibold shadow-xs"
+      : "text-slate-600 hover:bg-white/70 hover:text-slate-900"
   }`;
 
 const PORTAL_CONFIG = {
   admin: {
-    label: "Admin portal",
+    label: "Admin Portal",
     title: "Hospital Administration",
     badge: "Hospital Administration",
-    badgeClass: "bg-slate-100 text-slate-700 border border-slate-200",
-    avatarBg: "bg-slate-100 text-slate-700 border border-slate-200",
-    tagColor: "text-slate-600",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "System Administrator",
   },
   doctor: {
-    label: "Doctor portal",
+    label: "Doctor Portal",
     title: "Physician Clinical Workspace",
     badge: "Clinical Workspace",
-    badgeClass: "bg-blue-50 text-blue-700 border border-blue-200",
-    avatarBg: "bg-blue-50 text-blue-700 border border-blue-200",
-    tagColor: "text-blue-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Consultant Physician",
   },
   receptionist: {
-    label: "Front desk portal",
+    label: "Front Desk Portal",
     title: "Front Desk & Admissions",
     badge: "Admissions Desk",
-    badgeClass: "bg-amber-50 text-amber-700 border border-amber-200",
-    avatarBg: "bg-amber-50 text-amber-700 border border-amber-200",
-    tagColor: "text-amber-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Admissions & Cashier",
   },
   nurse: {
-    label: "Nursing station",
+    label: "Nursing Station",
     title: "Inpatient Nursing Station",
     badge: "Nursing Station",
-    badgeClass: "bg-teal-50 text-teal-700 border border-teal-200",
-    avatarBg: "bg-teal-50 text-teal-700 border border-teal-200",
-    tagColor: "text-teal-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Clinical Care Nurse",
   },
   patient: {
-    label: "Patient portal",
+    label: "Patient Portal",
     title: "Patient Health Portal",
     badge: "Patient Portal",
-    badgeClass: "bg-sky-50 text-sky-700 border border-sky-200",
-    avatarBg: "bg-sky-50 text-sky-700 border border-sky-200",
-    tagColor: "text-sky-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Patient Record",
   },
   pharmacist: {
-    label: "Pharmacy portal",
+    label: "Pharmacy Portal",
     title: "Hospital Pharmacy Operations",
     badge: "Pharmacy Operations",
-    badgeClass: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-    avatarBg: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-    tagColor: "text-emerald-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Chief Pharmacist",
   },
   diagnostic_admin: {
-    label: "Diagnostic services",
+    label: "Diagnostic Services",
     title: "Diagnostic & Imaging Services",
     badge: "Diagnostic Center",
-    badgeClass: "bg-indigo-50 text-indigo-700 border border-indigo-200",
-    avatarBg: "bg-indigo-50 text-indigo-700 border border-indigo-200",
-    tagColor: "text-indigo-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Diagnostic Administrator",
   },
   pathologist: {
-    label: "Pathology desk",
+    label: "Pathology Desk",
     title: "Pathology & Laboratory Medicine",
     badge: "Pathology Department",
-    badgeClass: "bg-indigo-50 text-indigo-700 border border-indigo-200",
-    avatarBg: "bg-indigo-50 text-indigo-700 border border-indigo-200",
-    tagColor: "text-indigo-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Consultant Pathologist",
   },
   radiologist: {
-    label: "Radiology desk",
+    label: "Radiology Desk",
     title: "Medical Imaging & Radiology",
     badge: "Radiology Department",
-    badgeClass: "bg-blue-50 text-blue-700 border border-blue-200",
-    avatarBg: "bg-blue-50 text-blue-700 border border-blue-200",
-    tagColor: "text-blue-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Consultant Radiologist",
   },
   lab_technician: {
-    label: "Laboratory bench",
+    label: "Laboratory Bench",
     title: "Phlebotomy & Clinical Laboratory",
     badge: "Clinical Laboratory",
-    badgeClass: "bg-teal-50 text-teal-700 border border-teal-200",
-    avatarBg: "bg-teal-50 text-teal-700 border border-teal-200",
-    tagColor: "text-teal-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Laboratory Technologist",
   },
   radiology_technician: {
-    label: "Radiology station",
+    label: "Radiology Station",
     title: "Imaging Modality Station",
     badge: "Imaging Station",
-    badgeClass: "bg-sky-50 text-sky-700 border border-sky-200",
-    avatarBg: "bg-sky-50 text-sky-700 border border-sky-200",
-    tagColor: "text-sky-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Radiology Technologist",
   },
   emergency: {
-    label: "Emergency portal",
+    label: "Emergency Portal",
     title: "Emergency & Trauma Center",
     badge: "Emergency Department",
-    badgeClass: "bg-rose-50 text-rose-700 border border-rose-200",
-    avatarBg: "bg-rose-50 text-rose-700 border border-rose-200",
-    tagColor: "text-rose-700",
+    badgeClass: "liquid-glass-pill text-slate-800 font-medium px-2.5 py-0.5 text-xs",
+    avatarBg: "bg-slate-900 text-white shadow-xs",
+    tagColor: "text-slate-500",
     roleDesc: "Emergency Physician / Triage",
   },
 };
@@ -211,10 +211,10 @@ function DashboardLayout() {
     <div className="min-h-screen bg-[#f7f6f3] flex flex-col font-sans">
       {/* ================= MODERN TOP HEADER BAR ================= */}
       <header
-        className={`sticky top-0 border-b px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 shadow-xs transition-[opacity,background-color,border-color] duration-150 ease-out ${
+        className={`sticky top-0 px-3 sm:px-5 lg:px-7 py-2.5 transition-all duration-200 ${
           isModalOpen
-            ? "z-0 opacity-20 pointer-events-none select-none blur-[1px] bg-slate-100/40 border-slate-300/40"
-            : "z-20 border-slate-200/80 bg-white/90 backdrop-blur-md"
+            ? "z-0 opacity-20 pointer-events-none select-none blur-[1px]"
+            : "z-20 liquid-glass-nav"
         }`}
         aria-hidden={isModalOpen}
       >
@@ -260,21 +260,22 @@ function DashboardLayout() {
           </div>
 
           {/* Center/Right Status & User Profile - ALWAYS STAYS IN VIEW */}
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0 ml-auto">
             {/* Quick Switch Portal Button */}
             <Link
               to="/login"
-              className="hidden lg:inline-flex items-center gap-1.5 rounded-md border border-white/70 bg-white/60 backdrop-blur-md px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-white/90 transition shadow-2xs flex-shrink-0"
+              className="hidden lg:inline-flex items-center gap-1.5 rounded-xl liquid-glass-pill px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-slate-900 transition flex-shrink-0"
               title="Switch to another portal"
             >
               <span>⇄</span>
-              <span>Switch portal</span>
+              <span>Switch Portal</span>
             </Link>
 
             {/* Emergency Hotline (Desktop) */}
-            <div className="hidden 2xl:flex items-center gap-1.5 rounded-md bg-rose-50 border border-rose-200 px-2.5 py-1 text-xs font-semibold text-rose-700 flex-shrink-0">
-              <span className="h-2 w-2 rounded-full bg-rose-600"></span>
-              <span className="font-mono text-rose-900 font-bold">
+            <div className="hidden 2xl:flex items-center gap-2 rounded-xl liquid-glass-subtle px-3 py-1 text-xs font-medium text-slate-700 flex-shrink-0">
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+              <span className="text-slate-500">Emergency:</span>
+              <span className="font-mono text-rose-700 font-bold">
                 <a href="tel:108" className="hover:underline" title="Call Emergency Ambulance">108</a> / <a href="tel:112" className="hover:underline" title="Call National Emergency">112</a>
               </span>
             </div>
@@ -282,20 +283,14 @@ function DashboardLayout() {
             {/* Emergency Quick Dial (Mobile) */}
             <a
               href="tel:108"
-              className="flex 2xl:hidden items-center justify-center h-8 w-8 rounded-lg bg-rose-50 border border-rose-200 text-rose-600 active:scale-95 transition"
+              className="flex 2xl:hidden items-center justify-center h-8 w-8 rounded-xl liquid-glass-subtle text-rose-600 active:scale-95 transition"
               title="Call 108 Emergency"
             >
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
-              </span>
+              <span className="h-2 w-2 rounded-full bg-rose-600" />
             </a>
 
             {/* Current Date Badge */}
-            <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-white/60 border border-white/70 px-2.5 py-1 rounded-md flex-shrink-0 backdrop-blur-md">
-              <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
+            <div className="hidden 2xl:flex items-center gap-1.5 text-xs font-medium text-slate-500 liquid-glass-subtle px-3 py-1 rounded-xl flex-shrink-0">
               <span className="font-mono text-[11px]">{todayStr}</span>
             </div>
 
@@ -305,13 +300,13 @@ function DashboardLayout() {
             </div>
 
             {/* User Profile Card */}
-            <div className="flex items-center gap-2 rounded-md border border-white/70 bg-white/70 backdrop-blur-md px-2 py-1 shadow-2xs flex-shrink-0">
-              <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-md ${config.avatarBg || "bg-slate-800 text-white"} text-xs font-bold uppercase shadow-2xs flex-shrink-0`}>
+            <div className="flex items-center gap-2 rounded-xl liquid-glass-subtle px-2.5 py-1 flex-shrink-0">
+              <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg ${config.avatarBg || "bg-slate-900 text-white"} text-xs font-bold uppercase shadow-2xs flex-shrink-0`}>
                 {user?.name ? user.name.charAt(0) : "U"}
               </div>
               <div className="text-left hidden lg:block">
-                <p className="text-xs font-bold text-slate-800 leading-tight truncate max-w-[110px]">{user?.name || "User"}</p>
-                <span className={`text-[10px] font-semibold block ${config.tagColor}`}>
+                <p className="text-xs font-semibold text-slate-800 leading-tight truncate max-w-[110px]">{user?.name || "User"}</p>
+                <span className={`text-[10px] font-medium block ${config.tagColor}`}>
                   {config.roleDesc}
                 </span>
               </div>
@@ -320,7 +315,7 @@ function DashboardLayout() {
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="flex-shrink-0 group flex items-center gap-1 rounded-md bg-white/70 hover:bg-rose-50 border border-white/70 hover:border-rose-300 px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:text-rose-700 transition shadow-2xs backdrop-blur-md touch-target cursor-pointer"
+              className="flex-shrink-0 group flex items-center gap-1.5 rounded-xl liquid-glass-pill hover:bg-rose-50 hover:border-rose-200/80 px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-rose-700 transition cursor-pointer active:scale-95"
               type="button"
               title="Sign Out"
             >
@@ -337,7 +332,7 @@ function DashboardLayout() {
       <div className="flex flex-1 flex-col lg:flex-row">
         {/* Desktop Docked Navigation Sidebar */}
         <aside
-          className="hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] glass-panel p-3.5 text-slate-800 flex-col justify-between overflow-y-auto"
+          className="hidden lg:flex lg:w-64 lg:flex-shrink-0 lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] liquid-glass-sidebar p-3.5 text-slate-800 flex-col justify-between overflow-y-auto"
           aria-label="Portal navigation sidebar"
         >
           <div>
@@ -733,7 +728,7 @@ function DashboardLayout() {
               ) : role === "admin" || role === "super_admin" ? (
                 <>
                   {/* Category 1: Operations & Command */}
-                  <div className="px-2 pt-1 pb-1 text-[10px] font-bold uppercase tracking-wider text-purple-600">
+                  <div className="px-2 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Command & Governance
                   </div>
                   <NavLink className={navLinkClass} to="/dashboard">
@@ -763,7 +758,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 2: Clinical & Inpatients */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-purple-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Clinical Operations
                   </div>
                   <NavLink className={navLinkClass} to="/patients">
@@ -822,7 +817,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 3: Workforce & HR */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-purple-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Human Resources
                   </div>
                   <NavLink className={navLinkClass} to="/admin/staff">
@@ -839,7 +834,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 4: Finance & Logistics */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-purple-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Finance & Logistics
                   </div>
                   <NavLink className={navLinkClass} to="/billing">
@@ -868,7 +863,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 5: Governance & Security */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-purple-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Governance & Logs
                   </div>
                   <NavLink className={navLinkClass} to="/reports">
@@ -1034,7 +1029,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 2: Prescriptions */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-orange-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Prescriptions
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/queue">
@@ -1057,7 +1052,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 3: Inventory */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-orange-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Inventory
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/inventory">
@@ -1092,7 +1087,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 4: Purchasing */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-orange-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Purchasing
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/suppliers">
@@ -1121,7 +1116,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 5: Patients */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-orange-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Patients
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/patients">
@@ -1132,7 +1127,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 6: Finance */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-orange-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Finance
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/billing">
@@ -1149,7 +1144,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 7: Reports */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-orange-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Reports
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/analytics">
@@ -1166,7 +1161,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 8: Staff */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-orange-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Staff & Duty
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/staff">
@@ -1187,7 +1182,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 2: Requests & Scheduling */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Requests & Scheduling
                   </div>
                   <NavLink className={navLinkClass} to="/diagnostic/requests">
@@ -1210,7 +1205,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 3: Laboratory / Pathology */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Laboratory & Pathology
                   </div>
                   <NavLink className={navLinkClass} to="/diagnostic/workbench">
@@ -1227,7 +1222,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 4: Radiology & Medical Imaging */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Radiology & Imaging
                   </div>
                   <NavLink className={navLinkClass} to="/diagnostic/radiology">
@@ -1244,7 +1239,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 5: Reports & Verification */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Reports & Verification
                   </div>
                   <NavLink className={navLinkClass} to="/diagnostic/review">
@@ -1273,7 +1268,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 6: Operations & Governance */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-indigo-600">
+                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                     Operations & Governance
                   </div>
                   <NavLink className={navLinkClass} to="/diagnostic/catalog">

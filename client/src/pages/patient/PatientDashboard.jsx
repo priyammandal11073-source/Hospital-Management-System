@@ -147,117 +147,117 @@ function PatientDashboard() {
         {/* Card 1: Upcoming Appointments */}
         <div
           onClick={() => navigate("/patient/appointments")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-blue-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl liquid-glass-card p-3.5 sm:p-5 flex flex-col justify-between active:scale-[0.98] transition"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Upcoming Visits</span>
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Upcoming Visits</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl liquid-glass-subtle text-xs sm:text-sm shrink-0">
               📅
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <p className="text-2xl sm:text-3xl font-extrabold text-blue-700">{stats?.upcomingAppointments || 0}</p>
-            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">Scheduled visits</p>
+            <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight tabular-nums">{stats?.upcomingAppointments || 0}</p>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Scheduled visits</p>
           </div>
         </div>
 
         {/* Card 2: Active Prescriptions */}
         <div
           onClick={() => navigate("/patient/medicines")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-teal-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl liquid-glass-card p-3.5 sm:p-5 flex flex-col justify-between active:scale-[0.98] transition"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Active Medicines</span>
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-teal-50 text-teal-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Active Medicines</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl liquid-glass-subtle text-xs sm:text-sm shrink-0">
               💊
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <p className="text-2xl sm:text-3xl font-extrabold text-teal-700">{stats?.activePrescriptions || 0}</p>
-            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">Daily dosages</p>
+            <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight tabular-nums">{stats?.activePrescriptions || 0}</p>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Daily dosages</p>
           </div>
         </div>
 
         {/* Card 3: Lab Reports */}
         <div
           onClick={() => navigate("/patient/lab-reports")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-purple-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl liquid-glass-card p-3.5 sm:p-5 flex flex-col justify-between active:scale-[0.98] transition"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Lab Reports</span>
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Lab Reports</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl liquid-glass-subtle text-xs sm:text-sm shrink-0">
               🔬
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <p className="text-2xl sm:text-3xl font-extrabold text-purple-700">{stats?.labReportsCount || 0}</p>
-            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">Verified reports</p>
+            <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight tabular-nums">{stats?.labReportsCount || 0}</p>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Verified reports</p>
           </div>
         </div>
 
         {/* Card 4: Invoices & Receipts */}
         <div
           onClick={() => navigate("/patient/billings")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-amber-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl liquid-glass-card p-3.5 sm:p-5 flex flex-col justify-between active:scale-[0.98] transition"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Pending Bills</span>
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Pending Bills</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl liquid-glass-subtle text-xs sm:text-sm shrink-0">
               🧾
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <p className="text-2xl sm:text-3xl font-extrabold text-amber-700">{stats?.pendingBills || 0}</p>
-            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">₹{stats?.pendingAmount?.toFixed(2) || "0.00"} due</p>
+            <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight tabular-nums">{stats?.pendingBills || 0}</p>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">₹{stats?.pendingAmount?.toFixed(2) || "0.00"} due</p>
           </div>
         </div>
 
         {/* Card 5: Admissions */}
         <div
           onClick={() => navigate("/patient/admissions")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-indigo-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl liquid-glass-card p-3.5 sm:p-5 flex flex-col justify-between active:scale-[0.98] transition"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Inpatient Stays</span>
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Inpatient Stays</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl liquid-glass-subtle text-xs sm:text-sm shrink-0">
               🛏️
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <p className="text-2xl sm:text-3xl font-extrabold text-indigo-700">{activeBedStay ? "1 Active" : "0 Active"}</p>
-            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">Bed stays</p>
+            <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight tabular-nums">{activeBedStay ? "1 Active" : "0 Active"}</p>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Bed stays</p>
           </div>
         </div>
 
         {/* Card 6: Completed Consultations */}
         <div
           onClick={() => navigate("/patient/consultations")}
-          className="group cursor-pointer rounded-2xl border border-slate-200/90 bg-white p-3.5 sm:p-5 shadow-xs transition-all hover:shadow-md hover:border-emerald-300 flex flex-col justify-between"
+          className="group cursor-pointer rounded-2xl liquid-glass-card p-3.5 sm:p-5 flex flex-col justify-between active:scale-[0.98] transition"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-500">Past Visits</span>
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 text-xs sm:text-sm group-hover:scale-110 transition-transform shrink-0">
+            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-slate-400">Past Visits</span>
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-xl liquid-glass-subtle text-xs sm:text-sm shrink-0">
               🩺
             </div>
           </div>
           <div className="mt-2.5 sm:mt-3">
-            <p className="text-2xl sm:text-3xl font-extrabold text-emerald-700">{stats?.completedConsultations || 0}</p>
-            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 mt-0.5">Summaries</p>
+            <p className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight tabular-nums">{stats?.completedConsultations || 0}</p>
+            <p className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5">Summaries</p>
           </div>
         </div>
       </div>
 
       {/* ================= NEXT UPCOMING APPOINTMENT HIGHLIGHT ================= */}
       {nextAppointment ? (
-        <div className="rounded-3xl border border-blue-200 bg-gradient-to-r from-blue-50/90 via-indigo-50/70 to-white p-6 shadow-xs">
+        <div className="rounded-3xl liquid-glass-elevated p-6 shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-white font-black text-2xl shadow-sm flex-shrink-0">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl liquid-glass-subtle text-slate-800 text-xl shadow-2xs flex-shrink-0">
                 🩺
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-blue-600 text-white px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider">
+                  <span className="rounded-full bg-slate-900 text-white px-3 py-0.5 text-[11px] font-semibold uppercase tracking-wider">
                     Next Consultation
                   </span>
                   <span className="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-[11px] font-bold capitalize">

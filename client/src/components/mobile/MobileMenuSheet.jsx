@@ -94,43 +94,43 @@ export default function MobileMenuSheet({
         aria-modal="true"
         data-mobile-sheet="true"
         aria-label="Portal Navigation Menu"
-        className="relative z-10 w-full max-h-[92vh] flex flex-col rounded-t-[32px] bg-[#fbfbfa] border-t border-white/90 shadow-2xl animate-sheet-up overflow-hidden"
+        className="relative z-10 w-full max-h-[92vh] flex flex-col rounded-t-[32px] liquid-glass-elevated shadow-2xl animate-sheet-up overflow-hidden"
       >
         {/* Drag Handle Bar */}
         <div className="pt-3 pb-1 flex-shrink-0 flex justify-center">
-          <div className="w-12 h-1.5 rounded-full bg-slate-300" />
+          <div className="w-12 h-1 rounded-full bg-slate-300/80" />
         </div>
 
         {/* Sheet Top Header */}
-        <div className="px-5 py-3 border-b border-slate-200/80 flex items-center justify-between flex-shrink-0 bg-white/70 backdrop-blur-md">
+        <div className="px-5 py-3 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0 bg-transparent">
           <Link to={isPatient ? "/patient/dashboard" : "/dashboard"} onClick={onClose}>
             <HospitalLogo variant="full" />
           </Link>
           <button
             type="button"
             onClick={onClose}
-            className="h-9 w-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition active:scale-90 touch-target cursor-pointer"
+            className="h-8 w-8 rounded-full liquid-glass-pill text-slate-500 hover:text-slate-800 flex items-center justify-center transition active:scale-95 touch-target cursor-pointer"
             aria-label="Close navigation menu"
           >
-            <MobileIcon name="close" className="h-5 w-5" />
+            <MobileIcon name="close" className="h-4 w-4" />
           </button>
         </div>
 
         {/* Scrollable Content Pane */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 overscroll-contain">
           {/* User Profile Banner */}
-          <div className="rounded-2xl bg-white border border-slate-200/90 p-3.5 shadow-xs flex flex-col gap-3">
+          <div className="liquid-glass-card p-3.5 flex flex-col gap-3">
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-xl bg-gradient-to-tr from-blue-700 to-indigo-600 text-white font-bold text-base flex items-center justify-center shadow-sm flex-shrink-0">
+              <div className="h-10 w-10 rounded-xl bg-slate-900 text-white font-semibold text-sm flex items-center justify-center shadow-xs flex-shrink-0">
                 {displayName.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <h3 className="text-sm font-bold text-slate-900 truncate">
+                  <h3 className="text-sm font-semibold text-slate-900 truncate">
                     {displayName}
                   </h3>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-700 flex-shrink-0">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="inline-flex items-center gap-1 rounded-full liquid-glass-pill px-2 py-0.5 text-[10px] font-medium text-slate-700 flex-shrink-0">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                     Active
                   </span>
                 </div>
@@ -141,11 +141,11 @@ export default function MobileMenuSheet({
             </div>
 
             {/* Quick Profile Actions */}
-            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/50">
               <Link
                 to="/login"
                 onClick={onClose}
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 py-2 text-xs font-semibold text-slate-700 transition active:scale-95"
+                className="flex items-center justify-center gap-1.5 rounded-xl liquid-glass-pill py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 transition active:scale-[0.98]"
               >
                 <MobileIcon name="switch" className="h-3.5 w-3.5 text-slate-500" />
                 <span>Switch Portal</span>
@@ -156,7 +156,7 @@ export default function MobileMenuSheet({
                   onClose();
                   onLogout();
                 }}
-                className="flex items-center justify-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 py-2 text-xs font-semibold text-rose-700 transition active:scale-95 cursor-pointer"
+                className="flex items-center justify-center gap-1.5 rounded-xl liquid-glass-pill py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition active:scale-[0.98] cursor-pointer"
               >
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -253,7 +253,7 @@ export default function MobileMenuSheet({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search tools, wards, reports, navigation..."
-              className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200/90 bg-white text-xs sm:text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 shadow-2xs"
+              className="w-full pl-10 pr-9 py-2.5 rounded-xl liquid-glass-subtle text-xs sm:text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
             />
             {searchQuery && (
               <button
@@ -273,8 +273,8 @@ export default function MobileMenuSheet({
               onClick={() => setSelectedCategory("all")}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 cursor-pointer ${
                 selectedCategory === "all"
-                  ? "bg-blue-50 text-blue-700 border border-blue-200/90 font-bold shadow-2xs"
-                  : "bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50"
+                  ? "bg-slate-900 text-white font-semibold shadow-xs"
+                  : "liquid-glass-pill text-slate-600 hover:text-slate-900"
               }`}
             >
               All Sections
@@ -286,8 +286,8 @@ export default function MobileMenuSheet({
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all active:scale-95 cursor-pointer ${
                   selectedCategory === cat.id
-                    ? "bg-blue-50 text-blue-700 border border-blue-200/90 font-bold shadow-2xs"
-                    : "bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50"
+                    ? "bg-slate-900 text-white font-semibold shadow-xs"
+                    : "liquid-glass-pill text-slate-600 hover:text-slate-900"
                 }`}
               >
                 {cat.name}
@@ -297,8 +297,8 @@ export default function MobileMenuSheet({
 
           {/* Filtered Navigation Groups */}
           {totalResults === 0 ? (
-            <div className="rounded-2xl bg-white border border-slate-200/80 p-8 text-center">
-              <div className="h-10 w-10 mx-auto rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-2">
+            <div className="rounded-2xl liquid-glass-card p-8 text-center">
+              <div className="h-10 w-10 mx-auto rounded-full liquid-glass-subtle text-slate-400 flex items-center justify-center mb-2">
                 <MobileIcon name="search" className="h-5 w-5" />
               </div>
               <p className="text-xs font-semibold text-slate-700">No matching tools found</p>
@@ -309,7 +309,7 @@ export default function MobileMenuSheet({
                   setSearchQuery("");
                   setSelectedCategory("all");
                 }}
-                className="mt-3 px-3 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold text-xs hover:bg-slate-200"
+                className="mt-3 px-3 py-1 rounded-lg liquid-glass-pill text-slate-700 font-semibold text-xs hover:bg-white/80"
               >
                 Reset Search
               </button>
@@ -318,7 +318,7 @@ export default function MobileMenuSheet({
             filteredCategories.map((cat) => (
               <div key={cat.id} className="space-y-1.5">
                 <div className="flex items-center justify-between px-1 pt-2">
-                  <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                  <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     {cat.name}
                   </h4>
                   <span className="text-[10px] text-slate-400 font-mono">
@@ -336,10 +336,10 @@ export default function MobileMenuSheet({
                         ? location.pathname === item.to
                         : item.to === location.pathname || location.pathname.startsWith(item.to + "/");
 
-                    const itemClass = `group rounded-xl p-3 flex items-center justify-between gap-3 border transition-all duration-150 active:scale-[0.98] cursor-pointer touch-target ${
+                    const itemClass = `group rounded-xl p-3 flex items-center justify-between gap-3 transition-all duration-150 active:scale-[0.98] cursor-pointer touch-target ${
                       isActive
-                        ? "bg-blue-50/80 border-blue-300 shadow-xs ring-1 ring-blue-500/20"
-                        : "bg-white border-slate-200/70 hover:border-slate-300 hover:bg-slate-50/70 shadow-2xs"
+                        ? "liquid-glass-elevated border-slate-300 shadow-xs"
+                        : "liquid-glass-subtle hover:bg-white/90"
                     }`;
 
                     const itemBody = (
@@ -348,8 +348,8 @@ export default function MobileMenuSheet({
                           <div
                             className={`h-9 w-9 rounded-xl flex items-center justify-center flex-shrink-0 transition-colors ${
                               isActive
-                                ? "bg-blue-50 text-blue-700 border border-blue-200/80 shadow-2xs"
-                                : "bg-slate-100 text-slate-600 group-hover:bg-slate-200"
+                                ? "bg-slate-900 text-white shadow-2xs"
+                                : "liquid-glass-pill text-slate-600 group-hover:text-slate-900"
                             }`}
                           >
                             <MobileIcon name={item.iconName} className="h-4.5 w-4.5" />
@@ -359,13 +359,13 @@ export default function MobileMenuSheet({
                             <div className="flex items-center gap-1.5">
                               <span
                                 className={`text-xs sm:text-sm font-semibold truncate ${
-                                  isActive ? "text-blue-900" : "text-slate-800"
+                                  isActive ? "text-slate-900" : "text-slate-800"
                                 }`}
                               >
                                 {item.label}
                               </span>
                               {item.badge && (
-                                <span className="rounded bg-rose-50 border border-rose-200 text-rose-700 px-1 py-0.2 text-[9px] font-bold">
+                                <span className="rounded-full liquid-glass-pill text-slate-700 px-1.5 py-0.2 text-[9px] font-semibold">
                                   {item.badge}
                                 </span>
                               )}
@@ -380,8 +380,8 @@ export default function MobileMenuSheet({
 
                         <div className="flex items-center gap-1.5 flex-shrink-0">
                           {isActive ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700">
-                              <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
+                            <span className="inline-flex items-center gap-1 rounded-full liquid-glass-pill px-2 py-0.5 text-[10px] font-semibold text-slate-800">
+                              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                               Active
                             </span>
                           ) : (

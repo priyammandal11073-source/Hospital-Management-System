@@ -272,14 +272,7 @@ function Login() {
       : "max-w-md";
 
   return (
-    <main className="relative min-h-screen bg-[#f7f6f3] py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans overflow-hidden">
-      {/* Decorative soft background shapes */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-blue-200/40 blur-3xl" />
-        <div className="absolute -right-24 top-1/3 h-96 w-96 rounded-full bg-indigo-200/40 blur-3xl" />
-        <div className="absolute -left-24 bottom-0 h-96 w-96 rounded-full bg-sky-100/60 blur-3xl" />
-      </div>
-
+    <main className="relative min-h-screen bg-transparent py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans overflow-hidden">
       <div className={`relative z-10 w-full ${containerMaxWidth} mx-auto transition-all duration-300`}>
         {/* Centered Brand Header */}
         <div className="mb-8 flex flex-col items-center justify-center text-center">
@@ -291,7 +284,7 @@ function Login() {
 
         {/* ================= STEP 1: SELECT PORTAL ================= */}
         {step === 1 && (
-          <section className="w-full bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-200/50">
+          <section className="w-full liquid-glass-elevated rounded-3xl p-6 sm:p-8 shadow-xl">
             <div className="mb-6 text-center">
               <h1 className="font-display text-[1.65rem] font-semibold text-slate-900 tracking-tight">Choose Your Portal</h1>
               <p className="mt-1 text-sm text-slate-500">
@@ -305,17 +298,17 @@ function Login() {
                   type="button"
                   key={portal.id}
                   onClick={() => handlePortalSelect(portal)}
-                  className="group relative bg-white hover:bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2 min-h-[7.5rem] transition-all duration-150 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer"
+                  className="group relative liquid-glass-card rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center text-center gap-2.5 min-h-[7.5rem] transition active:scale-[0.98] cursor-pointer"
                 >
-                  <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200 flex items-center justify-center transition-all duration-150">
+                  <div className="h-10 w-10 rounded-xl liquid-glass-subtle text-slate-700 flex items-center justify-center transition-all duration-150">
                     {portal.icon}
                   </div>
 
-                  <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 tracking-tight">
+                  <span className="text-sm font-semibold text-slate-900 tracking-tight">
                     {portal.name}
                   </span>
 
-                  <span className="text-[11px] text-slate-400 group-hover:text-slate-500 font-normal line-clamp-1">
+                  <span className="text-[11px] text-slate-400 font-normal line-clamp-1">
                     {portal.tagline}
                   </span>
                 </button>
@@ -326,11 +319,11 @@ function Login() {
 
         {/* ================= STEP 2: SUB-ROLE TILES ONLY (DIAGNOSTICS) ================= */}
         {step === 2 && selectedPortal.subRoles && (
-          <section className="w-full bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-200/50">
+          <section className="w-full liquid-glass-elevated rounded-3xl p-6 sm:p-8 shadow-xl">
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer mb-6"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 liquid-glass-pill px-3 py-1.5 transition-colors cursor-pointer mb-6"
             >
               <span>← Back to portal selection</span>
             </button>
@@ -353,15 +346,15 @@ function Login() {
                     setError("");
                     setStep(3);
                   }}
-                  className="group relative bg-white hover:bg-slate-50/70 border border-slate-200/80 hover:border-slate-300 rounded-xl p-4 flex flex-col items-center justify-center text-center gap-2 min-h-[7.5rem] transition-all duration-150 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer"
+                  className="group relative liquid-glass-card rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-center text-center gap-2.5 min-h-[7.5rem] transition active:scale-[0.98] cursor-pointer"
                 >
-                  <div className="h-10 w-10 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-700 group-hover:border-blue-200 flex items-center justify-center transition-all duration-150">
+                  <div className="h-10 w-10 rounded-xl liquid-glass-subtle text-slate-700 flex items-center justify-center transition-all duration-150">
                     {sr.icon}
                   </div>
-                  <span className="text-sm font-medium text-slate-800 group-hover:text-slate-900 tracking-tight">
+                  <span className="text-sm font-semibold text-slate-900 tracking-tight">
                     {sr.name}
                   </span>
-                  <span className="text-[11px] text-slate-400 group-hover:text-slate-500 font-normal line-clamp-1">
+                  <span className="text-[11px] text-slate-400 font-normal line-clamp-1">
                     {sr.tagline}
                   </span>
                 </button>
@@ -372,19 +365,19 @@ function Login() {
 
         {/* ================= STEP 2 (NO SUB-ROLES) / STEP 3: CREDENTIALS & LOGIN CARD ================= */}
         {((step === 2 && !selectedPortal.subRoles) || step === 3) && (
-          <section className="w-full bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-200/50">
+          <section className="w-full liquid-glass-elevated rounded-3xl p-6 sm:p-8 shadow-xl">
             <button
               type="button"
               onClick={() => (step === 3 ? setStep(2) : setStep(1))}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors cursor-pointer mb-5"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 liquid-glass-pill px-3 py-1.5 transition-colors cursor-pointer mb-5"
             >
               <span>{step === 3 ? "← Back to specialization selection" : "← Back to portal selection"}</span>
             </button>
 
             {/* Active Portal Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+            <div className="flex items-center justify-between border-b border-slate-200/50 pb-4 mb-6">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center flex-shrink-0">
+                <div className="h-10 w-10 rounded-xl liquid-glass-subtle text-slate-800 flex items-center justify-center flex-shrink-0">
                   {selectedPortal.icon}
                 </div>
                 <div>
@@ -397,7 +390,7 @@ function Login() {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                className="liquid-glass-pill px-3 py-1 text-xs font-semibold text-slate-700 hover:text-slate-900 transition cursor-pointer"
               >
                 Change
               </button>
@@ -406,11 +399,11 @@ function Login() {
             {/* Form */}
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="email">
+                <label className="mb-1.5 block text-xs font-medium text-slate-700" htmlFor="email">
                   {selectedPortal.role === "patient" ? "Patient Email Address" : "Staff Email"}
                 </label>
                 <input
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full rounded-xl liquid-glass-subtle px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
                   id="email"
                   type="email"
                   value={email}
@@ -421,11 +414,11 @@ function Login() {
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="password">
+                <label className="mb-1.5 block text-xs font-medium text-slate-700" htmlFor="password">
                   Password
                 </label>
                 <input
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                  className="w-full rounded-xl liquid-glass-subtle px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
                   id="password"
                   type="password"
                   value={password}
@@ -436,7 +429,7 @@ function Login() {
               </div>
 
               {error && (
-                <div className="flex items-center gap-2 rounded border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
+                <div className="flex items-center gap-2 rounded-xl liquid-glass-card border-rose-200/80 p-3 text-xs font-medium text-rose-800" role="alert">
                   <svg className="h-4 w-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -446,7 +439,7 @@ function Login() {
 
               <div className="pt-2">
                 <button
-                  className="w-full rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-2.5 text-sm font-medium text-white shadow-xs transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center"
+                  className="w-full rounded-xl bg-slate-900 hover:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center"
                   disabled={isSubmitting}
                   type="submit"
                 >

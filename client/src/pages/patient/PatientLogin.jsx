@@ -64,19 +64,12 @@ function PatientLogin() {
 
 
   return (
-    <main className="relative min-h-screen bg-[#faf7f4] py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans overflow-hidden">
-      {/* Decorative soft background shapes */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-rose-200/40 blur-3xl" />
-        <div className="absolute -right-24 top-1/3 h-96 w-96 rounded-full bg-fuchsia-200/40 blur-3xl" />
-        <div className="absolute -left-24 bottom-0 h-96 w-96 rounded-full bg-rose-100/60 blur-3xl" />
-      </div>
-
+    <main className="relative min-h-screen bg-transparent py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans overflow-hidden">
       <div className="relative z-10 w-full max-w-6xl mx-auto">
         <div className="grid gap-8 items-center lg:grid-cols-[0.9fr_1.1fr]">
           {/* Decorative brand panel */}
           <AuthBrandPanel
-            accent="rose"
+            accent="slate"
             badge="Patient Portal"
             title="Your Health, One Login Away"
             subtitle="Access prescriptions, lab reports, appointments, and bills securely — anywhere, anytime."
@@ -100,11 +93,11 @@ function PatientLogin() {
               </Link>
             </div>
 
-            <section className="w-full bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-300/40">
+            <section className="w-full liquid-glass-elevated rounded-3xl p-6 sm:p-8 shadow-xl">
               {/* Portal header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
+              <div className="flex items-center justify-between border-b border-slate-200/50 pb-4 mb-6">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-rose-600 flex items-center justify-center text-white flex-shrink-0 shadow-lg">
+                  <div className="h-10 w-10 rounded-xl liquid-glass-subtle flex items-center justify-center text-slate-800 flex-shrink-0">
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
@@ -116,7 +109,7 @@ function PatientLogin() {
                 </div>
                 <Link
                   to="/"
-                  className="rounded border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                  className="liquid-glass-pill px-3 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 transition cursor-pointer"
                 >
                   Home
                 </Link>
@@ -125,7 +118,7 @@ function PatientLogin() {
               {/* Form */}
               <form className="space-y-4" onSubmit={handleSubmit}>
                 {successMessage && (
-                  <div className="flex items-center gap-2 rounded border border-emerald-200 bg-emerald-50 p-2.5 text-xs font-medium text-emerald-800" role="status">
+                  <div className="flex items-center gap-2 rounded-xl liquid-glass-card border-emerald-200/80 p-3 text-xs font-medium text-emerald-800" role="status">
                     <svg className="h-4 w-4 text-emerald-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -134,11 +127,11 @@ function PatientLogin() {
                 )}
 
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="p-email">
+                  <label className="mb-1.5 block text-xs font-medium text-slate-700" htmlFor="p-email">
                     Patient Email Address
                   </label>
                   <input
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                    className="w-full rounded-xl liquid-glass-subtle px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
                     id="p-email"
                     type="email"
                     placeholder="patient@example.com"
@@ -150,19 +143,19 @@ function PatientLogin() {
                 </div>
 
                 <div>
-                  <div className="mb-1 flex items-center justify-between">
+                  <div className="mb-1.5 flex items-center justify-between">
                     <label className="block text-xs font-medium text-slate-700" htmlFor="p-password">
                       Password
                     </label>
                     <Link
                       to="/patient/forgot-password"
-                      className="text-xs font-medium text-rose-600 hover:underline"
+                      className="text-xs font-semibold text-slate-600 hover:text-slate-900 hover:underline"
                     >
                       Forgot Password?
                     </Link>
                   </div>
                   <input
-                    className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                    className="w-full rounded-xl liquid-glass-subtle px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
                     id="p-password"
                     type="password"
                     value={password}
@@ -177,13 +170,13 @@ function PatientLogin() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-600"
+                    className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
                   />
                   Remember me on this device
                 </label>
 
                 {error && (
-                  <div className="flex items-center gap-2 rounded border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
+                  <div className="flex items-center gap-2 rounded-xl liquid-glass-card border-rose-200/80 p-3 text-xs font-medium text-rose-800" role="alert">
                     <svg className="h-4 w-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -193,7 +186,7 @@ function PatientLogin() {
 
                 <div className="pt-2">
                   <button
-                    className="w-full rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-rose-600/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
+                    className="w-full rounded-xl bg-slate-900 hover:bg-slate-800 px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center"
                     disabled={isSubmitting}
                     type="submit"
                   >
@@ -210,10 +203,10 @@ function PatientLogin() {
               </form>
 
               {/* Patient Registration Link */}
-              <div className="mt-5 border-t border-slate-100 pt-4 text-center">
+              <div className="mt-5 border-t border-slate-200/50 pt-4 text-center">
                 <p className="text-xs text-slate-600">
                   First time patient?{" "}
-                  <Link to="/patient/register" className="font-medium text-rose-600 hover:underline">
+                  <Link to="/patient/register" className="font-semibold text-slate-900 hover:underline">
                     Register as New Patient →
                   </Link>
                 </p>

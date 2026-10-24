@@ -1,23 +1,32 @@
 import HospitalLogo from "./HospitalLogo.jsx";
 
 const THEMES = {
+  slate: {
+    gradient: "from-slate-950 via-slate-900 to-zinc-900",
+    orbA: "bg-slate-800/30",
+    orbB: "bg-zinc-800/20",
+    highlight: "text-slate-200",
+    chip: "bg-white/10 ring-white/15 text-white",
+    pulse: "stroke-slate-400",
+    statBg: "bg-white/5 ring-white/10",
+  },
   rose: {
-    gradient: "from-slate-900 via-rose-950 to-rose-800",
-    orbA: "bg-rose-400/25",
-    orbB: "bg-fuchsia-400/15",
+    gradient: "from-slate-950 via-slate-900 to-zinc-900",
+    orbA: "bg-slate-800/30",
+    orbB: "bg-zinc-800/20",
     highlight: "text-rose-200",
-    chip: "bg-white/5 ring-white/10 text-rose-100",
-    pulse: "stroke-rose-200",
-    statBg: "bg-white/10 ring-white/10",
+    chip: "bg-white/10 ring-white/15 text-white",
+    pulse: "stroke-rose-300",
+    statBg: "bg-white/5 ring-white/10",
   },
   blue: {
-    gradient: "from-blue-950 via-indigo-900 to-blue-700",
-    orbA: "bg-sky-400/25",
-    orbB: "bg-indigo-400/15",
+    gradient: "from-slate-950 via-slate-900 to-zinc-900",
+    orbA: "bg-slate-800/30",
+    orbB: "bg-zinc-800/20",
     highlight: "text-sky-200",
-    chip: "bg-white/5 ring-white/10 text-sky-100",
-    pulse: "stroke-sky-200",
-    statBg: "bg-white/10 ring-white/10",
+    chip: "bg-white/10 ring-white/15 text-white",
+    pulse: "stroke-sky-300",
+    statBg: "bg-white/5 ring-white/10",
   },
 };
 

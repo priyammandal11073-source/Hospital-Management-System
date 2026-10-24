@@ -7,7 +7,7 @@ export default function Footer({ className = "" }) {
 
   return (
     <footer
-      className={`rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white/95 backdrop-blur-xl text-slate-600 shadow-xs transition-colors ${className}`}
+      className={`liquid-glass-card rounded-2xl sm:rounded-3xl text-slate-600 transition-colors ${className}`}
       aria-label="Hospital portal footer"
     >
       <div className="mx-auto w-full px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
@@ -19,12 +19,12 @@ export default function Footer({ className = "" }) {
               Nivora Care Hospital is a mission-critical, end-to-end full-stack healthcare operating system connecting 8 specialized hospital portals into one synchronized clinical platform.
             </p>
             <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] font-semibold">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-emerald-800 border border-emerald-300/80 shadow-2xs">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="inline-flex items-center gap-1.5 rounded-full liquid-glass-pill px-3 py-1 text-slate-700 shadow-2xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
                 NABH Accredited Hospital
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-blue-800 border border-blue-300/80 shadow-2xs">
-                <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+              <span className="inline-flex items-center gap-1.5 rounded-full liquid-glass-pill px-3 py-1 text-slate-700 shadow-2xs">
+                <span className="h-1.5 w-1.5 rounded-full bg-sky-500"></span>
                 ABDM &amp; Ayushman Bharat Compliant
               </span>
             </div>
