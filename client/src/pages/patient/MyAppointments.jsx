@@ -6,6 +6,7 @@ import {
   rescheduleMyAppointment,
 } from "../../services/api.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import { ActionDropdown } from "../../components/ui/index.js";
 
 const statusClasses = {
   pending: "bg-amber-50 text-amber-800 border-amber-200",
@@ -264,47 +265,62 @@ function MyAppointments() {
                   </div>
 
                   {/* Right: Actions */}
-                  <div className="flex flex-wrap items-center gap-2 w-full md:w-auto self-start md:self-center pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
-                    {/* Teleconsult action if applicable */}
-                    {a.appointmentType === "teleconsult" && ["pending", "confirmed"].includes(a.status) && (
+                  <div className="flex items-center gap-2 w-full md:w-auto self-start md:self-center pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 justify-end">
+                    {a.appointmentType === "teleconsult" && ["pending", "confirmed"].includes(a.status) ? (
                       <a
                         href={`https://meet.google.com/new`}
                         target="_blank"
                         rel="noreferrer"
-                        className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-purple-50 text-purple-700 border border-purple-200 px-3.5 py-2 text-xs font-bold hover:bg-purple-100 transition shadow-2xs"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] min-h-[44px] px-4 py-2 text-xs font-semibold text-white shadow-xs transition"
                       >
-                        🎥 Teleconsult Room
+                        <span>Join Call</span>
+                        <span className="text-slate-400">🎥</span>
                       </a>
-                    )}
-
-                    {/* Reschedule Button */}
-                    {["pending", "confirmed"].includes(a.status) && (
-                      <button
-                        onClick={() => openRescheduleModal(a)}
-                        className="min-h-[44px] inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
-                      >
-                        🔄 Reschedule
-                      </button>
-                    )}
-
-                    {/* Cancel Button */}
-                    {["pending", "confirmed"].includes(a.status) && (
-                      <button
-                        disabled={cancelling === a._id}
-                        onClick={() => handleCancel(a._id)}
-                        className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-rose-50 text-rose-700 border border-rose-200 px-3.5 py-2 text-xs font-bold hover:bg-rose-600 hover:text-white transition shadow-2xs disabled:opacity-50"
-                      >
-                        {cancelling === a._id ? "Cancelling..." : "Cancel"}
-                      </button>
-                    )}
-
-                    {a.status === "completed" && (
+                    ) : a.status === "completed" ? (
                       <Link
                         to="/patient/consultations"
-                        className="min-h-[44px] inline-flex items-center justify-center rounded-xl bg-blue-50 text-blue-700 border border-blue-200 px-3.5 py-2 text-xs font-bold hover:bg-blue-100 transition shadow-2xs"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] min-h-[44px] px-4 py-2 text-xs font-semibold text-white shadow-xs transition"
                       >
-                        View Summary →
+                        <span>View Summary</span>
+                        <span className="text-slate-400">→</span>
                       </Link>
+                    ) : ["pending", "confirmed"].includes(a.status) ? (
+                      <button
+                        type="button"
+                        onClick={() => openRescheduleModal(a)}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] min-h-[44px] px-4 py-2 text-xs font-semibold text-white shadow-xs transition cursor-pointer"
+                      >
+                        <span>Reschedule</span>
+                        <span className="text-slate-400">🔄</span>
+                      </button>
+                    ) : null}
+
+                    {["pending", "confirmed"].includes(a.status) && (
+                      <ActionDropdown
+                        align="right"
+                        items={[
+                          {
+                            label: "Reschedule Appointment",
+                            icon: "🔄",
+                            onClick: () => openRescheduleModal(a),
+                          },
+                          {
+                            label: "Copy Token ID",
+                            icon: "📋",
+                            onClick: () => {
+                              navigator.clipboard?.writeText(a.tokenNumber || a._id);
+                            },
+                          },
+                          { divider: true },
+                          {
+                            label: cancelling === a._id ? "Cancelling..." : "Cancel Appointment",
+                            icon: "✕",
+                            danger: true,
+                            disabled: cancelling === a._id,
+                            onClick: () => handleCancel(a._id),
+                          },
+                        ]}
+                      />
                     )}
                   </div>
                 </div>

@@ -5,7 +5,7 @@ import MedicationAdminModal from "../components/MedicationAdminModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getPrescriptions, getPrescriptionById, deletePrescription } from "../services/api.js";
 import { getDoctorDisplayName, formatDoctorName } from "../utils/doctorName.js";
-import { PageHeader, ConfirmDialog, SkeletonTable } from "../components/ui/index.js";
+import { PageHeader, ConfirmDialog, SkeletonTable, ActionDropdown } from "../components/ui/index.js";
 import { toast } from "../utils/toast.js";
 
 const formatDate = (date) =>
@@ -349,49 +349,47 @@ function Prescriptions() {
                       </td>
 
                       <td className="py-3.5 px-4 text-right">
-                        <div className="inline-flex items-center gap-1.5">
+                        <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
                             onClick={() => handleOpenModal(rx)}
-                            className="px-3 py-1.5 text-xs font-bold rounded-lg bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-600 hover:text-white transition-colors shadow-2xs"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
                             title="View official prescription"
                           >
-                            View / Print
+                            <span>View / Print</span>
+                            <span className="text-slate-400">→</span>
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => setAdministerRx(rx)}
-                            className="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-600 hover:text-white transition-colors shadow-2xs inline-flex items-center gap-1"
-                            title="Administer medications & log eMAR dose"
-                          >
-                            <span>💊</span>
-                            <span>eMAR</span>
-                          </button>
-                          {isDoctor && (
-                            <button
-                              type="button"
-                              onClick={() => handleEdit(rx)}
-                              className="p-1.5 text-slate-500 hover:text-slate-800 rounded-lg hover:bg-slate-100 transition-colors"
-                              title="Edit prescription"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                          )}
-                          {canDelete && (
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(rx._id)}
-                              disabled={isDeleting && prescriptionToDelete === rx._id}
-                              className="p-1.5 text-rose-500 hover:text-rose-700 rounded-lg hover:bg-rose-50 disabled:opacity-50 transition-colors"
-                              title="Delete prescription"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          )}
+
+                          <ActionDropdown
+                            align="right"
+                            items={[
+                              {
+                                label: "Administer eMAR Dose",
+                                icon: "💊",
+                                onClick: () => setAdministerRx(rx),
+                              },
+                              ...(isDoctor
+                                ? [
+                                    {
+                                      label: "Edit Clinical Rx",
+                                      icon: "✎",
+                                      onClick: () => handleEdit(rx),
+                                    },
+                                  ]
+                                : []),
+                              ...(canDelete
+                                ? [
+                                    { divider: true },
+                                    {
+                                      label: "Delete Prescription Record",
+                                      icon: "🗑",
+                                      danger: true,
+                                      onClick: () => handleDelete(rx._id),
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>

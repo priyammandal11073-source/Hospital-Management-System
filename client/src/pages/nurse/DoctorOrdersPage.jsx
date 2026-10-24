@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getDoctorOrders, updateDoctorOrderStatus } from "../../services/api.js";
+import { ActionDropdown } from "../../components/ui/index.js";
 
 const ORDER_TYPES = ["All Types", "Medication", "Lab Test", "Imaging", "Procedure", "Diet", "Monitoring", "Other"];
 
@@ -173,40 +174,69 @@ export default function DoctorOrdersPage() {
                 )}
               </div>
 
-              {/* Action Buttons */}
+              {/* Action Controls: Primary Button + ActionDropdown */}
               <div className="flex items-center gap-2 whitespace-nowrap">
-                {o.status === "New" && (
+                {o.status === "New" ? (
                   <button
                     type="button"
                     onClick={() => handleOpenAction(o, "Acknowledged")}
-                    className="rounded-xl border border-blue-300 bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold px-3 py-1.5 text-xs transition"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
                   >
-                    ✓ Acknowledge Order
+                    <span>✓ Acknowledge</span>
                   </button>
-                )}
-                {o.status === "Acknowledged" && (
-                  <button
-                    type="button"
-                    onClick={() => handleOpenAction(o, "In Progress")}
-                    className="rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-bold px-3 py-1.5 text-xs transition"
-                  >
-                    Start Execution
-                  </button>
-                )}
-                {o.status !== "Completed" && (
+                ) : o.status !== "Completed" ? (
                   <button
                     type="button"
                     onClick={() => handleOpenAction(o, "Completed")}
-                    className="rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold px-3.5 py-1.5 text-xs transition shadow-2xs"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
                   >
-                    Mark Completed
+                    <span>Mark Completed</span>
+                    <span className="text-slate-400">✓</span>
                   </button>
-                )}
-                {o.status === "Completed" && (
-                  <span className="rounded-full bg-emerald-100 text-emerald-800 font-bold px-3 py-1 text-xs">
+                ) : (
+                  <span className="rounded-full bg-slate-100 text-slate-700 font-semibold px-3 py-1 text-xs">
                     ✓ Completed
                   </span>
                 )}
+
+                <ActionDropdown
+                  align="right"
+                  items={[
+                    ...(o.status === "New"
+                      ? [
+                          {
+                            label: "Start Execution (In Progress)",
+                            icon: "⚡",
+                            onClick: () => handleOpenAction(o, "In Progress"),
+                          },
+                        ]
+                      : []),
+                    ...(o.status === "Acknowledged"
+                      ? [
+                          {
+                            label: "Mark In Progress",
+                            icon: "⚡",
+                            onClick: () => handleOpenAction(o, "In Progress"),
+                          },
+                        ]
+                      : []),
+                    {
+                      label: "Add Nurse Observation Note",
+                      icon: "📝",
+                      onClick: () => handleOpenAction(o, o.status),
+                    },
+                    ...(o.status === "Completed"
+                      ? [
+                          { divider: true },
+                          {
+                            label: "Reopen Directive",
+                            icon: "🔄",
+                            onClick: () => handleOpenAction(o, "In Progress"),
+                          },
+                        ]
+                      : []),
+                  ]}
+                />
               </div>
             </div>
           ))}

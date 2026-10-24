@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { getAdminStaff, createAdminStaff, updateAdminStaff, getAdminDepartments } from "../../services/api.js";
+import { ActionDropdown } from "../../components/ui/index.js";
 
 const ROLE_BADGES = {
   admin: "bg-purple-50 text-purple-700 ring-purple-500/20",
@@ -116,6 +117,17 @@ export default function StaffManagementPage() {
       loadData();
     } catch (err) {
       setError(err.response?.data?.message || "Could not update staff member.");
+    }
+  };
+
+  const handleQuickStatus = async (memberId, status) => {
+    setError("");
+    try {
+      await updateAdminStaff(memberId, { status });
+      setSuccessMsg("Staff status updated successfully.");
+      loadData();
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not update status.");
     }
   };
 
@@ -343,12 +355,43 @@ export default function StaffManagementPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => setEditingStaff({ ...member })}
-                        className="rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-100 transition"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingStaff({ ...member })}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+                        >
+                          <span>Edit</span>
+                          <span className="text-slate-400">✎</span>
+                        </button>
+
+                        <ActionDropdown
+                          align="right"
+                          items={[
+                            {
+                              label: "View / Edit Profile",
+                              icon: "✎",
+                              onClick: () => setEditingStaff({ ...member }),
+                            },
+                            {
+                              label: member.status === "active" ? "Mark On Leave" : "Set Active Status",
+                              icon: "🔄",
+                              onClick: () => handleQuickStatus(member._id, member.status === "active" ? "on_leave" : "active"),
+                            },
+                            ...(member.status !== "inactive"
+                              ? [
+                                  { divider: true },
+                                  {
+                                    label: "Deactivate Account",
+                                    icon: "⏸",
+                                    danger: true,
+                                    onClick: () => handleQuickStatus(member._id, "inactive"),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))

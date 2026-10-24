@@ -906,4 +906,39 @@ body:has([role="dialog"]:not([aria-hidden="true"])) header.sticky {
   }
 }
 
+.animate-action-menu {
+  animation: actionMenuEnter 160ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
+  will-change: transform, opacity;
+}
+
+/* =========================================================================
+   MOBILE-NATIVE FOUNDATION (Tap latency, iOS input zoom, and touch ergonomics)
+   ========================================================================= */
+button,
+a[href],
+select,
+input,
+[role="button"],
+[role="menuitem"],
+.touch-target {
+  touch-action: manipulation;
+}
+
+button,
+[role="button"],
+.btn {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Guard against iOS Safari viewport auto-zoom when tapping inputs */
+@media screen and (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+
 

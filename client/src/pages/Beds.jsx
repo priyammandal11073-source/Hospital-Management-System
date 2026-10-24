@@ -6,7 +6,7 @@ import CreateBedModal from "../components/CreateBedModal.jsx";
 import { getBeds, getBedSummary, updateBedStatus, deleteBed } from "../services/api.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { getDoctorDisplayName } from "../utils/doctorName.js";
-import { PageHeader, ConfirmDialog } from "../components/ui/index.js";
+import { PageHeader, ConfirmDialog, ActionDropdown } from "../components/ui/index.js";
 
 const WARDS = [
   "All wards",
@@ -375,17 +375,6 @@ function Beds() {
                         ₹{bed.dailyRate?.toLocaleString("en-IN")}
                       </span>
                       <span className="text-[10px] font-medium text-slate-500 block">per day</span>
-
-                      {!isOccupied && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteBed(bed)}
-                          className="mt-1 text-[11px] text-rose-500 hover:text-rose-700 font-bold"
-                          title="Remove bed"
-                        >
-                          Delete
-                        </button>
-                      )}
                     </div>
                   </div>
 
@@ -465,55 +454,124 @@ function Beds() {
                     <>
                       <button
                         type="button"
-                        onClick={() => setTransferringBed(bed)}
-                        className="inline-flex items-center gap-1 px-3.5 py-1.5 text-xs font-bold rounded-lg bg-slate-100 text-slate-800 hover:bg-slate-200 border border-slate-300 transition-colors"
-                      >
-                        <span>⇄ Transfer</span>
-                      </button>
-                      <button
-                        type="button"
                         onClick={() => setDischargingBed(bed)}
-                        className="inline-flex items-center gap-1 px-4 py-1.5 text-xs font-bold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors shadow-2xs"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
                       >
-                        <span>🚪 Discharge & bill</span>
+                        <span>Discharge & Bill</span>
+                        <span className="text-slate-400">→</span>
                       </button>
+
+                      <ActionDropdown
+                        align="right"
+                        items={[
+                          {
+                            label: "Transfer Patient to Bed",
+                            icon: "⇄",
+                            onClick: () => setTransferringBed(bed),
+                          },
+                          ...(patient._id
+                            ? [
+                                {
+                                  label: "View Master Patients",
+                                  icon: "📋",
+                                  onClick: () => window.location.assign("/patients"),
+                                },
+                              ]
+                            : []),
+                        ]}
+                      />
                     </>
                   ) : isAvailable ? (
                     <>
                       <button
                         type="button"
-                        onClick={() => handleStatusChange(bed._id, "maintenance")}
-                        disabled={updatingBedId === bed._id}
-                        className="text-xs text-slate-500 hover:text-slate-800 font-semibold"
-                      >
-                        Mark maintenance
-                      </button>
-                      <button
-                        type="button"
                         onClick={() => setAllocatingBed(bed)}
-                        className="inline-flex items-center gap-1 px-4 py-1.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-2xs"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
                       >
-                        <span>+ Admit patient</span>
+                        <span>+ Admit Patient</span>
                       </button>
+
+                      <ActionDropdown
+                        align="right"
+                        items={[
+                          {
+                            label: "Mark for Maintenance",
+                            icon: "🛠️",
+                            onClick: () => handleStatusChange(bed._id, "maintenance"),
+                          },
+                          {
+                            label: "Mark for Housekeeping",
+                            icon: "🧹",
+                            onClick: () => handleStatusChange(bed._id, "cleaning"),
+                          },
+                          { divider: true },
+                          {
+                            label: "Remove Bed from Registry",
+                            icon: "🗑",
+                            danger: true,
+                            onClick: () => handleDeleteBed(bed),
+                          },
+                        ]}
+                      />
                     </>
                   ) : isCleaning ? (
-                    <button
-                      type="button"
-                      onClick={() => handleStatusChange(bed._id, "available")}
-                      disabled={updatingBedId === bed._id}
-                      className="w-full py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-2xs"
-                    >
-                      {updatingBedId === bed._id ? "Updating..." : "✓ Mark as ready for admission"}
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleStatusChange(bed._id, "available")}
+                        disabled={updatingBedId === bed._id}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition disabled:opacity-50"
+                      >
+                        <span>{updatingBedId === bed._id ? "Updating..." : "✓ Ready for Admission"}</span>
+                      </button>
+
+                      <ActionDropdown
+                        align="right"
+                        items={[
+                          {
+                            label: "Shift to Maintenance",
+                            icon: "🛠️",
+                            onClick: () => handleStatusChange(bed._id, "maintenance"),
+                          },
+                          { divider: true },
+                          {
+                            label: "Remove Bed",
+                            icon: "🗑",
+                            danger: true,
+                            onClick: () => handleDeleteBed(bed),
+                          },
+                        ]}
+                      />
+                    </>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleStatusChange(bed._id, "available")}
-                      disabled={updatingBedId === bed._id}
-                      className="w-full py-2 text-xs font-semibold rounded-xl bg-blue-600 hover:bg-blue-500 text-white transition-all active:scale-95 shadow-2xs cursor-pointer"
-                    >
-                      {updatingBedId === bed._id ? "Updating..." : "✓ Return to service"}
-                    </button>
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleStatusChange(bed._id, "available")}
+                        disabled={updatingBedId === bed._id}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition disabled:opacity-50"
+                      >
+                        <span>{updatingBedId === bed._id ? "Updating..." : "✓ Return to Service"}</span>
+                      </button>
+
+                      <ActionDropdown
+                        align="right"
+                        items={[
+                          {
+                            label: "Mark for Sanitization",
+                            icon: "🧹",
+                            onClick: () => handleStatusChange(bed._id, "cleaning"),
+                          },
+                          { divider: true },
+                          {
+                            label: "Remove Bed",
+                            icon: "🗑",
+                            danger: true,
+                            onClick: () => handleDeleteBed(bed),
+                          },
+                        ]}
+                      />
+                    </>
                   )}
                 </div>
               </div>

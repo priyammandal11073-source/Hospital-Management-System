@@ -9,6 +9,7 @@ import {
 } from "../services/api.js";
 import { printClinicalReport } from "../utils/printReport.js";
 import { formatDoctorName } from "../utils/doctorName.js";
+import { ActionDropdown } from "../components/ui/index.js";
 
 const CATEGORIES = [
   "Hematology",
@@ -336,36 +337,40 @@ export default function LabReports() {
                         year: "numeric",
                       })}
                     </td>
-                    <td className="px-4 py-3 text-right whitespace-nowrap space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => setPreviewReport(report)}
-                        className="text-teal-700 hover:text-teal-900 font-bold"
-                      >
-                        Preview
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => printClinicalReport(report)}
-                        className="text-indigo-600 hover:text-indigo-800 font-bold"
-                        title="Direct official print"
-                      >
-                        🖨️ Print
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleOpenEdit(report)}
-                        className="text-slate-600 hover:text-slate-900 font-bold"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(report._id)}
-                        className="text-rose-600 hover:text-rose-800 font-bold"
-                      >
-                        Delete
-                      </button>
+                    <td className="px-4 py-3 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setPreviewReport(report)}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+                        >
+                          <span>Preview</span>
+                          <span className="text-slate-400">→</span>
+                        </button>
+
+                        <ActionDropdown
+                          align="right"
+                          items={[
+                            {
+                              label: "Official Report Print",
+                              icon: "🖨️",
+                              onClick: () => printClinicalReport(report),
+                            },
+                            {
+                              label: "Edit Lab Findings",
+                              icon: "✎",
+                              onClick: () => handleOpenEdit(report),
+                            },
+                            { divider: true },
+                            {
+                              label: "Delete Investigation",
+                              icon: "🗑",
+                              danger: true,
+                              onClick: () => handleDelete(report._id),
+                            },
+                          ]}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}

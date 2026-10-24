@@ -7,7 +7,7 @@ import QrScannerModal from "../components/ui/QrScannerModal.jsx";
 import PatientQrCardModal from "../components/ui/PatientQrCardModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { formatDoctorName } from "../utils/doctorName.js";
-import { PageHeader, ConfirmDialog } from "../components/ui/index.js";
+import { PageHeader, ConfirmDialog, ActionDropdown } from "../components/ui/index.js";
 import { toast } from "../utils/toast.js";
 
 function Patients() {
@@ -342,59 +342,65 @@ function Patients() {
                   )}
                 </div>
 
-                {/* Mobile Touch-Friendly Action Buttons */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                {/* Mobile Responsive Action Row: Primary Action + ActionDropdown */}
+                <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                   <button
                     onClick={() => setView360Patient(patient)}
-                    className="rounded-xl border border-purple-200 bg-purple-50 px-2.5 py-2 text-xs font-bold text-purple-700 hover:bg-purple-100 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
+                    className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] min-h-[44px] px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition cursor-pointer"
                     type="button"
                   >
-                    👁️ 360 View
+                    <span>360° Profile</span>
+                    <span className="text-slate-400">→</span>
                   </button>
-                  <button
-                    aria-label={`Vitals for ${patient.name}`}
-                    className="rounded-xl border border-teal-200 bg-teal-50 px-2.5 py-2 text-xs font-bold text-teal-800 hover:bg-teal-100 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
-                    onClick={async () => {
-                      setVitalsPatient(patient);
-                      try {
-                        const res = await getPatientVitals(patient._id);
-                        setPatientVitalsList(res.vitals || []);
-                      } catch (err) {
-                        setPatientVitalsList([]);
-                      }
-                    }}
-                    type="button"
-                  >
-                    📊 Vitals
-                  </button>
-                  {!patient.isAdmitted && canAdmitBed && (
-                    <button
-                      aria-label={`Admit ${patient.name}`}
-                      className="rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
-                      onClick={() => setAdmittingPatient(patient)}
-                      type="button"
-                    >
-                      🛏️ Admit
-                    </button>
-                  )}
-                  <button
-                    aria-label={`Edit ${patient.name}`}
-                    className="rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
-                    onClick={() => openEditForm(patient)}
-                    type="button"
-                  >
-                    ✎ Edit
-                  </button>
-                  {canDelete && (
-                    <button
-                      aria-label={`Delete ${patient.name}`}
-                      className="rounded-xl border border-rose-200 bg-rose-50 px-2.5 py-2 text-xs font-bold text-rose-600 hover:bg-rose-600 hover:text-white transition shadow-2xs touch-target flex items-center justify-center gap-1 cursor-pointer"
-                      onClick={() => handleDelete(patient)}
-                      type="button"
-                    >
-                      🗑 Delete
-                    </button>
-                  )}
+
+                  <ActionDropdown
+                    align="right"
+                    items={[
+                      {
+                        label: "QR Identity Card",
+                        icon: "▦",
+                        onClick: () => setQrCardPatient(patient),
+                      },
+                      {
+                        label: "Health Vitals Tracker",
+                        icon: "📊",
+                        onClick: async () => {
+                          setVitalsPatient(patient);
+                          try {
+                            const res = await getPatientVitals(patient._id);
+                            setPatientVitalsList(res.vitals || []);
+                          } catch {
+                            setPatientVitalsList([]);
+                          }
+                        },
+                      },
+                      ...(!patient.isAdmitted && canAdmitBed
+                        ? [
+                            {
+                              label: "Admit to Bed",
+                              icon: "🛏️",
+                              onClick: () => setAdmittingPatient(patient),
+                            },
+                          ]
+                        : []),
+                      {
+                        label: "Edit Demographics",
+                        icon: "✎",
+                        onClick: () => openEditForm(patient),
+                      },
+                      ...(canDelete
+                        ? [
+                            { divider: true },
+                            {
+                              label: "Delete Patient Record",
+                              icon: "🗑",
+                              danger: true,
+                              onClick: () => handleDelete(patient),
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
                 </div>
               </div>
             ))}
@@ -460,72 +466,67 @@ function Patients() {
                         </span>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3.5 text-right space-x-1.5">
-                      <button
-                        onClick={() => setView360Patient(patient)}
-                        className="rounded-lg border border-purple-200 bg-purple-50 px-2.5 py-1 text-xs font-bold text-purple-700 hover:bg-purple-100 transition shadow-2xs"
-                        title="Patient 360 Comprehensive View"
-                        type="button"
-                      >
-                        👁️ 360 View
-                      </button>
-                      <button
-                        aria-label={`QR identity card for ${patient.name}`}
-                        className="rounded-lg border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 transition shadow-2xs"
-                        onClick={() => setQrCardPatient(patient)}
-                        title="Show QR identity card for scanning at any station"
-                        type="button"
-                      >
-                        ▦ QR Card
-                      </button>
-                      <button
-                        aria-label={`Vitals for ${patient.name}`}
-                        className="rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
-                        onClick={async () => {
-                          setVitalsPatient(patient);
-                          try {
-                            const res = await getPatientVitals(patient._id);
-                            setPatientVitalsList(res.vitals || []);
-                          } catch (err) {
-                            setPatientVitalsList([]);
-                          }
-                        }}
-                        title="View & log health vitals"
-                        type="button"
-                      >
-                        📊 Vitals
-                      </button>
-                      {!patient.isAdmitted && canAdmitBed && (
+                    <td className="whitespace-nowrap px-4 py-3.5 text-right">
+                      <div className="flex items-center justify-end gap-2">
                         <button
-                          aria-label={`Admit ${patient.name}`}
-                          className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition shadow-2xs"
-                          onClick={() => setAdmittingPatient(patient)}
-                          title="Admit patient to bed"
                           type="button"
+                          onClick={() => setView360Patient(patient)}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+                          title="Patient 360 Comprehensive View"
                         >
-                          🛏️ Admit
+                          <span>360° Profile</span>
+                          <span className="text-slate-400">→</span>
                         </button>
-                      )}
-                      <button
-                        aria-label={`Edit ${patient.name}`}
-                        className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-2xs"
-                        onClick={() => openEditForm(patient)}
-                        title="Edit patient"
-                        type="button"
-                      >
-                        ✎ Edit
-                      </button>
-                      {canDelete && (
-                        <button
-                          aria-label={`Delete ${patient.name}`}
-                          className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-600 hover:text-white transition shadow-2xs"
-                          onClick={() => handleDelete(patient)}
-                          title="Delete patient"
-                          type="button"
-                        >
-                          🗑
-                        </button>
-                      )}
+
+                        <ActionDropdown
+                          align="right"
+                          items={[
+                            {
+                              label: "QR Identity Card",
+                              icon: "▦",
+                              onClick: () => setQrCardPatient(patient),
+                            },
+                            {
+                              label: "Health Vitals Tracker",
+                              icon: "📊",
+                              onClick: async () => {
+                                setVitalsPatient(patient);
+                                try {
+                                  const res = await getPatientVitals(patient._id);
+                                  setPatientVitalsList(res.vitals || []);
+                                } catch {
+                                  setPatientVitalsList([]);
+                                }
+                              },
+                            },
+                            ...(!patient.isAdmitted && canAdmitBed
+                              ? [
+                                  {
+                                    label: "Admit to Bed",
+                                    icon: "🛏️",
+                                    onClick: () => setAdmittingPatient(patient),
+                                  },
+                                ]
+                              : []),
+                            {
+                              label: "Edit Demographics",
+                              icon: "✎",
+                              onClick: () => openEditForm(patient),
+                            },
+                            ...(canDelete
+                              ? [
+                                  { divider: true },
+                                  {
+                                    label: "Delete Patient Record",
+                                    icon: "🗑",
+                                    danger: true,
+                                    onClick: () => handleDelete(patient),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
+                      </div>
                     </td>
                   </tr>
                 ))}
