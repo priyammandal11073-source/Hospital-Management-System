@@ -38,6 +38,16 @@ By pairing **Fraunces serif typography** with subtle, tactile **paper-grain text
 | **Danger / Cancelled** | `bg-rose-50` / `bg-rose-100` | `text-rose-800` | `border-rose-200` | Cancelled booking, critical abnormal lab result, ER Red |
 | **Clinical Brand / Teal**| `bg-teal-50` / `bg-teal-600` | `text-teal-800` / `white` | `border-teal-200` | Primary brand CTAs, OPD ticket headers, official stamps |
 
+### 2.3 Liquid Glass Design Tokens (Glassmorphism & Surfaces)
+
+| Utility Class | Backdrop Blur & Color | Border & Box-Shadow | Purpose / Usage |
+|---|---|---|---|
+| `.liquid-glass-elevated` | `bg-white/80 backdrop-blur-xl` | `border border-white/60 shadow-lg` | Primary floating modals, KPI summary cards, and quick dial panels |
+| `.liquid-glass-pill` | `bg-white/75 backdrop-blur-md` | `border border-slate-200/60 shadow-2xs` | Status badges, filter tabs, breadcrumb chips, and profile pills |
+| `.liquid-glass-subtle` | `bg-slate-50/60 backdrop-blur-xs` | `border border-slate-200/40` | Table row hover states, secondary dropdowns, notification cards |
+| `.liquid-glass-nav` | `bg-white/85 backdrop-blur-md` | `border-b border-slate-200/80 shadow-2xs` | Sticky top navigation bar with dynamic safe-area insets |
+| `.liquid-glass-sidebar` | `bg-white/70 backdrop-blur-lg` | `border-r border-slate-200/80` | Docked navigation sidebar on tablets and desktops |
+
 ---
 
 ## 3. Typography & Text Hierarchy
@@ -62,10 +72,10 @@ By pairing **Fraunces serif typography** with subtle, tactile **paper-grain text
 
 ---
 
-## 4. Spacing, Sizing & Layout Conventions
+## 4. Spacing, Sizing & Mobile / iPad Native Ergonomics
 
 ### 4.1 Safe Area Insets (Mobile & Tablet)
-Configured via CSS custom properties in `index.css`:
+Configured via CSS custom properties in `index.css` and enabled by `<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">`:
 ```css
 :root {
   --sat: env(safe-area-inset-top, 0px);
@@ -74,12 +84,14 @@ Configured via CSS custom properties in `index.css`:
   --sal: env(safe-area-inset-left, 0px);
 }
 ```
-Ensures status bars and home indicator bars on mobile devices never obscure buttons or navigational headers.
+- **Top Header**: Padded with `padding-top: max(0px, env(safe-area-inset-top, 0px))` so navigation headers and emergency hotlines are never obscured by iPhone Dynamic Islands or camera notches.
+- **Bottom Clearance**: Mobile content containers feature `pb-[calc(4rem+max(env(safe-area-inset-bottom,0px),8px))]` on phones (`< md`) to prevent fixed bottom navigation bars from overlapping scrollable lists.
 
 ### 4.2 Touch Targets & Interactive Sizing
-- **Minimum Interactive Size**: `.touch-target` enforces `min-height: 44px; min-width: 44px;` on all primary action buttons, tabs, and checkboxes.
-- **Card Padding**: Standard `p-5 sm:p-6` with rounded corners `rounded-2xl`.
-- **Card Shadow & Ring**: `shadow-xs ring-1 ring-slate-200/80` ensuring crisp definition on both retina screens and legacy monitors.
+- **Minimum Interactive Size**: `.touch-target` and `@media (pointer: coarse)` enforce `min-height: 44px; min-width: 44px;` across buttons, tabs, inputs, and selects (Apple HIG standard).
+- **Tap Highlight Elimination**: `-webkit-tap-highlight-color: transparent` prevents visual grey flashes on iOS touch events.
+- **Overscroll Containment**: `overscroll-behavior: contain` on all scrollable modal bodies and containers prevents body scroll chaining and rubber-band jitter.
+- **Card Padding**: Standard `p-4 sm:p-5 md:p-6` with rounded corners `rounded-2xl`.
 
 ### 4.3 Custom Global Cursors
 - Default arrow cursor locked via `* { cursor: default; }` to eliminate unwanted browser I-beam flickering.
@@ -143,7 +155,33 @@ import { DataTable } from "../components/ui/index.js";
 />
 ```
 
-### 5.4 Additional Design System Components
+### 5.4 `<Modal>` Responsive Bottom Sheet
+Automatically adapts between a native iOS **Bottom Sheet** on phones (`< md`) and a centered elevated glass dialog on tablets and desktops (`>= md`):
+```jsx
+import Modal from "../components/ui/Modal.jsx";
+
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="Record Vital Signs"
+  subtitle="Enter temperature, pulse rate, BP, and oxygen saturation."
+  maxWidth="max-w-xl"
+>
+  {/* Content */}
+</Modal>
+```
+- **Phone (`< md`)**: Slides up from the bottom with `items-end`, `rounded-t-[28px]`, an Apple HIG top drag indicator pill, and `max-h-[90dvh]`.
+- **Tablet / Desktop (`>= md`)**: Centers with `items-center`, `rounded-2xl`, and glassmorphic elevated styling.
+
+### 5.5 Table-to-Card Responsive Pattern
+High-traffic operational lists (`Appointments`, `Patients`, `Doctors`, `MyPatients`, `WaitingRoomPage`) render:
+1. **Desktop / Tablet (`>= md`)**: Full tabular view with column headers, sorting, and inline status badges.
+2. **Phone (`< md`)**: Rich, touch-optimized card layout with patient avatars, primary badges, clear field labels, and large 44px action buttons.
+
+### 5.6 Additional Design System Components
+- **`<ActionDropdown>`**: Compact, accessible action menu replacing cluttered horizontal button rows.
+- **`<ConfirmDialog>`**: Non-blocking accessible modal dialog replacing browser `window.confirm()`.
+- **`<SidebarCollapseButton>`**: Accessible keyboard (`Ctrl+B`) & click toggle for sidebar width (`w-16/20` vs `w-56/64`).
 - **`<EmptyStateCard>`**: Clean graphic placeholder when queries return zero results.
 - **`<SkeletonTable>`**: Animated pulse rows simulating table content during network fetch.
 - **`<PageLoader>`**: Suspense fallback spinner matching the brand teal theme.
@@ -165,6 +203,7 @@ import { DataTable } from "../components/ui/index.js";
     body::before { display: none; }
   }
   ```
+- **Direct-Manipulation Gestures**: Navigation drawers support a fluid left-edge swipe gesture (`touchstart` < 28px, swipe right > 60px) with interruptible CSS transitions.
 - **Modal Dialog Semantics**: Modals include `role="dialog"`, `aria-modal="true"`, and clear close dismiss handlers.
 - **Color Independence**: Status tags combine color tinting with explicit text labels (e.g., `Checked In (Waiting)`, not just a green circle).
 - **High Visual Contrast**: Text elements maintain minimum 4.5:1 contrast against surface backgrounds.

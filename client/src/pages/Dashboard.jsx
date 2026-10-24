@@ -1,16 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, lazy, Suspense } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import DoctorScheduleModal from "../components/DoctorScheduleModal.jsx";
-import PrescriptionForm from "../components/PrescriptionForm.jsx";
-import VitalsTracker from "../components/VitalsTracker.jsx";
-import NursingChecklistModal from "../components/NursingChecklistModal.jsx";
-import PatientClinicalProfileModal from "../components/nurse/PatientClinicalProfileModal.jsx";
-import DoctorPatientProfileModal from "../components/doctor/DoctorPatientProfileModal.jsx";
-import PharmacyDashboard from "./pharmacy/PharmacyDashboard.jsx";
-import DiagnosticDashboard from "./diagnostic/DiagnosticDashboard.jsx";
-import EmergencyDashboard from "./emergency/EmergencyDashboard.jsx";
-import UniversalPaymentModal from "../components/UniversalPaymentModal.jsx";
+
+const DoctorScheduleModal = lazy(() => import("../components/DoctorScheduleModal.jsx"));
+const PrescriptionForm = lazy(() => import("../components/PrescriptionForm.jsx"));
+const VitalsTracker = lazy(() => import("../components/VitalsTracker.jsx"));
+const NursingChecklistModal = lazy(() => import("../components/NursingChecklistModal.jsx"));
+const PatientClinicalProfileModal = lazy(() => import("../components/nurse/PatientClinicalProfileModal.jsx"));
+const DoctorPatientProfileModal = lazy(() => import("../components/doctor/DoctorPatientProfileModal.jsx"));
+const PharmacyDashboard = lazy(() => import("./pharmacy/PharmacyDashboard.jsx"));
+const DiagnosticDashboard = lazy(() => import("./diagnostic/DiagnosticDashboard.jsx"));
+const EmergencyDashboard = lazy(() => import("./emergency/EmergencyDashboard.jsx"));
+const UniversalPaymentModal = lazy(() => import("../components/UniversalPaymentModal.jsx"));
 import { ActionDropdown } from "../components/ui/index.js";
 import { formatDoctorName } from "../utils/doctorName.js";
 import {
@@ -234,7 +235,7 @@ function AdminDashboard({ user, refreshKey, onTriggerRefresh }) {
       </div>
 
       {/* ================= 2. 12-METRIC EXECUTIVE KPI GRID ================= */}
-      <div className="grid gap-3.5 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-3.5">
         <MetricCard
           label="Total Registered Patients"
           value={telemetry?.totalPatients || 0}
@@ -2856,50 +2857,58 @@ function Dashboard() {
 
   const role = user?.role || "admin";
 
-  if (role === "doctor") {
-    return <DoctorDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
-  }
+  const renderDashboard = () => {
+    if (role === "doctor") {
+      return <DoctorDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+    }
 
-  if (role === "nurse") {
-    return <NurseDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
-  }
+    if (role === "nurse") {
+      return <NurseDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+    }
 
-  if (role === "receptionist") {
-    return <ReceptionistDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
-  }
+    if (role === "receptionist") {
+      return <ReceptionistDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+    }
 
-  if (role === "patient") {
-    return <PatientPortalDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
-  }
+    if (role === "patient") {
+      return <PatientPortalDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+    }
 
-  if (role === "pharmacist") {
-    return <PharmacyDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
-  }
+    if (role === "pharmacist") {
+      return <PharmacyDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+    }
 
-  if (
-    [
-      "diagnostic_admin",
-      "pathologist",
-      "radiologist",
-      "lab_technician",
-      "radiology_technician",
-    ].includes(role)
-  ) {
-    return (
-      <DiagnosticDashboard
-        user={user}
-        refreshKey={refreshKey}
-        onTriggerRefresh={handleTriggerRefresh}
-      />
-    );
-  }
+    if (
+      [
+        "diagnostic_admin",
+        "pathologist",
+        "radiologist",
+        "lab_technician",
+        "radiology_technician",
+      ].includes(role)
+    ) {
+      return (
+        <DiagnosticDashboard
+          user={user}
+          refreshKey={refreshKey}
+          onTriggerRefresh={handleTriggerRefresh}
+        />
+      );
+    }
 
-  if (role === "emergency") {
-    return <EmergencyDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
-  }
+    if (role === "emergency") {
+      return <EmergencyDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+    }
 
-  // Default to Admin Executive Portal
-  return <AdminDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+    // Default to Admin Executive Portal
+    return <AdminDashboard user={user} refreshKey={refreshKey} onTriggerRefresh={handleTriggerRefresh} />;
+  };
+
+  return (
+    <Suspense fallback={<LoadingSpinner label="Loading workspace..." />}>
+      {renderDashboard()}
+    </Suspense>
+  );
 }
 
 function LoadingSpinner({ label }) {

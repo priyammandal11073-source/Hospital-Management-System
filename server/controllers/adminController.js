@@ -136,20 +136,23 @@ export const getAdminTelemetry = async (req, res) => {
       Bed.find({ status: "occupied" })
         .populate("currentAdmission.patient", "name age gender contactNumber bloodGroup")
         .populate("currentAdmission.attendingDoctor", "name specialization department")
-        .limit(6),
-      AuditLog.find().sort({ createdAt: -1 }).limit(10),
+        .limit(6)
+        .lean(),
+      AuditLog.find().sort({ createdAt: -1 }).limit(10).lean(),
       Appointment.find()
         .populate("patient", "name contactNumber")
         .populate("doctor", "name specialization")
         .sort({ appointmentDate: -1 })
-        .limit(6),
+        .limit(6)
+        .lean(),
       Appointment.find({
         appointmentDate: { $gte: todayStart, $lte: todayEnd },
       })
         .populate("patient", "name contactNumber")
         .populate("doctor", "name specialization")
         .sort({ appointmentDate: 1 })
-        .limit(8),
+        .limit(8)
+        .lean(),
       Appointment.countDocuments({ status: "pending" }),
       DiagnosticOrder.countDocuments({ createdAt: { $gte: todayStart, $lte: todayEnd } }),
       DiagnosticOrder.countDocuments({ status: { $in: ["Requested", "Scheduled", "Patient Ready", "Sample Collected", "In Progress"] } }),
@@ -257,22 +260,28 @@ export const getGlobalAdminSearch = async (req, res) => {
     const [patients, doctors, staff, appointments, invoices, beds] = await Promise.all([
       Patient.find({ $or: [{ name: regex }, { contactNumber: regex }, { email: regex }, { abhaId: regex }] })
         .select("name contactNumber email age gender abhaId")
-        .limit(5),
+        .limit(5)
+        .lean(),
       Doctor.find({ $or: [{ name: regex }, { specialization: regex }, { department: regex }] })
         .select("name specialization department contactNumber consultationFee")
-        .limit(5),
+        .limit(5)
+        .lean(),
       User.find({ role: { $ne: "patient" }, $or: [{ name: regex }, { email: regex }, { role: regex }, { department: regex }] })
         .select("name email role department designation")
-        .limit(5),
+        .limit(5)
+        .lean(),
       Appointment.find({ $or: [{ reasonForVisit: regex }, { timeSlot: regex }] })
         .populate("patient", "name")
         .populate("doctor", "name specialization")
-        .limit(5),
+        .limit(5)
+        .lean(),
       Billing.find({ $or: [{ paymentMethod: regex }, { upiTransactionId: regex }] })
         .populate("patient", "name")
-        .limit(5),
+        .limit(5)
+        .lean(),
       Bed.find({ $or: [{ bedNumber: regex }, { ward: regex }, { floor: regex }] })
-        .limit(5),
+        .limit(5)
+        .lean(),
     ]);
 
     return res.status(200).json({
@@ -321,7 +330,8 @@ export const getStaffList = async (req, res) => {
     const staff = await User.find(filter)
       .select("-password")
       .populate("doctor", "specialization department consultationFee")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({ success: true, staff });
   } catch (error) {
@@ -443,7 +453,7 @@ export const getDepartments = async (req, res) => {
       return res.status(200).json({ success: true, departments: defaultDepts, isOfflineDemo: true });
     }
 
-    let departments = await Department.find().populate("headOfDepartment", "name specialization").sort({ name: 1 });
+    let departments = await Department.find().populate("headOfDepartment", "name specialization").sort({ name: 1 }).lean();
 
     // Seed default departments if none exist
     if (departments.length === 0) {
@@ -458,7 +468,7 @@ export const getDepartments = async (req, res) => {
         { name: "Pharmacy", code: "PHAR", location: "Central OPD", floor: "Ground Floor", operatingHours: "24 Hours Available" },
       ];
       await Department.insertMany(defaultDepts);
-      departments = await Department.find().sort({ name: 1 });
+      departments = await Department.find().sort({ name: 1 }).lean();
     }
 
     return res.status(200).json({ success: true, departments });
@@ -516,15 +526,15 @@ export const getHospitalCalendarEvents = async (req, res) => {
     const [appointments, procedures, leaves] = await Promise.all([
       Appointment.find({
         appointmentDate: { $gte: startDate, $lte: endDate },
-      }).populate("doctor", "name specialization department").populate("patient", "name contactNumber"),
+      }).populate("doctor", "name specialization department").populate("patient", "name contactNumber").lean(),
       ProcedureSchedule.find({
         scheduledDate: { $gte: startDate, $lte: endDate },
-      }).populate("leadSurgeon", "name specialization").populate("patient", "name"),
+      }).populate("leadSurgeon", "name specialization").populate("patient", "name").lean(),
       StaffLeave.find({
         startDate: { $lte: endDate },
         endDate: { $gte: startDate },
         status: "approved",
-      }).populate("user", "name role department"),
+      }).populate("user", "name role department").lean(),
     ]);
 
     const events = [];
@@ -600,7 +610,8 @@ export const getRevenueAnalytics = async (req, res) => {
       .populate({
         path: "appointment",
         populate: { path: "doctor", select: "name specialization department" },
-      });
+      })
+      .lean();
 
     let totalCollected = 0;
     let totalPending = 0;
@@ -961,7 +972,7 @@ export const getStaffAttendance = async (req, res) => {
 
     const attendance = await StaffAttendance.find({
       date: queryDate,
-    }).populate("user", "name role department designation employeeId");
+    }).populate("user", "name role department designation employeeId").lean();
 
     return res.status(200).json({ success: true, date: queryDate, attendance });
   } catch (error) {
@@ -975,7 +986,8 @@ export const getStaffLeaves = async (req, res) => {
     const leaves = await StaffLeave.find()
       .populate("user", "name role department designation employeeId")
       .populate("reviewedBy", "name")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({ success: true, leaves });
   } catch (error) {
@@ -1025,9 +1037,9 @@ export const reviewStaffLeave = async (req, res) => {
 export const getEmergencyOperations = async (req, res) => {
   try {
     const [emergencyBeds, criticalLabs, recentEmergencyPatients] = await Promise.all([
-      Bed.find({ ward: { $regex: /emergency|trauma|ccu/i } }),
-      LabReport.find({ isCritical: true }).populate("patient", "name age gender contactNumber").sort({ createdAt: -1 }).limit(10),
-      Patient.find().sort({ createdAt: -1 }).limit(5),
+      Bed.find({ ward: { $regex: /emergency|trauma|ccu/i } }).lean(),
+      LabReport.find({ isCritical: true }).populate("patient", "name age gender contactNumber").sort({ createdAt: -1 }).limit(10).lean(),
+      Patient.find().sort({ createdAt: -1 }).limit(5).lean(),
     ]);
 
     const totalEmergencyBeds = emergencyBeds.length || 12;
@@ -1085,7 +1097,8 @@ export const getOperatingTheatreSchedule = async (req, res) => {
     const procedures = await ProcedureSchedule.find()
       .populate("patient", "name age gender")
       .populate("leadSurgeon", "name specialization department")
-      .sort({ scheduledDate: -1 });
+      .sort({ scheduledDate: -1 })
+      .lean();
 
     const defaultTheatres = [
       { room: "OT 1 (Major - Cardiac/Neuro)", type: "Laminar Flow Suite (ISO 5)", status: procedures.some((p) => p.status === "in_progress") ? "occupied" : "available" },
@@ -1153,7 +1166,7 @@ export const getAuditLogs = async (req, res) => {
 
     const skip = (Number(page) - 1) * Number(limit);
     const [logs, total] = await Promise.all([
-      AuditLog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
+      AuditLog.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)).lean(),
       AuditLog.countDocuments(filter),
     ]);
 
@@ -1255,7 +1268,8 @@ export const getInsuranceClaims = async (req, res) => {
           populate: { path: "doctor", select: "name specialization department" },
         })
         .sort({ createdAt: -1 })
-        .limit(200),
+        .limit(200)
+        .lean(),
       Billing.aggregate([
         { $match: { "insuranceDetails.status": { $in: validStatuses } } },
         {
@@ -1366,7 +1380,8 @@ export const getFeedbackReview = async (req, res) => {
         .populate("appointment", "appointmentDate timeSlot")
         .populate("doctor", "name specialization department")
         .sort({ createdAt: -1 })
-        .limit(200),
+        .limit(200)
+        .lean(),
       Feedback.aggregate([
         {
           $group: {

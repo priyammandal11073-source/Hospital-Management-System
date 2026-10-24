@@ -26,10 +26,27 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "vendor-react": ["react", "react-dom", "react-router-dom"],
-          "vendor-charts": ["recharts"],
-          "vendor-utils": ["axios", "qrcode"],
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (
+              id.includes("react-dom") ||
+              id.includes("react-router") ||
+              id.includes("/react/") ||
+              id.includes("\\react\\") ||
+              id.includes("scheduler")
+            ) {
+              return "vendor-react";
+            }
+            if (id.includes("recharts")) {
+              return "vendor-charts";
+            }
+            if (id.includes("html5-qrcode")) {
+              return "vendor-qr";
+            }
+            if (id.includes("axios") || id.includes("qrcode")) {
+              return "vendor-utils";
+            }
+          }
         },
       },
     },

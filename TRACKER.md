@@ -28,6 +28,8 @@
 | **M-16** | **Zod Request Validation: Doctors** | Phase 10 | High | None | Created `doctorValidators.js` and wired into `doctorRoutes.js`. | ✅ **DONE** (Unit tested in Vitest) |
 | **M-17** | **Refactor Core Controllers with AsyncHandler**| Phase 5 | High | M-04 | Refactored `appointmentController`, `patientController`, `billingController`, `bedController`, `doctorController`, `prescriptionController`. | ✅ **DONE** (65 server tests pass) |
 | **M-18** | **Mobile-First UI & Navigation Architecture** | Phase 7 | High | None | Created `<MobileBottomNav>`, `<MobileMenuSheet>`, `<MobileNavIcons>`, and `navigationConfig.jsx` with real-time search, category chips, emergency hotline, and role-tailored tabs. | ✅ **DONE** (15 client tests & production build pass) |
+| **M-19** | **Liquid Glass Design System & Theme Alignment** | Phase 7 | High | M-08 | Implemented cohesive translucent glassmorphic system (`liquid-glass-elevated`, `liquid-glass-pill`, `liquid-glass-subtle`, `liquid-glass-nav`, `liquid-glass-sidebar`) with high-contrast accessibility and backdrop blur filters. | ✅ **DONE** (Visual hierarchy & theme tokens active) |
+| **M-20** | **Mobile & iPad Native Architecture (Apple HIG & Emil Kowalski Principles)** | Phase 7 | High | M-18, M-19 | (1) Added `viewport-fit=cover` and CSS safe-area tokens (`--sat`, `--sar`, `--sab`, `--sal`). (2) Adapted shell & sidebar to `md` (768px) breakpoint for iPad portrait split. (3) Direct-manipulation left edge swipe gesture to open drawer. (4) Adaptive data-table to card view for small viewports on 5 high-traffic pages. (5) Apple HIG responsive bottom sheets for `<Modal />` with drag handles and safe-area insets. (6) Mobile keyboard ergonomics and sticky form submit bars. | ✅ **DONE** (Vite build passes in 10.13s, 0 errors) |
 
 ---
 
@@ -35,7 +37,7 @@
 
 | ID | Task / Capability | Phase | Priority | Dependencies | Acceptance Criteria | Current Status |
 |---|---|---|---|---|---|---|
-| **A-01** | **Data Table Modernization** | Phase 7 | Medium | M-08 | Migrate custom HTML table in `StaffManagementPage.jsx` and `LabReports.jsx` to `<DataTable>` component. | 🔄 **In Progress** (Component created, ready for page migration) |
+| **A-01** | **Data Table Modernization** | Phase 7 | Medium | M-08, M-20 | Expand `<DataTable>` component with built-in responsive mobile card fallbacks across remaining secondary operational logs. | 🔄 **In Progress** (Core clinical pages converted) |
 | **A-02** | **Split Fat Controllers** | Phase 1 | Medium | M-17 | Decompose `adminController.js` (55KB) into `staffController`, `equipmentController`, and `departmentController`. | 🔄 **Planned / Ready** |
 
 ---
@@ -56,6 +58,6 @@
 ```
 Server Vitest Tests:     65 passed (65 total)  - 100% PASS
 Client Vitest Tests:     15 passed (15 total)  - 100% PASS
-Client Production Build: 179 chunks transformed - 0 errors, 7.4s build time
-Runtime Status:          Both Backend and Frontend dev servers operational
+Client Production Build: 179 chunks transformed - 0 errors, 10.13s build time
+Runtime Status:          Both Backend and Frontend operational, responsive on Mobile, iPad, and Desktop
 ```

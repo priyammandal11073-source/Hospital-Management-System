@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
 import Modal from "./Modal.jsx";
 
 export const QR_PAYLOAD_PREFIX = "NIVORA-CARE|V1|";
@@ -44,9 +43,11 @@ const QrScannerModal = ({ isOpen, onClose, onScanned }) => {
     };
 
     const startScanner = async () => {
-      const html5QrCode = new Html5Qrcode(scannerRegionId);
-      scanner = html5QrCode;
       try {
+        const { Html5Qrcode } = await import("html5-qrcode");
+        if (!active) return;
+        const html5QrCode = new Html5Qrcode(scannerRegionId);
+        scanner = html5QrCode;
         await html5QrCode.start(
           { facingMode: "environment" },
           { fps: 10, qrbox: { width: 220, height: 220 } },

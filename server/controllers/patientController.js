@@ -95,7 +95,8 @@ export const getAllPatients = asyncHandler(async (req, res) => {
     Patient.find(filter)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
-      .limit(limit),
+      .limit(limit)
+      .lean(),
     Patient.countDocuments(filter),
   ]);
 
@@ -142,7 +143,7 @@ export const getPatientById = asyncHandler(async (req, res) => {
     }
   }
 
-  const patient = await Patient.findById(req.params.id);
+  const patient = await Patient.findById(req.params.id).lean();
 
   if (!patient) {
     throw new AppError("Patient not found", 404);

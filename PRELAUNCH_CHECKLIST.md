@@ -180,15 +180,14 @@ All pre-launch automated test suites, linting checks, and production builds were
 
 ---
 
-## 7. Production Readiness Verification
-
 | Check | Requirement | Result | Notes |
 | :--- | :--- | :---: | :--- |
 | **Backend Tests** | `npm test --prefix server` | **66/66 PASSED** | Unit & integration tests pass in 1.33s. |
 | **Frontend Tests** | `npm test --prefix client` | **15/15 PASSED** | Component & utility tests pass. |
 | **Backend Lint** | `npm run lint --prefix server` | **0 Errors** | Clean syntax validation. |
 | **Frontend Lint** | `npm run lint --prefix client` | **0 Errors** | Clean syntax validation. |
-| **Frontend Build** | `npm run build --prefix client` | **CLEAN** | Vite production bundle generated without errors. |
+| **Frontend Build** | `npm run build --prefix client` | **CLEAN** | Vite production bundle generated without errors (10.13s). |
+| **Mobile & iPad UX** | Apple HIG & Emil Kowalski Audit | **VERIFIED** | Safe-area insets, iPad `md` split, swipe gestures, responsive bottom sheets, and 44px touch targets. |
 | **Database Connection** | MongoDB Atlas URI validation | **VERIFIED** | Validates `MONGO_URI` format at boot. |
 | **Authentication Secret** | `JWT_SECRET` presence | **VERIFIED** | Process halts immediately if secret is missing. |
 | **Payment Gateway** | Razorpay Key ID & Secret | **CONFIGURED** | Test keys present; production live keys required at deployment. |
@@ -207,6 +206,7 @@ All pre-launch automated test suites, linting checks, and production builds were
 | **DEF-05** | Admissions | **P2** | Non-atomic bed allocation allowed potential double-booking under race conditions. | `server/controllers/bedController.js` | Verified atomic `findOneAndUpdate` prevents race conditions. |
 | **DEF-06** | Diagnostics | **P2** | Patient file download IDOR comparison only checked `id` field. | `server/controllers/diagnosticController.js` | Verified matching against both `id` and `_id`. |
 | **DEF-07** | Payment Gateway | **P1** | Verification could theoretically proceed without secret in production. | `server/controllers/razorpayController.js` | Verified strict exception thrown if secret unset in production. |
+| **DEF-08** | Mobile / iPad UX | **P2** | Notch collisions on iOS, missing iPad docked layout, and wide tables clipping on mobile. | `index.html`, `index.css`, `DashboardLayout.jsx`, `PatientLayout.jsx`, `Modal.jsx`, 5 table pages | Verified Apple HIG compliance, bottom sheets, card views, and clean build. |
 
 ---
 

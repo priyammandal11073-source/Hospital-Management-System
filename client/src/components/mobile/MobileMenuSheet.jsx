@@ -71,7 +71,8 @@ export default function MobileMenuSheet({
     return filteredCategories.reduce((acc, cat) => acc + cat.items.length, 0);
   }, [filteredCategories]);
 
-  if (!isOpen) return null;
+  // Keep the sheet mounted even when closed so the CSS exit transition plays.
+  // Previously: `if (!isOpen) return null` caused instant unmount with no exit animation.
 
   const displayName =
     role === "doctor" && user?.name
@@ -79,22 +80,34 @@ export default function MobileMenuSheet({
       : user?.name || (isPatient ? "Patient" : "Hospital Staff");
 
   return (
-    <div data-mobile-sheet="true" className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
-      {/* Blurred Backdrop */}
+    <div
+      data-mobile-sheet="true"
+      className="md:hidden"
+      aria-hidden={!isOpen}
+    >
+      {/* Blurred Backdrop — CSS opacity transition, not keyframe */}
       <div
         data-mobile-sheet="true"
-        className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-backdrop-fade transition-opacity"
+        className={`fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-md transition-opacity duration-200 ${
+          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
         onClick={onClose}
         aria-hidden="true"
+        style={{ touchAction: "none" }}
       />
 
-      {/* Slide-Up Sheet Container */}
+      {/* Slide-Up Sheet Container — CSS translateY transition, not @keyframes.
+          CSS transitions are interruptible: if user swipes down mid-open, the
+          sheet reverses from its current position rather than restarting from bottom. */}
       <div
         role="dialog"
-        aria-modal="true"
+        aria-modal={isOpen}
         data-mobile-sheet="true"
         aria-label="Portal Navigation Menu"
-        className="relative z-10 w-full max-h-[92vh] flex flex-col rounded-t-[32px] liquid-glass-elevated shadow-2xl animate-sheet-up overflow-hidden"
+        className={`fixed bottom-0 inset-x-0 z-50 w-full max-h-[92vh] flex flex-col rounded-t-[32px] liquid-glass-elevated shadow-2xl overflow-hidden transform transition-transform duration-300 ${
+          isOpen ? "translate-y-0" : "translate-y-full"
+        }`}
+        style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
       >
         {/* Drag Handle Bar */}
         <div className="pt-3 pb-1 flex-shrink-0 flex justify-center">

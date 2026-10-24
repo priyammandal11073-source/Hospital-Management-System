@@ -237,6 +237,40 @@ function DashboardLayout() {
     return () => observer.disconnect();
   }, []);
 
+  // Left-edge swipe-to-open gesture (Apple direct-manipulation pattern).
+  // Only triggers when the touch starts within 28px of the left edge —
+  // matches the iOS native swipe-back gesture zone width.
+  useEffect(() => {
+    let startX = null;
+    let startY = null;
+
+    const onTouchStart = (e) => {
+      const touch = e.touches[0];
+      // Only activate from the left edge zone
+      if (touch.clientX > 28) return;
+      startX = touch.clientX;
+      startY = touch.clientY;
+    };
+
+    const onTouchEnd = (e) => {
+      if (startX === null) return;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - startX;
+      const dy = Math.abs(touch.clientY - startY);
+      // Horizontal swipe right: > 60px horizontal, < 80px vertical drift
+      if (dx > 60 && dy < 80) setMobileOpen(true);
+      startX = null;
+      startY = null;
+    };
+
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -250,10 +284,13 @@ function DashboardLayout() {
   });
 
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#f7f6f3] flex flex-col font-sans">
+    // md:h-screen: iPad portrait (820px+) gets the fixed-height app shell just like desktop.
+    // Below md, the layout is a normal scrolling flex column (mobile phones).
+    <div className="min-h-screen md:h-screen md:overflow-hidden bg-[#f7f6f3] flex flex-col font-sans">
       {/* ================= MODERN TOP HEADER BAR ================= */}
       <header
-        className={`sticky top-0 lg:static flex-shrink-0 px-3 sm:px-5 lg:px-7 py-2.5 transition-all duration-200 ${
+        style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+        className={`sticky top-0 md:static flex-shrink-0 px-3 sm:px-5 lg:px-7 py-2.5 transition-all duration-200 ${
           isModalOpen
             ? "z-0 opacity-20 pointer-events-none select-none blur-[1px]"
             : "z-20 liquid-glass-nav"
@@ -263,11 +300,11 @@ function DashboardLayout() {
         <div className="flex items-center justify-between gap-2 max-w-full">
           {/* Brand Logo & Active Workspace Badge */}
           <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-shrink">
-            {/* Mobile Hamburger Drawer Toggle Button */}
+            {/* Mobile Hamburger Drawer Toggle — hidden at md+ (sidebar takes over on iPad) */}
             <button
               type="button"
               onClick={() => setMobileOpen((prev) => !prev)}
-              className="inline-flex lg:hidden items-center justify-center h-9 w-9 rounded-xl text-slate-700 hover:text-slate-900 bg-white/70 hover:bg-slate-100 border border-slate-200/80 transition active:scale-90 cursor-pointer touch-target flex-shrink-0"
+              className="inline-flex md:hidden items-center justify-center h-9 w-9 rounded-xl text-slate-700 hover:text-slate-900 bg-white/70 hover:bg-slate-100 border border-slate-200/80 transition active:scale-90 cursor-pointer touch-target flex-shrink-0"
               aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={mobileOpen}
             >
@@ -371,13 +408,16 @@ function DashboardLayout() {
       </header>
 
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
-      <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden min-h-0">
-        {/* Desktop Docked Navigation Sidebar - FIXED IN PLACE */}
+      {/* md:flex-row: iPad portrait (768px+) gets the side-by-side sidebar layout */}
+      <div className="flex flex-1 flex-col md:flex-row md:overflow-hidden min-h-0">
+        {/* Sidebar: hidden on phones, visible from md (iPad portrait) upward.
+            iPad portrait (md, ~768-1024px): w-56 (224px) — leaves ~600px for content on 820px iPad Air
+            Desktop (lg, 1024px+): w-64 (256px) — full-width desktop sidebar */}
         <aside
           data-sidebar-collapsed={isSidebarCollapsed ? "true" : "false"}
-          className={`hidden lg:flex ${
-            isSidebarCollapsed ? "lg:w-20" : "lg:w-64"
-          } lg:flex-shrink-0 lg:h-full liquid-glass-sidebar p-3 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
+          className={`hidden md:flex ${
+            isSidebarCollapsed ? "md:w-16 lg:w-20" : "md:w-56 lg:w-64"
+          } md:flex-shrink-0 md:h-full liquid-glass-sidebar p-3 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
           aria-label="Portal navigation sidebar"
         >
           <div>
@@ -1477,12 +1517,29 @@ function DashboardLayout() {
         </aside>
 
         {/* Main Content Pane - INDEPENDENT SCROLL */}
-        <main className="flex-1 min-w-0 bg-transparent flex flex-col justify-between lg:h-full lg:overflow-y-auto overflow-x-hidden">
-          <div className="p-3 sm:p-5 lg:p-7 pb-24 lg:pb-7 flex-1">
+        <main className="flex-1 min-w-0 bg-transparent flex flex-col justify-between md:h-full md:overflow-y-auto overflow-x-hidden">
+          {/* Bottom padding on mobile: 64px nav bar + safe-area-inset-bottom + extra 8px breathing room.
+              On md+: normal padding (no bottom nav to clear). */}
+          <div
+            className="p-3 sm:p-5 lg:p-7 flex-1"
+            style={{
+              paddingBottom: "max(1.75rem, calc(4rem + env(safe-area-inset-bottom, 0px) + 0.5rem))",
+            }}
+            // Override the inline style at md+ via a tiny CSS custom property trick:
+            // Tailwind can't do dynamic calc() per breakpoint in inline style, so
+            // we use a data attribute and override via the companion CSS rule below.
+            data-main-content
+          >
             <Outlet />
           </div>
-          {/* Global Enterprise Portal Footer (Positioned at bottom of scrollable main pane) */}
-          <div className="w-full px-4 sm:px-6 lg:px-7 pb-24 lg:pb-6 pt-2 flex-shrink-0">
+          {/* Global Enterprise Portal Footer */}
+          <div
+            className="w-full px-4 sm:px-6 lg:px-7 pt-2 flex-shrink-0"
+            style={{
+              paddingBottom: "max(1.5rem, calc(4rem + env(safe-area-inset-bottom, 0px) + 0.5rem))",
+            }}
+            data-main-footer
+          >
             <Footer />
           </div>
         </main>

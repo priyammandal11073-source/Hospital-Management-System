@@ -71,6 +71,13 @@
 - Make all backend API requests through domain services located in `client/src/services/` (`patientApi.js`, `bedApi.js`, `prescriptionApi.js`, etc.).
 - Never invoke raw Axios instances directly inside page components without using the centralized `httpClient.js` configured with auth interceptors.
 
+### 3.3 Mobile & Tablet Responsiveness Rules
+- **Apple HIG 44px Minimum**: All interactive elements (buttons, pills, tabs, selects) must maintain at least 44px height and width on coarse pointer devices.
+- **Safe Area Inset Clearance**: Fixed or sticky headers must pad with `padding-top: max(0px, env(safe-area-inset-top, 0px))`. Content containers on phones (`< md`) must include bottom clearance (`pb-[calc(4rem+max(env(safe-area-inset-bottom,0px),8px))]`) to avoid overlapping the bottom navigation bar.
+- **Mobile-Responsive Modals**: Use `<Modal>` from `../components/ui/Modal.jsx` which automatically renders as an Apple-style bottom sheet with a drag handle on `< md` and centers on `md+`.
+- **Card Fallback on Small Screens**: When adding or revising data tables, always provide a touch-friendly stacked card view on mobile (`block md:hidden`) alongside the desktop table (`hidden md:table` or `hidden md:block`).
+- **Mobile Keyboard Ergonomics**: On form inputs, provide appropriate `inputMode` (`"numeric"`, `"tel"`, `"email"`), `autoComplete`, and `enterKeyHint` (`"next"`, `"done"`).
+
 ---
 
 ## 4. Verification & Testing Requirements

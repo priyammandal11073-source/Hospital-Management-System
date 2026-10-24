@@ -43,7 +43,7 @@ export const getMyProfile = async (req, res) => {
       });
     }
 
-    const patient = await Patient.findById(req.patient.id).select("-password");
+    const patient = await Patient.findById(req.patient.id).select("-password").lean();
     if (!patient) {
       return res.status(404).json({ message: "Patient not found" });
     }
@@ -84,7 +84,8 @@ export const getMyAppointments = async (req, res) => {
 
     const appointments = await Appointment.find(filter)
       .populate("doctor", "name specialization")
-      .sort({ appointmentDate: -1 });
+      .sort({ appointmentDate: -1 })
+      .lean();
 
     return res.status(200).json({ appointments });
   } catch (error) {
@@ -197,7 +198,8 @@ export const getMyBillings = async (req, res) => {
         select: "appointmentDate timeSlot status reasonForVisit doctor",
         populate: { path: "doctor", select: "name specialization department contactNumber" },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({ billings });
   } catch (error) {
@@ -269,7 +271,8 @@ export const getMyPrescriptions = async (req, res) => {
       .populate("doctor", "name specialization department contactNumber email")
       .populate("patient", "name age gender contactNumber email abhaId address bloodGroup")
       .populate("appointment", "appointmentDate timeSlot reasonForVisit")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     return res.status(200).json({ prescriptions });
   } catch (error) {
@@ -462,7 +465,7 @@ export const getMyVitals = async (req, res) => {
       });
     }
 
-    const vitals = await Vitals.find({ patient: req.patient.id }).sort({ recordedAt: -1 });
+    const vitals = await Vitals.find({ patient: req.patient.id }).sort({ recordedAt: -1 }).lean();
     return res.status(200).json({ vitals });
   } catch (error) {
     return res.status(500).json({ message: "Unable to fetch vitals records" });
@@ -538,11 +541,12 @@ export const getMyLabReports = async (req, res) => {
         isSharedWithPatient: true,
       })
         .populate("doctor", "name specialization department")
-        .sort({ createdAt: -1 }),
+        .sort({ createdAt: -1 })
+        .lean(),
       DiagnosticReport.find({
         patient: req.patient.id,
         status: { $in: ["Finalized", "Approved"] },
-      }).sort({ createdAt: -1 }),
+      }).sort({ createdAt: -1 }).lean(),
     ]);
 
     const formattedDiagReports = diagReports.map((dr) => ({
@@ -626,7 +630,8 @@ export const getMyPatientNotifications = async (req, res) => {
 
     const notifications = await Notification.find(filter)
       .sort({ createdAt: -1 })
-      .limit(30);
+      .limit(30)
+      .lean();
 
     const unreadCount = await Notification.countDocuments({ ...filter, isRead: false });
 
@@ -781,7 +786,7 @@ export const getPatientDashboardSummary = async (req, res) => {
       latestVitals,
       upcomingDiagnostics,
     ] = await Promise.all([
-      Patient.findById(patientId).select("-password"),
+      Patient.findById(patientId).select("-password").lean(),
       Appointment.countDocuments({
         patient: patientId,
         status: { $in: ["pending", "confirmed", "waiting", "in_consultation"] },
@@ -800,7 +805,7 @@ export const getPatientDashboardSummary = async (req, res) => {
         status: { $ne: "completed" },
         isSharedWithPatient: true,
       }),
-      Billing.find({ patient: patientId }),
+      Billing.find({ patient: patientId }).lean(),
       Notification.countDocuments({
         $or: [{ recipientType: "patient", patient: patientId }, { recipientType: "all" }],
         isRead: false,
@@ -811,28 +816,32 @@ export const getPatientDashboardSummary = async (req, res) => {
         appointmentDate: { $gte: today },
       })
         .sort({ appointmentDate: 1, timeSlot: 1 })
-        .populate("doctor", "name specialization department contactNumber email consultationFee"),
+        .populate("doctor", "name specialization department contactNumber email consultationFee")
+        .lean(),
       Appointment.findOne({
         patient: patientId,
         status: "completed",
       })
         .sort({ appointmentDate: -1 })
-        .populate("doctor", "name specialization department"),
+        .populate("doctor", "name specialization department")
+        .lean(),
       Prescription.findOne({ patient: patientId })
         .sort({ createdAt: -1 })
-        .populate("doctor", "name specialization department"),
+        .populate("doctor", "name specialization department")
+        .lean(),
       LabReport.findOne({ patient: patientId, isSharedWithPatient: true })
         .sort({ testDate: -1, createdAt: -1 })
-        .populate("doctor", "name specialization department"),
+        .populate("doctor", "name specialization department")
+        .lean(),
       Bed.findOne({
         "currentAdmission.patient": patientId,
         status: "occupied",
-      }).populate("currentAdmission.attendingDoctor", "name specialization department contactNumber"),
-      Vitals.findOne({ patient: patientId }).sort({ recordedAt: -1 }),
+      }).populate("currentAdmission.attendingDoctor", "name specialization department contactNumber").lean(),
+      Vitals.findOne({ patient: patientId }).sort({ recordedAt: -1 }).lean(),
       DiagnosticOrder.find({
         patient: patientId,
         status: { $in: ["Requested", "Scheduled", "Patient Ready", "In Progress", "Procedure Started", "Sample Collected"] },
-      }).sort({ scheduledDate: 1, requestedDate: 1 }).limit(10),
+      }).sort({ scheduledDate: 1, requestedDate: 1 }).limit(10).lean(),
     ]);
 
     const unpaidBills = billings.filter((b) => b.paymentStatus !== "paid");
@@ -1047,7 +1056,8 @@ export const getMyDoctors = async (req, res) => {
 
     const doctors = await Doctor.find(filter)
       .select("name specialization department contactNumber email availableDays availableTimeSlots weeklySchedule yearsOfExperience consultationFee leaves")
-      .sort({ name: 1 });
+      .sort({ name: 1 })
+      .lean();
 
     return res.status(200).json({ success: true, doctors });
   } catch (error) {
@@ -1058,7 +1068,7 @@ export const getMyDoctors = async (req, res) => {
 // GET /api/patient-portal/doctors/:id
 export const getMyDoctorById = async (req, res) => {
   try {
-    const doctor = await Doctor.findById(req.params.id);
+    const doctor = await Doctor.findById(req.params.id).lean();
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
@@ -1078,19 +1088,23 @@ export const getMyMedicalRecords = async (req, res) => {
     const [appointments, prescriptions, labReports, clinicalNotes, bedStays] = await Promise.all([
       Appointment.find({ patient: patientId, status: "completed" })
         .populate("doctor", "name specialization department")
-        .sort({ appointmentDate: -1 }),
+        .sort({ appointmentDate: -1 })
+        .lean(),
       Prescription.find({ patient: patientId })
         .populate("doctor", "name specialization department")
-        .sort({ createdAt: -1 }),
+        .sort({ createdAt: -1 })
+        .lean(),
       LabReport.find({ patient: patientId, isSharedWithPatient: true })
         .populate("doctor", "name specialization department")
-        .sort({ testDate: -1, createdAt: -1 }),
+        .sort({ testDate: -1, createdAt: -1 })
+        .lean(),
       ClinicalNote.find({ patient: patientId, isConfidential: false })
         .populate("doctor", "name specialization department")
-        .sort({ createdAt: -1 }),
+        .sort({ createdAt: -1 })
+        .lean(),
       Bed.find({
         $or: [{ "currentAdmission.patient": patientId }, { "admissionHistory.patient": patientId }],
-      }).populate("currentAdmission.attendingDoctor admissionHistory.attendingDoctor", "name specialization department"),
+      }).populate("currentAdmission.attendingDoctor admissionHistory.attendingDoctor", "name specialization department").lean(),
     ]);
 
     const records = [];
@@ -1301,13 +1315,13 @@ export const getMyTimeline = async (req, res) => {
     const patientId = req.patient.id;
 
     const [appointments, prescriptions, labReports, notes, bedStays] = await Promise.all([
-      Appointment.find({ patient: patientId }).populate("doctor", "name specialization department"),
-      Prescription.find({ patient: patientId }).populate("doctor", "name specialization department"),
-      LabReport.find({ patient: patientId, isSharedWithPatient: true }).populate("doctor", "name specialization department"),
-      ClinicalNote.find({ patient: patientId, isConfidential: false }).populate("doctor", "name specialization department"),
+      Appointment.find({ patient: patientId }).populate("doctor", "name specialization department").lean(),
+      Prescription.find({ patient: patientId }).populate("doctor", "name specialization department").lean(),
+      LabReport.find({ patient: patientId, isSharedWithPatient: true }).populate("doctor", "name specialization department").lean(),
+      ClinicalNote.find({ patient: patientId, isConfidential: false }).populate("doctor", "name specialization department").lean(),
       Bed.find({
         $or: [{ "currentAdmission.patient": patientId }, { "admissionHistory.patient": patientId }],
-      }).populate("currentAdmission.attendingDoctor admissionHistory.attendingDoctor", "name specialization department"),
+      }).populate("currentAdmission.attendingDoctor admissionHistory.attendingDoctor", "name specialization department").lean(),
     ]);
 
     const timeline = [];

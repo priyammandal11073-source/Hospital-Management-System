@@ -70,6 +70,36 @@ function PatientLayout() {
     setMobileOpen(false);
   }, [location.pathname]);
 
+  // Direct-manipulation edge swipe gesture to open drawer from left edge on touch devices
+  useEffect(() => {
+    let startX = null;
+    let startY = null;
+
+    const onTouchStart = (e) => {
+      const touch = e.touches[0];
+      if (touch.clientX > 28) return;
+      startX = touch.clientX;
+      startY = touch.clientY;
+    };
+
+    const onTouchEnd = (e) => {
+      if (startX === null) return;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - startX;
+      const dy = Math.abs(touch.clientY - startY);
+      if (dx > 60 && dy < 80) setMobileOpen(true);
+      startX = null;
+      startY = null;
+    };
+
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
   // Lock body scroll and listen for Escape key when mobile drawer is open
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -140,10 +170,11 @@ function PatientLayout() {
   });
 
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#f7f6f3] flex flex-col font-sans">
+    <div className="min-h-screen md:h-screen md:overflow-hidden bg-[#f7f6f3] flex flex-col font-sans">
       {/* ================= TOP HOSPITAL BRANDING HEADER ================= */}
       <header
-        className={`sticky top-0 lg:static flex-shrink-0 px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 transition-[opacity,background-color,border-color] duration-150 ease-out ${
+        style={{ paddingTop: "max(0px, env(safe-area-inset-top, 0px))" }}
+        className={`sticky top-0 md:static flex-shrink-0 px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 transition-[opacity,background-color,border-color] duration-150 ease-out ${
           isModalOpen
             ? "z-0 opacity-20 pointer-events-none select-none blur-[1px] bg-slate-100/40 border-b border-slate-300/40"
             : "z-20 liquid-glass-nav"
@@ -157,7 +188,7 @@ function PatientLayout() {
             <button
               type="button"
               onClick={() => setMobileOpen((prev) => !prev)}
-              className="inline-flex lg:hidden items-center justify-center h-9 w-9 rounded-xl text-slate-700 hover:text-slate-900 liquid-glass-pill transition active:scale-95 cursor-pointer touch-target flex-shrink-0"
+              className="inline-flex md:hidden items-center justify-center h-9 w-9 rounded-xl text-slate-700 hover:text-slate-900 liquid-glass-pill transition active:scale-95 cursor-pointer touch-target flex-shrink-0"
               aria-label={mobileOpen ? "Close navigation menu" : "Open navigation menu"}
               aria-expanded={mobileOpen}
             >
@@ -256,13 +287,13 @@ function PatientLayout() {
       </header>
 
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
-      <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden min-h-0">
+      <div className="flex flex-1 flex-col md:flex-row md:overflow-hidden min-h-0">
         {/* Desktop Docked Navigation Sidebar - FIXED IN PLACE */}
         <aside
           data-sidebar-collapsed={isSidebarCollapsed ? "true" : "false"}
-          className={`hidden lg:flex ${
-            isSidebarCollapsed ? "lg:w-20" : "lg:w-64"
-          } lg:flex-shrink-0 lg:h-full liquid-glass-sidebar p-3 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
+          className={`hidden md:flex ${
+            isSidebarCollapsed ? "md:w-16 lg:w-20" : "md:w-56 lg:w-64"
+          } md:flex-shrink-0 md:h-full liquid-glass-sidebar p-3 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
           aria-label="Patient portal navigation"
         >
           <div>
@@ -506,12 +537,12 @@ function PatientLayout() {
         </aside>
 
         {/* Main Content Pane - INDEPENDENT SCROLL */}
-        <main className="flex-1 min-w-0 bg-transparent flex flex-col justify-between lg:h-full lg:overflow-y-auto overflow-x-hidden">
-          <div className="p-3 sm:p-5 lg:p-8 pb-24 lg:pb-8 flex-1">
+        <main className="flex-1 min-w-0 bg-transparent flex flex-col justify-between md:h-full md:overflow-y-auto overflow-x-hidden overscroll-contain">
+          <div className="p-3 sm:p-5 md:p-6 lg:p-8 pb-[calc(4rem+max(env(safe-area-inset-bottom,0px),8px))] md:pb-6 lg:pb-8 flex-1">
             <Outlet />
           </div>
           {/* Global Enterprise Portal Footer inside scrollable main container */}
-          <div className="w-full px-3 sm:px-5 lg:px-8 pb-24 lg:pb-6 pt-2 flex-shrink-0">
+          <div className="w-full px-3 sm:px-5 md:px-6 lg:px-8 pb-[calc(4rem+max(env(safe-area-inset-bottom,0px),8px))] md:pb-6 pt-2 flex-shrink-0">
             <Footer />
           </div>
         </main>

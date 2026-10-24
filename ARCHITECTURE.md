@@ -122,13 +122,20 @@ client/src/
 │   ├── common/
 │   │   └── ErrorBoundary.jsx    # Top-level React Error Boundary with fallback UI
 │   ├── ui/                      # Standardized Design System components
+│   │   ├── Modal.jsx            # Adaptive Apple-style bottom sheet (<md) & centered dialog (>=md)
+│   │   ├── ActionDropdown.jsx   # Accessible context menu for compact table actions
+│   │   ├── SidebarCollapseButton.jsx # Accessible sidebar toggle (Ctrl+B / click)
 │   │   ├── ConfirmDialog.jsx    # Accessible modal replacing window.confirm()
 │   │   ├── PageHeader.jsx       # Standardized page title, badge & action button
 │   │   ├── DataTable.jsx        # Sortable, searchable, paginated data table
 │   │   ├── EmptyStateCard.jsx   # Empty state placeholder
 │   │   ├── PageLoader.jsx       # Suspense fallback loading indicator
 │   │   └── SkeletonTable.jsx    # Animated loading table skeleton
-│   ├── DashboardLayout.jsx      # Staff portal navigation shell (sidebar + header)
+│   ├── mobile/                  # Native mobile ergonomics
+│   │   ├── MobileBottomNav.jsx  # Floating touch bottom bar with role-tailored tabs
+│   │   ├── MobileMenuSheet.jsx  # Slide-out drawer with real-time search & chips
+│   │   └── MobileNavIcons.jsx   # Featherweight SVG iconography for touch navigation
+│   ├── DashboardLayout.jsx      # Staff portal navigation shell (sidebar + safe-area header)
 │   ├── PatientLayout.jsx        # Patient portal navigation shell
 │   ├── ProtectedRoute.jsx       # Staff JWT route guard with role checks
 │   └── PatientProtectedRoute.jsx# Patient session route guard
@@ -168,7 +175,7 @@ client/src/
 │   └── emergencyApi.js          # Emergency queue, trauma encounters, ER beds
 ├── utils/                       # Common utilities (doctorName, printService, csvExport)
 ├── App.jsx                      # Route definitions with lazy loading & Suspense
-├── index.css                    # Tailwind CSS custom design tokens & animations
+├── index.css                    # Tailwind CSS custom design tokens, safe areas & animations
 └── main.jsx                     # Root React entry point wrapped in ErrorBoundary
 ```
 
@@ -176,6 +183,17 @@ client/src/
 The client router employs two completely separated authentication contexts:
 1. **Staff Tree** (`<ProtectedRoute>`): Checks `localStorage.getItem("token")`. Enforces role permissions and wraps views inside `<DashboardLayout>` (Sidebar with role-based navigation links).
 2. **Patient Tree** (`<PatientProtectedRoute>`): Checks `localStorage.getItem("patientToken")`. Wraps views inside `<PatientLayout>` (Patient-tailored navigation bar).
+
+### 3.3 Mobile & Tablet Responsive Architecture
+The client interface implements Apple Human Interface Guidelines and Emil Kowalski design engineering principles:
+1. **Safe-Area Inset Handling**: `viewport-fit=cover` ensures full screen edge-to-edge rendering. Top headers utilize `padding-top: max(0px, env(safe-area-inset-top, 0px))` to avoid iPhone Dynamic Islands, and mobile content reserves `pb-[calc(4rem+max(env(safe-area-inset-bottom,0px),8px))]` to clear fixed bottom navigation.
+2. **Breakpoint Partitioning (`md: 768px`)**:
+   - **Phone (`< md`)**: Compact header, bottom touch navigation bar (`<MobileBottomNav />`), edge swipe drawer (`<MobileMenuSheet />`), and bottom sheet dialogs (`<Modal />`).
+   - **Tablet / iPad Portrait (`md: 768px - 1024px`)**: Automatically transitions to the desktop-class docked sidebar layout (`md:w-56`), hiding the mobile bottom bar and rendering centered glass modals.
+   - **Desktop (`>= 1024px`)**: Full-width sidebar (`lg:w-64`) with collapsible width (`Ctrl+B` toggle) and multi-column clinical workbenches.
+3. **Adaptive Table-to-Card Pattern**: Clinical tabular views automatically pivot to stacked touch cards on small viewports (`< md`), presenting complete patient context without horizontal scrolling.
+4. **Direct-Manipulation Edge Swipe**: Touch listeners detect rightward swipes initiated within 28px of the left screen edge, fluidly opening navigation drawers.
+5. **Interruptible Transitions**: Navigation sheets and drawers remain mounted with `pointer-events-none` when closed, guaranteeing smooth 60fps hardware-accelerated exit animations.
 
 ---
 

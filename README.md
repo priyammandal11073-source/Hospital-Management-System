@@ -67,7 +67,7 @@ Nivora Care includes comprehensive, living architectural specifications and deve
 |---|---|
 | [**`PRD.md`**](./PRD.md) | **Product Requirements Document**: User personas, feature capabilities across all 8 portals, non-functional requirements, clinical workflows, and acceptance criteria. |
 | [**`ARCHITECTURE.md`**](./ARCHITECTURE.md) | **System Architecture**: High-level component diagrams, N-tier request pipeline, 43 Mongoose domain models, security authorization flows, and build infrastructure. |
-| [**`DESIGN.md`**](./DESIGN.md) | **Design System**: Editorial clinical aesthetic, color palette, Fraunces serif typography, touch targets, and reusable UI components (`ConfirmDialog`, `PageHeader`, `DataTable`). |
+| [**`DESIGN.md`**](./DESIGN.md) | **Design System**: Editorial clinical aesthetic, Liquid Glass tokens, Fraunces typography, Apple HIG touch targets (44px), safe-area insets, and responsive bottom sheets. |
 | [**`RULES.md`**](./RULES.md) | **AI Coding Rules & Workflows**: Guidelines for future AI development sessions, error handling standards, pre-change checklist, and post-change checklist. |
 | [**`MEMORY.md`**](./MEMORY.md) | **Project Context & Decisions**: Concise architectural decision records (ADRs), critical file paths, Windows line-ending handling, and active technical context. |
 | [**`TRACKER.md`**](./TRACKER.md) | **Development Progress Tracker**: Verified completed milestones, active in-progress tasks, future roadmap, and test verification health metrics. |
@@ -529,49 +529,86 @@ Multi-layered security enforced across both backend APIs and frontend UI routes:
 ## <a id="complete-screenshot-gallery"></a>🖼️ Complete Screenshot Gallery
 
 <details>
-<summary><b>🔍 Click to Expand Complete Screenshot Gallery (All 7 Portals)</b></summary>
+<summary><b>🔍 Click to Expand Complete Screenshot Gallery (All 8 Portals + Mobile & Workflows)</b></summary>
 
 <br/>
 
-### 1. Unified Gateway & Authentication
-| Gateway Desktop (1280px) | Sub-Role Selector Gateway |
-|---|---|
-| <img src="./docs/screenshots/DIAG_01_gateway_1280px.png" width="400"/> | <img src="./docs/screenshots/DIAG_01_subrole_selector.png" width="400"/> |
+### 1. Unified Gateway & Multi-Device Responsiveness
+| Desktop Gateway (1280px) | Diagnostic Sub-Role Selector | Tablet View (768px) | Mobile Phone View (375px) |
+|---|---|---|---|
+| <img src="./docs/screenshots/LOGIN_gateway_updated.png" width="220" alt="Universal Gateway"/> | <img src="./docs/screenshots/DIAG_01_subrole_selector.png" width="220" alt="Sub-Role Selector"/> | <img src="./docs/screenshots/RES_05_gateway_768px.png" width="220" alt="Tablet View"/> | <img src="./docs/screenshots/RES_01_gateway_375px.png" width="220" alt="Mobile View"/> |
 
 ### 2. Admin Portal Screenshots
-| Dashboard Overview | Patient Directory | Ward Bed Occupancy |
+| Dashboard Overview | Patient Directory | Staff & Credential Directory |
 |---|---|---|
-| <img src="./docs/screenshots/ADM_01_admin_dashboard.png" width="270"/> | <img src="./docs/screenshots/ADM_03_patients_directory.png" width="270"/> | <img src="./docs/screenshots/ADM_page_beds.png" width="270"/> |
+| <img src="./docs/screenshots/ADM_01_admin_dashboard.png" width="270" alt="Admin Dashboard"/> | <img src="./docs/screenshots/ADM_03_patients_directory.png" width="270" alt="Patients Directory"/> | <img src="./docs/screenshots/ADM_page_staff.png" width="270" alt="Staff Management"/> |
+
+| Ward Bed Occupancy Matrix | Financial Billing & Revenue | Hospital Reports & Census |
+|---|---|---|
+| <img src="./docs/screenshots/ADM_page_beds.png" width="270" alt="Bed Matrix"/> | <img src="./docs/screenshots/ADM_page_billing.png" width="270" alt="Billing Analytics"/> | <img src="./docs/screenshots/ADM_page_reports.png" width="270" alt="Hospital Reports"/> |
 
 ### 3. Doctor Portal Screenshots
-| Doctor Dashboard | Consultation Workspace | Lab Order Request |
+| Clinical Dashboard | Daily Appointment Queue | Consultation Workspace |
 |---|---|---|
-| <img src="./docs/screenshots/DOC_01_doctor_dashboard.png" width="270"/> | <img src="./docs/screenshots/DOC_03_consultation_workspace.png" width="270"/> | <img src="./docs/screenshots/DOC_05_lab_orders_page.png" width="270"/> |
+| <img src="./docs/screenshots/DOC_01_doctor_dashboard.png" width="270" alt="Doctor Dashboard"/> | <img src="./docs/screenshots/DOC_02_appointments_queue.png" width="270" alt="Appointments Queue"/> | <img src="./docs/screenshots/DOC_03_consultation_workspace.png" width="270" alt="Consultation Workspace"/> |
+
+| Digital Prescription Writer | Diagnostic Investigation Orders | Critical Lab Surveillance |
+|---|---|---|
+| <img src="./docs/screenshots/DOC_04_prescription_form.png" width="270" alt="Prescription Form"/> | <img src="./docs/screenshots/DOC_05_lab_orders_page.png" width="270" alt="Lab Orders"/> | <img src="./docs/screenshots/DOC_critical_labs_page.png" width="270" alt="Critical Lab Alerts"/> |
 
 ### 4. Nurse Portal Screenshots
-| Nursing Station | Bedside Vitals Recorder | Nursing Task List |
+| Inpatient Station Dashboard | Bedside Real-Time Vitals Charting | Shift Care & Clinical Tasks |
 |---|---|---|
-| <img src="./docs/screenshots/NUR_01_nurse_dashboard.png" width="270"/> | <img src="./docs/screenshots/NUR_02_vitals_page.png" width="270"/> | <img src="./docs/screenshots/NUR_03_nursing_tasks.png" width="270"/> |
+| <img src="./docs/screenshots/NUR_01_nurse_dashboard.png" width="270" alt="Nurse Station"/> | <img src="./docs/screenshots/NUR_02_vitals_page.png" width="270" alt="Vitals Charting"/> | <img src="./docs/screenshots/NUR_03_nursing_tasks.png" width="270" alt="Nursing Tasks"/> |
+
+| Electronic Medication Record (eMAR) | Fluid Balance (Intake / Output) | Shift SBAR Clinical Handover |
+|---|---|---|
+| <img src="./docs/screenshots/NUR_medications_page.png" width="270" alt="eMAR Medications"/> | <img src="./docs/screenshots/NUR_intake_output_page.png" width="270" alt="Intake Output Charting"/> | <img src="./docs/screenshots/NUR_handover_page.png" width="270" alt="SBAR Handover"/> |
 
 ### 5. Receptionist Portal Screenshots
-| Reception Dashboard | Waiting Room Tokens | Cashier & Billing Desk |
+| Front-Desk Command Dashboard | OPD Queue Tokens & Waiting Room | Cashier Desk & Instant Invoice Checkout |
 |---|---|---|
-| <img src="./docs/screenshots/REC_01_reception_dashboard.png" width="270"/> | <img src="./docs/screenshots/REC_03_waiting_room_tokens.png" width="270"/> | <img src="./docs/screenshots/REC_04_cashier_billing.png" width="270"/> |
+| <img src="./docs/screenshots/REC_01_reception_dashboard.png" width="270" alt="Reception Dashboard"/> | <img src="./docs/screenshots/REC_03_waiting_room_tokens.png" width="270" alt="Waiting Room Tokens"/> | <img src="./docs/screenshots/REC_04_cashier_billing.png" width="270" alt="Cashier Checkout"/> |
+
+| Online Booking Verification | Specialist OPD Master Calendar | Cash Drawer Handover |
+|---|---|---|
+| <img src="./docs/screenshots/REC_online_bookings.png" width="270" alt="Online Bookings"/> | <img src="./docs/screenshots/REC_opd_calendar.png" width="270" alt="OPD Calendar"/> | <img src="./docs/screenshots/REC_desk_handover.png" width="270" alt="Desk Handover"/> |
 
 ### 6. Pharmacy Portal Screenshots
-| Pharmacy Overview | Dispensing Queue | Medicine Inventory |
+| Inventory & Dispensing Live Metrics | Prescription Dispensing Verification | Comprehensive Medicine Formulary |
 |---|---|---|
-| <img src="./docs/screenshots/PHA_01_pharmacy_dashboard.png" width="270"/> | <img src="./docs/screenshots/PHA_03_dispensing_queue.png" width="270"/> | <img src="./docs/screenshots/PHA_02_inventory_page.png" width="270"/> |
+| <img src="./docs/screenshots/PHA_01_pharmacy_dashboard.png" width="270" alt="Pharmacy Dashboard"/> | <img src="./docs/screenshots/PHA_03_dispensing_queue.png" width="270" alt="Dispensing Queue"/> | <img src="./docs/screenshots/PHA_02_inventory_page.png" width="270" alt="Pharmacy Inventory"/> |
 
-### 7. Diagnostic Services Screenshots
-| PACS DICOM Viewer | 4-Up Radiology Film Sheet | Formal Report Generator |
+| FEFO Expiry & Batch Tracker | Vendor Purchase Orders Reorder | Verified Pharmaceutical Suppliers |
 |---|---|---|
-| <img src="./docs/screenshots/EV_DIAG_PRINT_007_radiology_study_xray_viewer.png" width="270"/> | <img src="./docs/screenshots/EV_DIAG_PRINT_012_ct_film_4up.png" width="270"/> | <img src="./docs/screenshots/EV_DIAG_PRINT_002_pathology_report_page.png" width="270"/> |
+| <img src="./docs/screenshots/PHA_batches_page.png" width="270" alt="Batches Management"/> | <img src="./docs/screenshots/PHA_purchase_orders_page.png" width="270" alt="Purchase Orders"/> | <img src="./docs/screenshots/PHA_suppliers_page.png" width="270" alt="Suppliers Management"/> |
+
+### 7. Diagnostic Services (Pathology & Radiology PACS)
+| Diagnostic Portal Entry | Analyzer Result Entry Workbench | Phlebotomy Barcode Tracking |
+|---|---|---|
+| <img src="./docs/screenshots/DIAG_01_gateway_1280px.png" width="270" alt="Diagnostic Gateway"/> | <img src="./docs/screenshots/DIAG_05_lab_workbench.png" width="270" alt="Lab Workbench"/> | <img src="./docs/screenshots/DIAG_04_phlebotomy_samples.png" width="270" alt="Phlebotomy Samples"/> |
+
+| PACS DICOM Radiograph Viewer | 4-Up High-Density CT Film Sheet | Official QR-Verified Pathology Report |
+|---|---|---|
+| <img src="./docs/screenshots/EV_DIAG_PRINT_007_radiology_study_xray_viewer.png" width="270" alt="Radiology Viewer"/> | <img src="./docs/screenshots/EV_DIAG_PRINT_012_ct_film_4up.png" width="270" alt="CT Film 4-Up"/> | <img src="./docs/screenshots/EV_DIAG_PRINT_002_pathology_report_page.png" width="270" alt="Pathology Report"/> |
 
 ### 8. Patient Portal Screenshots
-| Patient Dashboard | My Appointments | My Billing Invoices |
+| Personal Health Record Dashboard | Scheduled Consultations | Interactive Doctor Appointment Booking |
 |---|---|---|
-| <img src="./docs/screenshots/PAT_01_patient_dashboard.png" width="270"/> | <img src="./docs/screenshots/PAT_02_my_appointments.png" width="270"/> | <img src="./docs/screenshots/PAT_05_my_billings.png" width="270"/> |
+| <img src="./docs/screenshots/PAT_01_patient_dashboard.png" width="270" alt="Patient Dashboard"/> | <img src="./docs/screenshots/PAT_02_my_appointments.png" width="270" alt="My Appointments"/> | <img src="./docs/screenshots/PAT_03_book_appointment.png" width="270" alt="Book Appointment"/> |
+
+| Active Prescriptions & Dosage Guide | Diagnostic Investigation Results | Invoices & Payment Receipts |
+|---|---|---|
+| <img src="./docs/screenshots/PAT_04_my_prescriptions.png" width="270" alt="Prescriptions"/> | <img src="./docs/screenshots/PAT_lab_reports.png" width="270" alt="Lab Reports"/> | <img src="./docs/screenshots/PAT_05_my_billings.png" width="270" alt="Billing History"/> |
+
+### 9. Cross-Portal Clinical Flow Verification
+| Step 1: Reception Desk Check-in | Step 2: Live Doctor Queue Sync | Step 3: Pharmacy Dispensing Sync |
+|---|---|---|
+| <img src="./docs/screenshots/INT_01_reception_waiting_room.png" width="270" alt="Reception Token"/> | <img src="./docs/screenshots/INT_01_doctor_queue_verified.png" width="270" alt="Doctor Queue Sync"/> | <img src="./docs/screenshots/INT_02_pharmacy_queue_verified.png" width="270" alt="Pharmacy Queue Sync"/> |
+
+| Step 4: Patient Real-Time Rx | Step 5: Settled Payment Receipt | Step 6: Security Access Enforcement |
+|---|---|---|
+| <img src="./docs/screenshots/INT_03_patient_prescriptions_verified.png" width="270" alt="Patient Rx Sync"/> | <img src="./docs/screenshots/INT_05_patient_paid_billings.png" width="270" alt="Paid Billing Sync"/> | <img src="./docs/screenshots/SEC_01_patient_admin_rejected.png" width="270" alt="RBAC Access Blocked"/> |
 
 </details>
 
@@ -579,19 +616,15 @@ Multi-layered security enforced across both backend APIs and frontend UI routes:
 
 ## <a id="portal-logins"></a>🔐 Portal Login Pages
 
-Every staff role signs in through the unified gateway; each view pre-configures the matching credentials and, for Diagnostics, the specialization pills. Patients use their own dedicated rose-themed sign-in.
+Every staff role signs in through the unified gateway; each view pre-configures matching role credentials and, for Diagnostics, the specialization pills. Patients use their own dedicated rose-themed sign-in portal.
 
-| Admin | Doctor | Nursing |
-|---|---|---|
-| <img src="./docs/screenshots/LOGIN_admin.png" width="400"/> | <img src="./docs/screenshots/LOGIN_doctor.png" width="400"/> | <img src="./docs/screenshots/LOGIN_nurse.png" width="400"/> |
+| Unified Staff Gateway | Dedicated Patient Sign-in | Hospital Admin | Attending Doctor |
+|---|---|---|---|
+| <img src="./docs/screenshots/LOGIN_gateway_updated.png" width="220" alt="Universal Gateway"/> | <img src="./docs/screenshots/LOGIN_patient.png" width="220" alt="Patient Login"/> | <img src="./docs/screenshots/LOGIN_admin.png" width="220" alt="Admin Login"/> | <img src="./docs/screenshots/LOGIN_doctor.png" width="220" alt="Doctor Login"/> |
 
-| Reception | Pharmacy | Diagnostics |
-|---|---|---|
-| <img src="./docs/screenshots/LOGIN_reception.png" width="400"/> | <img src="./docs/screenshots/LOGIN_pharmacy.png" width="400"/> | <img src="./docs/screenshots/LOGIN_diagnostics.png" width="400"/> |
-
-| Patient |
-|---|
-| <img src="./docs/screenshots/LOGIN_patient.png" width="400"/> |
+| Nursing Station | Front Desk Reception | Hospital Pharmacy | Diagnostic Services |
+|---|---|---|---|
+| <img src="./docs/screenshots/LOGIN_nurse.png" width="220" alt="Nurse Login"/> | <img src="./docs/screenshots/LOGIN_reception.png" width="220" alt="Reception Login"/> | <img src="./docs/screenshots/LOGIN_pharmacy.png" width="220" alt="Pharmacy Login"/> | <img src="./docs/screenshots/LOGIN_diagnostics.png" width="220" alt="Diagnostics Login"/> |
 
 ---
 
@@ -932,6 +965,7 @@ node scratch/verify_system_optimization.js
 - ✅ **RBAC Endpoint Protection** — Tests unauthorized request rejection across all portal roles.
 - ✅ **IDOR Security Verification** — Verifies ownership restrictions on diagnostic and patient endpoints.
 - ✅ **CSS Cursor Reset Rule** — Validates the global `cursor: default` and text/pointer element overrides.
+- ✅ **Mobile & Tablet Native Ergonomics** — Full Apple HIG compliance with safe-area insets (`--sat`, `--sab`), iPad split at `md` (768px), edge swipe gestures, responsive bottom-sheet modals, and table-to-card fallbacks.
 
 ---
 

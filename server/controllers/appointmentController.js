@@ -184,7 +184,8 @@ export const getAllAppointments = asyncHandler(async (req, res) => {
   let query = Appointment.find(filter)
     .populate("patient", "name contactNumber age gender abhaId bloodGroup")
     .populate("doctor", "name specialization department")
-    .sort({ appointmentDate: 1, timeSlot: 1 });
+    .sort({ appointmentDate: 1, timeSlot: 1 })
+    .lean();
 
   if (page) {
     const [appointments, totalCount] = await Promise.all([
@@ -218,7 +219,8 @@ export const getAppointmentById = asyncHandler(async (req, res) => {
 
   const appointment = await Appointment.findById(req.params.id)
     .populate("patient", "name contactNumber age gender abhaId bloodGroup")
-    .populate("doctor", "name specialization department");
+    .populate("doctor", "name specialization department")
+    .lean();
 
   if (!appointment) {
     throw new AppError("Appointment not found", 404);
@@ -226,7 +228,7 @@ export const getAppointmentById = asyncHandler(async (req, res) => {
 
   if (req.user?.role === "doctor") {
     const doctorRecord = await resolveDoctorForUser(req.user);
-    if (!doctorRecord || !appointment.doctor?._id.equals(doctorRecord._id)) {
+    if (!doctorRecord || String(appointment.doctor?._id) !== String(doctorRecord._id)) {
       throw new AppError("Access denied. You can only view your own appointments.", 403);
     }
   }

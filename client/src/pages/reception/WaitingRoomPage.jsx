@@ -188,149 +188,288 @@ export default function WaitingRoomPage() {
             <p className="text-xs text-slate-400 mt-1">Check in arriving patients from OPD scheduling or Walk-in desk.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-600">
-              <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100">
-                <tr>
-                  <th className="py-3.5 px-4">Token #</th>
-                  <th className="py-3.5 px-4">Patient</th>
-                  <th className="py-3.5 px-4">Doctor & Department</th>
-                  <th className="py-3.5 px-4">Slot</th>
-                  <th className="py-3.5 px-4">Wait Time</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Desk Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {queue.map((item, idx) => (
-                  <tr
-                    key={item._id}
-                    style={{ animationDelay: `${Math.min(idx * 25, 200)}ms` }}
-                    className="animate-row-stagger hover:bg-slate-50/70 transition-colors"
-                  >
-                    <td className="py-3.5 px-4 font-mono">
-                      <span className="inline-block rounded-lg bg-amber-100 border border-amber-300 px-2.5 py-1 text-xs font-black text-amber-900 shadow-xs">
+          <>
+            {/* Mobile Queue Card View (< md) */}
+            <div className="md:hidden space-y-3 p-3">
+              {queue.map((item) => (
+                <div
+                  key={item._id}
+                  className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs space-y-3"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <span className="inline-block rounded-xl bg-amber-100 border border-amber-300 px-2.5 py-1 text-xs font-black text-amber-900 font-mono shadow-xs flex-shrink-0">
                         {item.tokenNumber}
                       </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-bold text-slate-800 text-sm">{item.patient?.name || "Patient"}</div>
-                      <div className="text-[11px] text-slate-400">
-                        {item.patient?.age}y • {item.patient?.gender} • {item.patient?.contactNumber}
+                      <div>
+                        <h3 className="font-bold text-slate-800 text-sm leading-tight">
+                          {item.patient?.name || "Patient"}
+                        </h3>
+                        <p className="text-[11px] text-slate-500 mt-0.5">
+                          {item.patient?.age}y • {item.patient?.gender} • {item.patient?.contactNumber || "No phone"}
+                        </p>
                       </div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-800">{formatDoctorName(item.doctor?.name)}</div>
-                      <div className="text-[11px] text-slate-500">{item.doctor?.department}</div>
-                    </td>
-                    <td className="py-3.5 px-4 font-medium text-slate-600">
-                      {item.appointmentTime}
-                    </td>
-                    <td className="py-3.5 px-4">
+                    </div>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
+                        item.status === "in_consultation"
+                          ? "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300 animate-pulse"
+                          : item.status === "waiting"
+                          ? "bg-amber-100 text-amber-800 ring-1 ring-amber-300"
+                          : item.status === "completed"
+                          ? "bg-blue-100 text-blue-800"
+                          : item.status === "no_show"
+                          ? "bg-slate-100 text-slate-600 line-through"
+                          : "bg-cyan-100 text-cyan-800"
+                      }`}
+                    >
+                      {item.status.replace("_", " ")}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">Doctor & Dept</span>
+                      <span className="font-semibold text-slate-800 text-xs block truncate">
+                        {formatDoctorName(item.doctor?.name)}
+                      </span>
+                      <span className="text-[10px] text-slate-400 block truncate">{item.doctor?.department || "OPD"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">Slot & Wait Time</span>
+                      <span className="font-medium text-slate-800 block text-xs">{item.appointmentTime}</span>
                       <span
-                        className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold ${
+                        className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold mt-0.5 ${
                           item.isDelayed
                             ? "bg-rose-100 text-rose-800 ring-1 ring-rose-300"
-                            : "bg-slate-100 text-slate-700"
+                            : "bg-slate-200/80 text-slate-700"
                         }`}
                       >
-                        ⏱️ {item.waitingMinutes} mins
+                        ⏱️ {item.waitingMinutes}m wait
                       </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                          item.status === "in_consultation"
-                            ? "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300 animate-pulse"
-                            : item.status === "waiting"
-                            ? "bg-amber-100 text-amber-800 ring-1 ring-amber-300"
-                            : item.status === "completed"
-                            ? "bg-blue-100 text-blue-800"
-                            : item.status === "no_show"
-                            ? "bg-slate-100 text-slate-600 line-through"
-                            : "bg-cyan-100 text-cyan-800"
-                        }`}
-                      >
-                        {item.status.replace("_", " ")}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {item.status === "in_consultation" ? (
-                          <button
-                            type="button"
-                            onClick={() => handleStatusChange(item._id, "completed")}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition"
-                            title="Mark consultation completed"
-                          >
-                            <span>✓ Done</span>
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => handleCallPatient(item)}
-                            disabled={callingId === item._id}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition disabled:opacity-50"
-                            title="Broadcast audio chime and call patient"
-                          >
-                            <span>📢 {callingId === item._id ? "Calling..." : "Call"}</span>
-                          </button>
-                        )}
+                    </div>
+                  </div>
 
-                        <ActionDropdown
-                          align="right"
-                          items={[
-                            ...(item.status !== "in_consultation" && item.status !== "completed"
-                              ? [
-                                  {
-                                    label: "Send to Cabin (In Consultation)",
-                                    icon: "🚪",
-                                    onClick: () => handleStatusChange(item._id, "in_consultation"),
-                                  },
-                                ]
-                              : []),
-                            ...(item.status === "in_consultation"
-                              ? [
-                                  {
-                                    label: "Call Again (Broadcast Chime)",
-                                    icon: "📢",
-                                    onClick: () => handleCallPatient(item),
-                                  },
-                                ]
-                              : []),
-                            ...(item.status !== "completed"
-                              ? [
-                                  {
-                                    label: "Mark Consultation Done",
-                                    icon: "✓",
-                                    onClick: () => handleStatusChange(item._id, "completed"),
-                                  },
-                                ]
-                              : []),
-                            { divider: true },
-                            {
-                              label: "Print Token Slip",
-                              icon: "🖨️",
-                              onClick: () =>
-                                setActiveTokenModal({
-                                  ...item,
-                                  checkedInAt: item.checkedInAt || new Date().toISOString(),
-                                }),
-                            },
-                            {
-                              label: "Quick Print Preview",
-                              icon: "📄",
-                              onClick: () => handlePrintSlip(item),
-                            },
-                          ]}
-                        />
-                      </div>
-                    </td>
+                  {/* Actions Bar */}
+                  <div className="pt-1 flex items-center justify-between gap-2 border-t border-slate-100">
+                    {item.status === "in_consultation" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleStatusChange(item._id, "completed")}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] min-h-[40px] px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition cursor-pointer"
+                        title="Mark consultation completed"
+                      >
+                        <span>✓ Done</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleCallPatient(item)}
+                        disabled={callingId === item._id}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] min-h-[40px] px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition disabled:opacity-50 cursor-pointer"
+                        title="Broadcast audio chime and call patient"
+                      >
+                        <span>📢 {callingId === item._id ? "Calling..." : "Call Patient"}</span>
+                      </button>
+                    )}
+
+                    <ActionDropdown
+                      align="right"
+                      items={[
+                        ...(item.status !== "in_consultation" && item.status !== "completed"
+                          ? [
+                              {
+                                label: "Send to Cabin (In Consultation)",
+                                icon: "🚪",
+                                onClick: () => handleStatusChange(item._id, "in_consultation"),
+                              },
+                            ]
+                          : []),
+                        ...(item.status === "in_consultation"
+                          ? [
+                              {
+                                label: "Call Again (Broadcast Chime)",
+                                icon: "📢",
+                                onClick: () => handleCallPatient(item),
+                              },
+                            ]
+                          : []),
+                        ...(item.status !== "completed"
+                          ? [
+                              {
+                                label: "Mark Consultation Done",
+                                icon: "✓",
+                                onClick: () => handleStatusChange(item._id, "completed"),
+                              },
+                            ]
+                          : []),
+                        { divider: true },
+                        {
+                          label: "Print Token Slip",
+                          icon: "🖨️",
+                          onClick: () =>
+                            setActiveTokenModal({
+                              ...item,
+                              checkedInAt: item.checkedInAt || new Date().toISOString(),
+                            }),
+                        },
+                        {
+                          label: "Quick Print Preview",
+                          icon: "📄",
+                          onClick: () => handlePrintSlip(item),
+                        },
+                      ]}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (>= md) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-600">
+                <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100">
+                  <tr>
+                    <th className="py-3.5 px-4">Token #</th>
+                    <th className="py-3.5 px-4">Patient</th>
+                    <th className="py-3.5 px-4">Doctor & Department</th>
+                    <th className="py-3.5 px-4">Slot</th>
+                    <th className="py-3.5 px-4">Wait Time</th>
+                    <th className="py-3.5 px-4">Status</th>
+                    <th className="py-3.5 px-4 text-right">Desk Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {queue.map((item, idx) => (
+                    <tr
+                      key={item._id}
+                      style={{ animationDelay: `${Math.min(idx * 25, 200)}ms` }}
+                      className="animate-row-stagger hover:bg-slate-50/70 transition-colors"
+                    >
+                      <td className="py-3.5 px-4 font-mono">
+                        <span className="inline-block rounded-lg bg-amber-100 border border-amber-300 px-2.5 py-1 text-xs font-black text-amber-900 shadow-xs">
+                          {item.tokenNumber}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-slate-800 text-sm">{item.patient?.name || "Patient"}</div>
+                        <div className="text-[11px] text-slate-400">
+                          {item.patient?.age}y • {item.patient?.gender} • {item.patient?.contactNumber}
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="font-semibold text-slate-800">{formatDoctorName(item.doctor?.name)}</div>
+                        <div className="text-[11px] text-slate-500">{item.doctor?.department}</div>
+                      </td>
+                      <td className="py-3.5 px-4 font-medium text-slate-600">
+                        {item.appointmentTime}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold ${
+                            item.isDelayed
+                              ? "bg-rose-100 text-rose-800 ring-1 ring-rose-300"
+                              : "bg-slate-100 text-slate-700"
+                          }`}
+                        >
+                          ⏱️ {item.waitingMinutes} mins
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
+                            item.status === "in_consultation"
+                              ? "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300 animate-pulse"
+                              : item.status === "waiting"
+                              ? "bg-amber-100 text-amber-800 ring-1 ring-amber-300"
+                              : item.status === "completed"
+                              ? "bg-blue-100 text-blue-800"
+                              : item.status === "no_show"
+                              ? "bg-slate-100 text-slate-600 line-through"
+                              : "bg-cyan-100 text-cyan-800"
+                          }`}
+                        >
+                          {item.status.replace("_", " ")}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          {item.status === "in_consultation" ? (
+                            <button
+                              type="button"
+                              onClick={() => handleStatusChange(item._id, "completed")}
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+                              title="Mark consultation completed"
+                            >
+                              <span>✓ Done</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleCallPatient(item)}
+                              disabled={callingId === item._id}
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition disabled:opacity-50"
+                              title="Broadcast audio chime and call patient"
+                            >
+                              <span>📢 {callingId === item._id ? "Calling..." : "Call"}</span>
+                            </button>
+                          )}
+
+                          <ActionDropdown
+                            align="right"
+                            items={[
+                              ...(item.status !== "in_consultation" && item.status !== "completed"
+                                ? [
+                                    {
+                                      label: "Send to Cabin (In Consultation)",
+                                      icon: "🚪",
+                                      onClick: () => handleStatusChange(item._id, "in_consultation"),
+                                    },
+                                  ]
+                                : []),
+                              ...(item.status === "in_consultation"
+                                ? [
+                                    {
+                                      label: "Call Again (Broadcast Chime)",
+                                      icon: "📢",
+                                      onClick: () => handleCallPatient(item),
+                                    },
+                                  ]
+                                : []),
+                              ...(item.status !== "completed"
+                                ? [
+                                    {
+                                      label: "Mark Consultation Done",
+                                      icon: "✓",
+                                      onClick: () => handleStatusChange(item._id, "completed"),
+                                    },
+                                  ]
+                                : []),
+                              { divider: true },
+                              {
+                                label: "Print Token Slip",
+                                icon: "🖨️",
+                                onClick: () =>
+                                  setActiveTokenModal({
+                                    ...item,
+                                    checkedInAt: item.checkedInAt || new Date().toISOString(),
+                                  }),
+                              },
+                              {
+                                label: "Quick Print Preview",
+                                icon: "📄",
+                                onClick: () => handlePrintSlip(item),
+                              },
+                            ]}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

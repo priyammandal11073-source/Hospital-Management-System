@@ -126,6 +126,15 @@ By unifying **8 distinct operational departments**—Executive Administration, C
 - **Client Error Boundaries**: React Error Boundary wrappers preventing white-screen crashes on runtime client exceptions.
 - **Offline Demo Fallback**: Seed scripts and mock fallback mechanisms allowing system demonstrations even without live database connections.
 
+### 5.4 Mobile, Tablet & Universal Ergonomics
+- **Touch Ergonomics & Apple HIG Compliance**: Minimum 44px x 44px interactive target sizing on coarse pointer screens.
+- **Edge-to-Edge Safe-Area Insets**: Full viewport support (`viewport-fit=cover`) dynamically adapting headers and floating action bars around iPhone Dynamic Islands and camera notches.
+- **Adaptive Breakpoint Strategy**:
+  - Phones (`< md` / < 768px): Tailored bottom navigation bar (`MobileBottomNav`), responsive bottom sheets (`<Modal />`), card view fallbacks for high-traffic data tables, and edge swipe drawer gesture.
+  - Tablets / iPad Portrait (`md: 768px` to `1024px`): Docked desktop-class sidebar (`md:w-56`), centered modals, and split view layout.
+  - Desktop (`>= 1024px`): Full multi-column clinical workbenches with collapsible navigation.
+- **Mobile Form Ergonomics**: Native virtual keyboard hints (`inputMode`, `enterKeyHint`, `autoComplete`) and thumb-friendly sticky form submit footers.
+
 ---
 
 ## 6. End-to-End Clinical Workflows

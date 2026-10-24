@@ -27,7 +27,7 @@ export default function MobileBottomNav({
     <nav
       aria-label="Mobile Bottom Navigation Bar"
       style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)" }}
-      className={`lg:hidden fixed bottom-0 inset-x-0 z-40 liquid-glass-nav transition-all duration-200 ${
+      className={`md:hidden fixed bottom-0 inset-x-0 z-40 liquid-glass-nav transition-all duration-200 ${
         isModalOpen
           ? "opacity-0 pointer-events-none translate-y-full"
           : "opacity-100 pointer-events-auto translate-y-0"

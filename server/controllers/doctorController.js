@@ -140,7 +140,7 @@ export const getAllDoctors = asyncHandler(async (req, res) => {
     };
   }
 
-  const doctors = await Doctor.find(filter).sort({ name: 1 });
+  const doctors = await Doctor.find(filter).sort({ name: 1 }).lean();
   return res.status(200).json({ doctors });
 });
 
@@ -167,7 +167,7 @@ export const getDoctorById = asyncHandler(async (req, res) => {
     }
   }
 
-  const doctor = await Doctor.findById(req.params.id);
+  const doctor = await Doctor.findById(req.params.id).lean();
 
   if (!doctor) {
     throw new AppError("Doctor not found", 404);

@@ -147,6 +147,9 @@ function PatientForm({ patient, onCancel, onSuccess }) {
             onChange={handleChange}
             placeholder="e.g. Rahul Sharma"
             required
+            autoCapitalize="words"
+            autoComplete="name"
+            enterKeyHint="next"
             value={formData.name}
           />
         </label>
@@ -159,6 +162,8 @@ function PatientForm({ patient, onCancel, onSuccess }) {
             onChange={handleChange}
             required
             type="number"
+            inputMode="numeric"
+            enterKeyHint="next"
             value={formData.age}
           />
         </label>
@@ -190,6 +195,9 @@ function PatientForm({ patient, onCancel, onSuccess }) {
               placeholder="98765 43210"
               required
               type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              enterKeyHint="next"
               value={formData.contactNumber}
             />
           </div>
@@ -202,6 +210,9 @@ function PatientForm({ patient, onCancel, onSuccess }) {
             onChange={handleChange}
             placeholder="rahul.sharma@example.com"
             type="email"
+            inputMode="email"
+            autoComplete="email"
+            enterKeyHint="next"
             value={formData.email}
           />
         </label>
@@ -228,6 +239,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
             name="abhaId"
             onChange={handleChange}
             placeholder="e.g. 14-8891-2345-6789 or username@abdm"
+            enterKeyHint="next"
             value={formData.abhaId}
           />
         </label>
@@ -241,6 +253,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
           onChange={handleChange}
           placeholder="e.g. 123 M.G. Road, Indiranagar, Bengaluru, Karnataka - 560038"
           rows="2"
+          autoComplete="street-address"
           value={formData.address}
         />
       </label>
@@ -252,6 +265,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
           name="allergies"
           onChange={handleChange}
           placeholder="e.g. Penicillin, Peanuts"
+          enterKeyHint="next"
           value={formData.allergies}
         />
       </label>
@@ -263,6 +277,7 @@ function PatientForm({ patient, onCancel, onSuccess }) {
           name="medicalHistory"
           onChange={handleChange}
           placeholder="e.g. Asthma, Diabetes"
+          enterKeyHint="done"
           value={formData.medicalHistory}
         />
       </label>
@@ -273,16 +288,20 @@ function PatientForm({ patient, onCancel, onSuccess }) {
         </p>
       )}
 
-      <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
+      {/* Sticky Mobile / Adaptive Desktop Submit Footer */}
+      <div
+        style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}
+        className="sticky bottom-0 -mx-5 -mb-7 sm:mx-0 sm:mb-0 p-4 sm:p-0 bg-white/95 backdrop-blur-xs border-t border-slate-200/80 sm:border-t-0 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-3 z-10"
+      >
         <button
-          className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
           onClick={onCancel}
           type="button"
         >
           Cancel
         </button>
         <button
-          className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition-colors shadow-2xs"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer active:scale-[0.98]"
           disabled={isSubmitting}
           type="submit"
         >

@@ -445,7 +445,7 @@ function Appointments() {
                   <th className="px-4 py-3">Date</th>
                   <th className="px-4 py-3">Time</th>
                   <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">Reason</th>
+                  <th className="hidden lg:table-cell px-4 py-3">Reason</th>
                   <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -508,7 +508,7 @@ function Appointments() {
                         {statusLabels[appointment.status] || appointment.status}
                       </span>
                     </td>
-                    <td className="max-w-48 truncate px-4 py-3.5 text-xs text-slate-600" title={appointment.reasonForVisit}>
+                    <td className="hidden lg:table-cell max-w-48 truncate px-4 py-3.5 text-xs text-slate-600" title={appointment.reasonForVisit}>
                       {appointment.reasonForVisit}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5 text-right">

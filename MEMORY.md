@@ -40,9 +40,18 @@ The project is structured as an npm multi-package monorepo containing a root wor
 - **Decision**: Created [`ConfirmDialog.jsx`](file:///c:/Users/priya/OneDrive/Documents/Default%20Project/Hospital-Management-System/client/src/components/ui/ConfirmDialog.jsx), [`PageHeader.jsx`](file:///c:/Users/priya/OneDrive/Documents/Default%20Project/Hospital-Management-System/client/src/components/ui/PageHeader.jsx), and [`DataTable.jsx`](file:///c:/Users/priya/OneDrive/Documents/Default%20Project/Hospital-Management-System/client/src/components/ui/DataTable.jsx) under `client/src/components/ui/`. Replaced blocking browser `window.confirm()` calls across all core pages (`Appointments`, `Beds`, `Patients`, `Doctors`, `Prescriptions`).
 - **Rationale**: Eliminates browser dialog blocking, elevates accessibility with ARIA attributes, and ensures seamless mobile touch usability.
 
-### ADR-05: Server-Side Zero-Trust Validation with Zod
-- **Decision**: Built domain schemas in `server/validators/` (`appointmentValidators`, `patientValidators`, `billingValidators`, `bedValidators`, `prescriptionValidators`, `doctorValidators`, `authValidators`) and applied them to route definitions using `validate(...)` middleware.
-- **Rationale**: Guarantees data integrity before controller execution and prevents malformed payloads from reaching MongoDB models.
+### ADR-06: Liquid Glass Design System & Apple HIG Mobile/iPad Architecture
+- **Decision**: 
+  1. Built a cohesive Liquid Glass token system (`liquid-glass-elevated`, `liquid-glass-pill`, `liquid-glass-subtle`, `liquid-glass-nav`, `liquid-glass-sidebar`) using CSS backdrop-filter, subtle borders (`border-white/40`), and rich contrast.
+  2. Adopted Apple Human Interface Guidelines and Emil Kowalski design engineering principles across mobile (`< md`), iPad portrait (`768px-1024px`), and desktop:
+     - `viewport-fit=cover` in `index.html` with `--sat`, `--sar`, `--sab`, `--sal` safe area variables.
+     - Header padding via `env(safe-area-inset-top)` to prevent collision with iPhone Dynamic Island / camera notch.
+     - Shell & docked sidebar split moved to `md` (768px) so iPad portrait displays the desktop docked sidebar (`md:w-56 lg:w-64`) instead of mobile hamburger view.
+     - Direct-manipulation edge swipe gesture (`touchstart` < 28px) to slide open navigation drawers on touch devices.
+     - `<Modal />` responsive bottom sheet on `< md` with Apple HIG drag handle and safe-area padding.
+     - Tailored mobile card view fallbacks for high-traffic data tables (`Appointments`, `Patients`, `Doctors`, `MyPatients`, `WaitingRoomPage`).
+     - Kept drawer mounted with CSS transitions (`pointer-events-none`) for 60fps interruptible exit animations.
+- **Rationale**: Elevates the platform to feel like an installed native application on iPhone and iPad, eliminating horizontal scrolling, unreachable touch targets, and keyboard obstruction on mobile.
 
 ---
 
@@ -58,9 +67,10 @@ The project is structured as an npm multi-package monorepo containing a root wor
 | `server/validators/` | Zod validation schemas for request bodies |
 | `client/src/config/env.js` | Centralized frontend environment configuration |
 | `client/src/services/` | Domain API services + `httpClient.js` + `api.js` barrel |
-| `client/src/components/ui/` | Standardized UI component catalog |
+| `client/src/components/ui/` | Standardized UI component catalog (`Modal`, `ConfirmDialog`, `PageHeader`, `DataTable`, etc.) |
+| `client/src/components/mobile/` | Native mobile navigation primitives (`MobileBottomNav`, `MobileMenuSheet`, `MobileNavIcons`) |
 | `client/src/pages/` | 89 portal and operational screens |
-| `client/src/index.css` | Editorial styling, design tokens, and animations |
+| `client/src/index.css` | Editorial styling, Liquid Glass tokens, safe-area variables, and animations |
 
 ---
 
@@ -76,5 +86,6 @@ The project is structured as an npm multi-package monorepo containing a root wor
 
 - **Server Test Suite**: 65/65 passing (Vitest 5.0.0)
 - **Client Test Suite**: 15/15 passing (Vitest 5.0.0)
-- **Client Production Build**: `npm run build` succeeds cleanly in ~7.4s with 0 errors
+- **Client Production Build**: `npm run build` succeeds cleanly in ~10.13s with 0 errors across 179 code-split chunks
 - **Zero Regressions**: 100% backward compatibility maintained across all routes and API exports.
+

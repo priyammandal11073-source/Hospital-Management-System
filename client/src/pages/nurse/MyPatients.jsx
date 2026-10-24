@@ -205,102 +205,188 @@ export default function MyPatients() {
           <p className="mt-1 text-xs text-slate-500">Try adjusting your ward or severity filters.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-700">
-              <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
-                <tr>
-                  <th className="px-4 py-3.5">Patient Details</th>
-                  <th className="px-4 py-3.5">Ward & Bed</th>
-                  <th className="px-4 py-3.5">Admission Reason</th>
-                  <th className="px-4 py-3.5">Attending Doctor</th>
-                  <th className="px-4 py-3.5">Latest Vitals</th>
-                  <th className="px-4 py-3.5">Clinical Risk</th>
-                  <th className="px-4 py-3.5 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredPatients.map((item) => (
-                  <tr
-                    key={item.bedId}
-                    className="hover:bg-slate-50/80 transition cursor-pointer"
-                    onClick={() => setSelectedPatientId(item.patient?._id)}
-                  >
-                    <td className="px-4 py-3.5">
-                      <div className="font-bold text-slate-900 text-sm">{item.patient?.name}</div>
+        <>
+          {/* Mobile Card View (< md) */}
+          <div className="block md:hidden space-y-3">
+            {filteredPatients.map((item) => (
+              <div
+                key={item.bedId}
+                onClick={() => setSelectedPatientId(item.patient?._id)}
+                className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs space-y-3 active:scale-[0.99] transition cursor-pointer"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-700 font-black text-xs ring-1 ring-teal-500/20 flex-shrink-0">
+                      {item.bedNumber || "BED"}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-sm leading-tight">
+                        {item.patient?.name || "Unknown patient"}
+                      </h3>
                       <div className="text-[11px] text-slate-500 mt-0.5">
                         {item.patient?.age}y / {item.patient?.gender}
-                        {" • "}
-                        <span className="font-bold text-rose-700">{item.patient?.bloodGroup || "—"}</span>
-                      </div>
-                      <div className="font-mono text-[10px] text-slate-400">{item.patient?.abhaId || "ABDM-TEMP"}</div>
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <div className="font-mono font-bold text-teal-700 text-xs">{item.bedNumber}</div>
-                      <div className="text-[11px] text-slate-600 font-medium">{item.ward}</div>
-                      <div className="text-[10px] text-slate-400">{item.floor}</div>
-                    </td>
-
-                    <td className="px-4 py-3.5 max-w-xs">
-                      <p className="truncate font-medium text-slate-800">{item.admissionReason}</p>
-                      <span className="text-[10px] text-slate-400">
-                        Admitted {new Date(item.admittedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      <div className="font-semibold text-slate-800">
-                        {item.attendingDoctor?.name ? formatDoctorName(item.attendingDoctor.name) : "On-Call"}
-                      </div>
-                      <div className="text-[11px] text-slate-500">{item.attendingDoctor?.specialization || "General"}</div>
-                    </td>
-
-                    <td className="px-4 py-3.5">
-                      {item.latestVitals ? (
-                        <div className="text-[11px] space-y-0.5">
-                          <div>
-                            BP: <span className="font-semibold">{item.latestVitals.bloodPressureSys}/{item.latestVitals.bloodPressureDia || "—"}</span>
-                          </div>
-                          <div>
-                            SpO2:{" "}
-                            <span className={item.latestVitals.spo2 <= 92 ? "text-rose-600 font-bold" : "font-semibold"}>
-                              {item.latestVitals.spo2}%
-                            </span>
+                        {item.patient?.bloodGroup && (
+                          <>
                             {" • "}
-                            Pulse: <span className="font-semibold">{item.latestVitals.heartRate}</span>
-                          </div>
-                        </div>
-                      ) : (
-                        <span className="text-slate-400 italic text-[11px]">No vitals yet</span>
-                      )}
-                    </td>
+                            <span className="font-bold text-rose-700">{item.patient.bloodGroup}</span>
+                          </>
+                        )}
+                        {" • "}
+                        <span className="font-medium text-teal-700">{item.ward}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${getRiskBadge(item.riskLevel)}`}>
+                    ● {item.riskLevel}
+                  </span>
+                </div>
 
-                    <td className="px-4 py-3.5">
-                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs ${getRiskBadge(item.riskLevel)}`}>
-                        ● {item.riskLevel}
-                      </span>
-                    </td>
+                <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Doctor</span>
+                    <span className="font-semibold text-slate-800 text-xs block truncate">
+                      {item.attendingDoctor?.name ? formatDoctorName(item.attendingDoctor.name) : "On-Call"}
+                    </span>
+                    <span className="text-[10px] text-slate-400 truncate block">{item.attendingDoctor?.specialization || "General"}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block">Latest Vitals</span>
+                    {item.latestVitals ? (
+                      <div className="text-[11px]">
+                        <span className="font-semibold">{item.latestVitals.bloodPressureSys}/{item.latestVitals.bloodPressureDia || "—"}</span>
+                        {" • "}
+                        <span className={item.latestVitals.spo2 <= 92 ? "text-rose-600 font-bold" : "font-semibold"}>
+                          {item.latestVitals.spo2}%
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-slate-400 italic text-[11px]">No vitals yet</span>
+                    )}
+                  </div>
+                  {item.admissionReason && (
+                    <div className="col-span-2 pt-1 border-t border-slate-200/60">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block">Diagnosis / Reason</span>
+                      <p className="text-xs text-slate-700 truncate">{item.admissionReason}</p>
+                    </div>
+                  )}
+                </div>
 
-                    <td className="px-4 py-3.5 text-right">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedPatientId(item.patient?._id);
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition duration-120 cursor-pointer"
-                      >
-                        <span>Clinical Chart</span>
-                        <span className="opacity-70">→</span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                <div className="pt-1 flex items-center justify-between">
+                  <span className="font-mono text-[10px] text-slate-400">{item.patient?.abhaId || "ABDM-ID"}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPatientId(item.patient?._id);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] min-h-[40px] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition duration-120 cursor-pointer"
+                  >
+                    <span>Clinical Chart</span>
+                    <span className="opacity-70">→</span>
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+
+          {/* Full Table (>= md) */}
+          <div className="hidden md:block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs text-slate-700">
+                <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th className="px-4 py-3.5">Patient Details</th>
+                    <th className="px-4 py-3.5">Ward & Bed</th>
+                    <th className="px-4 py-3.5">Admission Reason</th>
+                    <th className="px-4 py-3.5">Attending Doctor</th>
+                    <th className="px-4 py-3.5">Latest Vitals</th>
+                    <th className="px-4 py-3.5">Clinical Risk</th>
+                    <th className="px-4 py-3.5 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredPatients.map((item) => (
+                    <tr
+                      key={item.bedId}
+                      className="hover:bg-slate-50/80 transition cursor-pointer"
+                      onClick={() => setSelectedPatientId(item.patient?._id)}
+                    >
+                      <td className="px-4 py-3.5">
+                        <div className="font-bold text-slate-900 text-sm">{item.patient?.name}</div>
+                        <div className="text-[11px] text-slate-500 mt-0.5">
+                          {item.patient?.age}y / {item.patient?.gender}
+                          {" • "}
+                          <span className="font-bold text-rose-700">{item.patient?.bloodGroup || "—"}</span>
+                        </div>
+                        <div className="font-mono text-[10px] text-slate-400">{item.patient?.abhaId || "ABDM-TEMP"}</div>
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        <div className="font-mono font-bold text-teal-700 text-xs">{item.bedNumber}</div>
+                        <div className="text-[11px] text-slate-600 font-medium">{item.ward}</div>
+                        <div className="text-[10px] text-slate-400">{item.floor}</div>
+                      </td>
+
+                      <td className="px-4 py-3.5 max-w-xs">
+                        <p className="truncate font-medium text-slate-800">{item.admissionReason}</p>
+                        <span className="text-[10px] text-slate-400">
+                          Admitted {new Date(item.admittedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        <div className="font-semibold text-slate-800">
+                          {item.attendingDoctor?.name ? formatDoctorName(item.attendingDoctor.name) : "On-Call"}
+                        </div>
+                        <div className="text-[11px] text-slate-500">{item.attendingDoctor?.specialization || "General"}</div>
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        {item.latestVitals ? (
+                          <div className="text-[11px] space-y-0.5">
+                            <div>
+                              BP: <span className="font-semibold">{item.latestVitals.bloodPressureSys}/{item.latestVitals.bloodPressureDia || "—"}</span>
+                            </div>
+                            <div>
+                              SpO2:{" "}
+                              <span className={item.latestVitals.spo2 <= 92 ? "text-rose-600 font-bold" : "font-semibold"}>
+                                {item.latestVitals.spo2}%
+                              </span>
+                              {" • "}
+                              Pulse: <span className="font-semibold">{item.latestVitals.heartRate}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic text-[11px]">No vitals yet</span>
+                        )}
+                      </td>
+
+                      <td className="px-4 py-3.5">
+                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs ${getRiskBadge(item.riskLevel)}`}>
+                          ● {item.riskLevel}
+                        </span>
+                      </td>
+
+                      <td className="px-4 py-3.5 text-right">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedPatientId(item.patient?._id);
+                          }}
+                          className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition duration-120 cursor-pointer"
+                        >
+                          <span>Clinical Chart</span>
+                          <span className="opacity-70">→</span>
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
 
       {/* Detailed Clinical Patient Profile Modal */}

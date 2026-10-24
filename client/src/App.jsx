@@ -1,7 +1,7 @@
 import React, { lazy, Suspense } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import DashboardLayout from "./components/DashboardLayout.jsx";
-import PatientLayout from "./components/PatientLayout.jsx";
+const DashboardLayout = lazy(() => import("./components/DashboardLayout.jsx"));
+const PatientLayout = lazy(() => import("./components/PatientLayout.jsx"));
 import PatientProtectedRoute from "./components/PatientProtectedRoute.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageLoader from "./components/ui/PageLoader.jsx";
