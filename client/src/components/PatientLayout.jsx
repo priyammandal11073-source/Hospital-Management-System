@@ -11,10 +11,10 @@ import { SidebarCollapseButton } from "./ui/index.js";
 
 
 const navLinkClass = ({ isActive }) =>
-  `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] ${
+  `group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-[background-color,color,transform] duration-120 ease-out active:scale-[0.97] select-none ${
     isActive
-      ? "bg-slate-900 text-white font-semibold shadow-xs"
-      : "text-slate-600 hover:bg-white/70 hover:text-slate-900"
+      ? "bg-slate-900 text-white font-semibold shadow-2xs"
+      : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"
   }`;
 
 function PatientLayout() {
@@ -175,13 +175,6 @@ function PatientLayout() {
               <HospitalLogo variant="icon" className="sm:hidden" />
             </Link>
 
-            {/* Apple macOS style Sidebar Collapse Toggle Button in Header */}
-            <SidebarCollapseButton
-              collapsed={isSidebarCollapsed}
-              onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
-              className="hidden lg:inline-flex"
-            />
-
             {/* Mobile role pill */}
             <span className="inline-flex xl:hidden items-center rounded-full liquid-glass-pill px-2.5 py-0.5 text-[10px] font-semibold text-slate-800">
               Patient
@@ -269,34 +262,33 @@ function PatientLayout() {
           data-sidebar-collapsed={isSidebarCollapsed ? "true" : "false"}
           className={`hidden lg:flex ${
             isSidebarCollapsed ? "lg:w-20" : "lg:w-64"
-          } lg:flex-shrink-0 lg:h-full liquid-glass-sidebar p-3.5 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
+          } lg:flex-shrink-0 lg:h-full liquid-glass-sidebar p-3 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
           aria-label="Patient portal navigation"
         >
           <div>
-            {/* Sidebar Section Title & Apple Collapse Button on TOP LEFT */}
-            <div className={`mb-4 flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between"} px-1 pt-1 gap-2`}>
+            {/* Sidebar Section Title & Clean Collapse Button */}
+            <div className={`mb-3 flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between"} px-1 py-1`}>
               <div className="flex items-center gap-2 min-w-0">
-                {/* Apple Design Collapse Button on TOP LEFT */}
                 <SidebarCollapseButton
                   collapsed={isSidebarCollapsed}
                   onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
                   size="sm"
                 />
                 {!isSidebarCollapsed && (
-                  <span className="text-[12px] font-bold text-slate-700 tracking-tight truncate">
-                    Patient services
+                  <span className="text-xs font-semibold text-slate-800 tracking-tight truncate">
+                    Patient Services
                   </span>
                 )}
               </div>
               {!isSidebarCollapsed && (
-                <span className="rounded-full liquid-glass-pill px-2 py-0.5 text-[9px] font-semibold text-slate-600 flex-shrink-0">
+                <span className="rounded-md bg-slate-200/50 px-1.5 py-0.5 text-[9px] font-mono font-medium text-slate-500 capitalize flex-shrink-0">
                   Active
                 </span>
               )}
             </div>
 
             {/* Navigation Links */}
-            <nav className="space-y-1" aria-label="Patient navigation">
+            <nav className="space-y-0.5" aria-label="Patient navigation">
               {/* My Health Hub */}
               <NavLink className={navLinkClass} to="/patient/dashboard">
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -306,7 +298,7 @@ function PatientLayout() {
               </NavLink>
 
               {/* Category 1: Appointments */}
-              <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                 Appointments
               </div>
               <NavLink className={navLinkClass} to="/patient/appointments/book">
@@ -347,7 +339,7 @@ function PatientLayout() {
               </NavLink>
 
               {/* Category 2: Health Records */}
-              <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                 Health Records
               </div>
               <NavLink className={navLinkClass} to="/patient/records">
@@ -388,7 +380,7 @@ function PatientLayout() {
               </NavLink>
 
               {/* Category 3: Care */}
-              <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                 Care
               </div>
               <NavLink className={navLinkClass} to="/patient/referrals">
@@ -411,7 +403,7 @@ function PatientLayout() {
               </NavLink>
 
               {/* Category 4: Payments */}
-              <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                 Payments
               </div>
               <NavLink className={navLinkClass} to="/patient/billings">
@@ -428,7 +420,7 @@ function PatientLayout() {
               </NavLink>
 
               {/* Category 5: Account */}
-              <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                 Account
               </div>
               <NavLink className={navLinkClass} to="/patient/profile">
@@ -458,68 +450,58 @@ function PatientLayout() {
             </nav>
           </div>
 
-          {/* Sidebar Footer Controls & Collapse Toggle */}
-          <div className="mt-4 pt-3 border-t border-slate-200/70 space-y-2">
-            {/* Bottom Collapse / Expand Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarCollapsed((prev) => !prev)}
-              className={`w-full flex items-center ${
-                isSidebarCollapsed ? "justify-center px-1" : "justify-between px-2.5"
-              } py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white/60 hover:bg-white border border-slate-200/80 active:scale-[0.97] transition cursor-pointer shadow-2xs`}
-              title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
-              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {!isSidebarCollapsed && (
-                <span className="flex items-center gap-1.5 truncate">
-                  <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                  </svg>
-                  <span>Collapse panel</span>
-                </span>
-              )}
-              {!isSidebarCollapsed && (
-                <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-slate-100 rounded border border-slate-200">
-                  Ctrl+B
-                </kbd>
-              )}
-              {isSidebarCollapsed && (
-                <svg className="h-4 w-4 text-slate-600 rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                </svg>
-              )}
-            </button>
-
+          {/* Sidebar Footer Controls */}
+          <div className="mt-4 pt-3 border-t border-slate-200/50 space-y-2 mt-auto">
             {/* Emergency Assistance Box (Hidden when collapsed) */}
-            <div className="sidebar-hide-collapsed liquid-glass-card p-3.5">
-              <div className="flex items-center gap-2 text-xs font-semibold text-rose-600">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="sidebar-hide-collapsed rounded-xl bg-rose-50/50 border border-rose-100/80 p-3">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-700">
+                <svg className="h-3.5 w-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                <span>Emergency & helplines</span>
+                <span>Emergency Helplines</span>
               </div>
-              <p className="mt-1.5 text-[11px] text-slate-600 leading-snug">
-                Ambulance: <a href="tel:108" className="text-rose-600 font-semibold hover:underline">108</a> / <a href="tel:102" className="text-rose-600 font-semibold hover:underline">102</a><br />
-                National helpline: <a href="tel:112" className="text-rose-600 font-semibold hover:underline">112</a><br />
-                Health helpline: <a href="tel:1075" className="text-slate-800 font-semibold hover:underline">1075</a> (MoHFW)
+              <p className="mt-1 text-[11px] text-slate-600 leading-snug">
+                Ambulance: <a href="tel:108" className="text-rose-600 font-semibold hover:underline">108</a> · Helpline: <a href="tel:112" className="text-rose-600 font-semibold hover:underline">112</a>
               </p>
-              <div className="mt-3 border-t border-slate-200/60 pt-2 flex items-center justify-between text-[10px] text-slate-400">
-                <span>NABH accredited</span>
-                <span className="text-slate-600 font-medium">ABDM compliant</span>
-              </div>
-              <div className="mt-3 pt-3 border-t border-slate-200/60">
+            </div>
+
+            {/* Footer Bottom Bar */}
+            {!isSidebarCollapsed ? (
+              <div className="flex items-center justify-between px-1 py-1">
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-medium text-slate-700 tracking-tight flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    NABH Accredited
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-mono">ABDM Compliant</span>
+                </div>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-2 liquid-glass-pill px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 active:scale-[0.98] transition cursor-pointer touch-target"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50/80 transition-colors duration-120 cursor-pointer active:scale-[0.96]"
+                  title="Sign out of patient portal"
                 >
-                  <svg className="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                   <span>Sign Out</span>
                 </button>
               </div>
-            </div>
+            ) : (
+              <div className="flex justify-center py-1">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  data-tooltip="Sign Out"
+                  className="relative p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50/80 transition-colors duration-120 cursor-pointer active:scale-[0.96]"
+                  aria-label="Sign Out"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </aside>
 

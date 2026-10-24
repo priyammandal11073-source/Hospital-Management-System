@@ -11,10 +11,10 @@ import { SidebarCollapseButton } from "./ui/index.js";
 
 
 const navLinkClass = ({ isActive }) =>
-  `group flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium transition-all duration-150 ease-out active:scale-[0.98] ${
+  `group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-[background-color,color,transform] duration-120 ease-out active:scale-[0.97] select-none ${
     isActive
-      ? "bg-slate-900 text-white font-semibold shadow-xs"
-      : "text-slate-600 hover:bg-white/70 hover:text-slate-900"
+      ? "bg-slate-900 text-white font-semibold shadow-2xs"
+      : "text-slate-600 hover:bg-slate-200/50 hover:text-slate-900"
   }`;
 
 const PORTAL_CONFIG = {
@@ -285,13 +285,6 @@ function DashboardLayout() {
               <HospitalLogo variant="icon" className="sm:hidden" />
             </Link>
 
-            {/* Apple macOS style Sidebar Collapse Toggle Button in Header */}
-            <SidebarCollapseButton
-              collapsed={isSidebarCollapsed}
-              onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
-              className="hidden lg:inline-flex"
-            />
-
             {/* Mobile role indicator pill */}
             <span className={`inline-flex xl:hidden items-center rounded px-2 py-0.5 text-[10px] font-bold truncate max-w-[120px] ${config.badgeClass}`}>
               {role === "doctor" && user?.name
@@ -384,38 +377,37 @@ function DashboardLayout() {
           data-sidebar-collapsed={isSidebarCollapsed ? "true" : "false"}
           className={`hidden lg:flex ${
             isSidebarCollapsed ? "lg:w-20" : "lg:w-64"
-          } lg:flex-shrink-0 lg:h-full liquid-glass-sidebar p-3.5 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
+          } lg:flex-shrink-0 lg:h-full liquid-glass-sidebar p-3 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
           aria-label="Portal navigation sidebar"
         >
           <div>
-            {/* Sidebar Section Title & Apple Collapse Button on TOP LEFT */}
-            <div className={`mb-4 flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between"} px-1 pt-1 gap-2`}>
+            {/* Sidebar Section Title & Clean Collapse Button */}
+            <div className={`mb-3 flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between"} px-1 py-1`}>
               <div className="flex items-center gap-2 min-w-0">
-                {/* Apple Design Collapse Button on TOP LEFT */}
                 <SidebarCollapseButton
                   collapsed={isSidebarCollapsed}
                   onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
                   size="sm"
                 />
                 {!isSidebarCollapsed && (
-                  <span className="text-[12px] font-bold text-slate-700 tracking-tight truncate">
+                  <span className="text-xs font-semibold text-slate-800 tracking-tight truncate">
                     {config.label}
                   </span>
                 )}
               </div>
               {!isSidebarCollapsed && (
-                <span className="rounded bg-white/90 border border-slate-200/90 px-1.5 py-0.5 text-[9px] font-mono text-slate-600 capitalize flex-shrink-0">
-                  {role}
+                <span className="rounded-md bg-slate-200/50 px-1.5 py-0.5 text-[9px] font-mono font-medium text-slate-500 capitalize flex-shrink-0">
+                  {role === "super_admin" ? "Super Admin" : role}
                 </span>
               )}
             </div>
 
             {/* Dynamic Navigation Links based on Role */}
-            <nav className="space-y-1" aria-label="Portal navigation">
+            <nav className="space-y-0.5" aria-label="Portal navigation">
               {role === "nurse" ? (
                 <>
                   {/* Category 1: Nursing Station */}
-                  <div className="px-2 pt-1 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Nursing Station
                   </div>
                   <NavLink className={navLinkClass} to="/dashboard">
@@ -426,7 +418,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 2: Inpatients & Care */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Inpatients & Care
                   </div>
                   <NavLink className={navLinkClass} to="/nurse/patients">
@@ -473,7 +465,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 3: Clinical Coordination */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Clinical Coordination
                   </div>
                   <NavLink className={navLinkClass} to="/nurse/doctor-orders">
@@ -514,7 +506,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 4: Ward Management */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Ward Management
                   </div>
                   <NavLink className={navLinkClass} to="/beds">
@@ -531,7 +523,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 5: Shift Management */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Shift Management
                   </div>
                   <NavLink className={navLinkClass} to="/nurse/shift">
@@ -548,7 +540,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 6: Administration */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Administration
                   </div>
                   <NavLink className={navLinkClass} to="/billing">
@@ -561,7 +553,7 @@ function DashboardLayout() {
               ) : role === "doctor" ? (
                 <>
                   {/* Category 1: Clinical Practice */}
-                  <div className="px-2 pt-1 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Clinical Practice
                   </div>
                   <NavLink className={navLinkClass} to="/dashboard">
@@ -590,7 +582,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 2: Clinical Directives */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Clinical Directives
                   </div>
                   <NavLink className={navLinkClass} to="/doctor/orders">
@@ -619,7 +611,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 3: Hospital & Diagnostics */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Hospital Resources
                   </div>
                   <NavLink className={navLinkClass} to="/lab-reports">
@@ -651,7 +643,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 1: Appointments */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Appointments
                   </div>
                   <NavLink className={navLinkClass} to="/patient/appointments/book">
@@ -680,7 +672,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 2: Health Records */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Health Records
                   </div>
                   <NavLink className={navLinkClass} to="/patient/records">
@@ -721,7 +713,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 3: Care */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Care
                   </div>
                   <NavLink className={navLinkClass} to="/patient/referrals">
@@ -744,7 +736,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 4: Payments */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Payments
                   </div>
                   <NavLink className={navLinkClass} to="/patient/billings">
@@ -761,7 +753,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 5: Account */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 select-none">
                     Account
                   </div>
                   <NavLink className={navLinkClass} to="/patient/profile">
@@ -792,7 +784,7 @@ function DashboardLayout() {
               ) : role === "admin" || role === "super_admin" ? (
                 <>
                   {/* Category 1: Operations & Command */}
-                  <div className="px-2 pt-1 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Command & Governance
                   </div>
                   <NavLink className={navLinkClass} to="/dashboard">
@@ -822,7 +814,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 2: Clinical & Inpatients */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Clinical Operations
                   </div>
                   <NavLink className={navLinkClass} to="/patients">
@@ -881,7 +873,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 3: Workforce & HR */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Human Resources
                   </div>
                   <NavLink className={navLinkClass} to="/admin/staff">
@@ -898,7 +890,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 4: Finance & Logistics */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Finance & Logistics
                   </div>
                   <NavLink className={navLinkClass} to="/billing">
@@ -927,7 +919,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 5: Governance & Security */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Governance & Logs
                   </div>
                   <NavLink className={navLinkClass} to="/reports">
@@ -1093,7 +1085,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 2: Prescriptions */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Prescriptions
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/queue">
@@ -1116,7 +1108,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 3: Inventory */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Inventory
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/inventory">
@@ -1151,7 +1143,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 4: Purchasing */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Purchasing
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/suppliers">
@@ -1180,7 +1172,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 5: Patients */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Patients
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/patients">
@@ -1191,7 +1183,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 6: Finance */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Finance
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/billing">
@@ -1208,7 +1200,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 7: Reports */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Reports
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/analytics">
@@ -1225,7 +1217,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 8: Staff */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Staff & Duty
                   </div>
                   <NavLink className={navLinkClass} to="/pharmacy/staff">
@@ -1246,7 +1238,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 2: Requests & Scheduling */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Requests & Scheduling
                   </div>
                   <NavLink className={navLinkClass} to="/diagnostic/requests">
@@ -1269,7 +1261,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 3: Laboratory / Pathology */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Laboratory & Pathology
                   </div>
                   <NavLink className={navLinkClass} to="/diagnostic/workbench">
@@ -1286,7 +1278,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 4: Radiology & Medical Imaging */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Radiology & Imaging
                   </div>
                   <NavLink className={navLinkClass} to="/diagnostic/radiology">
@@ -1303,7 +1295,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 5: Reports & Verification */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Reports & Verification
                   </div>
                   <NavLink className={navLinkClass} to="/diagnostic/review">
@@ -1332,7 +1324,7 @@ function DashboardLayout() {
                   </NavLink>
 
                   {/* Category 6: Operations & Governance */}
-                  <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                  <div className="sidebar-category-header px-2.5 pt-3.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400/90 select-none">
                     Operations & Governance
                   </div>
                   <NavLink className={navLinkClass} to="/diagnostic/catalog">
@@ -1443,62 +1435,44 @@ function DashboardLayout() {
             </nav>
           </div>
 
-          {/* Sidebar Footer Controls & Collapse Toggle */}
-          <div className="mt-4 pt-3 border-t border-slate-200/70 space-y-2">
-            {/* Bottom Collapse / Expand Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarCollapsed((prev) => !prev)}
-              className={`w-full flex items-center ${
-                isSidebarCollapsed ? "justify-center px-1" : "justify-between px-2.5"
-              } py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white/60 hover:bg-white border border-slate-200/80 active:scale-[0.97] transition cursor-pointer shadow-2xs`}
-              title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
-              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {!isSidebarCollapsed && (
-                <span className="flex items-center gap-1.5 truncate">
-                  <svg className="h-3.5 w-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                  </svg>
-                  <span>Collapse panel</span>
-                </span>
-              )}
-              {!isSidebarCollapsed && (
-                <kbd className="hidden xl:inline-block px-1.5 py-0.5 text-[9px] font-mono text-slate-400 bg-slate-100 rounded border border-slate-200">
-                  Ctrl+B
-                </kbd>
-              )}
-              {isSidebarCollapsed && (
-                <svg className="h-4 w-4 text-slate-600 rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                </svg>
-              )}
-            </button>
-
-            {/* Sidebar Footer Badge */}
-            <div className="sidebar-hide-collapsed rounded-md bg-white/70 border border-slate-200/70 p-2.5 text-center backdrop-blur-md">
-              <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-700">
-                <svg className="h-3.5 w-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span>NABH Accredited</span>
-              </div>
-              <p className="mt-0.5 text-[10px] text-slate-500 font-mono">
-                ABDM Connected (HFR/HIP)
-              </p>
-              <div className="mt-2 pt-2 border-t border-slate-200/70">
+          {/* Sidebar Footer */}
+          <div className="mt-4 pt-2 border-t border-slate-200/50 mt-auto">
+            {!isSidebarCollapsed ? (
+              <div className="flex items-center justify-between px-1 py-1">
+                <div className="flex flex-col">
+                  <span className="text-[11px] font-medium text-slate-700 tracking-tight flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                    NABH Accredited
+                  </span>
+                  <span className="text-[9px] text-slate-400 font-mono">ABDM Connected</span>
+                </div>
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="w-full flex items-center justify-center gap-1.5 rounded-md bg-white/70 border border-slate-200 hover:bg-rose-50 hover:border-rose-300 px-2 py-1.5 text-xs font-semibold text-slate-600 hover:text-rose-700 transition cursor-pointer touch-target"
+                  className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50/80 transition-colors duration-120 cursor-pointer active:scale-[0.96]"
+                  title="Sign out of portal"
                 >
-                  <svg className="h-3.5 w-3.5 flex-shrink-0 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                   <span>Sign Out</span>
                 </button>
               </div>
-            </div>
+            ) : (
+              <div className="flex justify-center py-1">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  data-tooltip="Sign Out"
+                  className="relative p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50/80 transition-colors duration-120 cursor-pointer active:scale-[0.96]"
+                  aria-label="Sign Out"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         </aside>
 
