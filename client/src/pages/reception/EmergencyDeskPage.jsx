@@ -113,27 +113,27 @@ export default function EmergencyDeskPage() {
   return (
     <div className="space-y-6">
       {/* Alert Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-700 via-rose-800 to-slate-950 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-white/85 backdrop-blur-xl border border-rose-200/80 p-6 sm:p-8 text-slate-900 shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-black backdrop-blur-sm ring-1 ring-white/30">
-              <span className="h-2 w-2 rounded-full bg-red-300 animate-ping"></span>
+            <div className="inline-flex items-center gap-2 rounded-lg bg-rose-50 text-rose-800 border border-rose-200/80 px-2.5 py-1 text-xs font-semibold shadow-2xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse"></span>
               <span>24/7 Trauma & Emergency Center</span>
-              <span className="opacity-60">•</span>
+              <span className="opacity-40">•</span>
               <span>Express Triage Desk</span>
             </div>
-            <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
+            <h1 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
               Emergency Front Desk Operations
             </h1>
-            <p className="mt-2 text-sm text-red-100/90 leading-relaxed">
+            <p className="mt-2 text-sm text-slate-600 leading-relaxed">
               Rapid intake console for acute trauma, ambulance arrivals, and resuscitation bed allocation.
             </p>
           </div>
 
-          <div className="text-center rounded-2xl bg-white/10 border border-white/20 p-4 backdrop-blur-md">
-            <p className="text-xs font-bold uppercase tracking-wider text-red-200">Available Trauma Bays</p>
-            <p className="text-3xl font-black text-white mt-1">{emergencyBeds.length}</p>
-            <p className="text-[11px] text-red-200 mt-0.5">Ready for immediate triage</p>
+          <div className="text-center rounded-xl bg-slate-50/80 border border-slate-200/80 p-4">
+            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Available Trauma Bays</p>
+            <p className="text-3xl font-bold text-slate-900 mt-1 tabular-nums">{emergencyBeds.length}</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">Ready for immediate triage</p>
           </div>
         </div>
       </div>

@@ -131,25 +131,25 @@ export default function WaitingRoomPage() {
 
       {/* KPI Tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50/50 p-4 shadow-xs">
-          <p className="text-xs font-semibold text-amber-700">Waiting in Hall</p>
-          <p className="mt-1 text-2xl font-black text-amber-900">{inHallCount}</p>
-          <p className="text-[11px] text-amber-600/80 mt-0.5">Awaiting consultation</p>
+        <div className="liquid-glass-card rounded-2xl p-4 border border-slate-200/80 shadow-xs">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Waiting in Hall</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900 tabular-nums">{inHallCount}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Awaiting consultation</p>
         </div>
-        <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/50 p-4 shadow-xs">
-          <p className="text-xs font-semibold text-emerald-700">In Consultation</p>
-          <p className="mt-1 text-2xl font-black text-emerald-900">{inConsultationCount}</p>
-          <p className="text-[11px] text-emerald-600/80 mt-0.5">Inside doctor cabins</p>
+        <div className="liquid-glass-card rounded-2xl p-4 border border-slate-200/80 shadow-xs">
+          <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">In Consultation</p>
+          <p className="mt-1 text-2xl font-bold text-emerald-900 tabular-nums">{inConsultationCount}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Inside doctor cabins</p>
         </div>
-        <div className="rounded-2xl border border-rose-200 bg-gradient-to-br from-rose-50 to-red-50/50 p-4 shadow-xs">
-          <p className="text-xs font-semibold text-rose-700">Wait Duration &gt; 30m</p>
-          <p className="mt-1 text-2xl font-black text-rose-900">{delayedCount}</p>
-          <p className="text-[11px] text-rose-600/80 mt-0.5">Priority expedited attention</p>
+        <div className="liquid-glass-card rounded-2xl p-4 border border-slate-200/80 shadow-xs">
+          <p className="text-xs font-semibold text-rose-700 uppercase tracking-wider">Wait Duration &gt; 30m</p>
+          <p className="mt-1 text-2xl font-bold text-rose-900 tabular-nums">{delayedCount}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Priority expedited attention</p>
         </div>
-        <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50/50 p-4 shadow-xs">
-          <p className="text-xs font-semibold text-blue-700">Consultations Done</p>
-          <p className="mt-1 text-2xl font-black text-blue-900">{completedTodayCount}</p>
-          <p className="text-[11px] text-blue-600/80 mt-0.5">Discharged from clinic</p>
+        <div className="liquid-glass-card rounded-2xl p-4 border border-slate-200/80 shadow-xs">
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Consultations Done</p>
+          <p className="mt-1 text-2xl font-bold text-slate-900 tabular-nums">{completedTodayCount}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Discharged from clinic</p>
         </div>
       </div>
 

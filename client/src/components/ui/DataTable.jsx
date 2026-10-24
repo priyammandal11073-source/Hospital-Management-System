@@ -237,18 +237,18 @@ export default function DataTable({
               type="button"
               disabled={currentPage <= 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="liquid-glass-pill px-3 py-1.5 disabled:opacity-40 rounded-xl transition text-slate-700 active:scale-95 shadow-xs"
+              className="liquid-glass-pill px-3 py-1.5 disabled:opacity-40 rounded-xl transition text-slate-700 active:scale-[0.97] shadow-xs"
             >
               Previous
             </button>
-            <span className="px-2 text-slate-600 font-medium font-mono text-xs">
+            <span className="px-2 text-slate-600 font-medium font-mono text-xs tabular-nums">
               {currentPage} / {totalPages}
             </span>
             <button
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="liquid-glass-pill px-3 py-1.5 disabled:opacity-40 rounded-xl transition text-slate-700 active:scale-95 shadow-xs"
+              className="liquid-glass-pill px-3 py-1.5 disabled:opacity-40 rounded-xl transition text-slate-700 active:scale-[0.97] shadow-xs"
             >
               Next
             </button>

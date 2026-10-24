@@ -289,9 +289,10 @@ export default function MyPatients() {
                           e.stopPropagation();
                           setSelectedPatientId(item.patient?._id);
                         }}
-                        className="rounded-lg bg-teal-50 border border-teal-200 px-3 py-1.5 text-xs font-bold text-teal-800 hover:bg-teal-100 transition shadow-2xs"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition duration-120 cursor-pointer"
                       >
-                        Clinical Chart →
+                        <span>Clinical Chart</span>
+                        <span className="opacity-70">→</span>
                       </button>
                     </td>
                   </tr>

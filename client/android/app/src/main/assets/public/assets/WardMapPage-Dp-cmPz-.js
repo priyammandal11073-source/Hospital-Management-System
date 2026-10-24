@@ -1,0 +1,1 @@
+import{j as e}from"./index-J5BQW4bv.js";import{e as r}from"./vendor-react-B1GI0_er.js";import"./vendor-utils-mk4XYqSp.js";function p(){return e.jsx(r,{to:"/beds?view=map",replace:!0})}export{p as default};

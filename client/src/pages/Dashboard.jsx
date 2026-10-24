@@ -1967,18 +1967,18 @@ function PatientPortalDashboard({ user, refreshKey, onTriggerRefresh }) {
   return (
     <div className="space-y-6">
       {/* Patient Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-700 via-blue-700 to-slate-900 p-6 sm:p-8 text-white shadow-lg">
+      <div className="relative overflow-hidden rounded-2xl bg-white/85 backdrop-blur-xl border border-slate-200/80 p-6 sm:p-8 text-slate-900 shadow-xs">
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
-            <span className="h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          <div className="inline-flex items-center gap-2 rounded-lg bg-sky-50 text-sky-800 border border-sky-200/80 px-2.5 py-1 text-xs font-medium shadow-2xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-sky-500"></span>
             <span>Personal health portal</span>
-            <span className="opacity-60">•</span>
+            <span className="opacity-40">•</span>
             <span>Patient self-service</span>
           </div>
-          <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
+          <h1 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
             Welcome, {profile?.name || user?.name}
           </h1>
-          <p className="mt-2 text-sm text-cyan-100/90 leading-relaxed">
+          <p className="mt-2 text-sm text-slate-600 leading-relaxed">
             Manage your medical consultations, schedule visits with hospital specialists, and view or print verified clinical invoices.
           </p>
         </div>
@@ -2264,7 +2264,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
             </Link>
             <button
               onClick={onTriggerRefresh}
-              className="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 transition-all active:scale-95 shadow-2xs cursor-pointer"
+              className="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 transition-all duration-120 active:scale-[0.97] shadow-2xs cursor-pointer"
               title="Refresh telemetry"
             >
               ↻ Refresh
