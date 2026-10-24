@@ -461,16 +461,16 @@ function Appointments() {
                   >
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700 font-bold text-xs ring-1 ring-blue-500/20 flex-shrink-0">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-700 font-semibold text-xs border border-slate-200/80 flex-shrink-0">
                           {appointment.patient?.name ? appointment.patient.name.charAt(0).toUpperCase() : "P"}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-800">{appointment.patient?.name || "Unknown patient"}</p>
+                          <p className="font-semibold text-slate-800">{appointment.patient?.name || "Unknown patient"}</p>
                           <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
-                            <span>{appointment.patient?.contactNumber || "No phone"}</span>
+                            <span className="font-mono">{appointment.patient?.contactNumber || "No phone"}</span>
                             {appointment.bookedBy === "patient" && (
-                              <span className="inline-flex rounded-full bg-purple-50 px-2 py-0.2 text-[10px] font-semibold text-purple-700 ring-1 ring-purple-500/20">
-                                Portal booked
+                              <span className="inline-flex rounded-md bg-purple-50 px-1.5 py-0.5 text-[10px] font-medium text-purple-700 border border-purple-200/70">
+                                Portal
                               </span>
                             )}
                           </div>
@@ -479,7 +479,7 @@ function Appointments() {
                     </td>
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-2.5">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 text-xs font-bold ring-1 ring-indigo-500/20">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-600 text-xs border border-slate-200/70 flex-shrink-0">
                           🩺
                         </div>
                         <div>
@@ -489,18 +489,18 @@ function Appointments() {
                       </div>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5">
-                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700 tabular-nums">
+                      <span className="rounded-lg bg-slate-100/80 px-2 py-0.5 text-xs font-mono font-medium text-slate-700 tabular-nums border border-slate-200/60">
                         {new Date(appointment.appointmentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                       </span>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5">
-                      <span className="rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-mono font-medium text-slate-700 tabular-nums">
+                      <span className="rounded-lg bg-slate-100/80 px-2 py-0.5 text-xs font-mono font-medium text-slate-700 tabular-nums border border-slate-200/60">
                         {appointment.timeSlot}
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
+                        className={`inline-flex items-center rounded-lg px-2.5 py-1 text-xs font-medium border shadow-2xs ${
                           statusClasses[appointment.status]
                         }`}
                       >

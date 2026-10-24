@@ -141,7 +141,7 @@ const Badge = ({ status, dot = true, className = "", children, ...props }) => {
   return (
     <span
       className={`
-        inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold border
+        inline-flex items-center gap-1.5 rounded-lg px-2 py-0.5 text-[11px] font-medium border shadow-2xs
         ${currentConfig.badge}
         ${className}
       `}

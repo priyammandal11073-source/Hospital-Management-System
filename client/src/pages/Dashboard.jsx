@@ -188,19 +188,19 @@ function AdminDashboard({ user, refreshKey, onTriggerRefresh }) {
   return (
     <div className="space-y-6">
       {/* ================= 1. EXECUTIVE HERO BANNER ================= */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-white/85 backdrop-blur-xl border border-slate-200/80 p-6 sm:p-8 text-slate-900 shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
-              <span className="h-2 w-2 rounded-full bg-purple-400 animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 rounded-lg bg-slate-100/90 text-slate-700 border border-slate-200/70 px-2.5 py-1 text-xs font-medium shadow-2xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-slate-500"></span>
               <span>Administrator Executive Command Center</span>
-              <span className="opacity-60">•</span>
+              <span className="opacity-40">•</span>
               <span>Hospital Clearance Level 3</span>
             </div>
-            <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
+            <h1 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
               Nivora Care Operations & Governance
             </h1>
-            <p className="mt-2 text-sm text-purple-100/90 leading-relaxed">
+            <p className="mt-2 text-sm text-slate-600 leading-relaxed">
               Institutional oversight for {user?.name || "Administrator"}. Monitor live inpatient bed census, emergency department triage, surgical suites, workforce shifts, and revenue settlements.
             </p>
           </div>
@@ -208,22 +208,23 @@ function AdminDashboard({ user, refreshKey, onTriggerRefresh }) {
           {/* Quick Search Trigger & Shortcuts */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
             <button
+              type="button"
               onClick={() => setShowSearchModal(true)}
-              className="group flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-xs font-semibold text-white backdrop-blur-md hover:bg-white/20 transition shadow-sm"
+              className="group flex items-center gap-3 rounded-xl border border-slate-200/90 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:border-slate-300 shadow-2xs transition-all duration-120 active:scale-[0.97] cursor-pointer"
               title="Global Hospital Search"
             >
-              <svg className="h-4 w-4 text-purple-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <span>Search hospital records...</span>
-              <kbd className="hidden sm:inline-block rounded bg-white/20 px-1.5 py-0.5 text-[10px] font-mono text-white/80">
+              <kbd className="hidden sm:inline-block rounded-md bg-slate-100 border border-slate-200/80 px-1.5 py-0.5 text-[10px] font-mono text-slate-600">
                 Ctrl K
               </kbd>
             </button>
 
             <Link
               to="/admin/calendar"
-              className="flex items-center gap-1.5 rounded-xl bg-purple-500/30 border border-purple-400/40 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-purple-500/40 transition"
+              className="flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-xs font-semibold shadow-xs transition-all duration-120 active:scale-[0.97]"
             >
               <span>📅</span>
               <span>Central Calendar</span>
@@ -902,32 +903,32 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
   return (
     <div className="space-y-6">
       {/* Doctor Hero & Identity Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-950 p-6 sm:p-8 text-white shadow-xl ring-1 ring-emerald-500/20">
+      <div className="relative overflow-hidden rounded-2xl bg-white/85 backdrop-blur-xl border border-slate-200/80 p-6 sm:p-8 text-slate-900 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold backdrop-blur-md ring-1 ring-white/20">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2.5 py-1 text-xs font-medium shadow-2xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
               <span>Doctor clinical workspace</span>
-              <span className="opacity-60">•</span>
-              <span className="text-emerald-300 font-mono">ID: {doctor?._id?.slice(-6).toUpperCase()}</span>
+              <span className="opacity-40">•</span>
+              <span className="text-emerald-700 font-mono">ID: {doctor?._id?.slice(-6).toUpperCase()}</span>
             </div>
 
-            <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
+            <h1 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
               Welcome, {doctor?.name ? getDoctorDisplayName(doctor) : (user?.name || "Doctor")}
             </h1>
 
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-emerald-100/90">
-              <span className="font-semibold text-emerald-200">
+            <div className="mt-2 flex flex-wrap items-center gap-2.5 text-xs text-slate-600">
+              <span className="font-semibold text-slate-800">
                 {doctor?.specialization || "Specialist"}
               </span>
               <span>•</span>
               <span>Department of {doctor?.department || "Medicine"}</span>
               <span>•</span>
-              <span className="rounded-md bg-emerald-800/80 px-2 py-0.5 text-xs font-medium">
+              <span className="rounded-lg bg-slate-100 text-slate-700 border border-slate-200/70 px-2 py-0.5 font-medium shadow-2xs">
                 {doctor?.yearsOfExperience ?? 5} yrs experience
               </span>
               <span>•</span>
-              <span className="text-emerald-300 font-bold">
+              <span className="text-emerald-700 font-semibold font-mono">
                 Fee: ₹{doctor?.consultationFee ?? 500} / visit
               </span>
             </div>
@@ -937,7 +938,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setScheduleDoctor(doctor)}
-              className="inline-flex items-center gap-2 rounded-xl bg-white px-3.5 py-2 text-xs font-bold text-slate-900 shadow-md transition hover:bg-emerald-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-xs font-semibold shadow-xs transition-all duration-120 active:scale-[0.97] cursor-pointer"
               type="button"
             >
               <span>📅</span>
@@ -945,21 +946,21 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
             </button>
             <Link
               to="/doctor/orders"
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 px-3.5 py-2 text-xs font-bold text-white shadow-md transition border border-slate-700"
+              className="inline-flex items-center gap-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all duration-120 active:scale-[0.97]"
             >
               <span>📋</span>
               <span>Doctor Orders</span>
             </Link>
             <Link
               to="/doctor/referrals"
-              className="inline-flex items-center gap-2 rounded-xl bg-purple-700/80 hover:bg-purple-700 px-3.5 py-2 text-xs font-bold text-white shadow-md transition border border-purple-500/40"
+              className="inline-flex items-center gap-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all duration-120 active:scale-[0.97]"
             >
               <span>⇄</span>
               <span>Referrals</span>
             </Link>
             <Link
               to="/doctor/critical-labs"
-              className="inline-flex items-center gap-2 rounded-xl bg-rose-700/90 hover:bg-rose-700 px-3.5 py-2 text-xs font-bold text-white shadow-md transition border border-rose-500/40"
+              className="inline-flex items-center gap-2 rounded-xl bg-rose-50 hover:bg-rose-100/80 text-rose-700 border border-rose-200/80 px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all duration-120 active:scale-[0.97]"
             >
               <span>🧪</span>
               <span>Critical Labs</span>
@@ -976,14 +977,22 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
               key={idx}
               className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs ${
                 alt.level === "danger"
-                  ? "bg-rose-50 border-rose-200 text-rose-900"
+                  ? "bg-rose-50/70 border-rose-200/80 text-rose-950"
                   : alt.level === "warning"
-                  ? "bg-amber-50 border-amber-200 text-amber-900"
-                  : "bg-blue-50 border-blue-200 text-blue-900"
+                  ? "bg-amber-50/70 border-amber-200/80 text-amber-950"
+                  : "bg-blue-50/70 border-blue-200/80 text-blue-950"
               }`}
             >
               <div className="flex items-center gap-3">
-                <span className="text-xl">⚠️</span>
+                <div className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0 text-sm ${
+                  alt.level === "danger"
+                    ? "bg-rose-100 text-rose-700 border border-rose-200"
+                    : alt.level === "warning"
+                    ? "bg-amber-100 text-amber-800 border border-amber-200"
+                    : "bg-blue-100 text-blue-700 border border-blue-200"
+                }`}>
+                  ⚠️
+                </div>
                 <div>
                   <h4 className="text-xs font-bold tracking-tight">{alt.title}</h4>
                   <p className="text-xs opacity-90">{alt.message}</p>
@@ -992,9 +1001,9 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
               {alt.actionLink && (
                 <Link
                   to={alt.actionLink}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95 whitespace-nowrap self-start sm:self-auto ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-120 active:scale-[0.97] whitespace-nowrap self-start sm:self-auto ${
                     alt.level === "danger"
-                      ? "bg-rose-600 hover:bg-rose-500 text-white shadow-xs"
+                      ? "bg-rose-600 hover:bg-rose-700 text-white shadow-xs"
                       : "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80 shadow-2xs"
                   }`}
                 >
@@ -1476,19 +1485,19 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
   return (
     <div className="space-y-6">
       {/* 1. FRONT OFFICE HERO BANNER */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-700 via-orange-700 to-slate-950 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-white/85 backdrop-blur-xl border border-slate-200/80 p-6 sm:p-8 text-slate-900 shadow-xs">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-sm ring-1 ring-white/25">
-              <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/80 px-2.5 py-1 text-xs font-medium shadow-2xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
               <span>Hospital admissions & cashier counter</span>
-              <span className="opacity-60">•</span>
+              <span className="opacity-40">•</span>
               <span>Front office desk</span>
             </div>
-            <h1 className="mt-3 text-2xl sm:text-3xl font-black tracking-tight text-white">
+            <h1 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
               Hospital Front Desk & Admissions
             </h1>
-            <p className="mt-2 text-sm text-amber-100/90 leading-relaxed">
+            <p className="mt-2 text-sm text-slate-600 leading-relaxed">
               Welcome, {user?.name}. Process walk-in admissions, register patient check-ins, manage appointment schedules, and collect counter payments.
             </p>
           </div>
@@ -1497,21 +1506,21 @@ function ReceptionistDashboard({ user, refreshKey, onTriggerRefresh }) {
           <div className="flex flex-wrap items-center gap-2.5">
             <Link
               to="/reception/waiting-room"
-              className="flex items-center gap-1.5 rounded-xl bg-white/15 border border-white/20 px-3.5 py-2.5 text-xs font-bold text-white backdrop-blur-md hover:bg-white/25 transition shadow-sm"
+              className="flex items-center gap-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all duration-120 active:scale-[0.97]"
             >
               <span>📋</span>
               <span>Waiting Room</span>
             </Link>
             <Link
               to="/reception/calendar"
-              className="flex items-center gap-1.5 rounded-xl bg-white/15 border border-white/20 px-3.5 py-2.5 text-xs font-bold text-white backdrop-blur-md hover:bg-white/25 transition shadow-sm"
+              className="flex items-center gap-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 px-3.5 py-2 text-xs font-semibold shadow-2xs transition-all duration-120 active:scale-[0.97]"
             >
               <span>📅</span>
               <span>OPD Calendar</span>
             </Link>
             <Link
               to="/patients"
-              className="flex items-center gap-1.5 rounded-xl bg-amber-500/40 border border-amber-400/50 px-3.5 py-2.5 text-xs font-bold text-white hover:bg-amber-500/50 transition shadow-sm"
+              className="flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-3.5 py-2 text-xs font-semibold shadow-xs transition-all duration-120 active:scale-[0.97]"
             >
               <span>➕</span>
               <span>New Patient</span>
@@ -2220,8 +2229,8 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
       <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/80 p-6 sm:p-8 text-slate-900 shadow-xs">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-full bg-teal-50 border border-teal-200 px-3 py-1 text-xs font-semibold text-teal-700">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 rounded-lg bg-teal-50 text-teal-800 border border-teal-200/80 px-2.5 py-1 text-xs font-medium shadow-2xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
               <span>Clinical Nursing Station</span>
               <span className="opacity-40">•</span>
               <span>24/7 Ward Telemetry Active</span>
@@ -2237,19 +2246,19 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/nurse/vitals"
-              className="px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-xs font-semibold text-white shadow-xs transition-all active:scale-95 flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-white shadow-xs transition-all duration-120 active:scale-[0.97] flex items-center gap-1.5"
             >
               <span>📊</span> Record Vitals
             </Link>
             <Link
               to="/nurse/handover"
-              className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 transition-all active:scale-95 shadow-2xs flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 transition-all duration-120 active:scale-[0.97] shadow-2xs flex items-center gap-1.5"
             >
               <span>🔄</span> Shift Handover
             </Link>
             <Link
               to="/nurse/admission-discharge"
-              className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 transition-all active:scale-95 shadow-2xs flex items-center gap-1.5"
+              className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 border border-slate-200 transition-all duration-120 active:scale-[0.97] shadow-2xs flex items-center gap-1.5"
             >
               <span>📋</span> Admit / Discharge
             </Link>

@@ -32,7 +32,7 @@ export default function PatientBanner({
               <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
                 {patient?.name || "Unassigned Patient"}
               </h2>
-              <span className="font-mono text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-medium">
+              <span className="font-mono text-xs px-2 py-0.5 rounded-lg bg-slate-100/90 text-slate-700 border border-slate-200/80 font-medium shadow-2xs">
                 MRN: {mrn}
               </span>
               <Badge status={isAdmitted ? "admitted" : "outpatient"}>
@@ -77,12 +77,12 @@ export default function PatientBanner({
 
       {/* Critical Clinical Alerts Strip */}
       {allergies.length > 0 && (
-        <div className="bg-rose-50 border-t border-rose-200 px-4 py-2 flex items-center gap-2 text-xs font-semibold text-rose-800">
-          <span className="h-2 w-2 rounded-full bg-rose-600 flex-shrink-0" />
-          <span className="font-bold uppercase tracking-wider text-[11px] text-rose-900">
+        <div className="bg-rose-50/70 border-t border-rose-200/80 px-4 py-2 flex items-center gap-2 text-xs font-medium text-rose-900">
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-500 flex-shrink-0" />
+          <span className="font-semibold uppercase tracking-wider text-[10px] text-rose-800">
             Allergy Alert:
           </span>
-          <span className="truncate">{allergies.join(", ")}</span>
+          <span className="truncate text-rose-950 font-medium">{allergies.join(", ")}</span>
         </div>
       )}
     </div>
