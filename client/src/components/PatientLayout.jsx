@@ -7,6 +7,8 @@ import NotificationBell from "./NotificationBell.jsx";
 import Footer from "./Footer.jsx";
 import MobileBottomNav from "./mobile/MobileBottomNav.jsx";
 import MobileMenuSheet from "./mobile/MobileMenuSheet.jsx";
+import { SidebarCollapseButton } from "./ui/index.js";
+
 
 const navLinkClass = ({ isActive }) =>
   `group flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.98] ${
@@ -138,10 +140,10 @@ function PatientLayout() {
   });
 
   return (
-    <div className="min-h-screen bg-transparent flex flex-col font-sans">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#f7f6f3] flex flex-col font-sans">
       {/* ================= TOP HOSPITAL BRANDING HEADER ================= */}
       <header
-        className={`sticky top-0 px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 transition-[opacity,background-color,border-color] duration-150 ease-out ${
+        className={`sticky top-0 lg:static flex-shrink-0 px-2.5 sm:px-4 lg:px-6 py-2 sm:py-2.5 transition-[opacity,background-color,border-color] duration-150 ease-out ${
           isModalOpen
             ? "z-0 opacity-20 pointer-events-none select-none blur-[1px] bg-slate-100/40 border-b border-slate-300/40"
             : "z-20 liquid-glass-nav"
@@ -173,18 +175,12 @@ function PatientLayout() {
               <HospitalLogo variant="icon" className="sm:hidden" />
             </Link>
 
-            {/* Desktop Sidebar Collapse Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setIsSidebarCollapsed((prev) => !prev)}
-              className="hidden lg:inline-flex items-center justify-center h-8 w-8 rounded-xl text-slate-600 hover:text-slate-900 bg-white/70 hover:bg-white border border-slate-200/80 transition active:scale-95 cursor-pointer shadow-2xs flex-shrink-0"
-              title={isSidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
-              aria-label={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" />
-              </svg>
-            </button>
+            {/* Apple macOS style Sidebar Collapse Toggle Button in Header */}
+            <SidebarCollapseButton
+              collapsed={isSidebarCollapsed}
+              onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
+              className="hidden lg:inline-flex"
+            />
 
             {/* Mobile role pill */}
             <span className="inline-flex xl:hidden items-center rounded-full liquid-glass-pill px-2.5 py-0.5 text-[10px] font-semibold text-slate-800">
@@ -267,26 +263,36 @@ function PatientLayout() {
       </header>
 
       {/* ================= MAIN WORKSPACE (SIDEBAR + CONTENT) ================= */}
-      <div className="flex flex-1 flex-col lg:flex-row">
-        {/* Desktop Docked Navigation Sidebar */}
+      <div className="flex flex-1 flex-col lg:flex-row lg:overflow-hidden min-h-0">
+        {/* Desktop Docked Navigation Sidebar - FIXED IN PLACE */}
         <aside
           data-sidebar-collapsed={isSidebarCollapsed ? "true" : "false"}
           className={`hidden lg:flex ${
             isSidebarCollapsed ? "lg:w-20" : "lg:w-64"
-          } lg:flex-shrink-0 lg:h-[calc(100vh-65px)] lg:sticky lg:top-[65px] liquid-glass-sidebar p-3.5 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
+          } lg:flex-shrink-0 lg:h-full liquid-glass-sidebar p-3.5 text-slate-800 flex-col justify-between overflow-y-auto transition-sidebar`}
           aria-label="Patient portal navigation"
         >
           <div>
-            {/* Sidebar Section Title */}
-            <div className={`mb-4 flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between"} px-2 pt-1`}>
+            {/* Sidebar Section Title & Apple Collapse Button on TOP LEFT */}
+            <div className={`mb-4 flex items-center ${isSidebarCollapsed ? "justify-center" : "justify-between"} px-1 pt-1 gap-2`}>
+              <div className="flex items-center gap-2 min-w-0">
+                {/* Apple Design Collapse Button on TOP LEFT */}
+                <SidebarCollapseButton
+                  collapsed={isSidebarCollapsed}
+                  onToggle={() => setIsSidebarCollapsed((prev) => !prev)}
+                  size="sm"
+                />
+                {!isSidebarCollapsed && (
+                  <span className="text-[12px] font-bold text-slate-700 tracking-tight truncate">
+                    Patient services
+                  </span>
+                )}
+              </div>
               {!isSidebarCollapsed && (
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider truncate">
-                  Patient services
+                <span className="rounded-full liquid-glass-pill px-2 py-0.5 text-[9px] font-semibold text-slate-600 flex-shrink-0">
+                  Active
                 </span>
               )}
-              <span className="rounded-full liquid-glass-pill px-2 py-0.5 text-[9px] font-semibold text-slate-600">
-                {isSidebarCollapsed ? "•" : "Active"}
-              </span>
             </div>
 
             {/* Navigation Links */}
@@ -517,15 +523,16 @@ function PatientLayout() {
           </div>
         </aside>
 
-        {/* Main Content Pane */}
-        <main className="flex-1 min-w-0 bg-transparent p-3 sm:p-5 lg:p-8 pb-24 lg:pb-8 overflow-x-hidden">
-          <Outlet />
+        {/* Main Content Pane - INDEPENDENT SCROLL */}
+        <main className="flex-1 min-w-0 bg-transparent flex flex-col justify-between lg:h-full lg:overflow-y-auto overflow-x-hidden">
+          <div className="p-3 sm:p-5 lg:p-8 pb-24 lg:pb-8 flex-1">
+            <Outlet />
+          </div>
+          {/* Global Enterprise Portal Footer inside scrollable main container */}
+          <div className="w-full px-3 sm:px-5 lg:px-8 pb-24 lg:pb-6 pt-2 flex-shrink-0">
+            <Footer />
+          </div>
         </main>
-      </div>
-
-      {/* Global Enterprise Portal Footer (Positioned below the side panel & main workspace) */}
-      <div className="w-full px-3 sm:px-5 lg:px-8 pb-24 lg:pb-6 pt-2">
-        <Footer />
       </div>
 
       {/* ================= NATIVE MOBILE BOTTOM NAVIGATION ================= */}

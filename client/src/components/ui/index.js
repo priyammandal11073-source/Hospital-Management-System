@@ -12,3 +12,4 @@ export { default as PageHeader } from "./PageHeader";
 export { default as DataTable } from "./DataTable";
 export { default as Toaster } from "./Toaster";
 export { default as ActionDropdown } from "./ActionDropdown";
+export { default as SidebarCollapseButton, AppleSidebarToggleIcon } from "./SidebarCollapseButton";
