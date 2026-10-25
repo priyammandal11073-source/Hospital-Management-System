@@ -3,9 +3,9 @@ import Patient from "../models/Patient.js";
 import Appointment from "../models/Appointment.js";
 import Prescription from "../models/Prescription.js";
 import { resolveDoctorForUser } from "../utils/doctorHelper.js";
-import { mockDatabase } from "../utils/mockDatabase.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import AppError from "../utils/AppError.js";
+import { requireDb } from "../utils/requireDb.js";
 
 const isValidPatientId = (id) => mongoose.isValidObjectId(id);
 
@@ -13,14 +13,7 @@ const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // POST /api/patients
 export const createPatient = asyncHandler(async (req, res) => {
-  if (mongoose.connection.readyState !== 1) {
-    const patient = mockDatabase.createPatient(req.body);
-    return res.status(201).json({
-      message: "Patient created successfully",
-      patient,
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   const patient = await Patient.create(req.body);
   return res.status(201).json({
@@ -39,20 +32,7 @@ export const getAllPatients = asyncHandler(async (req, res) => {
     throw new AppError("Page must be positive and limit must be between 1 and 100", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const result = mockDatabase.getPatients({ search, page, limit });
-    return res.status(200).json({
-      patients: result.patients,
-      pagination: {
-        page: result.page,
-        limit: result.limit,
-        totalPatients: result.totalPatients,
-        totalPages: result.totalPages,
-      },
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   const filter = {};
 
@@ -117,14 +97,7 @@ export const getPatientById = asyncHandler(async (req, res) => {
     throw new AppError("Invalid patient ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const patient = mockDatabase.getPatientById(req.params.id) || mockDatabase.demoPatients?.[0];
-    if (!patient) {
-      throw new AppError("Patient not found", 404);
-    }
-    return res.status(200).json({ patient, isOfflineDemo: true });
-  }
+  await requireDb();
 
   // Doctor role enforcement
   if (req.user?.role === "doctor") {
@@ -158,18 +131,7 @@ export const updatePatient = asyncHandler(async (req, res) => {
     throw new AppError("Invalid patient ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const patient = mockDatabase.updatePatient(req.params.id, req.body);
-    if (!patient) {
-      throw new AppError("Patient not found", 404);
-    }
-    return res.status(200).json({
-      message: "Patient updated successfully",
-      patient,
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   const patient = await Patient.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
@@ -192,14 +154,7 @@ export const deletePatient = asyncHandler(async (req, res) => {
     throw new AppError("Invalid patient ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const deleted = mockDatabase.deletePatient(req.params.id);
-    if (!deleted) {
-      throw new AppError("Patient not found", 404);
-    }
-    return res.status(200).json({ message: "Patient deleted successfully", isOfflineDemo: true });
-  }
+  await requireDb();
 
   const patient = await Patient.findByIdAndDelete(req.params.id);
 

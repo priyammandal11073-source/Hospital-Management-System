@@ -1,11 +1,17 @@
 import { describe, expect, it, vi } from "vitest";
 import request from "supertest";
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
 import createApp from "../app.js";
 import User from "../models/User.js";
 import Patient from "../models/Patient.js";
 
 const app = createApp();
+
+// Use the actual JWT secret from the environment (loaded by env.js from server/.env)
+// Fallback to test value if not set
+const TEST_JWT_SECRET = process.env.JWT_SECRET || "super-secret-key-hospital-management-system-2026";
+const testToken = jwt.sign({ id: "65a123456789012345678901", name: "Test Admin", email: "admin@hospital.com", role: "admin" }, TEST_JWT_SECRET, { expiresIn: "1h" });
 
 describe("Health & API surface", () => {
   it("GET /health returns HTTP 200 minimal liveness probe without disclosing internal metrics", async () => {
@@ -216,5 +222,56 @@ describe("POST /api/razorpay authorization & security", () => {
       .send(JSON.stringify({ event: "payment.captured" }));
 
     expect(res.status).toBe(400);
+  });
+});
+
+describe("Database unavailability: fail-closed on all protected endpoints", () => {
+  const endpoints = [
+    { method: "get", path: "/api/appointments" },
+    { method: "get", path: "/api/patients" },
+    { method: "get", path: "/api/billing" },
+    { method: "get", path: "/api/prescriptions" },
+    { method: "get", path: "/api/doctors" },
+    { method: "get", path: "/api/beds" },
+    { method: "get", path: "/api/diagnostics/dashboard" },
+    { method: "get", path: "/api/diagnostics/tests" },
+    { method: "get", path: "/api/diagnostics/requests" },
+    { method: "get", path: "/api/nurse/patients" },
+    { method: "get", path: "/api/emergency/queue" },
+    { method: "post", path: "/api/appointments", body: { patient: "65a123456789012345678901", doctor: "65b123456789012345678901", appointmentDate: "2026-10-25", timeSlot: "10:00 AM", reasonForVisit: "Checkup" } },
+    { method: "post", path: "/api/patients", body: { name: "Test Patient", age: 30, gender: "Male", contactNumber: "9876543210" } },
+    { method: "post", path: "/api/prescriptions", body: { patient: "65a123456789012345678901", doctor: "65b123456789012345678901", diagnosis: "Test", medications: [{ name: "Test", dosage: "1", frequency: "OD", timing: "Morning", duration: "5 days" }] } },
+    { method: "post", path: "/api/billing", body: { patient: "65a123456789012345678901", itemizedCharges: [{ description: "Test", cost: 100 }] } },
+  ];
+
+  for (const ep of endpoints) {
+    it(`fails closed with 503 on ${ep.method.toUpperCase()} ${ep.path} when MongoDB is offline (no fake clinical data)`, async () => {
+      const req = request(app)[ep.method](ep.path).set("Authorization", `Bearer ${testToken}`);
+      if (ep.body) req.send(ep.body);
+      const res = await req;
+
+      expect(res.status).toBe(503);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain("Database service unavailable");
+      // Must not return fake clinical records
+      expect(res.body.appointments).toBeUndefined();
+      expect(res.body.patients).toBeUndefined();
+      expect(res.body.billings).toBeUndefined();
+      expect(res.body.prescriptions).toBeUndefined();
+      expect(res.body.doctors).toBeUndefined();
+      expect(res.body.beds).toBeUndefined();
+      expect(res.body.isOfflineDemo).toBeUndefined();
+    });
+  }
+
+  it("fails closed with 503 on diagnostic order creation when MongoDB is offline", async () => {
+    const res = await request(app)
+      .post("/api/diagnostics/requests")
+      .set("Authorization", `Bearer ${testToken}`)
+      .send({ patient: "65a123456789012345678901", testId: "65c123456789012345678901", clinicalIndication: "Test" });
+
+    expect(res.status).toBe(503);
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toContain("Database service unavailable");
   });
 });

@@ -43,10 +43,11 @@ const QrScannerModal = ({ isOpen, onClose, onScanned }) => {
     };
 
     const startScanner = async () => {
+      let html5QrCode = null;
       try {
         const { Html5Qrcode } = await import("html5-qrcode");
         if (!active) return;
-        const html5QrCode = new Html5Qrcode(scannerRegionId);
+        html5QrCode = new Html5Qrcode(scannerRegionId);
         scanner = html5QrCode;
         await html5QrCode.start(
           { facingMode: "environment" },
@@ -79,7 +80,7 @@ const QrScannerModal = ({ isOpen, onClose, onScanned }) => {
           setError("Unable to start camera. Try granting camera permission or use search.");
         }
         try {
-          html5QrCode.clear();
+          if (html5QrCode) html5QrCode.clear();
         } catch {
           // ignore
         }

@@ -15,43 +15,22 @@ import DiagnosticReport from "../models/DiagnosticReport.js";
 import DiagnosticOrder from "../models/DiagnosticOrder.js";
 import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
 import env from "../config/env.js";
+import asyncHandler from "../middleware/asyncHandler.js";
+import { requireDb } from "../utils/requireDb.js";
+import AppError from "../utils/AppError.js";
 
 const OPD_FEE = env.opdFee;
 
 // GET /api/patient-portal/me
-export const getMyProfile = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(200).json({
-        patient: {
-          _id: req.patient?.id || "demo_patient_id",
-          name: req.patient?.name || "John Doe",
-          email: req.patient?.email || "patient@hospital.com",
-          contactNumber: "9876543210",
-          gender: "Male",
-          age: 35,
-          bloodGroup: "O+",
-          address: "123 Healthcare Blvd, Medical District",
-          emergencyContact: {
-            name: "Jane Doe",
-            relationship: "Spouse",
-            contactNumber: "9876543211",
-          },
-          allergies: ["Penicillin"],
-          isOfflineDemo: true,
-        },
-      });
-    }
+export const getMyProfile = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const patient = await Patient.findById(req.patient.id).select("-password").lean();
-    if (!patient) {
-      return res.status(404).json({ message: "Patient not found" });
-    }
-    return res.status(200).json({ patient });
-  } catch (error) {
-    return res.status(500).json({ message: "Unable to fetch profile" });
+  const patient = await Patient.findById(req.patient.id).select("-password").lean();
+  if (!patient) {
+    throw new AppError("Patient not found", 404);
   }
-};
+  return res.status(200).json({ patient });
+});
 
 // GET /api/patient-portal/appointments
 export const getMyAppointments = async (req, res) => {
@@ -678,127 +657,42 @@ export const markAllMyNotificationsRead = async (req, res) => {
 
 // ── PATIENT HEALTH HUB / DASHBOARD SUMMARY ──────────────────────────────────
 // GET /api/patient-portal/dashboard
-export const getPatientDashboardSummary = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      const demoPatient = {
-        _id: req.patient?.id || "demo_patient_id",
-        name: req.patient?.name || "John Doe",
-        email: req.patient?.email || "patient@hospital.com",
-        contactNumber: "9876543210",
-        bloodGroup: "O+",
-        allergies: ["Penicillin"],
-      };
+export const getPatientDashboardSummary = asyncHandler(async (req, res) => {
+  await requireDb();
 
-      const demoNextAppt = {
-        _id: "demo_next_apt",
-        appointmentDate: new Date(Date.now() + 24 * 3600 * 1000),
-        timeSlot: "10:30 AM",
-        doctor: {
-          name: "Dr. Sarah Jenkins",
-          specialization: "Cardiology",
-          department: "Cardiology",
-          consultationFee: 500,
-        },
-        status: "confirmed",
-      };
+  const patientId = req.patient.id;
+  const today = new Date();
+  today.setUTCHours(0, 0, 0, 0);
 
-      const demoLatestPrescription = {
-        _id: "demo_rx_1",
-        doctor: { name: "Dr. Sarah Jenkins", specialization: "Cardiology" },
-        medications: [{ name: "Atorvastatin", dosage: "10mg", frequency: "Daily" }],
-        createdAt: new Date(),
-      };
-
-      const demoLatestLab = {
-        _id: "demo_lab_1",
-        testName: "Lipid Profile",
-        status: "completed",
-        testDate: new Date(),
-        doctor: { name: "Dr. Emily Zhang" },
-      };
-
-      return res.status(200).json({
-        success: true,
-        profile: demoPatient,
-        stats: {
-          upcomingAppointments: 1,
-          completedConsultations: 3,
-          activePrescriptions: 1,
-          labReportsCount: 2,
-          pendingBills: 0,
-          pendingAmount: 0,
-          unreadNotifications: 1,
-        },
-        metrics: {
-          upcomingVisits: 1,
-          completedVisits: 3,
-          activePrescriptions: 1,
-          pendingLabReports: 0,
-          outstandingBillsCount: 0,
-          outstandingBillsAmount: 0,
-          unreadNotifications: 1,
-        },
-        nextAppointment: demoNextAppt,
-        activePrescription: demoLatestPrescription,
-        latestPrescription: demoLatestPrescription,
-        latestLabReport: demoLatestLab,
-        activeBedStay: null,
-        bedStay: null,
-        upcomingDiagnostics: [],
-        recentConsultation: null,
-        latestVitals: {
-          bloodPressure: "120/80",
-          heartRate: 72,
-          temperature: 98.6,
-          spO2: 99,
-          recordedAt: new Date(),
-        },
-        alerts: [
-          {
-            type: "allergy",
-            severity: "warning",
-            title: "Allergy Alert",
-            message: "Registered allergies: Penicillin. Always notify hospital care teams.",
-          },
-        ],
-        isOfflineDemo: true,
-      });
-    }
-
-    const patientId = req.patient.id;
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-
-    const [
-      patient,
-      upcomingAppointments,
-      completedCount,
-      activePrescriptionsCount,
-      pendingLabsCount,
-      billings,
-      unreadNotifications,
-      nextAppointment,
-      recentConsultation,
-      latestPrescription,
-      latestLabReport,
-      bedStay,
-      latestVitals,
-      upcomingDiagnostics,
-    ] = await Promise.all([
-      Patient.findById(patientId).select("-password").lean(),
-      Appointment.countDocuments({
-        patient: patientId,
-        status: { $in: ["pending", "confirmed", "waiting", "in_consultation"] },
-        appointmentDate: { $gte: today },
-      }),
-      Appointment.countDocuments({
-        patient: patientId,
-        status: "completed",
-      }),
-      Prescription.countDocuments({
-        patient: patientId,
-        status: { $ne: "Discontinued" },
+  const [
+    patient,
+    upcomingAppointments,
+    completedCount,
+    activePrescriptionsCount,
+    pendingLabsCount,
+    billings,
+    unreadNotifications,
+    nextAppointment,
+    recentConsultation,
+    latestPrescription,
+    latestLabReport,
+    bedStay,
+    latestVitals,
+    upcomingDiagnostics,
+  ] = await Promise.all([
+    Patient.findById(patientId).select("-password").lean(),
+    Appointment.countDocuments({
+      patient: patientId,
+      status: { $in: ["pending", "confirmed", "waiting", "in_consultation"] },
+      appointmentDate: { $gte: today },
+    }),
+    Appointment.countDocuments({
+      patient: patientId,
+      status: "completed",
+    }),
+    Prescription.countDocuments({
+      patient: patientId,
+      status: { $ne: "Discontinued" },
       }),
       LabReport.countDocuments({
         patient: patientId,
@@ -928,142 +822,90 @@ export const getPatientDashboardSummary = async (req, res) => {
       alerts,
       upcomingDiagnostics,
     });
-  } catch (error) {
-    console.error("Dashboard summary error:", error);
-    return res.status(500).json({ message: "Unable to load patient health hub summary" });
-  }
-};
+
+});
 
 // ── RESCHEDULE APPOINTMENT ──────────────────────────────────────────────────
 // PATCH /api/patient-portal/appointments/:id/reschedule
-export const rescheduleMyAppointment = async (req, res) => {
-  try {
-    const { id: appointmentId } = req.params;
-    const { appointmentDate, timeSlot, reason } = req.body;
+export const rescheduleMyAppointment = asyncHandler(async (req, res) => {
+  const { id: appointmentId } = req.params;
+  const { appointmentDate, timeSlot, reason } = req.body;
 
-    if (!appointmentDate || !timeSlot) {
-      return res.status(400).json({ message: "New appointment date and time slot are required" });
-    }
-
-    const appointment = await Appointment.findOne({
-      _id: appointmentId,
-      patient: req.patient.id,
-      status: { $in: ["pending", "confirmed"] },
-    });
-
-    if (!appointment) {
-      return res.status(404).json({
-        message: "Appointment not found or is no longer eligible for rescheduling",
-      });
-    }
-
-    const formattedDate = new Date(appointmentDate);
-    if (Number.isNaN(formattedDate.getTime())) {
-      return res.status(400).json({ message: "Invalid appointment date format" });
-    }
-    formattedDate.setUTCHours(0, 0, 0, 0);
-
-    // Verify slot collision for the same doctor
-    const collision = await Appointment.findOne({
-      _id: { $ne: appointment._id },
-      doctor: appointment.doctor,
-      appointmentDate: formattedDate,
-      timeSlot: timeSlot.trim(),
-      status: { $in: ["pending", "confirmed", "waiting", "in_consultation"] },
-    });
-
-    if (collision) {
-      return res.status(409).json({ message: "Selected time slot is already booked for this doctor" });
-    }
-
-    appointment.appointmentDate = formattedDate;
-    appointment.timeSlot = timeSlot.trim();
-    if (reason) appointment.reasonForVisit = `${appointment.reasonForVisit} [Rescheduled: ${reason}]`;
-    appointment.status = "pending"; // Requires station re-confirmation
-    await appointment.save();
-
-    const populated = await Appointment.findById(appointment._id).populate(
-      "doctor",
-      "name specialization department contactNumber email consultationFee"
-    );
-
-    // Create confirmation notification
-    await Notification.create({
-      recipientType: "patient",
-      patient: req.patient.id,
-      title: "Appointment Rescheduled",
-      message: `Your visit with Dr. ${populated.doctor?.name} was rescheduled to ${formattedDate.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} at ${timeSlot}.`,
-      type: "appointment",
-      priority: "normal",
-      link: "/patient/appointments",
-    });
-
-    return res.status(200).json({
-      message: "Appointment rescheduled successfully",
-      appointment: populated,
-    });
-  } catch (error) {
-    console.error("Reschedule error:", error);
-    return res.status(500).json({ message: "Unable to reschedule appointment" });
+  if (!appointmentDate || !timeSlot) {
+    return res.status(400).json({ message: "New appointment date and time slot are required" });
   }
-};
+
+  const appointment = await Appointment.findOne({
+    _id: appointmentId,
+    patient: req.patient.id,
+    status: { $in: ["pending", "confirmed"] },
+  });
+
+  if (!appointment) {
+    return res.status(404).json({
+      message: "Appointment not found or is no longer eligible for rescheduling",
+    });
+  }
+
+  const formattedDate = new Date(appointmentDate);
+  if (Number.isNaN(formattedDate.getTime())) {
+    return res.status(400).json({ message: "Invalid appointment date format" });
+  }
+  formattedDate.setUTCHours(0, 0, 0, 0);
+
+  // Verify slot collision for the same doctor
+  const collision = await Appointment.findOne({
+    _id: { $ne: appointment._id },
+    doctor: appointment.doctor,
+    appointmentDate: formattedDate,
+    timeSlot: timeSlot.trim(),
+    status: { $in: ["pending", "confirmed", "waiting", "in_consultation"] },
+  });
+
+  if (collision) {
+    return res.status(409).json({ message: "Selected time slot is already booked for this doctor" });
+  }
+
+  appointment.appointmentDate = formattedDate;
+  appointment.timeSlot = timeSlot.trim();
+  if (reason) appointment.reasonForVisit = `${appointment.reasonForVisit} [Rescheduled: ${reason}]`;
+  appointment.status = "pending"; // Requires station re-confirmation
+  await appointment.save();
+
+  const populated = await Appointment.findById(appointment._id).populate(
+    "doctor",
+    "name specialization department contactNumber email consultationFee"
+  );
+
+  // Create confirmation notification
+  await Notification.create({
+    recipientType: "patient",
+    patient: req.patient.id,
+    title: "Appointment Rescheduled",
+    message: `Your visit with Dr. ${populated.doctor?.name} was rescheduled to ${formattedDate.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} at ${timeSlot}.`,
+    type: "appointment",
+    priority: "normal",
+    link: "/patient/appointments",
+  });
+
+  return res.status(200).json({
+    message: "Appointment rescheduled successfully",
+    appointment: populated,
+  });
+});
 
 // ── DOCTOR DIRECTORY & PROFILES ─────────────────────────────────────────────
 // GET /api/patient-portal/doctors
-export const getMyDoctors = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      const demoDoctors = [
-        {
-          _id: "doc_1",
-          name: "Dr. Sarah Jenkins",
-          specialization: "Cardiology",
-          department: "Cardiology",
-          contactNumber: "9876543201",
-          email: "sarah.jenkins@hospital.com",
-          consultationFee: 750,
-          availableDays: ["Monday", "Wednesday", "Friday"],
-          yearsOfExperience: 12,
-        },
-        {
-          _id: "doc_2",
-          name: "Dr. Marcus Vance",
-          specialization: "Neurology",
-          department: "Neurology",
-          contactNumber: "9876543202",
-          email: "marcus.vance@hospital.com",
-          consultationFee: 900,
-          availableDays: ["Tuesday", "Thursday", "Saturday"],
-          yearsOfExperience: 15,
-        },
-      ];
-      return res.status(200).json({ success: true, doctors: demoDoctors });
-    }
+export const getMyDoctors = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const { search, department, specialization } = req.query;
-    const filter = {};
+  const doctors = await Doctor.find({ status: "active" })
+    .select("name specialization department contactNumber email consultationFee availableDays availableTimeSlots yearsOfExperience")
+    .sort({ name: 1 })
+    .lean();
 
-    if (department && department !== "All") {
-      filter.department = department;
-    }
-    if (specialization && specialization !== "All") {
-      filter.specialization = specialization;
-    }
-    if (search) {
-      const regex = new RegExp(search, "i");
-      filter.$or = [{ name: regex }, { specialization: regex }, { department: regex }];
-    }
-
-    const doctors = await Doctor.find(filter)
-      .select("name specialization department contactNumber email availableDays availableTimeSlots weeklySchedule yearsOfExperience consultationFee leaves")
-      .sort({ name: 1 })
-      .lean();
-
-    return res.status(200).json({ success: true, doctors });
-  } catch (error) {
-    return res.status(500).json({ message: "Unable to fetch doctor directory" });
-  }
-};
+  return res.status(200).json({ success: true, doctors });
+});
 
 // GET /api/patient-portal/doctors/:id
 export const getMyDoctorById = async (req, res) => {
@@ -1797,41 +1639,19 @@ export const getMyFeedback = async (req, res) => {
 
 // ── TELEMEDICINE (VIDEO CONSULTATIONS) ──────────────────────────────────────
 // GET /api/patient-portal/telemedicine
-export const getMyTelemedicine = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      const demoAppointments = [
-        {
-          _id: "demo_tel_1",
-          doctor: { name: "Dr. Sarah Jenkins", specialization: "Cardiology", department: "Cardiology" },
-          appointmentDate: new Date(Date.now() + 2 * 3600 * 1000),
-          timeSlot: "10:30 AM",
-          status: "confirmed",
-          reasonForVisit: "Cardiovascular follow-up",
-          appointmentType: "teleconsultation",
-          telemedicine: {
-            joinCode: "DEMO2345",
-            meetLink: "/teleconsult/DEMO2345",
-            status: "scheduled",
-          },
-        },
-      ];
-      return res.status(200).json({ success: true, appointments: demoAppointments, isOfflineDemo: true });
-    }
+export const getMyTelemedicine = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const now = new Date();
-    const appointments = await Appointment.find({
-      patient: req.patient.id,
-      appointmentType: "teleconsultation",
-      status: { $in: ["pending", "confirmed", "checked_in", "waiting", "in_consultation"] },
-    })
-      .populate("doctor", "name specialization department contactNumber email")
-      .sort({ appointmentDate: 1, timeSlot: 1 })
-      .limit(30);
+  const now = new Date();
+  const appointments = await Appointment.find({
+    patient: req.patient.id,
+    appointmentType: "teleconsultation",
+    status: { $in: ["pending", "confirmed", "checked_in", "waiting", "in_consultation"] },
+  })
+    .populate("doctor", "name specialization department contactNumber email")
+    .sort({ appointmentDate: 1, timeSlot: 1 })
+    .limit(30);
 
-    return res.status(200).json({ success: true, appointments, now });
-  } catch (error) {
-    return res.status(500).json({ message: "Unable to fetch telemedicine appointments" });
-  }
-};
+  return res.status(200).json({ success: true, appointments, now });
+});
 

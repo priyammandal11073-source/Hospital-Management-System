@@ -19,6 +19,8 @@ import HospitalSetting from "../models/HospitalSetting.js";
 import DiagnosticOrder from "../models/DiagnosticOrder.js";
 import Feedback from "../models/Feedback.js";
 import { formatDoctorName } from "../utils/doctorHelper.js";
+import asyncHandler from "../middleware/asyncHandler.js";
+import { requireDb } from "../utils/requireDb.js";
 
 // Helper to record immutable audit events
 export const logAuditEvent = async ({ user, action, module, recordId, details, req }) => {
@@ -40,43 +42,8 @@ export const logAuditEvent = async ({ user, action, module, recordId, details, r
 
 // ── 1. EXECUTIVE DASHBOARD TELEMETRY ────────────────────────────────────────
 // GET /api/admin/telemetry
-export const getAdminTelemetry = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(200).json({
-        success: true,
-        totalPatients: 24,
-        activeDoctors: 8,
-        activeNurses: 16,
-        todayConsultations: 12,
-        pendingBills: 3,
-        todayRevenue: 24500,
-        pendingLabs: 4,
-        criticalLabs: 1,
-        otProceduresToday: 2,
-        pendingPatientBookings: 2,
-        bedCensus: {
-          totalBeds: 40,
-          occupiedBeds: 22,
-          availableBeds: 18,
-          cleaningBeds: 0,
-          maintenanceBeds: 0,
-          occupancyPercentage: 55,
-          icuTotal: 8,
-          icuOccupied: 5,
-          icuOccupancy: 62,
-          emergencyTotal: 10,
-          emergencyOccupied: 4,
-          generalTotal: 22,
-          generalOccupied: 13,
-        },
-        activeAdmissions: [],
-        recentAppointments: [],
-        todayAppointments: [],
-        recentActivity: [],
-        isOfflineDemo: true,
-      });
-    }
+export const getAdminTelemetry = asyncHandler(async (req, res) => {
+  await requireDb();
 
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
@@ -303,41 +270,28 @@ export const getGlobalAdminSearch = async (req, res) => {
 
 // ── 3. STAFF MANAGEMENT & RBAC ──────────────────────────────────────────────
 // GET /api/admin/staff
-export const getStaffList = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      const demoStaff = [
-        { _id: "000000000000000000000001", name: "Dr. Rajesh Sharma", email: "admin@hospital.com", role: "admin", department: "Executive Administration", designation: "Chief Medical Officer", employeeId: "EMP-ADM-1001", status: "active" },
-        { _id: "000000000000000000000002", name: "Dr. Sarah Jenkins", email: "doctor@hospital.com", role: "doctor", department: "Cardiology", designation: "Senior Consultant Cardiologist", employeeId: "EMP-DOC-2041", status: "active" },
-        { _id: "000000000000000000000003", name: "Sister Priya Nair", email: "nurse@hospital.com", role: "nurse", department: "Critical Care ICU", designation: "Charge Nurse", employeeId: "EMP-NUR-3022", status: "active" },
-        { _id: "000000000000000000000004", name: "Sunil Verma", email: "receptionist@hospital.com", role: "receptionist", department: "Front Office", designation: "Front Desk Executive", employeeId: "EMP-REC-4019", status: "active" },
-        { _id: "000000000000000000000006", name: "Ananya Deshmukh", email: "pharmacist@hospital.com", role: "pharmacist", department: "Pharmacy", designation: "Chief Pharmacist", employeeId: "EMP-PHAR-6001", status: "active" },
-      ];
-      return res.status(200).json({ success: true, staff: demoStaff, isOfflineDemo: true });
-    }
+export const getStaffList = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const { role, department, status, search } = req.query;
-    const filter = { role: { $ne: "patient" } };
+  const { role, department, status, search } = req.query;
+  const filter = { role: { $ne: "patient" } };
 
-    if (role && role !== "All") filter.role = role;
-    if (department && department !== "All") filter.department = department;
-    if (status && status !== "All") filter.status = status;
-    if (search) {
-      const regex = new RegExp(search, "i");
-      filter.$or = [{ name: regex }, { email: regex }, { designation: regex }, { employeeId: regex }];
-    }
-
-    const staff = await User.find(filter)
-      .select("-password")
-      .populate("doctor", "specialization department consultationFee")
-      .sort({ createdAt: -1 })
-      .lean();
-
-    return res.status(200).json({ success: true, staff });
-  } catch (error) {
-    return res.status(500).json({ message: "Unable to fetch staff list" });
+  if (role && role !== "All") filter.role = role;
+  if (department && department !== "All") filter.department = department;
+  if (status && status !== "All") filter.status = status;
+  if (search) {
+    const regex = new RegExp(search, "i");
+    filter.$or = [{ name: regex }, { email: regex }, { designation: regex }, { employeeId: regex }];
   }
-};
+
+  const staff = await User.find(filter)
+    .select("-password")
+    .populate("doctor", "specialization department consultationFee")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return res.status(200).json({ success: true, staff });
+});
 
 // POST /api/admin/staff
 export const createStaffMember = async (req, res) => {
@@ -437,45 +391,29 @@ export const updateStaffMember = async (req, res) => {
 
 // ── 4. DEPARTMENTS ──────────────────────────────────────────────────────────
 // GET /api/admin/departments
-export const getDepartments = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      const defaultDepts = [
-        { _id: "dept_card", name: "Cardiology", code: "CARD", location: "Block A", floor: "1st Floor", operatingHours: "24/7 Service" },
-        { _id: "dept_gmed", name: "General Medicine", code: "GMED", location: "Block A", floor: "Ground Floor", operatingHours: "08:00 AM - 08:00 PM" },
-        { _id: "dept_pedi", name: "Pediatrics", code: "PEDI", location: "Block B", floor: "1st Floor", operatingHours: "08:00 AM - 06:00 PM" },
-        { _id: "dept_neur", name: "Neurology", code: "NEUR", location: "Block A", floor: "2nd Floor", operatingHours: "09:00 AM - 05:00 PM" },
-        { _id: "dept_orth", name: "Orthopedics", code: "ORTH", location: "Block B", floor: "Ground Floor", operatingHours: "09:00 AM - 05:00 PM" },
-        { _id: "dept_emer", name: "Emergency & Trauma", code: "EMER", location: "Emergency Wing", floor: "Ground Floor", operatingHours: "24 Hours Continuous" },
-        { _id: "dept_path", name: "Pathology & Lab", code: "PATH", location: "Diagnostics Wing", floor: "2nd Floor", operatingHours: "24/7 Lab Processing" },
-        { _id: "dept_phar", name: "Pharmacy", code: "PHAR", location: "Central OPD", floor: "Ground Floor", operatingHours: "24 Hours Available" },
-      ];
-      return res.status(200).json({ success: true, departments: defaultDepts, isOfflineDemo: true });
-    }
+export const getDepartments = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    let departments = await Department.find().populate("headOfDepartment", "name specialization").sort({ name: 1 }).lean();
+  let departments = await Department.find().populate("headOfDepartment", "name specialization").sort({ name: 1 }).lean();
 
-    // Seed default departments if none exist
-    if (departments.length === 0) {
-      const defaultDepts = [
-        { name: "Cardiology", code: "CARD", location: "Block A", floor: "1st Floor", operatingHours: "24/7 Service" },
-        { name: "General Medicine", code: "GMED", location: "Block A", floor: "Ground Floor", operatingHours: "08:00 AM - 08:00 PM" },
-        { name: "Pediatrics", code: "PEDI", location: "Block B", floor: "1st Floor", operatingHours: "08:00 AM - 06:00 PM" },
-        { name: "Neurology", code: "NEUR", location: "Block A", floor: "2nd Floor", operatingHours: "09:00 AM - 05:00 PM" },
-        { name: "Orthopedics", code: "ORTH", location: "Block B", floor: "Ground Floor", operatingHours: "09:00 AM - 05:00 PM" },
-        { name: "Emergency & Trauma", code: "EMER", location: "Emergency Wing", floor: "Ground Floor", operatingHours: "24 Hours Continuous" },
-        { name: "Pathology & Lab", code: "PATH", location: "Diagnostics Wing", floor: "2nd Floor", operatingHours: "24/7 Lab Processing" },
-        { name: "Pharmacy", code: "PHAR", location: "Central OPD", floor: "Ground Floor", operatingHours: "24 Hours Available" },
-      ];
-      await Department.insertMany(defaultDepts);
-      departments = await Department.find().sort({ name: 1 }).lean();
-    }
-
-    return res.status(200).json({ success: true, departments });
-  } catch (error) {
-    return res.status(500).json({ message: "Unable to fetch departments" });
+  // Seed default departments if none exist
+  if (departments.length === 0) {
+    const defaultDepts = [
+      { name: "Cardiology", code: "CARD", location: "Block A", floor: "1st Floor", operatingHours: "24/7 Service" },
+      { name: "General Medicine", code: "GMED", location: "Block A", floor: "Ground Floor", operatingHours: "08:00 AM - 08:00 PM" },
+      { name: "Pediatrics", code: "PEDI", location: "Block B", floor: "1st Floor", operatingHours: "08:00 AM - 06:00 PM" },
+      { name: "Neurology", code: "NEUR", location: "Block A", floor: "2nd Floor", operatingHours: "09:00 AM - 05:00 PM" },
+      { name: "Orthopedics", code: "ORTH", location: "Block B", floor: "Ground Floor", operatingHours: "09:00 AM - 05:00 PM" },
+      { name: "Emergency & Trauma", code: "EMER", location: "Emergency Wing", floor: "Ground Floor", operatingHours: "24 Hours Continuous" },
+      { name: "Pathology & Lab", code: "PATH", location: "Diagnostics Wing", floor: "2nd Floor", operatingHours: "24/7 Lab Processing" },
+      { name: "Pharmacy", code: "PHAR", location: "Central OPD", floor: "Ground Floor", operatingHours: "24 Hours Available" },
+    ];
+    await Department.insertMany(defaultDepts);
+    departments = await Department.find().sort({ name: 1 }).lean();
   }
-};
+
+  return res.status(200).json({ success: true, departments });
+});
 
 // POST /api/admin/departments
 export const createDepartment = async (req, res) => {

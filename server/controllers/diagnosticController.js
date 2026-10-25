@@ -26,6 +26,8 @@ import {
   generateFilmSheetPdf,
 } from "../services/pdfReportService.js";
 import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
+import { requireDb } from "../utils/requireDb.js";
+import asyncHandler from "../middleware/asyncHandler.js";
 
 const recordAudit = async (req, action, recordId, details) => {
   try {
@@ -47,40 +49,10 @@ const recordAudit = async (req, action, recordId, details) => {
  * 1. GET /api/diagnostics/dashboard
  * Department-wide live telemetry KPIs from MongoDB
  */
-export const getDiagnosticDashboard = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(200).json({
-        success: true,
-        data: {
-          kpis: {
-            totalTestsToday: 24,
-            pendingRequests: 5,
-            scheduledTests: 8,
-            samplesPending: 4,
-            testsInProgress: 6,
-            reportsPending: 3,
-            reportsCompleted: 15,
-            criticalAlertsCount: 1,
-            todayRevenue: 12500,
-            storageUsageFormatted: "128 MB",
-          },
-          recentRequests: [],
-          todaySchedule: [],
-          recentReports: [],
-          equipment: [],
-          categoryDistribution: [
-            { category: "Hematology", count: 8 },
-            { category: "Radiology", count: 6 },
-            { category: "Biochemistry", count: 10 },
-          ],
-          storageStats: { usedBytes: 134217728, usedFormatted: "128 MB" },
-        },
-        isOfflineDemo: true,
-      });
-    }
+export const getDiagnosticDashboard = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const todayStart = new Date();
+  const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
     const [
@@ -125,7 +97,7 @@ export const getDiagnosticDashboard = async (req, res) => {
     const todayRevenue = diagnosticRevenueAgg.length > 0 ? diagnosticRevenueAgg[0].total : 0;
     const storageStats = getStorageStats();
 
-    return res.status(200).json({
+return res.status(200).json({
       success: true,
       data: {
         kpis: {
@@ -147,69 +119,44 @@ export const getDiagnosticDashboard = async (req, res) => {
         storageStats,
       },
     });
-  } catch (err) {
-    console.error("Diagnostic dashboard error:", err);
-    return res.status(500).json({ success: false, message: "Error loading diagnostic telemetry", error: err.message });
-  }
-};
 
+});
 /**
  * 2. GET /api/diagnostics/tests
  * Central Diagnostic Test Catalog
  */
-export const getDiagnosticTests = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      const demoTests = [
-        { _id: "t1", testCode: "CBC", testName: "Complete Blood Count", department: "Pathology", category: "Hematology", price: 350, turnaroundHours: 4, status: "Active" },
-        { _id: "t2", testCode: "LIPID", testName: "Lipid Profile", department: "Pathology", category: "Biochemistry", price: 650, turnaroundHours: 6, status: "Active" },
-        { _id: "t3", testCode: "CXR", testName: "Chest X-Ray PA View", department: "Radiology", category: "X-Ray", price: 500, turnaroundHours: 2, status: "Active" },
-        { _id: "t4", testCode: "MRI-BRAIN", testName: "MRI Brain with Contrast", department: "Radiology", category: "MRI", price: 4500, turnaroundHours: 12, status: "Active" },
-      ];
-      return res.status(200).json({
-        success: true,
-        data: demoTests,
-        pagination: { total: demoTests.length, page: 1, limit: 50, pages: 1 },
-        isOfflineDemo: true,
-      });
-    }
 
-    const { department, category, modality, search, active, page = 1, limit = 50 } = req.query;
-    const filter = {};
+  if (department && department !== "all") filter.department = department;
+  if (category && category !== "all") filter.category = category;
+export const getDiagnosticTests = asyncHandler(async (req, res) => {
+  if (modality && modality !== "all") filter.modality = modality;
+  if (active !== undefined) filter.active = active === "true";
 
-    if (department && department !== "all") filter.department = department;
-    if (category && category !== "all") filter.category = category;
-    if (modality && modality !== "all") filter.modality = modality;
-    if (active !== undefined) filter.active = active === "true";
-
-    if (search && search.trim()) {
-      filter.$or = [
-        { testName: { $regex: search.trim(), $options: "i" } },
-        { testCode: { $regex: search.trim(), $options: "i" } },
-        { category: { $regex: search.trim(), $options: "i" } },
-      ];
-    }
-
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const [tests, total] = await Promise.all([
-      DiagnosticTest.find(filter).sort({ department: 1, category: 1, testName: 1 }).skip(skip).limit(parseInt(limit)),
-      DiagnosticTest.countDocuments(filter),
-    ]);
-
-    return res.status(200).json({
-      success: true,
-      data: tests,
-      pagination: {
-        total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / parseInt(limit)),
-      },
-    });
-  } catch (err) {
-    return res.status(500).json({ success: false, message: "Failed to fetch diagnostic tests", error: err.message });
+  if (search && search.trim()) {
+    filter.$or = [
+      { testName: { $regex: search.trim(), $options: "i" } },
+      { testCode: { $regex: search.trim(), $options: "i" } },
+      { category: { $regex: search.trim(), $options: "i" } },
+    ];
   }
-};
+
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+  const [tests, total] = await Promise.all([
+    DiagnosticTest.find(filter).sort({ department: 1, category: 1, testName: 1 }).skip(skip).limit(parseInt(limit)),
+    DiagnosticTest.countDocuments(filter),
+  ]);
+
+  return res.status(200).json({
+    success: true,
+    data: tests,
+    pagination: {
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      pages: Math.ceil(total / parseInt(limit)),
+    },
+  });
+});
 
 /**
  * 3. POST /api/diagnostics/tests
@@ -242,19 +189,11 @@ export const getDiagnosticTestById = async (req, res) => {
  * 5. GET /api/diagnostics/requests
  * Retrieve diagnostic investigation orders
  */
-export const getDiagnosticRequests = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(200).json({
-        success: true,
-        data: [],
-        pagination: { total: 0, page: 1, limit: 50, pages: 1 },
-        isOfflineDemo: true,
-      });
-    }
+export const getDiagnosticRequests = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const { status, priority, department, patientId, doctorId, search, page = 1, limit = 50 } = req.query;
-    const filter = {};
+  const { status, priority, department, patientId, doctorId, search, page = 1, limit = 50 } = req.query;
+  const filter = {};
 
     if (status && status !== "all") filter.status = status;
     if (priority && priority !== "all") filter.priority = priority;

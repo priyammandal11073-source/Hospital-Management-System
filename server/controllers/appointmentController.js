@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 import Appointment from "../models/Appointment.js";
 import Billing from "../models/Billing.js";
 import { resolveDoctorForUser } from "../utils/doctorHelper.js";
-import { mockDatabase } from "../utils/mockDatabase.js";
 import env from "../config/env.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import AppError from "../utils/AppError.js";
+import { requireDb } from "../utils/requireDb.js";
 
 const appointmentStatuses = [
   "pending",
@@ -55,26 +55,7 @@ export const createAppointment = asyncHandler(async (req, res) => {
     throw new AppError("Invalid appointment date", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const newAppt = {
-      _id: new mongoose.Types.ObjectId().toString(),
-      patient: mockDatabase.getPatientById(patient) || mockDatabase.demoPatients[0],
-      doctor: mockDatabase.getDoctorById(doctor) || mockDatabase.demoDoctors[0],
-      appointmentDate: formattedDate,
-      timeSlot: timeSlot.trim(),
-      reasonForVisit: reasonForVisit.trim(),
-      status: "confirmed",
-      bookedBy: req.user?.role === "patient" ? "patient" : "staff",
-      createdAt: new Date(),
-    };
-    mockDatabase.demoAppointments.unshift(newAppt);
-    return res.status(201).json({
-      message: "Appointment booked successfully",
-      appointment: newAppt,
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   const existingAppointment = await Appointment.findOne({
     doctor,
@@ -122,11 +103,7 @@ export const createAppointment = asyncHandler(async (req, res) => {
 export const getAllAppointments = asyncHandler(async (req, res) => {
   const { status, doctor, startDate, endDate, bookedBy } = req.query;
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const appointments = mockDatabase.getAppointments({ status, doctor });
-    return res.status(200).json({ appointments, isOfflineDemo: true });
-  }
+  await requireDb();
 
   const filter = {};
 
@@ -211,11 +188,7 @@ export const getAppointmentById = asyncHandler(async (req, res) => {
     throw new AppError("Invalid appointment ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const appointment = mockDatabase.demoAppointments.find(a => a._id === req.params.id) || mockDatabase.demoAppointments[0];
-    return res.status(200).json({ appointment, isOfflineDemo: true });
-  }
+  await requireDb();
 
   const appointment = await Appointment.findById(req.params.id)
     .populate("patient", "name contactNumber age gender abhaId bloodGroup")
@@ -248,16 +221,7 @@ export const updateAppointmentStatus = asyncHandler(async (req, res) => {
     throw new AppError("Invalid appointment status", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const appt = mockDatabase.demoAppointments.find(a => a._id === req.params.id);
-    if (appt) appt.status = status;
-    return res.status(200).json({
-      message: "Appointment status updated successfully",
-      appointment: appt || mockDatabase.demoAppointments[0],
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   if (req.user?.role === "doctor") {
     const doctorRecord = await resolveDoctorForUser(req.user);

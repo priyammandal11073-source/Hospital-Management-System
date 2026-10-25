@@ -3,9 +3,9 @@ import Doctor from "../models/Doctor.js";
 import Appointment from "../models/Appointment.js";
 import User from "../models/User.js";
 import { resolveDoctorForUser } from "../utils/doctorHelper.js";
-import { mockDatabase, demoDoctors } from "../utils/mockDatabase.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import AppError from "../utils/AppError.js";
+import { requireDb } from "../utils/requireDb.js";
 
 const isValidDoctorId = (id) => mongoose.isValidObjectId(id);
 
@@ -13,21 +13,7 @@ const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 // GET /api/doctors/me - Returns the authenticated doctor's dedicated profile & stats
 export const getCurrentDoctorProfile = asyncHandler(async (req, res) => {
-  if (mongoose.connection.readyState !== 1) {
-    const doctor = demoDoctors[0];
-    return res.status(200).json({
-      doctor,
-      stats: {
-        todayAppointments: 6,
-        pendingAppointments: 2,
-        completedAppointments: 4,
-        totalAppointments: 18,
-        totalPatients: 14,
-      },
-      todaySchedule: { day: "Today", slots: ["09:00 AM", "10:30 AM", "02:00 PM"] },
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   const doctor = await resolveDoctorForUser(req.user);
   if (!doctor) {
@@ -77,19 +63,7 @@ export const getCurrentDoctorProfile = asyncHandler(async (req, res) => {
 
 // POST /api/doctors
 export const createDoctor = asyncHandler(async (req, res) => {
-  if (mongoose.connection.readyState !== 1) {
-    const newDoc = {
-      _id: new mongoose.Types.ObjectId().toString(),
-      ...req.body,
-      createdAt: new Date(),
-    };
-    demoDoctors.push(newDoc);
-    return res.status(201).json({
-      message: "Doctor created successfully",
-      doctor: newDoc,
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   const doctor = await Doctor.create(req.body);
 
@@ -112,11 +86,7 @@ export const createDoctor = asyncHandler(async (req, res) => {
 export const getAllDoctors = asyncHandler(async (req, res) => {
   const { specialization, department } = req.query;
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const doctors = mockDatabase.getDoctors({ specialization, department });
-    return res.status(200).json({ doctors, isOfflineDemo: true });
-  }
+  await requireDb();
 
   // If a doctor is authenticated, default to their own profile unless hospital directory requested
   if (req.user?.role === "doctor" && req.query.directory !== "true" && req.query.all !== "true") {
@@ -150,14 +120,7 @@ export const getDoctorById = asyncHandler(async (req, res) => {
     throw new AppError("Invalid doctor ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const doctor = mockDatabase.getDoctorById(req.params.id) || demoDoctors[0];
-    if (!doctor) {
-      throw new AppError("Doctor not found", 404);
-    }
-    return res.status(200).json({ doctor, isOfflineDemo: true });
-  }
+  await requireDb();
 
   // If logged-in as doctor, only permit accessing their own record
   if (req.user?.role === "doctor") {

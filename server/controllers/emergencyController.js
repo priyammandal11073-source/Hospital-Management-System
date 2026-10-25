@@ -14,6 +14,8 @@ import AuditLog from "../models/AuditLog.js";
 import EmergencyEncounter from "../models/EmergencyEncounter.js";
 import User from "../models/User.js";
 import { logAuditEvent } from "./adminController.js";
+import asyncHandler from "../middleware/asyncHandler.js";
+import { requireDb } from "../utils/requireDb.js";
 
 const EMERGENCY_CHARGE = 1500;
 
@@ -169,20 +171,12 @@ export const createEmergencyEncounter = async (req, res) => {
 };
 
 // GET /api/emergency/dashboard
-export const getEmergencyDashboard = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(200).json({
-        success: true,
-        isOfflineDemo: true,
-        stats: { totalActive: 12, critical: 2, under_care: 6, waiting: 4, observation: 3, availableBeds: 5, awaiting_triage: 3, awaiting_doctor: 2, pending_diagnostics: 4, pending_meds: 2, awaiting_admission: 2 },
-        recent: [],
-        beds: [],
-      });
-    }
-    const now = new Date();
-    const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const [allActive, triageWaiting, doctorWaiting, critical, underTreatment, observation, pendingDiagCount, pendingMeds, awaitingAdmission, beds, recent] = await Promise.all([
+export const getEmergencyDashboard = asyncHandler(async (req, res) => {
+  await requireDb();
+
+  const now = new Date();
+  const startDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const [allActive, triageWaiting, doctorWaiting, critical, underTreatment, observation, pendingDiagCount, pendingMeds, awaitingAdmission, beds, recent] = await Promise.all([
       EmergencyEncounter.countDocuments({ status: { $nin: ["discharged", "transferred", "cancelled", "admitted"] } }),
       EmergencyEncounter.countDocuments({ triageStatus: "awaiting_triage", status: { $nin: ["discharged", "cancelled"] } }),
       EmergencyEncounter.countDocuments({ status: { $in: ["triaged", "awaiting_doctor"] } }),
@@ -222,19 +216,11 @@ export const getEmergencyDashboard = async (req, res) => {
 };
 
 // GET /api/emergency  queue
-export const getEmergencyQueue = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(200).json({
-        success: true,
-        encounters: [],
-        pagination: { page: 1, limit: 50, total: 0, pages: 1 },
-        isOfflineDemo: true,
-      });
-    }
+export const getEmergencyQueue = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const { priority, status, doctor, date, location, search, triageStatus, page = 1, limit = 50 } = req.query;
-    const filter = {};
+  const { priority, status, doctor, date, location, search, triageStatus, page = 1, limit = 50 } = req.query;
+  const filter = {};
     if (priority && priority !== "all") filter.priority = priority;
     if (status && status !== "all") filter.status = status;
     if (triageStatus && triageStatus !== "all") filter.triageStatus = triageStatus;
@@ -1014,27 +1000,13 @@ export const getEmergencyReports = async (req, res) => {
 };
 
 // GET /api/emergency/beds
-export const getEmergencyBeds = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(200).json({
-        success: true,
-        beds: [
-          { _id: "b1", bedNumber: "ER-01", ward: "Emergency Trauma", floor: 1, status: "available", dailyRate: 1500 },
-          { _id: "b2", bedNumber: "ER-02", ward: "Emergency Trauma", floor: 1, status: "occupied", dailyRate: 1500 },
-          { _id: "b3", bedNumber: "ER-03", ward: "Emergency ICU", floor: 1, status: "available", dailyRate: 2500 },
-        ],
-        isOfflineDemo: true,
-      });
-    }
+export const getEmergencyBeds = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const beds = await Bed.find({ ward: { $regex: /emergency|trauma/i } }).populate("currentAdmission.patient", "name age gender").populate("currentAdmission.attendingDoctor", "name");
-    if (beds.length === 0) {
-      const demo = await Bed.find({ status: "available" }).limit(10);
-      return res.status(200).json({ success: true, beds: demo });
-    }
-    return res.status(200).json({ success: true, beds });
-  } catch (error) {
-    return res.status(500).json({ message: "Failed to fetch ER beds" });
+  const beds = await Bed.find({ ward: { $regex: /emergency|trauma/i } }).populate("currentAdmission.patient", "name age gender").populate("currentAdmission.attendingDoctor", "name");
+  if (beds.length === 0) {
+    const demo = await Bed.find({ status: "available" }).limit(10);
+    return res.status(200).json({ success: true, beds: demo });
   }
-};
+  return res.status(200).json({ success: true, beds });
+});

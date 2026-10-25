@@ -5,10 +5,10 @@ import Patient from "../models/Patient.js";
 import Doctor from "../models/Doctor.js";
 import Appointment from "../models/Appointment.js";
 import { resolveDoctorForUser, formatDoctorName } from "../utils/doctorHelper.js";
-import { mockDatabase } from "../utils/mockDatabase.js";
 import env from "../config/env.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import AppError from "../utils/AppError.js";
+import { requireDb } from "../utils/requireDb.js";
 
 const generateRxNumber = () => {
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
@@ -48,26 +48,7 @@ export const createPrescription = asyncHandler(async (req, res) => {
     throw new AppError("Invalid patient or doctor ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const newRx = mockDatabase.createPrescription({
-      patient,
-      doctor: targetDoctorId,
-      appointment,
-      diagnosis: diagnosis.trim(),
-      symptoms,
-      vitals,
-      medications,
-      labTestsRecommended,
-      advice,
-      followUpDate,
-    });
-    return res.status(201).json({
-      message: "Digital prescription generated successfully",
-      prescription: newRx,
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   const [patientRecord, doctorRecord] = await Promise.all([
     Patient.findById(patient),
@@ -127,11 +108,7 @@ export const createPrescription = asyncHandler(async (req, res) => {
 export const getAllPrescriptions = asyncHandler(async (req, res) => {
   const { patient, doctor, search } = req.query;
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const prescriptions = mockDatabase.getPrescriptions({ search, patient, doctor });
-    return res.status(200).json({ prescriptions, isOfflineDemo: true });
-  }
+  await requireDb();
 
   const filter = {};
 
@@ -182,14 +159,7 @@ export const getPrescriptionById = asyncHandler(async (req, res) => {
     throw new AppError("Invalid prescription ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const prescription = mockDatabase.getPrescriptionById(id);
-    if (!prescription) {
-      throw new AppError("Prescription not found", 404);
-    }
-    return res.status(200).json({ prescription, isOfflineDemo: true });
-  }
+  await requireDb();
 
   const prescription = await Prescription.findById(id)
     .populate("patient", "name age gender contactNumber email abhaId address bloodGroup allergies medicalHistory")
@@ -219,18 +189,7 @@ export const updatePrescription = asyncHandler(async (req, res) => {
     throw new AppError("Invalid prescription ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const updated = mockDatabase.updatePrescription(id, req.body);
-    if (!updated) {
-      throw new AppError("Prescription not found", 404);
-    }
-    return res.status(200).json({
-      message: "Prescription updated successfully",
-      prescription: updated,
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   // Doctor role enforcement
   if (req.user?.role === "doctor") {
@@ -277,14 +236,7 @@ export const deletePrescription = asyncHandler(async (req, res) => {
     throw new AppError("Invalid prescription ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const deleted = mockDatabase.deletePrescription(id);
-    if (!deleted) {
-      throw new AppError("Prescription not found", 404);
-    }
-    return res.status(200).json({ message: "Prescription deleted successfully", isOfflineDemo: true });
-  }
+  await requireDb();
 
   // Doctor role enforcement
   if (req.user?.role === "doctor") {
@@ -315,15 +267,7 @@ export const sendPrescriptionEmail = asyncHandler(async (req, res) => {
     throw new AppError("Invalid prescription ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const rx = mockDatabase.getPrescriptionById(id);
-    return res.status(200).json({
-      message: `Prescription successfully emailed to ${rx?.patient?.email || "patient@example.com"}!`,
-      previewUrl: "https://ethereal.email/message/demo-offline",
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   const prescription = await Prescription.findById(id)
     .populate("patient", "name email age gender contactNumber abhaId")
@@ -483,31 +427,7 @@ export const recordMedicationAdministration = asyncHandler(async (req, res) => {
     throw new AppError("Invalid prescription ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const rx = mockDatabase.getPrescriptionById(id);
-    const medIndex = Number(medicationIndex) || 0;
-    const adminEntry = {
-      medicationIndex: medIndex,
-      medicationName: rx?.medications?.[medIndex]?.name || "Medication",
-      doseTime: new Date(),
-      administeredBy: req.user?._id || "64f1a2b3c4d5e6f7a8b9c0d1",
-      administeredByName: req.user?.name || "Staff Nurse",
-      status: ["given", "held", "refused"].includes(status) ? status : "given",
-      notes: typeof notes === "string" ? notes.trim() : "",
-    };
-    if (rx) {
-      rx.administrations = rx.administrations || [];
-      rx.administrations.unshift(adminEntry);
-    }
-    return res.status(200).json({
-      message: `Dose marked as ${status} by ${req.user?.name || "Staff Nurse"}.`,
-      administration: adminEntry,
-      administrations: rx?.administrations || [adminEntry],
-      prescription: rx,
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   const prescription = await Prescription.findById(id).populate("patient doctor");
   if (!prescription) {

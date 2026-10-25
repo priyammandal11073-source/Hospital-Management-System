@@ -2,9 +2,9 @@ import mongoose from "mongoose";
 import Bed from "../models/Bed.js";
 import Patient from "../models/Patient.js";
 import Billing from "../models/Billing.js";
-import { mockDatabase } from "../utils/mockDatabase.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import AppError from "../utils/AppError.js";
+import { requireDb } from "../utils/requireDb.js";
 
 const WARDS = [
   "General Ward",
@@ -19,11 +19,7 @@ const WARDS = [
 export const getAllBeds = asyncHandler(async (req, res) => {
   const { ward, status, search } = req.query;
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const beds = mockDatabase.getBeds({ ward, status, search });
-    return res.status(200).json({ beds, isOfflineDemo: true });
-  }
+  await requireDb();
 
   const filter = {};
 
@@ -61,32 +57,13 @@ export const getAllBeds = asyncHandler(async (req, res) => {
 
 // GET /api/beds/summary
 export const getBedSummary = asyncHandler(async (req, res) => {
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const beds = mockDatabase.demoBeds;
-    const total = beds.length;
-    const occupied = beds.filter((b) => b.status === "occupied").length;
-    const available = beds.filter((b) => b.status === "available").length;
-    const cleaning = beds.filter((b) => b.status === "cleaning").length;
-    const maintenance = beds.filter((b) => b.status === "maintenance").length;
-    const occupancyRate = total > 0 ? Math.round((occupied / total) * 100) : 0;
-    const wardStats = WARDS.map((w) => {
-      const wardBeds = beds.filter((b) => b.ward === w);
-      return {
-        ward: w,
-        total: wardBeds.length,
-        occupied: wardBeds.filter((b) => b.status === "occupied").length,
-        available: wardBeds.filter((b) => b.status === "available").length,
-      };
-    });
-    return res.status(200).json({
-      summary: { total, occupied, available, cleaning, maintenance, occupancyRate },
-      wardStats,
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
-  const beds = await Bed.find({});
+  const beds = await Bed.find({})
+    .populate("currentAdmission.patient", "name age gender contactNumber email abhaId bloodGroup address")
+    .populate("currentAdmission.attendingDoctor", "name specialization department contactNumber email")
+    .sort({ ward: 1, bedNumber: 1 });
+  
   const total = beds.length;
   const occupied = beds.filter((b) => b.status === "occupied").length;
   const available = beds.filter((b) => b.status === "available").length;
@@ -181,29 +158,7 @@ export const allocateBed = asyncHandler(async (req, res) => {
     throw new AppError("Invalid patient or doctor ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const bed = mockDatabase.demoBeds.find((b) => b._id === id);
-    if (!bed) throw new AppError("Bed not found", 404);
-    if (bed.status !== "available") {
-      throw new AppError(`Bed ${bed.bedNumber} is currently ${bed.status}. Only available beds can be allocated.`, 409);
-    }
-    bed.status = "occupied";
-    bed.currentAdmission = {
-      patient: mockDatabase.getPatientById(patient) || { _id: patient, name: "Patient" },
-      attendingDoctor: mockDatabase.getDoctorById(attendingDoctor) || { _id: attendingDoctor, name: "Doctor" },
-      admittedAt: new Date(),
-      admissionReason: admissionReason.trim(),
-      expectedDischargeDate: expectedDischargeDate ? new Date(expectedDischargeDate) : undefined,
-      emergencyContact: emergencyContact ? emergencyContact.trim() : "",
-      notes: notes ? notes.trim() : "",
-    };
-    return res.status(200).json({
-      message: `Patient successfully admitted to bed ${bed.bedNumber}`,
-      bed,
-      isOfflineDemo: true,
-    });
-  }
+  await requireDb();
 
   // Check if patient is already admitted in another bed
   const existingAdmission = await Bed.findOne({

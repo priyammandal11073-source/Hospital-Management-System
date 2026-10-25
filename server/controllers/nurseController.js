@@ -13,6 +13,8 @@ import PatientTransfer from "../models/PatientTransfer.js";
 import NurseHandover from "../models/NurseHandover.js";
 import DiagnosticOrder from "../models/DiagnosticOrder.js";
 import { formatDoctorName } from "../utils/doctorHelper.js";
+import asyncHandler from "../middleware/asyncHandler.js";
+import { requireDb } from "../utils/requireDb.js";
 
 // Helper to determine clinical severity based on vitals and admission reason
 const assessPatientRisk = (vitals, bed) => {
@@ -60,24 +62,10 @@ const assessPatientRisk = (vitals, bed) => {
 };
 
 // 1. GET /api/nurse/dashboard-metrics
-export const getNurseDashboardMetrics = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(200).json({
-        success: true,
-        admittedPatients: [],
-        metrics: {
-          totalAdmitted: 6,
-          highRiskVitalsCount: 1,
-          pendingTasksCount: 4,
-          todayMedicationsCount: 8,
-          criticalAlertsCount: 0,
-        },
-        isOfflineDemo: true,
-      });
-    }
+export const getNurseDashboardMetrics = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = new Date().toISOString().split("T")[0];
 
     // Fetch occupied beds
     const occupiedBeds = await Bed.find({ status: "occupied", "currentAdmission.patient": { $exists: true, $ne: null } })
@@ -219,76 +207,44 @@ export const getNurseDashboardMetrics = async (req, res) => {
         isOverdue: new Date(t.dueTime) < new Date() && t.status !== "Completed",
       })),
       recentDoctorOrders,
-    });
-  } catch (error) {
-    console.error("Nurse dashboard metrics error:", error);
-    return res.status(500).json({ message: "Failed to load nursing dashboard metrics" });
+  });
+});
+
+export const getInpatientsWithCare = asyncHandler(async (req, res) => {
+  await requireDb();
+
+  const { ward, search, riskLevel } = req.query;
+
+  const filter = { status: "occupied", "currentAdmission.patient": { $exists: true, $ne: null } };
+  if (ward && ward.trim()) {
+    filter.ward = ward.trim();
   }
-};
 
-// 2. GET /api/nurse/inpatients
-export const getInpatientsWithCare = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      const demoInpatients = [
-        {
-          bedId: "bed_101",
-          bedNumber: "BED-ICU-01",
-          ward: "Intensive Care Unit (ICU)",
-          floor: "2nd Floor",
-          admittedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          admissionReason: "Post-op CABG Recovery",
-          riskLevel: "Critical",
-          patient: { _id: "pat_1", name: "Ramesh Patel", age: 58, gender: "Male", bloodGroup: "B+" },
-          attendingDoctor: { name: "Dr. Sarah Jenkins", specialization: "Cardiology" },
-        },
-        {
-          bedId: "bed_102",
-          bedNumber: "BED-GW-04",
-          ward: "General Ward (Male)",
-          floor: "1st Floor",
-          admittedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          admissionReason: "Acute Gastroenteritis with dehydration",
-          riskLevel: "Stable",
-          patient: { _id: "pat_2", name: "Anand Kulkarni", age: 34, gender: "Male", bloodGroup: "O+" },
-          attendingDoctor: { name: "Dr. Rajesh Sharma", specialization: "General Medicine" },
-        },
-      ];
-      return res.status(200).json({ success: true, inpatients: demoInpatients, isOfflineDemo: true });
-    }
+  const beds = await Bed.find(filter)
+    .populate("currentAdmission.patient", "name age gender bloodGroup contactNumber abhaId allergies medicalHistory email address")
+    .populate("currentAdmission.attendingDoctor", "name specialization department contactNumber")
+    .sort({ ward: 1, bedNumber: 1 });
 
-    const { ward, search, riskLevel } = req.query;
+  const patientIds = beds.map((b) => b.currentAdmission?.patient?._id).filter(Boolean);
 
-    const filter = { status: "occupied", "currentAdmission.patient": { $exists: true, $ne: null } };
-    if (ward && ward.trim()) {
-      filter.ward = ward.trim();
-    }
-
-    const beds = await Bed.find(filter)
-      .populate("currentAdmission.patient", "name age gender bloodGroup contactNumber abhaId allergies medicalHistory email address")
-      .populate("currentAdmission.attendingDoctor", "name specialization department contactNumber")
-      .sort({ ward: 1, bedNumber: 1 });
-
-    const patientIds = beds.map((b) => b.currentAdmission?.patient?._id).filter(Boolean);
-
-    // Latest vitals map
-    const latestVitalsList = await Vitals.aggregate([
-      { $match: { patient: { $in: patientIds } } },
-      { $sort: { recordedAt: -1 } },
-      {
-        $group: {
-          _id: "$patient",
-          latestVital: { $first: "$$ROOT" },
-        },
+  // Latest vitals map
+  const latestVitalsList = await Vitals.aggregate([
+    { $match: { patient: { $in: patientIds } } },
+    { $sort: { recordedAt: -1 } },
+    {
+      $group: {
+        _id: "$patient",
+        latestVital: { $first: "$$ROOT" },
       },
-    ]);
+    },
+  ]);
 
-    const vitalsMap = {};
-    latestVitalsList.forEach((v) => {
-      vitalsMap[v._id.toString()] = v.latestVital;
-    });
+  const vitalsMap = {};
+  latestVitalsList.forEach((v) => {
+    vitalsMap[v._id.toString()] = v.latestVital;
+  });
 
-    let inpatients = beds.map((bed) => {
+  let inpatients = beds.map((bed) => {
       const patient = bed.currentAdmission.patient;
       const v = vitalsMap[patient?._id?.toString()] || null;
       const risk = assessPatientRisk(v, bed);
@@ -326,17 +282,14 @@ export const getInpatientsWithCare = async (req, res) => {
       inpatients = inpatients.filter((item) => item.riskLevel.toLowerCase() === riskLevel.trim().toLowerCase());
     }
 
-    return res.status(200).json({ inpatients, total: inpatients.length });
-  } catch (error) {
-    console.error("Get inpatients error:", error);
-    return res.status(500).json({ message: "Failed to fetch inpatients" });
-  }
-};
+return res.status(200).json({ inpatients, total: inpatients.length });
+});
 
 // 3. GET /api/nurse/patient-profile/:id
-export const getClinicalPatientProfile = async (req, res) => {
-  try {
-    const { id } = req.params;
+export const getClinicalPatientProfile = asyncHandler(async (req, res) => {
+  await requireDb();
+
+  const { id } = req.params;
     if (!mongoose.isValidObjectId(id)) {
       return res.status(400).json({ message: "Invalid patient ID" });
     }
@@ -399,6 +352,7 @@ export const getClinicalPatientProfile = async (req, res) => {
       doctorOrders,
       labReports,
       diagnosticOrders,
+
       intakeOutput,
       tasks,
       transfers,
@@ -408,51 +362,30 @@ export const getClinicalPatientProfile = async (req, res) => {
         latestVital,
       },
     });
-  } catch (error) {
-    console.error("Clinical patient profile error:", error);
-    return res.status(500).json({ message: "Failed to fetch clinical patient profile" });
-  }
-};
+});
 
 // 4. Tasks: GET, POST, PATCH
-export const getNursingTasks = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      const demoTasks = [
-        { _id: "task_1", taskType: "Record Vitals", title: "Q2H Blood Pressure & SpO2 Check", priority: "Urgent", status: "Pending", dueTime: new Date(Date.now() + 30 * 60 * 1000), patient: { name: "Ramesh Patel", age: 58, gender: "Male" } },
-        { _id: "task_2", taskType: "Medication Admin", title: "IV Infusion Saline 500ml", priority: "Routine", status: "In Progress", dueTime: new Date(Date.now() + 60 * 60 * 1000), patient: { name: "Anand Kulkarni", age: 34, gender: "Male" } },
-      ];
-      return res.status(200).json({ success: true, tasks: demoTasks, isOfflineDemo: true });
-    }
+export const getNursingTasks = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const { patientId, status, priority } = req.query;
-    const filter = {};
-
-    if (patientId && mongoose.isValidObjectId(patientId)) {
-      filter.patient = patientId;
-    }
-    if (status) {
-      filter.status = status;
-    }
-    if (priority) {
-      filter.priority = priority;
-    }
-
-    const tasks = await NursingTask.find(filter)
-      .populate("patient", "name age gender")
-      .sort({ dueTime: 1 });
-
-    const tasksWithOverdue = tasks.map((t) => ({
-      ...t.toObject(),
-      isOverdue: new Date(t.dueTime) < new Date() && t.status !== "Completed",
-    }));
-
-    return res.status(200).json({ tasks: tasksWithOverdue });
-  } catch (error) {
-    console.error("Get nursing tasks error:", error);
-    return res.status(500).json({ message: "Failed to fetch nursing tasks" });
+  if (status) {
+    filter.status = status;
   }
-};
+  if (priority) {
+    filter.priority = priority;
+  }
+
+  const tasks = await NursingTask.find(filter)
+    .populate("patient", "name age gender")
+    .sort({ dueTime: 1 });
+
+  const tasksWithOverdue = tasks.map((t) => ({
+    ...t.toObject(),
+    isOverdue: new Date(t.dueTime) < new Date() && t.status !== "Completed",
+  }));
+
+  return res.status(200).json({ tasks: tasksWithOverdue });
+});
 
 export const createNursingTask = async (req, res) => {
   try {

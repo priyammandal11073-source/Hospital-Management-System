@@ -8,6 +8,7 @@ import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
 import env from "../config/env.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import AppError from "../utils/AppError.js";
+import { requireDb } from "../utils/requireDb.js";
 
 const paymentStatuses = ["pending", "paid", "partially_paid", "cancelled", "refunded"];
 const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque", "razorpay"];
@@ -109,45 +110,7 @@ export const createBilling = asyncHandler(async (req, res) => {
 export const getAllBillings = asyncHandler(async (req, res) => {
   const { paymentStatus, startDate, endDate } = req.query;
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const demoBillings = [
-      {
-        _id: "65f123456789012345678901",
-        invoiceNumber: "INV-2026-001",
-        patient: { _id: "65a123456789012345678901", name: "John Fernandes", contactNumber: "+91 98765 43210", email: "john@example.com" },
-        totalAmount: 12500,
-        paidAmount: 12500,
-        balanceAmount: 0,
-        paymentStatus: "paid",
-        paymentMethod: "upi",
-        createdAt: new Date("2026-10-20T10:00:00Z"),
-      },
-      {
-        _id: "65f123456789012345678902",
-        invoiceNumber: "INV-2026-002",
-        patient: { _id: "65a123456789012345678902", name: "Priya Patel", contactNumber: "+91 98765 43211", email: "alice@example.com" },
-        totalAmount: 3200,
-        paidAmount: 3200,
-        balanceAmount: 0,
-        paymentStatus: "paid",
-        paymentMethod: "card",
-        createdAt: new Date("2026-10-21T14:30:00Z"),
-      },
-      {
-        _id: "65f123456789012345678903",
-        invoiceNumber: "INV-2026-003",
-        patient: { _id: "65a123456789012345678903", name: "Amit Kumar", contactNumber: "+91 98765 43212", email: "amit.kumar@example.com" },
-        totalAmount: 8500,
-        paidAmount: 5000,
-        balanceAmount: 3500,
-        paymentStatus: "partially_paid",
-        paymentMethod: "cash",
-        createdAt: new Date("2026-10-21T16:00:00Z"),
-      },
-    ];
-    return res.status(200).json({ billings: demoBillings, isOfflineDemo: true });
-  }
+  await requireDb();
 
   const filter = {};
 
@@ -214,35 +177,7 @@ export const getBillingById = asyncHandler(async (req, res) => {
     throw new AppError("Invalid billing ID", 400);
   }
 
-  // Seamless offline fallback when database connection is unavailable
-  if (mongoose.connection.readyState !== 1) {
-    const demoBilling = {
-      _id: req.params.id,
-      invoiceNumber: "INV-2026-001",
-      patient: { _id: "65a123456789012345678901", name: "John Fernandes", contactNumber: "+91 98765 43210", email: "john@example.com", address: "123 M.G. Road, Indiranagar, Bengaluru" },
-      itemizedCharges: [
-        { description: "General Consultation Fee", amount: 800, category: "consultation" },
-        { description: "Lipid Profile Test", amount: 1200, category: "diagnostics" },
-        { description: "Cardiology Monitoring", amount: 2500, category: "monitoring" },
-      ],
-      totalAmount: 4500,
-      paidAmount: 4500,
-      balanceAmount: 0,
-      paymentStatus: "paid",
-      paymentMethod: "upi",
-      createdAt: new Date(),
-    };
-    const isAuthorizedStaff = Boolean(req.user && req.user.role);
-    const patientId = req.patient?.id || req.patient?._id;
-    const isOwnerPatient = Boolean(
-      patientId && String(demoBilling.patient._id) === String(patientId)
-    );
-    const resultBilling = (isAuthorizedStaff || isOwnerPatient)
-      ? demoBilling
-      : sanitizeBillingForPublic(demoBilling);
-
-    return res.status(200).json({ billing: resultBilling, isOfflineDemo: true });
-  }
+  await requireDb();
 
   const billing = await Billing.findById(req.params.id)
     .populate("patient", "name contactNumber email age gender address")
@@ -259,11 +194,9 @@ export const getBillingById = asyncHandler(async (req, res) => {
 
   const isAuthorizedStaff = Boolean(req.user && req.user.role);
   const patientId = req.patient?.id || req.patient?._id;
+  const billingPatientId = billing.patient?._id?.toString() || billing.patient?.toString();
   const isOwnerPatient = Boolean(
-    patientId && billing.patient && (
-      billing.patient._id?.toString() === patientId.toString() ||
-      billing.patient.toString() === patientId.toString()
-    )
+    patientId && billingPatientId && billingPatientId === patientId.toString()
   );
 
   const resultBilling = (isAuthorizedStaff || isOwnerPatient)
