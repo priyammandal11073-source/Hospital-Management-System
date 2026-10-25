@@ -59,6 +59,8 @@ const sanitizeBillingForPublic = (billing) => {
 
 // POST /api/billing
 export const createBilling = asyncHandler(async (req, res) => {
+  await requireDb();
+
   const { patient, appointment, itemizedCharges, paymentMethod, paymentStatus } = req.body;
 
   if (!patient || !itemizedCharges) {

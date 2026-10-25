@@ -46,73 +46,74 @@ export const searchPatientsForEmergency = async (req, res) => {
 };
 
 // POST /api/emergency  - Emergency registration
-export const createEmergencyEncounter = async (req, res) => {
-  try {
-    const {
-      existingPatientId,
-      patientName,
-      age,
-      gender,
-      contactNumber,
-      email,
-      address,
-      bloodGroup,
-      dateOfBirth,
-      isUnknown,
-      arrivalMode,
-      arrivalTime,
-      chiefComplaint,
-      knownAllergies,
-      knownConditions,
-      emergencyContact,
-      priority,
-    } = req.body;
+export const createEmergencyEncounter = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    if (!chiefComplaint) {
-      return res.status(400).json({ message: "Chief complaint is required" });
-    }
+  const {
+    existingPatientId,
+    patientName,
+    age,
+    gender,
+    contactNumber,
+    email,
+    address,
+    bloodGroup,
+    dateOfBirth,
+    isUnknown,
+    arrivalMode,
+    arrivalTime,
+    chiefComplaint,
+    knownAllergies,
+    knownConditions,
+    emergencyContact,
+    priority,
+  } = req.body;
 
-    let patientId = existingPatientId;
-    let patient = null;
+  if (!chiefComplaint) {
+    throw new AppError("Chief complaint is required", 400);
+  }
 
-    if (patientId && mongoose.isValidObjectId(patientId)) {
-      patient = await Patient.findById(patientId);
-      if (!patient) return res.status(404).json({ message: "Linked patient not found" });
+  let patientId = existingPatientId;
+  let patient = null;
+
+  if (patientId && mongoose.isValidObjectId(patientId)) {
+    patient = await Patient.findById(patientId);
+    if (!patient) throw new AppError("Linked patient not found", 404);
+  } else {
+    // Create new patient if not linked
+    if (isUnknown) {
+      const token = `ER-UNK-${Date.now().toString().slice(-6)}`;
+      patient = await Patient.create({
+        name: patientName || `Unknown Patient ${token}`,
+        age: age ? Number(age) : 30,
+        gender: gender || "Other",
+        contactNumber: contactNumber || "0000000000",
+        address: address || "Unknown - Emergency",
+        bloodGroup: bloodGroup || undefined,
+        allergies: Array.isArray(knownAllergies) ? knownAllergies : knownAllergies ? [knownAllergies] : [],
+        medicalHistory: Array.isArray(knownConditions) ? knownConditions : knownConditions ? [knownConditions] : [],
+        emergencyContact: emergencyContact || {},
+        patientId: token,
+      });
+      patientId = patient._id;
     } else {
-      // Create new patient if not linked
-      if (isUnknown) {
-        const token = `ER-UNK-${Date.now().toString().slice(-6)}`;
-        patient = await Patient.create({
-          name: patientName || `Unknown Patient ${token}`,
-          age: age ? Number(age) : 30,
-          gender: gender || "Other",
-          contactNumber: contactNumber || "0000000000",
-          address: address || "Unknown - Emergency",
-          bloodGroup: bloodGroup || undefined,
-          allergies: Array.isArray(knownAllergies) ? knownAllergies : knownAllergies ? [knownAllergies] : [],
-          medicalHistory: Array.isArray(knownConditions) ? knownConditions : knownConditions ? [knownConditions] : [],
-          emergencyContact: emergencyContact || {},
-          patientId: token,
-        });
-        patientId = patient._id;
-      } else {
-        if (!patientName) return res.status(400).json({ message: "Patient name is required (or link existing patient, or mark as unknown)" });
-        patient = await Patient.create({
-          name: patientName,
-          age: age ? Number(age) : 25,
-          gender: gender || "Other",
-          contactNumber: contactNumber || "0000000000",
-          email: email || undefined,
-          address: address || "",
-          dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
-          bloodGroup: bloodGroup || undefined,
-          allergies: Array.isArray(knownAllergies) ? knownAllergies : knownAllergies ? String(knownAllergies).split(",").map(s=>s.trim()).filter(Boolean) : [],
-          medicalHistory: Array.isArray(knownConditions) ? knownConditions : knownConditions ? String(knownConditions).split(",").map(s=>s.trim()).filter(Boolean) : [],
-          emergencyContact: emergencyContact || {},
-        });
-        patientId = patient._id;
-      }
+      if (!patientName) throw new AppError("Patient name is required (or link existing patient, or mark as unknown)", 400);
+      patient = await Patient.create({
+        name: patientName,
+        age: age ? Number(age) : 25,
+        gender: gender || "Other",
+        contactNumber: contactNumber || "0000000000",
+        email: email || undefined,
+        address: address || "",
+        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+        bloodGroup: bloodGroup || undefined,
+        allergies: Array.isArray(knownAllergies) ? knownAllergies : knownAllergies ? String(knownAllergies).split(",").map(s=>s.trim()).filter(Boolean) : [],
+        medicalHistory: Array.isArray(knownConditions) ? knownConditions : knownConditions ? String(knownConditions).split(",").map(s=>s.trim()).filter(Boolean) : [],
+        emergencyContact: emergencyContact || {},
+      });
+      patientId = patient._id;
     }
+  }
 
     const encounter = await EmergencyEncounter.create({
       patient: patientId,
@@ -164,11 +165,7 @@ export const createEmergencyEncounter = async (req, res) => {
     const populated = await EmergencyEncounter.findById(encounter._id).populate("patient", "name age gender contactNumber patientId abhaId bloodGroup allergies").populate("bed", "bedNumber ward status");
 
     return res.status(201).json({ success: true, message: "Emergency encounter registered", encounter: populated });
-  } catch (error) {
-    console.error("createEmergencyEncounter error:", error);
-    return res.status(500).json({ message: error.message || "Failed to register emergency patient" });
-  }
-};
+});
 
 // GET /api/emergency/dashboard
 export const getEmergencyDashboard = asyncHandler(async (req, res) => {
@@ -209,11 +206,7 @@ export const getEmergencyDashboard = asyncHandler(async (req, res) => {
       recent,
       beds: emergencyBeds.slice(0, 12),
     });
-  } catch (error) {
-    console.error("dashboard error", error);
-    return res.status(500).json({ message: "Failed to load emergency dashboard" });
-  }
-};
+});
 
 // GET /api/emergency  queue
 export const getEmergencyQueue = asyncHandler(async (req, res) => {
@@ -221,44 +214,40 @@ export const getEmergencyQueue = asyncHandler(async (req, res) => {
 
   const { priority, status, doctor, date, location, search, triageStatus, page = 1, limit = 50 } = req.query;
   const filter = {};
-    if (priority && priority !== "all") filter.priority = priority;
-    if (status && status !== "all") filter.status = status;
-    if (triageStatus && triageStatus !== "all") filter.triageStatus = triageStatus;
-    if (doctor && mongoose.isValidObjectId(doctor)) filter.assignedDoctor = doctor;
-    if (location) filter.location = { $regex: location, $options: "i" };
-    if (date) {
-      const d = new Date(date);
-      const s = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const e = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
-      filter.arrivalTime = { $gte: s, $lte: e };
-    }
-    if (search) {
-      const regex = new RegExp(search, "i");
-      // Need patient lookup; we filter after fetch or via aggregate. Simpler: search via patient population later; first get matching patient ids
-      const matchedPatients = await Patient.find({ $or: [{ name: regex }, { patientId: regex }, { contactNumber: regex }] }).select("_id").limit(20);
-      const patientIds = matchedPatients.map((p) => p._id);
-      filter.$or = [{ emergencyId: regex }, { tokenNumber: regex }, { chiefComplaint: regex }, { patient: { $in: patientIds } }];
-    }
-    const skip = (Number(page) - 1) * Number(limit);
-    const [encounters, total] = await Promise.all([
-      EmergencyEncounter.find(filter)
-        .populate("patient", "name age gender contactNumber patientId abhaId bloodGroup allergies")
-        .populate("assignedDoctor", "name specialization department")
-        .populate("bed", "bedNumber ward status")
-        .sort({ priority: 1, arrivalTime: 1 })
-        .skip(skip)
-        .limit(Number(limit)),
-      EmergencyEncounter.countDocuments(filter),
-    ]);
-    // Manual priority sort: critical first
-    const order = { critical: 0, urgent: 1, less_urgent: 2, non_urgent: 3 };
-    encounters.sort((a, b) => (order[a.priority] ?? 9) - (order[b.priority] ?? 9) || new Date(a.arrivalTime) - new Date(b.arrivalTime));
-    return res.status(200).json({ success: true, encounters, pagination: { page: Number(page), limit: Number(limit), total, pages: Math.ceil(total / Number(limit)) } });
-  } catch (error) {
-    console.error("queue error", error);
-    return res.status(500).json({ message: "Failed to fetch emergency queue" });
+  if (priority && priority !== "all") filter.priority = priority;
+  if (status && status !== "all") filter.status = status;
+  if (triageStatus && triageStatus !== "all") filter.triageStatus = triageStatus;
+  if (doctor && mongoose.isValidObjectId(doctor)) filter.assignedDoctor = doctor;
+  if (location) filter.location = { $regex: location, $options: "i" };
+  if (date) {
+    const d = new Date(date);
+    const s = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const e = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+    filter.arrivalTime = { $gte: s, $lte: e };
   }
-};
+  if (search) {
+    const regex = new RegExp(search, "i");
+    // Need patient lookup; we filter after fetch or via aggregate. Simpler: search via patient population later; first get matching patient ids
+    const matchedPatients = await Patient.find({ $or: [{ name: regex }, { patientId: regex }, { contactNumber: regex }] }).select("_id").limit(20);
+    const patientIds = matchedPatients.map((p) => p._id);
+    filter.$or = [{ emergencyId: regex }, { tokenNumber: regex }, { chiefComplaint: regex }, { patient: { $in: patientIds } }];
+  }
+  const skip = (Number(page) - 1) * Number(limit);
+  const [encounters, total] = await Promise.all([
+    EmergencyEncounter.find(filter)
+      .populate("patient", "name age gender contactNumber patientId abhaId bloodGroup allergies")
+      .populate("assignedDoctor", "name specialization department")
+      .populate("bed", "bedNumber ward status")
+      .sort({ priority: 1, arrivalTime: 1 })
+      .skip(skip)
+      .limit(Number(limit)),
+    EmergencyEncounter.countDocuments(filter),
+  ]);
+  // Manual priority sort: critical first
+  const order = { critical: 0, urgent: 1, less_urgent: 2, non_urgent: 3 };
+  encounters.sort((a, b) => (order[a.priority] ?? 9) - (order[b.priority] ?? 9) || new Date(a.arrivalTime) - new Date(b.arrivalTime));
+  return res.status(200).json({ success: true, encounters, pagination: { page: Number(page), limit: Number(limit), total, pages: Math.ceil(total / Number(limit)) } });
+});
 
 // GET /api/emergency/:id
 export const getEmergencyById = async (req, res) => {

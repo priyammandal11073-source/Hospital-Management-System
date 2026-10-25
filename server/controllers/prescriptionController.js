@@ -18,6 +18,8 @@ const generateRxNumber = () => {
 
 // POST /api/prescriptions
 export const createPrescription = asyncHandler(async (req, res) => {
+  await requireDb();
+
   const {
     patient,
     doctor,
@@ -47,8 +49,6 @@ export const createPrescription = asyncHandler(async (req, res) => {
   if (!mongoose.isValidObjectId(patient) || !mongoose.isValidObjectId(targetDoctorId)) {
     throw new AppError("Invalid patient or doctor ID", 400);
   }
-
-  await requireDb();
 
   const [patientRecord, doctorRecord] = await Promise.all([
     Patient.findById(patient),

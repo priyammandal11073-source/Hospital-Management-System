@@ -11,3 +11,13 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Required environment variables (set in Render dashboard):
+      # - MONGO_URI: MongoDB Atlas connection string
+      # - JWT_SECRET: Secret for JWT signing (32+ chars)
+      # - CLIENT_URL: Frontend URL (e.g., https://hospital-management-system-nine-gilt.vercel.app)
+      # Optional (set as needed):
+      # - OPD_FEE: Default OPD consultation fee
+      # - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, SMTP_SECURE: Email configuration
+      # - RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, RAZORPAY_WEBHOOK_SECRET: Razorpay payment integration
+      # - SMS_GATEWAY_DOMAIN: SMS gateway for OTP delivery
+      # - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM, SMTP_SECURE: Email configuration

@@ -18,21 +18,34 @@ import { resolveDoctorForUser, formatDoctorName } from "../utils/doctorHelper.js
 import env from "../config/env.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import { requireDb } from "../utils/requireDb.js";
-
-// Helper: send error
-const sendError = (res, statusCode, message, err = null) => {
-  if (err) console.error(`[DoctorClinicalController Error]: ${message}`, err);
-  return res.status(statusCode).json({ success: false, message });
-};
+import AppError from "../utils/AppError.js";
 
 /**
  * 1. GET /api/doctor-workspace/dashboard
  * Aggregates 8-10 KPI metrics, urgent clinical alerts, roster breakdown, and consultation queue
  */
-export const getDoctorDashboard = asyncHandler(async (req, res) => {
-  await requireDb();
+export const getDoctorDashboard = async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        doctor: { name: "Dr. Rajesh Sharma", specialization: "Cardiology", department: "Cardiology" },
+        metrics: {
+          todayConsultations: 8,
+          waitingInQueue: 3,
+          admittedPatients: 6,
+          criticalAlerts: 1,
+          pendingOrders: 2,
+          teleconsultations: 1,
+        },
+        queue: [],
+        criticalLabs: [],
+        roster: [],
+        isOfflineDemo: true,
+      });
+    }
 
-  const doctor = await resolveDoctorForUser(req.user);
+    const doctor = await resolveDoctorForUser(req.user);
     if (!doctor && req.user.role === "doctor") {
       return sendError(res, 404, "Doctor profile not found for this account");
     }
@@ -254,16 +267,23 @@ export const getDoctorDashboard = asyncHandler(async (req, res) => {
           : null,
         urgentAlerts,
         consultationQueue: enrichedQueue,
+      },
+    });
+  } catch (error) {
+    return sendError(res, 500, "Error loading doctor dashboard", error);
+  }
+};
+
 /**
  * 2. GET /api/doctor-workspace/consultation-bundle/:appointmentId
  * Full clinical bundle for Consultation Workspace (Patient chart, allergies, vitals, meds, notes, labs)
-export const getConsultationBundle = asyncHandler(async (req, res) => {
-  await requireDb();
-
-  const { appointmentId } = req.params;
-  if (!mongoose.isValidObjectId(appointmentId)) {
-    throw new AppError("Invalid appointment ID", 400);
-  }
+ */
+export const getConsultationBundle = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+    if (!mongoose.isValidObjectId(appointmentId)) {
+      return sendError(res, 400, "Invalid appointment ID");
+    }
 
     const appointment = await Appointment.findById(appointmentId)
       .populate("patient")
@@ -774,25 +794,32 @@ export const getDoctorPatientProfile = async (req, res) => {
  * 5. GET /api/doctor-workspace/orders
  * Clinical orders managed by the doctor
  */
-export const getDoctorOrders = asyncHandler(async (req, res) => {
-  await requireDb();
+export const getDoctorOrders = async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      const demoOrders = [
+        { _id: "ord_101", doctorName: "Dr. Sarah Jenkins", orderType: "Medication", description: "Administer IV Ceftriaxone 1g stat", priority: "Stat", status: "Active", patient: { name: "Anjali Sharma", age: 48, gender: "Female" }, createdAt: new Date() },
+        { _id: "ord_102", doctorName: "Dr. Sarah Jenkins", orderType: "Nursing Care", description: "Strict I/O fluid monitoring every 2 hours", priority: "Urgent", status: "In Progress", patient: { name: "Rajesh Gupta", age: 62, gender: "Male" }, createdAt: new Date() },
+      ];
+      return res.status(200).json({ success: true, data: demoOrders, isOfflineDemo: true });
+    }
 
-  const doctor = await resolveDoctorForUser(req.user);
-  const filter = {};
-  if (doctor) {
-    filter.doctor = doctor._id;
-  }
-  if (req.query.status) {
-    filter.status = req.query.status;
-  }
-  if (req.query.priority) {
-    filter.priority = req.query.priority;
-  }
+    const doctor = await resolveDoctorForUser(req.user);
+    const filter = {};
+    if (doctor) {
+      filter.doctor = doctor._id;
+    }
+    if (req.query.status) {
+      filter.status = req.query.status;
+    }
+    if (req.query.priority) {
+      filter.priority = req.query.priority;
+    }
 
-  const orders = await DoctorOrder.find(filter)
-    .populate("patient", "name patientId age gender phone")
-    .populate("doctor", "name specialization")
-    .sort({ createdAt: -1 })
+    const orders = await DoctorOrder.find(filter)
+      .populate("patient", "name patientId age gender phone")
+      .populate("doctor", "name specialization")
+      .sort({ createdAt: -1 })
       .lean();
 
     return res.status(200).json({ success: true, data: orders });
@@ -962,27 +989,34 @@ export const updateReferralStatus = async (req, res) => {
  * 10. GET /api/doctor-workspace/critical-labs
  * Critical investigations requiring doctor review
  */
-export const getCriticalLabResults = asyncHandler(async (req, res) => {
-  await requireDb();
+export const getCriticalLabResults = async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        isOfflineDemo: true,
+      });
+    }
 
-  const doctor = await resolveDoctorForUser(req.user);
-  const filter = {
-    $or: [
-      { isCritical: true },
-      { "testResults.status": "critical" },
-    ],
-  };
+    const doctor = await resolveDoctorForUser(req.user);
+    const filter = {
+      $or: [
+        { isCritical: true },
+        { "testResults.status": "critical" },
+      ],
+    };
 
-  if (doctor) {
-    filter.doctor = doctor._id;
-  }
+    if (doctor) {
+      filter.doctor = doctor._id;
+    }
 
-  if (req.query.status) {
-    filter.doctorReviewStatus = req.query.status;
-  }
+    if (req.query.status) {
+      filter.doctorReviewStatus = req.query.status;
+    }
 
-  // Parallel fetch from legacy LabReport and centralized DiagnosticOrder
-  const [labReports, diagOrders] = await Promise.all([
+    // Parallel fetch from legacy LabReport and centralized DiagnosticOrder
+    const [labReports, diagOrders] = await Promise.all([
       LabReport.find(filter)
         .populate("patient", "name patientId age gender phone")
         .populate("doctor", "name specialization")

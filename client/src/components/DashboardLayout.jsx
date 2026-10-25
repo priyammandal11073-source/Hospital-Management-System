@@ -203,6 +203,15 @@ function DashboardLayout() {
 
   // Real-time observer to detect any open modal across any portal page
   useEffect(() => {
+    const isElementVisible = (el) => {
+      if (!el) return false;
+      const style = window.getComputedStyle(el);
+      if (style.display === "none" || style.visibility === "hidden" || style.opacity === "0") return false;
+      const rect = el.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) return false;
+      return true;
+    };
+
     const checkModal = () => {
       const overlays = document.querySelectorAll(".fixed.inset-0, [role='dialog']");
       let found = false;
@@ -214,6 +223,10 @@ function DashboardLayout() {
         if (el.classList.contains("pointer-events-none")) continue;
         if (el.classList.contains("-z-10")) continue;
         if (el.classList.contains("animate-backdrop-fade") && !el.classList.contains("z-50")) continue;
+        if (!isElementVisible(el)) continue;
+        
+        // Debug: Log what element is being detected
+        console.log("[ModalDetection] Found modal element:", el, el.className, el.tagName);
         found = true;
         break;
       }

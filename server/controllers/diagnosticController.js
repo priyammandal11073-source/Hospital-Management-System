@@ -28,6 +28,7 @@ import {
 import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
 import { requireDb } from "../utils/requireDb.js";
 import asyncHandler from "../middleware/asyncHandler.js";
+import AppError from "../utils/AppError.js";
 
 const recordAudit = async (req, action, recordId, details) => {
   try {
@@ -125,10 +126,14 @@ return res.status(200).json({
  * 2. GET /api/diagnostics/tests
  * Central Diagnostic Test Catalog
  */
+export const getDiagnosticTests = asyncHandler(async (req, res) => {
+  await requireDb();
+
+  const { department, category, modality, search, active, page = 1, limit = 50 } = req.query;
+  const filter = {};
 
   if (department && department !== "all") filter.department = department;
   if (category && category !== "all") filter.category = category;
-export const getDiagnosticTests = asyncHandler(async (req, res) => {
   if (modality && modality !== "all") filter.modality = modality;
   if (active !== undefined) filter.active = active === "true";
 
@@ -195,74 +200,72 @@ export const getDiagnosticRequests = asyncHandler(async (req, res) => {
   const { status, priority, department, patientId, doctorId, search, page = 1, limit = 50 } = req.query;
   const filter = {};
 
-    if (status && status !== "all") filter.status = status;
-    if (priority && priority !== "all") filter.priority = priority;
-    if (department && department !== "all") filter.diagnosticDepartment = department;
-    if (patientId) filter.patient = patientId;
-    if (doctorId) filter.doctor = doctorId;
+  if (status && status !== "all") filter.status = status;
+  if (priority && priority !== "all") filter.priority = priority;
+  if (department && department !== "all") filter.diagnosticDepartment = department;
+  if (patientId) filter.patient = patientId;
+  if (doctorId) filter.doctor = doctorId;
 
-    if (search && search.trim()) {
-      filter.$or = [
-        { orderNumber: { $regex: search.trim(), $options: "i" } },
-        { testName: { $regex: search.trim(), $options: "i" } },
-        { patientName: { $regex: search.trim(), $options: "i" } },
-      ];
-    }
-
-    const skip = (parseInt(page) - 1) * parseInt(limit);
-    const [requests, total] = await Promise.all([
-      DiagnosticOrder.find(filter)
-        .sort({ priority: 1, requestedDate: -1 })
-        .skip(skip)
-        .limit(parseInt(limit))
-        .populate("patient", "name abhaId age gender contactNumber bloodGroup")
-        .populate("doctor", "name specialization department")
-        .populate("test", "testCode testName price turnaroundTime sampleType containerType")
-        .populate("sample")
-        .populate("report"),
-      DiagnosticOrder.countDocuments(filter),
-    ]);
-
-    return res.status(200).json({
-      success: true,
-      data: requests,
-      pagination: {
-        total,
-        page: parseInt(page),
-        limit: parseInt(limit),
-        pages: Math.ceil(total / parseInt(limit)),
-      },
-    });
-  } catch (err) {
-    return res.status(500).json({ success: false, message: "Failed to fetch diagnostic requests", error: err.message });
+  if (search && search.trim()) {
+    filter.$or = [
+      { orderNumber: { $regex: search.trim(), $options: "i" } },
+      { testName: { $regex: search.trim(), $options: "i" } },
+      { patientName: { $regex: search.trim(), $options: "i" } },
+    ];
   }
-};
+
+  const skip = (parseInt(page) - 1) * parseInt(limit);
+  const [requests, total] = await Promise.all([
+    DiagnosticOrder.find(filter)
+      .sort({ priority: 1, requestedDate: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .populate("patient", "name abhaId age gender contactNumber bloodGroup")
+      .populate("doctor", "name specialization department")
+      .populate("test", "testCode testName price turnaroundTime sampleType containerType")
+      .populate("sample")
+      .populate("report"),
+    DiagnosticOrder.countDocuments(filter),
+  ]);
+
+  return res.status(200).json({
+    success: true,
+    data: requests,
+    pagination: {
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      pages: Math.ceil(total / parseInt(limit)),
+    },
+  });
+});
 
 /**
  * 6. POST /api/diagnostics/requests
  * Order diagnostic investigation (Doctor / Front Desk / Staff)
  */
-export const createDiagnosticRequest = async (req, res) => {
-  try {
-    const {
-      patient,
-      doctor,
-      testId,
-      clinicalIndication,
-      priority = "Routine",
-      appointment,
-      assignedRoom,
-      notes,
-    } = req.body;
+export const createDiagnosticRequest = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    if (!patient || !testId) {
-      return res.status(400).json({ success: false, message: "Patient and testId are required" });
-    }
+  const {
+    patient,
+    doctor,
+    testId,
+    clinicalIndication,
+    priority = "Routine",
+    appointment,
+    assignedRoom,
+    notes,
+  } = req.body;
 
-    const [patientDoc, testDoc] = await Promise.all([
-      Patient.findById(patient),
-      DiagnosticTest.findById(testId),
-    ]);
+  if (!patient || !testId) {
+    throw new AppError("Patient and testId are required", 400);
+  }
+
+  const [patientDoc, testDoc] = await Promise.all([
+    Patient.findById(patient),
+    DiagnosticTest.findById(testId),
+  ]);
 
     if (!patientDoc) return res.status(404).json({ success: false, message: "Patient not found" });
     if (!testDoc) return res.status(404).json({ success: false, message: "Diagnostic test not found" });
@@ -328,11 +331,7 @@ export const createDiagnosticRequest = async (req, res) => {
 
     const refreshedOrder = await DiagnosticOrder.findById(order._id);
     return res.status(201).json({ success: true, data: refreshedOrder || order });
-  } catch (err) {
-    console.error("Create request error:", err);
-    return res.status(500).json({ success: false, message: "Failed to create diagnostic request", error: err.message });
-  }
-};
+});
 
 /**
  * 7. PATCH /api/diagnostics/requests/:id/status

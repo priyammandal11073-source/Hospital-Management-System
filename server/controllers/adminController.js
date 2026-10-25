@@ -206,11 +206,7 @@ export const getAdminTelemetry = asyncHandler(async (req, res) => {
         recentActivity: recentAuditLogs,
       },
     });
-  } catch (error) {
-    console.error("Telemetry error:", error);
-    return res.status(500).json({ message: "Unable to compile executive telemetry" });
-  }
-};
+});
 
 // ── 2. GLOBAL SEARCH ────────────────────────────────────────────────────────
 // GET /api/admin/search
