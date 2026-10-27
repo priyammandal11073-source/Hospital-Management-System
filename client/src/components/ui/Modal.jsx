@@ -1,4 +1,4 @@
-import React, { useEffect, useId } from "react";
+import React, { useEffect, useId, useRef } from "react";
 
 const Modal = ({
   isOpen = false,
@@ -10,6 +10,8 @@ const Modal = ({
   cancelText = "Cancel",
 }) => {
   const titleId = useId();
+  const modalRef = useRef(null);
+  const triggerRef = useRef(null);
 
   useEffect(() => {
     const handleEsc = (e) => {
@@ -40,13 +42,14 @@ const Modal = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? titleId : undefined}
+      ref={modalRef}
       onClick={(e) => {
         if (e.target === e.currentTarget && onClose) {
           onClose();
         }
       }}
       style={{ touchAction: "none" }}
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 bg-slate-900/40 backdrop-blur-md animate-backdrop-fade"
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 animate-backdrop-fade"
     >
       <div
         style={{ touchAction: "auto" }}
@@ -54,7 +57,8 @@ const Modal = ({
           liquid-glass-elevated bg-white w-full mx-auto
           rounded-t-[28px] md:rounded-3xl
           max-h-[90dvh] md:max-h-[calc(100dvh-2.5rem)] flex flex-col
-          overflow-hidden shadow-2xl transition-all duration-300
+          overflow-hidden shadow-2xl
+          animate-pop-in
           ${className}
         `}
       >

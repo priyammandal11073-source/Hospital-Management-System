@@ -32,7 +32,6 @@ export default function NotificationBell({ isPatient = false }) {
     try {
       const data = await getNotifications();
       if (data) {
-        // If there are new unread notifications and permission is granted, show browser notification
         if (
           typeof Notification !== "undefined" &&
           Notification.permission === "granted" &&
@@ -58,7 +57,7 @@ export default function NotificationBell({ isPatient = false }) {
 
   useEffect(() => {
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 15000); // 15s poll
+    const interval = setInterval(fetchNotifs, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -113,8 +112,10 @@ export default function NotificationBell({ isPatient = false }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/70 bg-white/70 backdrop-blur-md text-slate-700 hover:bg-white hover:text-teal-700 shadow-sm transition"
+        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/70 bg-white/70 backdrop-blur-md text-slate-700 hover:bg-white hover:text-sky-700 shadow-sm transition active:scale-[0.97] liquid-glass-button"
         title="Notifications"
+        aria-expanded={isOpen}
+        aria-haspopup="true"
       >
         <span className="text-lg">🔔</span>
         {unreadCount > 0 && (
@@ -126,7 +127,7 @@ export default function NotificationBell({ isPatient = false }) {
 
       {/* Dropdown Drawer */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/90 backdrop-blur-2xl shadow-2xl border border-white/60 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/95 backdrop-blur-2xl shadow-2xl border border-white/60 z-50 overflow-hidden animate-dropdown-in animate-action-menu">
           {/* Header */}
           <div className="p-4 bg-white/50 border-b border-white/60 flex items-center justify-between">
             <div>
@@ -140,7 +141,7 @@ export default function NotificationBell({ isPatient = false }) {
                 <button
                   type="button"
                   onClick={handleMarkAllRead}
-                  className="text-xs font-bold text-teal-700 hover:underline"
+                  className="text-xs font-bold text-sky-700 hover:underline"
                 >
                   Mark all read
                 </button>
@@ -150,12 +151,12 @@ export default function NotificationBell({ isPatient = false }) {
 
           {/* Browser Push Permission Prompt */}
           {permission !== "granted" && (
-            <div className="p-3 bg-teal-50 border-b border-teal-100 flex items-center justify-between text-xs">
-              <span className="text-teal-900 font-medium">Get instant desktop alerts</span>
+            <div className="p-3 bg-sky-50 border-b border-sky-100 flex items-center justify-between text-xs">
+              <span className="text-sky-900 font-medium">Get instant desktop alerts</span>
               <button
                 type="button"
                 onClick={requestBrowserPermission}
-                className="bg-teal-700 hover:bg-teal-800 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] shadow-sm transition"
+                className="bg-sky-700 hover:bg-sky-800 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] shadow-sm transition active:scale-[0.97]"
               >
                 Enable Push
               </button>
@@ -176,8 +177,8 @@ export default function NotificationBell({ isPatient = false }) {
                   <div
                     key={notif._id}
                     onClick={() => handleMarkRead(notif._id, notif.link)}
-                    className={`p-3.5 flex items-start gap-3 hover:bg-slate-50 cursor-pointer transition ${
-                      !notif.isRead ? "bg-teal-50/40 font-semibold" : ""
+                    className={`p-3.5 flex items-start gap-3 hover:bg-slate-50 cursor-pointer transition duration-150 ${
+                      !notif.isRead ? "bg-sky-50/40 font-semibold" : ""
                     }`}
                   >
                     <span className="text-xl shrink-0 mt-0.5">{icon}</span>
@@ -187,7 +188,7 @@ export default function NotificationBell({ isPatient = false }) {
                           {notif.title}
                         </p>
                         {!notif.isRead && (
-                          <span className="h-2 w-2 rounded-full bg-teal-600 shrink-0" />
+                          <span className="h-2 w-2 rounded-full bg-sky-600 shrink-0" />
                         )}
                       </div>
                       <p className="text-xs text-slate-600 line-clamp-2 mt-0.5">

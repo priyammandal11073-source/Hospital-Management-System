@@ -12,7 +12,7 @@ export default function EmptyStateCard({
 }) {
   return (
     <div
-      className={`flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300/70 bg-white/40 backdrop-blur-md px-6 py-14 text-center ${className}`}
+      className={`flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300/70 bg-white/40 backdrop-blur-md px-6 py-14 text-center animate-pop-in ${className}`}
       role="status"
     >
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/80 shadow-xs ring-1 ring-slate-200/80 text-2xl mb-4">
@@ -26,7 +26,7 @@ export default function EmptyStateCard({
           {actionTo ? (
             <Link
               to={actionTo}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs font-bold text-white shadow-sm transition"
+              className="inline-flex items-center gap-2 rounded-xl bg-sky-600 hover:bg-sky-700 px-4 py-2 text-xs font-bold text-white shadow-sm transition duration-150 active:scale-[0.97]"
             >
               <span>+</span>
               <span>{actionText}</span>
@@ -35,7 +35,7 @@ export default function EmptyStateCard({
             <button
               type="button"
               onClick={onActionClick}
-              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs font-bold text-white shadow-sm transition cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl bg-sky-600 hover:bg-sky-700 px-4 py-2 text-xs font-bold text-white shadow-sm transition duration-150 cursor-pointer active:scale-[0.97]"
             >
               <span>+</span>
               <span>{actionText}</span>

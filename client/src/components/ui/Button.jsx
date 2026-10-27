@@ -13,14 +13,14 @@ const Button = ({
   ...props
 }) => {
   const variants = {
-    default: "bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-950 focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-1 disabled:opacity-50 shadow-xs font-medium",
-    primary: "bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-950 focus-visible:ring-2 focus-visible:ring-slate-900/20 focus-visible:ring-offset-1 disabled:opacity-50 shadow-xs font-medium",
-    blue: "bg-sky-600 text-white hover:bg-sky-700 active:bg-sky-800 focus-visible:ring-2 focus-visible:ring-sky-500/20 focus-visible:ring-offset-1 disabled:opacity-50 shadow-xs font-medium",
-    secondary: "liquid-glass text-slate-800 hover:bg-white/95 active:bg-white/70 focus-visible:ring-2 focus-visible:ring-slate-200 focus-visible:ring-offset-1 disabled:opacity-50 shadow-xs font-medium",
-    danger: "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 focus-visible:ring-2 focus-visible:ring-rose-500/20 focus-visible:ring-offset-1 disabled:opacity-50 shadow-xs font-medium",
-    success: "bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:ring-offset-1 disabled:opacity-50 shadow-xs font-medium",
-    outline: "border border-slate-200/90 text-slate-700 bg-white/80 hover:bg-white active:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-200 font-medium",
-    ghost: "text-slate-700 hover:bg-slate-100/70 active:bg-slate-200/80 focus-visible:ring-2 focus-visible:ring-slate-300 shadow-none font-medium",
+    default: "bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-950 focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-2 disabled:opacity-50 shadow-xs font-medium",
+    primary: "bg-slate-900 text-white hover:bg-slate-800 active:bg-slate-950 focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-2 disabled:opacity-50 shadow-xs font-medium",
+    blue: "bg-sky-600 text-white hover:bg-sky-700 active:bg-sky-800 focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-2 disabled:opacity-50 shadow-xs font-medium",
+    secondary: "liquid-glass-button text-slate-800 hover:bg-white/95 active:bg-white/70 focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-2 disabled:opacity-50 shadow-xs font-medium",
+    danger: "bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:ring-offset-2 disabled:opacity-50 shadow-xs font-medium",
+    success: "bg-emerald-600 text-white hover:bg-emerald-700 active:bg-emerald-800 focus-visible:ring-2 focus-visible:ring-emerald-500/40 focus-visible:ring-offset-2 disabled:opacity-50 shadow-xs font-medium",
+    outline: "border border-slate-200/90 text-slate-700 bg-white/80 hover:bg-white active:bg-slate-50 focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-2 font-medium",
+    ghost: "text-slate-700 hover:bg-slate-100/70 active:bg-slate-200/80 focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-2 shadow-none font-medium",
     link: "underline text-slate-900 hover:text-slate-700 p-0 h-auto shadow-none font-medium",
   };
 

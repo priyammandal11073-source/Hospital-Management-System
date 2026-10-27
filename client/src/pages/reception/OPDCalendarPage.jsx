@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { getAppointments, getDoctors, getDoctorAvailability } from "../../services/api.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
@@ -10,11 +10,20 @@ const STANDARD_SLOTS = [
   "04:00 PM", "04:30 PM", "05:00 PM"
 ];
 
+const STATUS_COLORS = {
+  confirmed: { bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-200" },
+  completed: { bg: "bg-emerald-100", text: "text-emerald-800", border: "border-emerald-200" },
+  pending: { bg: "bg-amber-100", text: "text-amber-800", border: "border-amber-200" },
+  in_progress: { bg: "bg-purple-100", text: "text-purple-800", border: "border-purple-200" },
+  cancelled: { bg: "bg-rose-100", text: "text-rose-800", border: "border-rose-200" },
+  waiting: { bg: "bg-sky-100", text: "text-sky-800", border: "border-sky-200" },
+};
+
 export default function OPDCalendarPage() {
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctorId, setSelectedDoctorId] = useState("");
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split("T")[0]);
-  const [viewMode, setViewMode] = useState("daily"); // 'daily' | 'weekly'
+  const [viewMode, setViewMode] = useState("daily");
   const [doctorAvailability, setDoctorAvailability] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -56,14 +65,28 @@ export default function OPDCalendarPage() {
   const selectedDoctor = doctors.find((d) => d._id === selectedDoctorId);
 
   // Appointments for this doctor on selected date
-  const filteredAppointments = appointments.filter((a) => {
-    const aDocId = a.doctor?._id || a.doctor;
-    const aDate = new Date(a.appointmentDate).toISOString().split("T")[0];
-    return aDocId === selectedDoctorId && aDate === selectedDate && a.status !== "cancelled";
-  });
+  const filteredAppointments = useMemo(() => {
+    return appointments.filter((a) => {
+      const aDocId = a.doctor?._id || a.doctor;
+      const aDate = new Date(a.appointmentDate).toISOString().split("T")[0];
+      return aDocId === selectedDoctorId && aDate === selectedDate && a.status !== "cancelled";
+    });
+  }, [appointments, selectedDoctorId, selectedDate]);
+
+  const availableSlots = useMemo(() => {
+    if (!doctorAvailability?.slots) return [];
+    return STANDARD_SLOTS.map((slot) => {
+      const bookedApp = filteredAppointments.find((a) => a.timeSlot === slot);
+      return {
+        time: slot,
+        isOccupied: Boolean(bookedApp),
+        appointment: bookedApp,
+      };
+    });
+  }, [doctorAvailability, filteredAppointments]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-pop-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -81,7 +104,7 @@ export default function OPDCalendarPage() {
 
         <Link
           to="/appointments"
-          className="flex items-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700 shadow-sm transition self-start sm:self-auto"
+          className="flex items-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700 shadow-sm transition self-start sm:self-auto active:scale-97"
         >
           <span>➕</span>
           <span>Book Specialist Visit</span>
@@ -89,13 +112,13 @@ export default function OPDCalendarPage() {
       </div>
 
       {/* Control Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200/80">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         <div>
           <label className="text-xs font-bold text-slate-700 block mb-1">Select Doctor / Specialist:</label>
           <select
             value={selectedDoctorId}
             onChange={(e) => setSelectedDoctorId(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-amber-500 focus:outline-none"
+            className="w-full rounded-xl liquid-glass-subtle border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition duration-150"
           >
             {doctors.map((doc) => (
               <option key={doc._id} value={doc._id}>
@@ -111,7 +134,7 @@ export default function OPDCalendarPage() {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-amber-500 focus:outline-none"
+            className="w-full rounded-xl liquid-glass-subtle border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition duration-150"
           />
         </div>
 
@@ -132,7 +155,7 @@ export default function OPDCalendarPage() {
                 viewMode === "weekly" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
               }`}
             >
-              Overview
+              Week View
             </button>
           </div>
         </div>
@@ -140,7 +163,7 @@ export default function OPDCalendarPage() {
 
       {/* Doctor Summary Banner */}
       {selectedDoctor && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4 liquid-glass-card">
           <div className="flex items-center gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-800 text-xl font-black">
               Dr
@@ -157,24 +180,30 @@ export default function OPDCalendarPage() {
           </div>
 
           <div className="flex items-center gap-4 text-center">
-            <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2">
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2 flex-1">
               <span className="text-lg font-black text-emerald-800">
                 {doctorAvailability?.availableSlots ?? 0}
               </span>
               <p className="text-[10px] uppercase font-bold text-emerald-700">Open Slots</p>
             </div>
-            <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-2">
+            <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-2 flex-1">
               <span className="text-lg font-black text-blue-800">
                 {filteredAppointments.length}
               </span>
               <p className="text-[10px] uppercase font-bold text-blue-700">Booked</p>
+            </div>
+            <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-2 flex-1">
+              <span className="text-lg font-black text-amber-800">
+                {availableSlots.filter(s => !s.isOccupied).length}
+              </span>
+              <p className="text-[10px] uppercase font-bold text-amber-700">Available</p>
             </div>
           </div>
         </div>
       )}
 
       {/* Slot Grid */}
-      <div className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
+      <div className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
           <span>OPD Slot Availability — {new Date(selectedDate).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
           <div className="flex items-center gap-3 text-xs font-normal text-slate-500">
@@ -189,13 +218,13 @@ export default function OPDCalendarPage() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {STANDARD_SLOTS.map((slot) => {
-              const bookedApp = filteredAppointments.find((a) => a.timeSlot === slot);
-              const isOccupied = Boolean(bookedApp);
+            {availableSlots.map((slot) => {
+              const isOccupied = slot.isOccupied;
+              const statusColor = isOccupied ? STATUS_COLORS[slot.appointment?.status] || { bg: "bg-rose-100", text: "text-rose-800", border: "border-rose-200" } : null;
 
               return (
                 <div
-                  key={slot}
+                  key={slot.time}
                   className={`rounded-xl border p-3.5 transition ${
                     isOccupied
                       ? "border-rose-200 bg-rose-50/60 shadow-xs"
@@ -203,7 +232,7 @@ export default function OPDCalendarPage() {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black font-mono text-slate-800">{slot}</span>
+                    <span className="text-xs font-black font-mono text-slate-800">{slot.time}</span>
                     <span
                       className={`h-2 w-2 rounded-full ${
                         isOccupied ? "bg-rose-500" : "bg-emerald-500"
@@ -214,18 +243,28 @@ export default function OPDCalendarPage() {
                   {isOccupied ? (
                     <div className="mt-2 text-left">
                       <p className="text-[11px] font-bold text-rose-900 truncate">
-                        {bookedApp.patient?.name || "Patient"}
+                        {slot.appointment.patient?.name || "Patient"}
                       </p>
-                      <p className="text-[10px] text-rose-700 capitalize">
-                        {bookedApp.status.replace("_", " ")}
-                      </p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span
+                          className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${statusColor.bg} ${statusColor.text} ${statusColor.border}`}
+                        >
+                          {slot.appointment.status.replace("_", " ")}
+                        </span>
+                        <Link
+                          to={`/appointments?doctor=${selectedDoctorId}&slot=${encodeURIComponent(slot.time)}&date=${selectedDate}`}
+                          className="ml-auto inline-block rounded-md bg-sky-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-sky-700 transition active:scale-97"
+                        >
+                          View
+                        </Link>
+                      </div>
                     </div>
                   ) : (
                     <div className="mt-2 text-left">
                       <p className="text-[10px] font-semibold text-emerald-700">Open Slot</p>
                       <Link
-                        to={`/appointments?doctor=${selectedDoctorId}&slot=${encodeURIComponent(slot)}&date=${selectedDate}`}
-                        className="mt-1.5 inline-block rounded-md bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-700 transition"
+                        to={`/appointments?doctor=${selectedDoctorId}&slot=${encodeURIComponent(slot.time)}&date=${selectedDate}`}
+                        className="mt-1.5 inline-block rounded-md bg-emerald-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-emerald-700 transition active:scale-97"
                       >
                         Book Now
                       </Link>

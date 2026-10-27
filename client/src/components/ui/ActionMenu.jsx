@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 
 function ActionMenu({
   triggerLabel = "Actions",
@@ -14,20 +14,26 @@ function ActionMenu({
   const triggerRef = useRef(null);
   const itemRefs = useRef([]);
 
+  const closeMenu = useCallback(() => {
+    setOpen(false);
+    triggerRef.current?.focus();
+  }, []);
+
+  const handleClickOutside = useCallback((event) => {
+    if (
+      menuRef.current &&
+      !menuRef.current.contains(event.target) &&
+      triggerRef.current &&
+      !triggerRef.current.contains(event.target)
+    ) {
+      closeMenu();
+    }
+  }, [closeMenu]);
+
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        menuRef.current &&
-        !menuRef.current.contains(event.target) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(event.target)
-      ) {
-        setOpen(false);
-      }
-    };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [handleClickOutside]);
 
   useEffect(() => {
     if (open) {
@@ -50,8 +56,7 @@ function ActionMenu({
   const handleKeyDown = (event) => {
     if (event.key === "Escape") {
       event.preventDefault();
-      setOpen(false);
-      triggerRef.current?.focus();
+      closeMenu();
     } else if (event.key === "ArrowDown") {
       event.preventDefault();
       if (!open) {
@@ -76,7 +81,7 @@ function ActionMenu({
     if (!item.disabled && item.onClick) {
       item.onClick(event);
     }
-    setOpen(false);
+    closeMenu();
   };
 
   const dropdownOrigin = align === "left" ? "top left" : "top right";
@@ -91,7 +96,7 @@ function ActionMenu({
         ref={triggerRef}
         type="button"
         onClick={() => setOpen(!open)}
-        className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-[background-color,color,transform] duration-150 active:scale-95 shadow-2xs ${
+        className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.97] shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-2 ${
           open
             ? "bg-slate-100 text-slate-700"
             : "bg-white text-slate-600 ring-1 ring-slate-200/80 hover:bg-slate-50"
@@ -140,13 +145,13 @@ function ActionMenu({
                 type="button"
                 disabled={item.disabled}
                 onClick={(e) => handleItemClick(item, e)}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-left transition-colors duration-150 ${
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-left transition-colors duration-150 ease-out ${
                   item.danger
                     ? "text-rose-700 hover:bg-rose-50 active:bg-rose-100 focus:bg-rose-50"
                     : item.primary
                     ? "text-blue-700 hover:bg-blue-50 active:bg-blue-100 focus:bg-blue-50"
                     : "text-slate-700 hover:bg-slate-50 active:bg-slate-100 focus:bg-slate-50"
-                } ${item.disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"} focus:outline-none`}
+                } ${item.disabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"} focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40 focus-visible:ring-offset-2 focus-visible:ring-inset`}
                 role="menuitem"
               >
                 {item.icon && <span className="shrink-0">{item.icon}</span>}

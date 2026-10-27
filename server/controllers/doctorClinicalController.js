@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import Doctor from "../models/Doctor.js";
 import Patient from "../models/Patient.js";
 import Appointment from "../models/Appointment.js";
-import Prescription from "../models/Prescription.js";
+import Prescription from "../models/Prescription.js";;
 import LabReport from "../models/LabReport.js";
 import Vitals from "../models/Vitals.js";
 import DoctorOrder from "../models/DoctorOrder.js";
@@ -24,31 +24,13 @@ import AppError from "../utils/AppError.js";
  * 1. GET /api/doctor-workspace/dashboard
  * Aggregates 8-10 KPI metrics, urgent clinical alerts, roster breakdown, and consultation queue
  */
-export const getDoctorDashboard = async (req, res) => {
-  try {
-    if (mongoose.connection.readyState !== 1) {
-      return res.status(200).json({
-        success: true,
-        doctor: { name: "Dr. Rajesh Sharma", specialization: "Cardiology", department: "Cardiology" },
-        metrics: {
-          todayConsultations: 8,
-          waitingInQueue: 3,
-          admittedPatients: 6,
-          criticalAlerts: 1,
-          pendingOrders: 2,
-          teleconsultations: 1,
-        },
-        queue: [],
-        criticalLabs: [],
-        roster: [],
-        isOfflineDemo: true,
-      });
-    }
+export const getDoctorDashboard = asyncHandler(async (req, res) => {
+  await requireDb();
 
-    const doctor = await resolveDoctorForUser(req.user);
-    if (!doctor && req.user.role === "doctor") {
-      return sendError(res, 404, "Doctor profile not found for this account");
-    }
+  const doctor = await resolveDoctorForUser(req.user);
+  if (!doctor && req.user.role === "doctor") {
+    throw new AppError("Doctor profile not found for this account", 404);
+  }
 
     const doctorFilter = doctor ? { doctor: doctor._id } : {};
 
@@ -269,34 +251,24 @@ export const getDoctorDashboard = async (req, res) => {
         consultationQueue: enrichedQueue,
       },
     });
-  } catch (error) {
-    return sendError(res, 500, "Error loading doctor dashboard", error);
-  }
-};
 
 /**
  * 2. GET /api/doctor-workspace/consultation-bundle/:appointmentId
  * Full clinical bundle for Consultation Workspace (Patient chart, allergies, vitals, meds, notes, labs)
  */
-export const getConsultationBundle = async (req, res) => {
-  try {
-    const { appointmentId } = req.params;
-    if (!mongoose.isValidObjectId(appointmentId)) {
-      return sendError(res, 400, "Invalid appointment ID");
-    }
-
+export const getConsultationBundle = asyncHandler(async (req, res) => { await requireDb();
     const appointment = await Appointment.findById(appointmentId)
       .populate("patient")
       .populate("doctor", "name specialization department consultationFee email phone")
       .lean();
 
     if (!appointment) {
-      return sendError(res, 404, "Appointment not found");
+      throw new AppError("Appointment not found", 404);
     }
 
     const patientId = appointment.patient?._id;
     if (!patientId) {
-      return sendError(res, 404, "Patient record associated with appointment not found");
+      throw new AppError("Patient record associated with appointment not found", 404);
     }
 
     // Parallel fetch of patient clinical history
@@ -355,28 +327,6 @@ export const getConsultationBundle = async (req, res) => {
       }
     });
 
-    return res.status(200).json({
-      success: true,
-      data: {
-        appointment,
-        patient: appointment.patient,
-        latestVitals: vitalsHistory[0] || null,
-        vitalsHistory,
-        currentMedications,
-        activePrescriptions,
-        labReports,
-        clinicalNotes,
-        previousAppointments,
-        diagnosticOrders,
-        diagnosticReports,
-      },
-    });
-  } catch (error) {
-    return sendError(res, 500, "Error loading consultation bundle", error);
-  }
-};
-
-/**
  * 3. POST /api/doctor-workspace/conclude-consultation
  * Concludes consultation: Updates appointment, creates clinical note, issues prescription,
  * orders lab investigations, and files specialist referral.
@@ -385,7 +335,7 @@ export const concludeConsultation = async (req, res) => {
   try {
     const doctor = await resolveDoctorForUser(req.user);
     if (!doctor && req.user.role === "doctor") {
-      return sendError(res, 404, "Doctor profile not found for this account");
+      throw new AppError("Doctor profile not found for this account", 404);
     }
 
     const {
@@ -406,12 +356,12 @@ export const concludeConsultation = async (req, res) => {
     } = req.body;
 
     if (!appointmentId || !mongoose.isValidObjectId(appointmentId)) {
-      return sendError(res, 400, "Valid appointment ID is required");
+      throw new AppError("Valid appointment ID is required", 400);
     }
 
     const appointment = await Appointment.findById(appointmentId).populate("patient");
     if (!appointment) {
-      return sendError(res, 404, "Appointment not found");
+      throw new AppError("Appointment not found", 404);
     }
 
     const patient = appointment.patient;
@@ -633,7 +583,7 @@ export const concludeConsultation = async (req, res) => {
       },
     });
   } catch (error) {
-    return sendError(res, 500, "Error concluding consultation", error);
+    throw new AppError("Error concluding consultation", 500);
   }
 };
 
@@ -645,12 +595,12 @@ export const getDoctorPatientProfile = async (req, res) => {
   try {
     const { patientId } = req.params;
     if (!mongoose.isValidObjectId(patientId)) {
-      return sendError(res, 400, "Invalid patient ID");
+      throw new AppError("Invalid patient ID", 400);
     }
 
     const patient = await Patient.findById(patientId).lean();
     if (!patient) {
-      return sendError(res, 404, "Patient not found");
+      throw new AppError("Patient not found", 404);
     }
 
     const [
@@ -786,7 +736,7 @@ export const getDoctorPatientProfile = async (req, res) => {
       },
     });
   } catch (error) {
-    return sendError(res, 500, "Error loading patient profile", error);
+    throw new AppError("Error loading patient profile", 500);
   }
 };
 
@@ -801,7 +751,7 @@ export const getDoctorOrders = async (req, res) => {
         { _id: "ord_101", doctorName: "Dr. Sarah Jenkins", orderType: "Medication", description: "Administer IV Ceftriaxone 1g stat", priority: "Stat", status: "Active", patient: { name: "Anjali Sharma", age: 48, gender: "Female" }, createdAt: new Date() },
         { _id: "ord_102", doctorName: "Dr. Sarah Jenkins", orderType: "Nursing Care", description: "Strict I/O fluid monitoring every 2 hours", priority: "Urgent", status: "In Progress", patient: { name: "Rajesh Gupta", age: 62, gender: "Male" }, createdAt: new Date() },
       ];
-      return res.status(200).json({ success: true, data: demoOrders, isOfflineDemo: true });
+      return res.status(200).json({ success: true, data: demoOrders });
     }
 
     const doctor = await resolveDoctorForUser(req.user);
@@ -824,7 +774,7 @@ export const getDoctorOrders = async (req, res) => {
 
     return res.status(200).json({ success: true, data: orders });
   } catch (error) {
-    return sendError(res, 500, "Error loading doctor orders", error);
+    throw new AppError("Error loading doctor orders", 500);
   }
 };
 
@@ -838,14 +788,14 @@ export const createDoctorOrder = async (req, res) => {
     const { patientId, orderType, description, priority } = req.body;
 
     if (!patientId || !mongoose.isValidObjectId(patientId)) {
-      return sendError(res, 400, "Valid patient ID is required");
+      throw new AppError("Valid patient ID is required", 400);
     }
     if (!orderType || !description) {
-      return sendError(res, 400, "Order type and description are required");
+      throw new AppError("Order type and description are required", 400);
     }
 
     const patient = await Patient.findById(patientId);
-    if (!patient) return sendError(res, 404, "Patient not found");
+    if (!patient) throw new AppError("Patient not found", 404);
 
     const doctorId = doctor ? doctor._id : null;
     const doctorName = doctor ? doctor.name : (req.user.name || "Doctor");
@@ -866,7 +816,7 @@ export const createDoctorOrder = async (req, res) => {
       data: order,
     });
   } catch (error) {
-    return sendError(res, 500, "Error creating doctor order", error);
+    throw new AppError("Error creating doctor order", 500);
   }
 };
 
@@ -901,7 +851,7 @@ export const getReferrals = async (req, res) => {
 
     return res.status(200).json({ success: true, data: referrals });
   } catch (error) {
-    return sendError(res, 500, "Error loading referrals", error);
+    throw new AppError("Error loading referrals", 500);
   }
 };
 
@@ -923,11 +873,11 @@ export const createReferral = async (req, res) => {
     } = req.body;
 
     if (!patientId || !specialistDoctorId || !reason) {
-      return sendError(res, 400, "Patient, specialist doctor, and reason are required");
+      throw new AppError("Patient, specialist doctor, and reason are required", 400);
     }
 
     const patient = await Patient.findById(patientId);
-    if (!patient) return sendError(res, 404, "Patient not found");
+    if (!patient) throw new AppError("Patient not found", 404);
 
     const referringDoctorId = doctor ? doctor._id : null;
     const referringDoctorName = doctor ? doctor.name : (req.user.name || "Doctor");
@@ -951,7 +901,7 @@ export const createReferral = async (req, res) => {
       data: referral,
     });
   } catch (error) {
-    return sendError(res, 500, "Error creating referral", error);
+    throw new AppError("Error creating referral", 500);
   }
 };
 
@@ -965,11 +915,11 @@ export const updateReferralStatus = async (req, res) => {
     const { status, notes } = req.body;
 
     if (!mongoose.isValidObjectId(id)) {
-      return sendError(res, 400, "Invalid referral ID");
+      throw new AppError("Invalid referral ID", 400);
     }
 
     const referral = await Referral.findById(id);
-    if (!referral) return sendError(res, 404, "Referral not found");
+    if (!referral) throw new AppError("Referral not found", 404);
 
     if (status) referral.status = status;
     if (notes) referral.notes = notes;
@@ -981,7 +931,7 @@ export const updateReferralStatus = async (req, res) => {
       data: referral,
     });
   } catch (error) {
-    return sendError(res, 500, "Error updating referral status", error);
+    throw new AppError("Error updating referral status", 500);
   }
 };
 
@@ -995,8 +945,7 @@ export const getCriticalLabResults = async (req, res) => {
       return res.status(200).json({
         success: true,
         data: [],
-        isOfflineDemo: true,
-      });
+        });
     }
 
     const doctor = await resolveDoctorForUser(req.user);
@@ -1057,13 +1006,13 @@ export const getCriticalLabResults = async (req, res) => {
       testDate: diag.criticalDetails?.flaggedAt || diag.updatedAt || diag.createdAt,
       report: diag.report,
       isDiagnosticOrder: true,
-    }));
+    });
 
     const combinedReports = [...formattedDiagAlerts, ...labReports];
 
     return res.status(200).json({ success: true, data: combinedReports });
   } catch (error) {
-    return sendError(res, 500, "Error loading critical lab results", error);
+    throw new AppError("Error loading critical lab results", 500);
   }
 };
 
@@ -1078,7 +1027,7 @@ export const acknowledgeCriticalLabResult = async (req, res) => {
     const { notes } = req.body;
 
     if (!mongoose.isValidObjectId(reportId)) {
-      return sendError(res, 400, "Invalid lab report ID");
+      throw new AppError("Invalid lab report ID", 400);
     }
 
     // Check if ID is a DiagnosticOrder
@@ -1100,7 +1049,7 @@ export const acknowledgeCriticalLabResult = async (req, res) => {
 
     // Fallback to legacy LabReport
     const report = await LabReport.findById(reportId);
-    if (!report) return sendError(res, 404, "Lab report not found");
+    if (!report) throw new AppError("Lab report not found", 404);
 
     report.doctorReviewStatus = "reviewed";
     report.reviewedByDoctor = doctor ? doctor._id : null;
@@ -1114,7 +1063,7 @@ export const acknowledgeCriticalLabResult = async (req, res) => {
       data: report,
     });
   } catch (error) {
-    return sendError(res, 500, "Error acknowledging lab result", error);
+    throw new AppError("Error acknowledging lab result", 500);
   }
 };
 
@@ -1146,7 +1095,7 @@ export const getFollowUpsDue = async (req, res) => {
 
     return res.status(200).json({ success: true, data: followUps });
   } catch (error) {
-    return sendError(res, 500, "Error loading follow-ups", error);
+    throw new AppError("Error loading follow-ups", 500);
   }
 };
 
@@ -1163,7 +1112,7 @@ export const getSpecialistDirectory = async (req, res) => {
 
     return res.status(200).json({ success: true, data: doctors });
   } catch (error) {
-    return sendError(res, 500, "Error loading specialist directory", error);
+    throw new AppError("Error loading specialist directory", 500);
   }
 };
 
@@ -1201,7 +1150,7 @@ export const getMyTeleconsults = async (req, res) => {
       doctor: doctor ? { name: doctor.name, _id: doctor._id } : { name: "Administrator" },
     });
   } catch (error) {
-    return sendError(res, 500, "Error loading teleconsultations", error);
+    throw new AppError("Error loading teleconsultations", 500);
   }
 };
 
@@ -1213,7 +1162,7 @@ export const startTeleconsult = async (req, res) => {
   try {
     const { id: appointmentId } = req.params;
     if (!mongoose.isValidObjectId(appointmentId)) {
-      return sendError(res, 400, "Invalid appointment ID");
+      throw new AppError("Invalid appointment ID", 400);
     }
 
     const doctor = await resolveDoctorForUser(req.user);
@@ -1221,15 +1170,15 @@ export const startTeleconsult = async (req, res) => {
       .populate("doctor", "name specialization department")
       .populate("patient", "name contactNumber");
 
-    if (!appointment) return sendError(res, 404, "Appointment not found");
+    if (!appointment) throw new AppError("Appointment not found", 404);
     if (appointment.appointmentType !== "teleconsultation") {
-      return sendError(res, 400, "Only teleconsultation appointments can start a video session");
+      throw new AppError("Only teleconsultation appointments can start a video session", 400);
     }
     if (appointment.status === "cancelled") {
-      return sendError(res, 400, "Cancelled appointments cannot be started");
+      throw new AppError("Cancelled appointments cannot be started", 400);
     }
     if (req.user.role === "doctor" && doctor && appointment.doctor?._id?.toString() !== doctor._id.toString()) {
-      return sendError(res, 403, "You can only start your own teleconsultations");
+      throw new AppError("You can only start your own teleconsultations", 403);
     }
 
     const joinCode = appointment.telemedicine?.joinCode || generateJoinCode();
@@ -1264,7 +1213,7 @@ export const startTeleconsult = async (req, res) => {
       appointment,
     });
   } catch (error) {
-    return sendError(res, 500, "Error starting teleconsultation", error);
+    throw new AppError("Error starting teleconsultation", 500);
   }
 };
 
@@ -1276,18 +1225,18 @@ export const endTeleconsult = async (req, res) => {
   try {
     const { id: appointmentId } = req.params;
     if (!mongoose.isValidObjectId(appointmentId)) {
-      return sendError(res, 400, "Invalid appointment ID");
+      throw new AppError("Invalid appointment ID", 400);
     }
 
     const doctor = await resolveDoctorForUser(req.user);
     const appointment = await Appointment.findById(appointmentId);
 
-    if (!appointment) return sendError(res, 404, "Appointment not found");
+    if (!appointment) throw new AppError("Appointment not found", 404);
     if (appointment.appointmentType !== "teleconsultation") {
-      return sendError(res, 400, "Only teleconsultations can be ended from this endpoint");
+      throw new AppError("Only teleconsultations can be ended from this endpoint", 400);
     }
     if (req.user.role === "doctor" && doctor && appointment.doctor?.toString() !== doctor._id.toString()) {
-      return sendError(res, 403, "You can only end your own teleconsultations");
+      throw new AppError("You can only end your own teleconsultations", 403);
     }
 
     appointment.telemedicine = {
@@ -1303,6 +1252,6 @@ export const endTeleconsult = async (req, res) => {
       appointment,
     });
   } catch (error) {
-    return sendError(res, 500, "Error ending teleconsultation", error);
+    throw new AppError("Error ending teleconsultation", 500);
   }
 };

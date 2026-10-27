@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import SkeletonTable from "./SkeletonTable.jsx";
 import EmptyStateCard from "./EmptyStateCard.jsx";
 
 /**
  * Standardized responsive DataTable for Nivora Care HMS.
  * Features search filtering, column sorting, pagination, and empty/loading states.
+ * Row stagger animations with proper interruptible transitions.
  */
 export default function DataTable({
   columns = [],
@@ -25,9 +26,11 @@ export default function DataTable({
 }) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState(null);
-  const [sortOrder, setSortOrder] = useState("asc"); // "asc" | "desc"
+  const [sortOrder, setSortOrder] = useState("asc");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(initialPageSize);
+  const [rowMounted, setRowMounted] = useState({});
+  const tbodyRef = useRef(null);
 
   // Filtered data based on search input
   const filteredData = useMemo(() => {
@@ -42,7 +45,6 @@ export default function DataTable({
         });
       }
 
-      // Default: inspect all column keys
       return columns.some((col) => {
         const val = item[col.key];
         return val != null && String(val).toLowerCase().includes(query);
@@ -84,6 +86,15 @@ export default function DataTable({
     return sortedData.slice(start, start + pageSize);
   }, [sortedData, pagination, currentPage, pageSize]);
 
+  // Trigger row stagger animation when data changes
+  useEffect(() => {
+    const mounted = {};
+    paginatedData.forEach((_, idx) => {
+      mounted[idx] = true;
+    });
+    setRowMounted(mounted);
+  }, [paginatedData, currentPage]);
+
   const handleSort = (colKey) => {
     if (sortKey === colKey) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -91,6 +102,7 @@ export default function DataTable({
       setSortKey(colKey);
       setSortOrder("asc");
     }
+    setCurrentPage(1);
   };
 
   return (
@@ -108,7 +120,7 @@ export default function DataTable({
                   setCurrentPage(1);
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full liquid-glass-subtle rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition duration-150"
+                className="w-full liquid-glass-subtle rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:ring-offset-2 transition duration-150"
               />
               <svg
                 className="w-4 h-4 text-slate-400 absolute left-3 top-3"
@@ -127,7 +139,7 @@ export default function DataTable({
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 text-xs active:scale-90"
+                  className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-700 text-xs active:scale-95 transition-transform"
                 >
                   Clear
                 </button>
@@ -148,7 +160,7 @@ export default function DataTable({
             <SkeletonTable rows={pageSize > 10 ? 10 : pageSize} cols={columns.length || 5} />
           </div>
         ) : paginatedData.length === 0 ? (
-          <div className="py-8">
+          <div className="py-8 animate-pop-in">
             <EmptyStateCard
               title={emptyTitle}
               subtitle={search ? `No results found for "${search}". Try adjusting your filters.` : emptySubtitle}
@@ -166,12 +178,12 @@ export default function DataTable({
                       key={col.key}
                       onClick={() => isSortable && handleSort(col.key)}
                       style={{ width: col.width }}
-                      className={`px-4 py-3.5 font-semibold ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"} ${isSortable ? "cursor-pointer select-none hover:text-slate-900 transition-colors" : ""}`}
+                      className={`px-4 py-3.5 font-semibold ${col.align === "right" ? "text-right" : col.align === "center" ? "text-center" : "text-left"} ${isSortable ? "cursor-pointer select-none hover:text-slate-900 transition-colors duration-150" : ""}`}
                     >
                       <div className={`inline-flex items-center gap-1.5 ${col.align === "right" ? "justify-end" : col.align === "center" ? "justify-center" : "justify-start"}`}>
                         <span>{col.header}</span>
                         {isSortable && (
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-[10px] text-slate-400 transition-transform duration-150 ease-out">
                             {isSorted ? (sortOrder === "asc" ? "▲" : "▼") : "⇅"}
                           </span>
                         )}
@@ -181,16 +193,17 @@ export default function DataTable({
                 })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody ref={tbodyRef} className="divide-y divide-slate-100">
               {paginatedData.map((row, idx) => {
                 const rowKey = keyExtractor(row, idx);
                 const isClickable = Boolean(onRowClick);
+                const isMounted = rowMounted[idx];
                 return (
                   <tr
                     key={rowKey}
                     style={{ animationDelay: `${Math.min(idx * 25, 200)}ms` }}
                     onClick={() => isClickable && onRowClick(row)}
-                    className={`animate-row-stagger transition-colors duration-150 ${isClickable ? "cursor-pointer hover:bg-slate-50/80 active:bg-slate-100/60" : "hover:bg-slate-50/40"}`}
+                    className={`transition-colors duration-150 ease-out ${isMounted ? "animate-row-stagger" : ""} ${isClickable ? "cursor-pointer hover:bg-slate-50/80 active:bg-slate-100/60" : "hover:bg-slate-50/40"}`}
                   >
                     {columns.map((col) => (
                       <td
@@ -219,7 +232,7 @@ export default function DataTable({
                 setPageSize(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none focus:border-blue-500"
+              className="bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-700 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20"
             >
               {pageSizeOptions.map((opt) => (
                 <option key={opt} value={opt}>

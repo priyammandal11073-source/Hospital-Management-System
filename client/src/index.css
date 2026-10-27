@@ -14,11 +14,25 @@
   /* Emil Kowalski Craft Motion & Easing Tokens */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
-  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-drawer: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.15);
+  --ease-press: linear;
+  --duration-press: 80ms;
   --duration-fast: 150ms;
   --duration-base: 200ms;
   --duration-drawer: 280ms;
+  --duration-modal: 200ms;
+  --duration-toast: 200ms;
+  --duration-dropdown: 150ms;
+
+  /* Color tokens for consistent transitions */
+  --color-bg: #f8fafc;
+  --color-card: rgba(255, 255, 255, 0.72);
+  --color-border: rgba(226, 232, 240, 0.8);
+  --color-text: #0f172a;
+  --color-muted: #64748b;
+  --color-primary: #0f172a;
+  --color-primary-hover: #1e293b;
 }
 
 /* =========================================================================
@@ -50,15 +64,32 @@ h1,
   .animate-toast-in,
   .animate-dropdown-in,
   .animate-drawer-in,
-  .animate-sheet-up {
+  .animate-sheet-up,
+  .animate-row-stagger,
+  .animate-action-menu {
     transform: none !important;
-    animation: reducedFade 150ms ease forwards !important;
+    animation: reducedFade 120ms ease forwards !important;
+  }
+
+  /* Disable shimmer on skeletons */
+  .animate-pulse,
+  [style*="animation"] {
+    animation: none !important;
   }
 
   @keyframes reducedFade {
     from { opacity: 0; }
     to { opacity: 1; }
   }
+}
+
+/* Utility to force reduced motion for testing */
+.force-reduced-motion *,
+.force-reduced-motion *::before,
+.force-reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }
 
 html {
@@ -215,9 +246,10 @@ textarea:disabled,
 /* =========================================================================
    UNIVERSAL TACTILE CLICK & TASK PERFORMANCE ANIMATIONS
    Applies to interactive controls with Emil Kowalski asymmetric timing.
+   Press = deliberate linear; Release = snappy ease-out.
    ========================================================================= */
 
-/* Press animation: deliberate 80ms press */
+ /* Press animation: deliberate linear press */
 button:not(:disabled):active,
 a[href]:active,
 [role="button"]:not(:disabled):active,
@@ -229,9 +261,11 @@ input[type="reset"]:not(:disabled):active,
 .clickable:active,
 .cursor-pointer:active,
 .touch-target:active,
-.btn:not(:disabled):active {
+.btn:not(:disabled):active,
+.NavLink:active,
+.nav-link:active {
   transform: scale(0.97) translateY(0.5px);
-  transition: transform 80ms linear;
+  transition: transform var(--duration-press) var(--ease-press);
 }
 
 /* Release & Hover transitions: snappy var(--ease-out) */
@@ -242,19 +276,23 @@ a[href],
 [role="menuitem"],
 .clickable,
 .touch-target,
-.btn {
-  transition: transform 150ms var(--ease-out),
-              background-color 150ms ease,
-              border-color 150ms ease,
-              box-shadow 150ms ease,
-              color 150ms ease;
+.btn,
+.NavLink,
+.nav-link {
+  transition: transform var(--duration-fast) var(--ease-out),
+              background-color var(--duration-fast) ease,
+              border-color var(--duration-fast) ease,
+              box-shadow var(--duration-fast) ease,
+              color var(--duration-fast) ease;
 }
 
 /* Subtle micro-elevation strictly gated for fine pointer/mouse devices */
 @media (hover: hover) and (pointer: fine) {
   button:not(:disabled):hover,
   a[href]:hover,
-  [role="button"]:not(:disabled):hover {
+  [role="button"]:not(:disabled):hover,
+  .NavLink:hover,
+  .nav-link:hover {
     transform: translateY(-0.5px);
   }
 }
@@ -281,11 +319,29 @@ input[type="radio"]:checked {
   100% { transform: scale(1); }
 }
 
-/* Modal and Task Dialogue Spring Animations (Scale 0.97 + Opacity) */
+/* Focus visible ring - consistent across all interactive elements */
+:focus-visible {
+  outline: none;
+  ring: 2px solid rgba(14, 165, 233, 0.4);
+  ring-offset: 2px;
+}
+
+button:focus-visible,
+a[href]:focus-visible,
+[role="button"]:focus-visible,
+[role="tab"]:focus-visible,
+[role="menuitem"]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.4), 0 0 0 4px white;
+}
+
+/* Modal and Task Dialogue Animations - Origin-aware, never from scale(0) */
 @keyframes taskPopIn {
   0% {
     opacity: 0;
-    transform: scale(0.97) translateY(4px);
+    transform: scale(0.95) translateY(4px);
   }
   100% {
     opacity: 1;
@@ -337,25 +393,78 @@ input[type="radio"]:checked {
   }
 }
 
+@keyframes sheetSlideUp {
+  from {
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes drawerSlideIn {
+  from {
+    transform: translate3d(-100%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 .animate-pop-in {
-  animation: taskPopIn 180ms var(--ease-out) forwards;
+  animation: taskPopIn var(--duration-modal) var(--ease-out) forwards;
   will-change: transform, opacity;
 }
 
 .animate-toast-in {
-  animation: taskToastIn 200ms var(--ease-out) forwards;
+  animation: taskToastIn var(--duration-toast) var(--ease-out) forwards;
   will-change: transform, opacity;
 }
 
 .animate-dropdown-in {
-  animation: taskDropdownIn 150ms var(--ease-out) forwards;
+  animation: taskDropdownIn var(--duration-dropdown) var(--ease-out) forwards;
   transform-origin: var(--dropdown-origin, top right);
   will-change: transform, opacity;
 }
 
 .animate-row-stagger {
-  animation: taskRowStagger 180ms var(--ease-out) forwards;
+  animation: taskRowStagger var(--duration-modal) var(--ease-out) forwards;
   will-change: transform, opacity;
+}
+
+.animate-action-menu {
+  animation: actionMenuEnter 160ms var(--ease-out) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-drawer-in {
+  animation: drawerSlideIn var(--duration-drawer) var(--ease-drawer) forwards;
+  will-change: transform;
+}
+
+.animate-backdrop-fade {
+  animation: backdropFadeIn var(--duration-fast) ease-out forwards;
+}
+
+.animate-sheet-up {
+  animation: sheetSlideUp 320ms var(--ease-drawer) forwards;
+  will-change: transform;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(148,163,184,0.1) 25%, rgba(148,163,184,0.2) 50%, rgba(148,163,184,0.1) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
 }
 
 /* =========================================================================
@@ -576,6 +685,7 @@ a,
       0 8px 24px -4px rgba(15, 23, 42, 0.04),
       inset 0 1px 1px 0 rgba(255, 255, 255, 1),
       inset 0 -1px 1px 0 rgba(15, 23, 42, 0.015);
+    transition: background-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease, border-color var(--duration-fast) ease;
   }
 
   .liquid-glass-card,
@@ -589,7 +699,7 @@ a,
       0 6px 20px -3px rgba(15, 23, 42, 0.04),
       inset 0 1px 1px 0 rgba(255, 255, 255, 0.95),
       inset 0 -1px 1px 0 rgba(15, 23, 42, 0.015);
-    transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 180ms ease, border-color 180ms ease;
+    transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) ease, border-color var(--duration-fast) ease, background-color var(--duration-fast) ease;
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -603,6 +713,11 @@ a,
         inset 0 1px 1px 0 rgba(255, 255, 255, 1);
       transform: translateY(-1px);
     }
+  }
+
+  .liquid-glass-card:active,
+  .glass-card:active {
+    transform: scale(0.98);
   }
 
   .liquid-glass-nav {
@@ -621,6 +736,7 @@ a,
     backdrop-filter: blur(24px) saturate(180%);
     border-right: 1px solid rgba(226, 232, 240, 0.6);
     box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.8);
+    transition: width var(--duration-base) var(--ease-out), padding var(--duration-base) var(--ease-out);
   }
 
   .liquid-glass-elevated {
@@ -642,6 +758,7 @@ a,
     box-shadow:
       0 1px 3px 0 rgba(15, 23, 42, 0.02),
       inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.9);
+    transition: background-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease, border-color var(--duration-fast) ease;
   }
 
   .liquid-glass-pill,
@@ -654,16 +771,18 @@ a,
     box-shadow:
       0 1px 2px 0 rgba(15, 23, 42, 0.02),
       inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.95);
-    transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1), background-color 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+    transition: transform var(--duration-fast) var(--ease-out), background-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease, border-color var(--duration-fast) ease;
   }
 
-  .liquid-glass-pill:hover,
-  .liquid-glass-button:hover {
-    background: rgba(255, 255, 255, 0.92);
-    border-color: rgba(203, 213, 225, 0.9);
-    box-shadow:
-      0 4px 12px -2px rgba(15, 23, 42, 0.05),
-      inset 0 1px 0.5px 0 rgba(255, 255, 255, 1);
+  @media (hover: hover) and (pointer: fine) {
+    .liquid-glass-pill:hover,
+    .liquid-glass-button:hover {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(203, 213, 225, 0.9);
+      box-shadow:
+        0 4px 12px -2px rgba(15, 23, 42, 0.05),
+        inset 0 1px 0.5px 0 rgba(255, 255, 255, 1);
+    }
   }
 
   .liquid-glass-pill:active,
@@ -680,6 +799,7 @@ a,
     box-shadow:
       0 1px 3px 0 rgba(15, 23, 42, 0.03),
       inset 0 1px 0.5px 0 rgba(255, 255, 255, 0.95);
+    transition: background-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease, border-color var(--duration-fast) ease;
   }
 
   .glass-inset {
@@ -943,19 +1063,6 @@ a,
 }
 
 /* =========================================================================
-   CROSS-PORTAL MODAL OVERLAY & HEADBAND PROTECTION
-   Ensures sticky portal header headband is never layered above or overlapping
-   with any open popup modal, film preview, or clinical dialog.
-   ========================================================================= */
-body:has(.fixed.inset-0:not([aria-hidden="true"]):not(.pointer-events-none):not(.-z-10)) header.sticky,
-body:has([role="dialog"]:not([aria-hidden="true"])) header.sticky {
-  z-index: 0 !important;
-  pointer-events: none !important;
-  opacity: 0.20 !important;
-  filter: blur(1.5px) !important;
-}
-
-/* =========================================================================
    UNIVERSAL SOFT MODAL BACKDROP (PREVENTS HARSH PITCH-BLACK SCRIMS)
    ========================================================================= */
 .modal-backdrop,
@@ -981,25 +1088,6 @@ body:has([role="dialog"]:not([aria-hidden="true"])) header.sticky {
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
-}
-
-/* =========================================================================
-   EMIL KOWALSKI ORIGIN-AWARE ACTION MENU ENTRANCE
-   ========================================================================= */
-@keyframes actionMenuEnter {
-  0% {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-action-menu {
-  animation: actionMenuEnter 160ms cubic-bezier(0.23, 1, 0.32, 1) forwards;
-  will-change: transform, opacity;
 }
 
 /* =========================================================================
@@ -1035,7 +1123,7 @@ button,
    EMIL KOWALSKI COLLAPSIBLE SIDEBAR & FLOATING TOOLTIPS
    ========================================================================= */
 .transition-sidebar {
-  transition: width 200ms cubic-bezier(0.23, 1, 0.32, 1), padding 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: width var(--duration-base) var(--ease-out), padding var(--duration-base) var(--ease-out);
   will-change: width;
 }
 
@@ -1091,13 +1179,34 @@ aside[data-sidebar-collapsed="true"] nav a[data-tooltip]::after {
   pointer-events: none;
   opacity: 0;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.15);
-  transition: opacity 140ms cubic-bezier(0.23, 1, 0.32, 1), transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: opacity 140ms var(--ease-out), transform 140ms var(--ease-out);
   z-index: 100;
 }
 
 aside[data-sidebar-collapsed="true"] nav a[data-tooltip]:hover::after {
   opacity: 1;
   transform: translateY(-50%) scale(1);
+}
+
+/* =========================================================================
+   SKELETON SHIMMER ANIMATION
+   ========================================================================= */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(148,163,184,0.1) 25%, rgba(148,163,184,0.2) 50%, rgba(148,163,184,0.1) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shimmer {
+    animation: none !important;
+    background: rgba(148,163,184,0.15) !important;
+  }
 }
 
 

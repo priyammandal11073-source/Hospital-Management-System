@@ -85,10 +85,10 @@ export default function MobileMenuSheet({
       className="md:hidden"
       aria-hidden={!isOpen}
     >
-      {/* Blurred Backdrop — CSS opacity transition, not keyframe */}
+      {/* Blurred Backdrop — CSS opacity transition, interruptible */}
       <div
         data-mobile-sheet="true"
-        className={`fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-md transition-opacity duration-200 ${
+        className={`fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-md transition-opacity duration-200 animate-backdrop-fade ${
           isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
@@ -96,18 +96,15 @@ export default function MobileMenuSheet({
         style={{ touchAction: "none" }}
       />
 
-      {/* Slide-Up Sheet Container — CSS translateY transition, not @keyframes.
-          CSS transitions are interruptible: if user swipes down mid-open, the
-          sheet reverses from its current position rather than restarting from bottom. */}
+      {/* Slide-Up Sheet Container — CSS translateY transition, interruptible */}
       <div
         role="dialog"
         aria-modal={isOpen}
         data-mobile-sheet="true"
         aria-label="Portal Navigation Menu"
-        className={`fixed bottom-0 inset-x-0 z-50 w-full max-h-[92vh] flex flex-col rounded-t-[32px] liquid-glass-elevated shadow-2xl overflow-hidden transform transition-transform duration-300 ${
-          isOpen ? "translate-y-0" : "translate-y-full"
+        className={`fixed bottom-0 inset-x-0 z-50 w-full max-h-[92vh] flex flex-col rounded-t-[32px] liquid-glass-elevated shadow-2xl overflow-hidden animate-sheet-up ${
+          isOpen ? "" : "translate-y-full"
         }`}
-        style={{ transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)" }}
       >
         {/* Drag Handle Bar */}
         <div className="pt-3 pb-1 flex-shrink-0 flex justify-center">
@@ -132,7 +129,7 @@ export default function MobileMenuSheet({
         {/* Scrollable Content Pane */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 overscroll-contain">
           {/* User Profile Banner */}
-          <div className="liquid-glass-card p-3.5 flex flex-col gap-3">
+          <div className="liquid-glass-card p-3.5 flex flex-col gap-3 animate-pop-in" style={{ animationDelay: "20ms" }}>
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-slate-900 text-white font-semibold text-sm flex items-center justify-center shadow-xs flex-shrink-0">
                 {displayName.charAt(0).toUpperCase()}
@@ -180,7 +177,7 @@ export default function MobileMenuSheet({
           </div>
 
           {/* Emergency SOS Banner (Always 1-Tap Reachable) */}
-          <div className="rounded-2xl bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200/80 p-3 flex items-center justify-between gap-2 shadow-2xs">
+          <div className="rounded-2xl bg-gradient-to-r from-rose-50 to-red-50 border border-rose-200/80 p-3 flex items-center justify-between gap-2 shadow-2xs animate-pop-in" style={{ animationDelay: "40ms" }}>
             <div className="flex items-center gap-2.5">
               <span className="relative flex h-3 w-3 flex-shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
@@ -210,7 +207,7 @@ export default function MobileMenuSheet({
 
           {/* Quick Actions Shortcuts (If provided) */}
           {navConfig.quickActions?.length > 0 && (
-            <div>
+            <div className="animate-pop-in" style={{ animationDelay: "60ms" }}>
               <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-1 mb-2">
                 Quick Shortcuts
               </div>
@@ -257,7 +254,7 @@ export default function MobileMenuSheet({
           )}
 
           {/* Real-Time Search & Jump Bar */}
-          <div className="relative">
+          <div className="relative animate-pop-in" style={{ animationDelay: "80ms" }}>
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
               <MobileIcon name="search" className="h-4 w-4" />
             </div>
@@ -280,7 +277,7 @@ export default function MobileMenuSheet({
           </div>
 
           {/* Interactive Category Filter Chips */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none animate-pop-in" style={{ animationDelay: "100ms" }}>
             <button
               type="button"
               onClick={() => setSelectedCategory("all")}
@@ -310,7 +307,7 @@ export default function MobileMenuSheet({
 
           {/* Filtered Navigation Groups */}
           {totalResults === 0 ? (
-            <div className="rounded-2xl liquid-glass-card p-8 text-center">
+            <div className="rounded-2xl liquid-glass-card p-8 text-center animate-pop-in">
               <div className="h-10 w-10 mx-auto rounded-full liquid-glass-subtle text-slate-400 flex items-center justify-center mb-2">
                 <MobileIcon name="search" className="h-5 w-5" />
               </div>
@@ -322,14 +319,14 @@ export default function MobileMenuSheet({
                   setSearchQuery("");
                   setSelectedCategory("all");
                 }}
-                className="mt-3 px-3 py-1 rounded-lg liquid-glass-pill text-slate-700 font-semibold text-xs hover:bg-white/80"
+                className="mt-3 px-3 py-1 rounded-lg liquid-glass-pill text-slate-700 font-semibold text-xs hover:bg-white/80 active:scale-[0.98]"
               >
                 Reset Search
               </button>
             </div>
           ) : (
-            filteredCategories.map((cat) => (
-              <div key={cat.id} className="space-y-1.5">
+            filteredCategories.map((cat, catIdx) => (
+              <div key={cat.id} className="space-y-1.5 animate-pop-in" style={{ animationDelay: `${120 + catIdx * 20}ms` }}>
                 <div className="flex items-center justify-between px-1 pt-2">
                   <h4 className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     {cat.name}
@@ -340,7 +337,7 @@ export default function MobileMenuSheet({
                 </div>
 
                 <div className="space-y-1.5">
-                  {cat.items.map((item) => {
+                  {cat.items.map((item, itemIdx) => {
                     const isExternal = item.to?.startsWith("tel:") || item.to?.startsWith("http");
                     const isActive =
                       item.to === "/dashboard" ||
@@ -349,7 +346,7 @@ export default function MobileMenuSheet({
                         ? location.pathname === item.to
                         : item.to === location.pathname || location.pathname.startsWith(item.to + "/");
 
-                    const itemClass = `group rounded-xl p-3 flex items-center justify-between gap-3 transition-all duration-150 active:scale-[0.98] cursor-pointer touch-target ${
+                    const itemClass = `group rounded-xl p-3 flex items-center justify-between gap-3 transition-all duration-150 ease-out active:scale-[0.98] cursor-pointer touch-target ${
                       isActive
                         ? "liquid-glass-elevated border-slate-300 shadow-xs"
                         : "liquid-glass-subtle hover:bg-white/90"
@@ -436,7 +433,7 @@ export default function MobileMenuSheet({
           )}
 
           {/* Hospital Standards & ABDM Compliance Footer */}
-          <div className="pt-4 pb-12 text-center border-t border-slate-200/70">
+          <div className="pt-4 pb-12 text-center border-t border-slate-200/70 animate-pop-in" style={{ animationDelay: "200ms" }}>
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700">
               <svg className="h-3.5 w-3.5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />

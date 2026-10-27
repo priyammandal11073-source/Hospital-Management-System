@@ -23,6 +23,7 @@ export default function ActionDropdown({
 
   const closeMenu = useCallback(() => {
     setIsOpen(false);
+    triggerRef.current?.focus();
   }, []);
 
   const toggleMenu = useCallback((e) => {
@@ -44,7 +45,6 @@ export default function ActionDropdown({
       if (e.key === "Escape") {
         e.preventDefault();
         closeMenu();
-        triggerRef.current?.focus();
       }
     };
 
@@ -74,7 +74,7 @@ export default function ActionDropdown({
         aria-haspopup="true"
         aria-expanded={isOpen}
         aria-label={label}
-        className={`liquid-glass-pill h-8 w-8 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 active:scale-[0.95] transition-[transform,color,background-color] duration-150 cursor-pointer touch-target ${triggerClassName}`}
+        className={`liquid-glass-pill h-8 w-8 inline-flex items-center justify-center text-slate-600 hover:text-slate-900 active:scale-[0.95] transition-[transform,color,background-color] duration-150 ease-out cursor-pointer touch-target ${triggerClassName}`}
       >
         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
           <circle cx="5" cy="12" r="1.75" />
@@ -88,16 +88,13 @@ export default function ActionDropdown({
         <div
           role="menu"
           aria-orientation="vertical"
-          style={{
-            animation: "actionMenuEnter 160ms cubic-bezier(0.23, 1, 0.32, 1) forwards",
-          }}
-          className={`absolute ${alignClass} mt-1.5 w-56 z-50 liquid-glass-elevated rounded-2xl p-1.5 shadow-xl ring-1 ring-slate-900/5 focus:outline-none ${menuClassName}`}
+          className={`absolute ${alignClass} mt-1.5 w-56 z-50 liquid-glass-elevated rounded-2xl p-1.5 shadow-xl ring-1 ring-slate-900/5 focus:outline-none animate-action-menu ${menuClassName}`}
         >
           <div className="space-y-0.5">
             {validItems.map((item, index) => {
               const isDanger = item.variant === "danger";
 
-              const itemClass = `group w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-xl text-left transition-[background-color,color,transform] duration-150 active:scale-[0.98] cursor-pointer ${
+              const itemClass = `group w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-xl text-left transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] cursor-pointer ${
                 item.disabled
                   ? "opacity-40 cursor-not-allowed pointer-events-none text-slate-400"
                   : isDanger

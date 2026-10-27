@@ -8,7 +8,6 @@ export default function MobileBottomNav({
   user = null,
   mobileOpen = false,
   onToggleMenu = () => {},
-  isModalOpen = false,
 }) {
   const location = useLocation();
   const normalizedRole = (role || "admin").toLowerCase().trim();
@@ -27,11 +26,7 @@ export default function MobileBottomNav({
     <nav
       aria-label="Mobile Bottom Navigation Bar"
       style={{ paddingBottom: "max(env(safe-area-inset-bottom, 0px), 8px)" }}
-      className={`md:hidden fixed bottom-0 inset-x-0 z-40 liquid-glass-nav transition-all duration-200 ${
-        isModalOpen
-          ? "opacity-0 pointer-events-none translate-y-full"
-          : "opacity-100 pointer-events-auto translate-y-0"
-      }`}
+      className="md:hidden fixed bottom-0 inset-x-0 z-40 liquid-glass-nav"
     >
       <div className="flex items-center justify-around h-16 min-h-[56px] max-w-lg mx-auto px-1.5 sm:px-3">
         {/* Render 4 Primary Role-Based Tabs */}
@@ -44,14 +39,14 @@ export default function MobileBottomNav({
               onClick={() => {
                 if (mobileOpen) onToggleMenu();
               }}
-              className={`group flex-1 min-w-[48px] min-h-[48px] flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-colors duration-150 touch-manipulation select-none cursor-pointer ${
+              className={`group flex-1 min-w-[48px] min-h-[48px] flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-colors duration-150 ease-out touch-manipulation select-none cursor-pointer active:scale-[0.98] ${
                 active
                   ? "text-slate-900 font-semibold"
                   : "text-slate-500 hover:text-slate-900 active:text-slate-900 font-medium"
               }`}
             >
               <div
-                className={`relative flex items-center justify-center h-8 w-11 rounded-full transition-all duration-150 group-active:scale-95 ${
+                className={`relative flex items-center justify-center h-8 w-11 rounded-full transition-all duration-150 ease-out group-active:scale-95 ${
                   active
                     ? "bg-slate-900 text-white shadow-xs"
                     : "text-slate-500 group-hover:bg-slate-100/60 group-active:bg-slate-100"
@@ -59,7 +54,7 @@ export default function MobileBottomNav({
               >
                 <MobileIcon name={tab.iconName} className="h-5 w-5" />
                 {active && (
-                  <span className="absolute -top-0.5 right-1.5 h-1.5 w-1.5 rounded-full bg-slate-900 ring-2 ring-white" />
+                  <span className="absolute -top-0.5 right-1.5 h-1.5 w-1.5 rounded-full bg-slate-900 ring-2 ring-white animate-pop-in" />
                 )}
               </div>
               <span className="text-[10px] tracking-tight truncate max-w-[64px] leading-tight mt-0.5 font-medium">
@@ -79,14 +74,14 @@ export default function MobileBottomNav({
           }}
           aria-expanded={mobileOpen}
           aria-label={mobileOpen ? "Close menu" : "Open all navigation menu"}
-          className={`group flex-1 min-w-[48px] min-h-[48px] flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-colors duration-150 touch-manipulation select-none cursor-pointer ${
+          className={`group flex-1 min-w-[48px] min-h-[48px] flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-colors duration-150 ease-out touch-manipulation select-none cursor-pointer active:scale-[0.98] ${
             mobileOpen
               ? "text-slate-900 font-semibold"
               : "text-slate-500 hover:text-slate-900 active:text-slate-900 font-medium"
           }`}
         >
           <div
-            className={`relative flex items-center justify-center h-8 w-11 rounded-full transition-all duration-150 group-active:scale-95 ${
+            className={`relative flex items-center justify-center h-8 w-11 rounded-full transition-all duration-150 ease-out group-active:scale-95 ${
               mobileOpen
                 ? "bg-slate-900 text-white font-semibold shadow-xs"
                 : "text-slate-600 group-hover:bg-slate-100/60 group-active:bg-slate-100"
@@ -94,7 +89,7 @@ export default function MobileBottomNav({
           >
             <MobileIcon name={mobileOpen ? "close" : "menu"} className="h-5 w-5" />
             {!mobileOpen && (
-              <span className="absolute -top-0.5 right-1 h-2 w-2 rounded-full bg-slate-900 ring-2 ring-white" />
+              <span className="absolute -top-0.5 right-1 h-2 w-2 rounded-full bg-slate-900 ring-2 ring-white animate-pop-in" />
             )}
           </div>
           <span className="text-[10px] tracking-tight truncate max-w-[64px] leading-tight mt-0.5 font-medium">

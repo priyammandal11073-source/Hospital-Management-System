@@ -1,12 +1,17 @@
 import React from "react";
 
-const Card = ({ title, subtitle, children, className = "", headerAction, ...props }) => {
+const Card = ({ title, subtitle, children, className = "", headerAction, isClickable = false, onClick, ...props }) => {
   return (
     <div
       className={`
         liquid-glass-card rounded-2xl p-4 sm:p-6
+        ${isClickable ? "cursor-pointer active:scale-[0.98]" : ""}
         ${className}
       `}
+      onClick={onClick}
+      role={isClickable ? "button" : undefined}
+      tabIndex={isClickable ? 0 : undefined}
+      onKeyDown={isClickable && onClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); }} : undefined}
       {...props}
     >
       {(title || subtitle || headerAction) && (
