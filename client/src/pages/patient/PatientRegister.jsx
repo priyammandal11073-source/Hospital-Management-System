@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { registerPatient, sendRegistrationOtp } from "../../services/api.js";
 import HospitalLogo from "../../components/HospitalLogo.jsx";
 import AuthBrandPanel from "../../components/AuthBrandPanel.jsx";
@@ -9,6 +9,7 @@ const RESEND_COOLDOWN_SECONDS = 30;
 
 function PatientRegister() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
@@ -133,7 +134,9 @@ function PatientRegister() {
     setIsSubmitting(true);
     try {
       await registerPatient(buildRegistrationPayload());
-      navigate("/patient/login", {
+      const searchParams = new URLSearchParams(location.search);
+      const redirect = searchParams.get("redirect");
+      navigate("/patient/login" + (redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""), {
         state: { message: "Registration successful! Please log in with your email and password." },
       });
     } catch (err) {
@@ -149,7 +152,7 @@ function PatientRegister() {
         <span
           key={s}
           className={`h-1.5 w-6 rounded-full transition-colors ${
-            step >= s ? "bg-rose-600" : "bg-slate-200"
+            step >= s ? "bg-teal-700" : "bg-slate-200"
           }`}
         />
       ))}
@@ -157,19 +160,12 @@ function PatientRegister() {
   );
 
   return (
-    <main className="relative min-h-screen bg-[#faf7f4] py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans overflow-hidden">
-      {/* Decorative soft background shapes */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute -top-32 left-1/4 h-96 w-96 rounded-full bg-rose-200/40 blur-3xl" />
-        <div className="absolute -right-24 top-1/3 h-96 w-96 rounded-full bg-fuchsia-200/40 blur-3xl" />
-        <div className="absolute -left-24 bottom-0 h-96 w-96 rounded-full bg-rose-100/60 blur-3xl" />
-      </div>
-
+    <main className="relative min-h-screen bg-transparent py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center items-center font-sans overflow-hidden">
       <div className="relative z-10 w-full max-w-6xl mx-auto">
         <div className="grid gap-8 items-center lg:grid-cols-[0.9fr_1.1fr]">
           {/* Decorative brand panel */}
           <AuthBrandPanel
-            accent="rose"
+            accent="slate"
             badge="Patient Portal"
             title="Create Your Health Account"
             subtitle="Register once with a verified mobile number and step into a secure digital care journey."
@@ -193,17 +189,17 @@ function PatientRegister() {
               </Link>
             </div>
 
-            <section className="w-full bg-white/90 backdrop-blur rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl shadow-slate-300/40">
+            <section className="w-full liquid-glass-elevated rounded-3xl p-6 sm:p-8 shadow-xl">
               {/* Card Header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+              <div className="flex items-center justify-between border-b border-slate-200/50 pb-4 mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-rose-600 flex items-center justify-center text-white flex-shrink-0 shadow-lg">
+                  <div className="h-10 w-10 rounded-xl liquid-glass-subtle flex items-center justify-center text-teal-800 border border-slate-200/80 shadow-2xs flex-shrink-0">
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-base font-semibold text-slate-900">
+                    <h2 className="text-base font-bold text-slate-900">
                       {step === 1 ? "New Patient Registration" : "Verify Mobile Number"}
                     </h2>
                     <p className="text-xs text-slate-500">
@@ -211,7 +207,7 @@ function PatientRegister() {
                     </p>
                   </div>
                 </div>
-                <span className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-500">
+                <span className="rounded-full liquid-glass-pill px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 border border-slate-200/70">
                   Step {step} of 2
                 </span>
               </div>
@@ -219,7 +215,7 @@ function PatientRegister() {
               {step === 1 ? (
                 <form className="space-y-4" onSubmit={handleSendOtp}>
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                    <label className="mb-1 block text-xs font-semibold text-slate-700">
                       Full legal name *
                     </label>
                     <input
@@ -228,12 +224,12 @@ function PatientRegister() {
                       placeholder="e.g. Rahul Sharma"
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-teal-700 focus:ring-1 focus:ring-teal-700"
                     />
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                    <label className="mb-1 block text-xs font-semibold text-slate-700">
                       Email address *
                     </label>
                     <input
@@ -243,12 +239,12 @@ function PatientRegister() {
                       placeholder="rahul.sharma@example.com"
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-teal-700 focus:ring-1 focus:ring-teal-700"
                     />
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                    <label className="mb-1 block text-xs font-semibold text-slate-700">
                       Password *
                     </label>
                     <input
@@ -258,13 +254,13 @@ function PatientRegister() {
                       placeholder="Create a password"
                       value={formData.password}
                       onChange={handleChange}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-teal-700 focus:ring-1 focus:ring-teal-700"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-slate-700">
+                      <label className="mb-1 block text-xs font-semibold text-slate-700">
                         Age *
                       </label>
                       <input
@@ -275,11 +271,11 @@ function PatientRegister() {
                         placeholder="32"
                         value={formData.age}
                         onChange={handleChange}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                        className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-teal-700 focus:ring-1 focus:ring-teal-700"
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-slate-700">
+                      <label className="mb-1 block text-xs font-semibold text-slate-700">
                         Gender *
                       </label>
                       <select
@@ -287,7 +283,7 @@ function PatientRegister() {
                         required
                         value={formData.gender}
                         onChange={handleChange}
-                        className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600"
+                        className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-teal-700 focus:ring-1 focus:ring-teal-700"
                       >
                         <option value="">Select</option>
                         <option value="Male">Male</option>
@@ -298,11 +294,11 @@ function PatientRegister() {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                    <label className="mb-1 block text-xs font-semibold text-slate-700">
                       Contact number (10-digit mobile) *
                     </label>
                     <div className="flex">
-                      <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 text-xs text-slate-500 font-mono">
+                      <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-slate-300 bg-slate-50 text-xs text-slate-500 font-mono">
                         +91
                       </span>
                       <input
@@ -311,14 +307,14 @@ function PatientRegister() {
                         placeholder="98765 43210"
                         value={formData.contactNumber}
                         onChange={handleChange}
-                        className="w-full rounded-r-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600 font-mono"
+                        className="w-full rounded-r-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-teal-700 focus:ring-1 focus:ring-teal-700 font-mono"
                         type="tel"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                    <label className="mb-1 block text-xs font-semibold text-slate-700">
                       ABHA number (Ayushman Bharat, optional)
                     </label>
                     <input
@@ -326,12 +322,12 @@ function PatientRegister() {
                       placeholder="e.g. 14-8891-2345-6789 or username@abdm"
                       value={formData.abhaId}
                       onChange={handleChange}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600 font-mono text-xs"
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-teal-700 focus:ring-1 focus:ring-teal-700 font-mono text-xs"
                     />
                   </div>
 
                   {error && (
-                    <div className="flex items-center gap-2 rounded border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
+                    <div className="flex items-center gap-2 rounded-xl liquid-glass-card border border-rose-200/80 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
                       <svg className="h-4 w-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -340,13 +336,13 @@ function PatientRegister() {
                   )}
 
                   <button
-                    className="w-full rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-rose-600/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
+                    className="w-full rounded-xl bg-teal-700 hover:bg-teal-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-950/10 transition active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center"
                     disabled={isSubmitting}
                     type="submit"
                   >
                     {isSubmitting ? (
                       <span className="inline-flex items-center gap-2">
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         Sending OTP...
                       </span>
                     ) : (
@@ -361,8 +357,8 @@ function PatientRegister() {
               ) : (
                 <form className="space-y-4" onSubmit={handleVerifyAndRegister}>
                   {infoMessage && (
-                    <div className="flex items-center gap-2 rounded border border-blue-200 bg-blue-50 p-2.5 text-xs font-medium text-blue-800" role="status">
-                      <svg className="h-4 w-4 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="flex items-center gap-2 rounded-xl border border-teal-200/70 bg-teal-50 p-2.5 text-xs font-medium text-teal-800" role="status">
+                      <svg className="h-4 w-4 text-teal-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <span className="flex-1">{infoMessage}</span>
@@ -370,7 +366,7 @@ function PatientRegister() {
                   )}
 
                   <div>
-                    <label className="mb-1 block text-xs font-medium text-slate-700" htmlFor="otp-code">
+                    <label className="mb-1 block text-xs font-semibold text-slate-700" htmlFor="otp-code">
                       6-digit OTP *
                     </label>
                     <input
@@ -383,7 +379,7 @@ function PatientRegister() {
                       placeholder="••••••"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                      className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-center text-lg tracking-[0.5em] text-slate-900 placeholder-slate-300 outline-none transition focus:border-rose-600 focus:ring-1 focus:ring-rose-600 font-mono"
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-center text-lg tracking-[0.5em] text-slate-900 placeholder-slate-300 outline-none transition focus:border-teal-700 focus:ring-1 focus:ring-teal-700 font-mono"
                     />
                     <p className="mt-1.5 text-[11px] text-slate-500">
                       Enter the 6-digit code from the SMS sent to {maskNumber(formData.contactNumber)}.
@@ -391,7 +387,7 @@ function PatientRegister() {
                   </div>
 
                   {error && (
-                    <div className="flex items-center gap-2 rounded border border-rose-200 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
+                    <div className="flex items-center gap-2 rounded-xl border border-rose-200/80 bg-rose-50 p-2.5 text-xs font-medium text-rose-800" role="alert">
                       <svg className="h-4 w-4 text-rose-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -400,13 +396,13 @@ function PatientRegister() {
                   )}
 
                   <button
-                    className="w-full rounded-lg bg-rose-600 hover:bg-rose-700 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-rose-600/20 transition disabled:opacity-50 cursor-pointer flex items-center justify-center"
+                    className="w-full rounded-xl bg-teal-700 hover:bg-teal-800 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-teal-950/10 transition active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center"
                     disabled={isSubmitting}
                     type="submit"
                   >
                     {isSubmitting ? (
                       <span className="inline-flex items-center gap-2">
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         Verifying & registering...
                       </span>
                     ) : (
@@ -417,7 +413,7 @@ function PatientRegister() {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="w-full rounded-lg border border-slate-300 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 transition shadow-2xs cursor-pointer"
+                    className="w-full rounded-xl border border-slate-200/80 bg-white hover:bg-slate-50 px-4 py-2 text-xs font-medium text-slate-700 transition shadow-2xs cursor-pointer"
                   >
                     ← Edit registration details
                   </button>
@@ -428,7 +424,7 @@ function PatientRegister() {
                       type="button"
                       disabled={resendCooldown > 0 || isSubmitting}
                       onClick={handleResendOtp}
-                      className="font-medium text-rose-600 hover:underline disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                      className="font-medium text-teal-800 hover:underline disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
                       {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
                     </button>
@@ -441,7 +437,7 @@ function PatientRegister() {
 
             <p className="mt-4 text-center text-xs text-slate-500">
               Already registered?{" "}
-              <Link to="/patient/login" className="font-medium text-slate-700 hover:underline">
+              <Link to="/patient/login" className="font-semibold text-teal-800 hover:underline">
                 Sign in to patient portal →
               </Link>
             </p>

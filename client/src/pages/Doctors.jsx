@@ -95,7 +95,7 @@ function Doctors() {
         action={
           isAdmin ? (
             <button
-              className="rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-blue-700 transition shadow-sm"
+              className="min-h-11 rounded-xl bg-teal-700 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-[transform,background-color] duration-150 ease-out hover:bg-teal-800 active:scale-[0.98]"
               onClick={() => {
                 setSelectedDoctor(null);
                 setIsFormOpen(true);
@@ -113,7 +113,7 @@ function Doctors() {
           <label className="text-sm font-medium text-slate-700">
             Specialization
             <select
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20"
               onChange={(event) => setSpecialization(event.target.value)}
               value={specialization}
             >
@@ -128,7 +128,7 @@ function Doctors() {
           <label className="text-sm font-medium text-slate-700">
             Department
             <select
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+              className="mt-1 min-h-11 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20"
               onChange={(event) => setDepartment(event.target.value)}
               value={department}
             >
@@ -291,7 +291,7 @@ function Doctors() {
                       <div className="flex items-center justify-end gap-2">
                         {canManageDoctorSchedule && (
                           <button
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-[0.97] px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition"
+                            className="inline-flex min-h-11 items-center gap-1.5 rounded-xl bg-teal-700 px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-[transform,background-color] duration-150 ease-out hover:bg-teal-800 active:scale-[0.98]"
                             onClick={() => setScheduleDoctor(doctor)}
                             type="button"
                           >

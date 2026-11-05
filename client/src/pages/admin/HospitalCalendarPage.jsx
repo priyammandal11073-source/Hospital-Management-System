@@ -154,7 +154,7 @@ export default function HospitalCalendarPage() {
           </button>
           <button
             onClick={goToToday}
-            className="ml-2 rounded-xl bg-sky-600 px-3 py-2 text-xs font-bold text-white hover:bg-sky-700 shadow-2xs transition active:scale-95"
+            className="ml-2 rounded-xl bg-sky-600 px-3 py-2 text-xs font-bold text-slate-100 hover:bg-sky-700 shadow-2xs transition active:scale-95"
           >
             Today
           </button>
@@ -205,11 +205,11 @@ export default function HospitalCalendarPage() {
         {["all", "appointment", "procedure", "leave", "event"].map((type) => {
           const count = type === "all" ? monthlyStats.total : monthlyStats[type === "appointment" ? "appointments" : type] || 0;
           const colors = {
-            all: "bg-slate-900 text-white",
-            appointment: "bg-blue-600 text-white",
-            procedure: "bg-purple-600 text-white",
-            leave: "bg-amber-600 text-white",
-            event: "bg-sky-600 text-white",
+            all: "bg-slate-900 text-slate-100",
+            appointment: "bg-blue-600 text-slate-100",
+            procedure: "bg-purple-600 text-slate-100",
+            leave: "bg-amber-600 text-slate-100",
+            event: "bg-sky-600 text-slate-100",
           };
           return (
             <button
@@ -263,9 +263,9 @@ export default function HospitalCalendarPage() {
                     <span
                       className={`h-5 w-5 rounded-full flex items-center justify-center text-[11px] font-bold ${
                         d.isToday
-                          ? "bg-blue-600 text-white"
+                          ? "bg-blue-600 text-slate-100"
                           : isSelected
-                          ? "bg-purple-600 text-white"
+                          ? "bg-purple-600 text-slate-100"
                           : "text-slate-700"
                       }`}
                     >

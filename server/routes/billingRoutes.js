@@ -9,7 +9,7 @@ import {
   sendPaymentLinkSmsHandler,
   updatePaymentStatus,
 } from "../controllers/billingController.js";
-import { protect, restrictTo, optionalProtect } from "../middleware/authMiddleware.js";
+import { protect, restrictTo, optionalProtect, protectStaffOrPatient } from "../middleware/authMiddleware.js";
 import { validate } from "../middleware/validate.js";
 import {
   createBillingSchema,
@@ -39,8 +39,7 @@ router
 
 router.patch(
   "/:id/payment",
-  protect,
-  restrictTo("admin", "receptionist", "nurse", "pharmacist", "doctor", "emergency"),
+  protectStaffOrPatient,
   validate(updatePaymentStatusSchema),
   updatePaymentStatus
 );

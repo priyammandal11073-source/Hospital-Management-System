@@ -2,6 +2,7 @@ import Razorpay from "razorpay";
 import crypto from "crypto";
 import env from "../config/env.js";
 import Billing from "../models/Billing.js";
+import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
 
 // Helper to get Razorpay instance
 const getRazorpayInstance = () => {
@@ -36,7 +37,14 @@ export const createOrder = async (req, res) => {
 
     if (patientUser) {
       const requesterPatientId = (patientUser._id || patientUser.id)?.toString();
-      if (!billingPatientId || billingPatientId !== requesterPatientId) {
+      const patientContact = patientUser.contactNumber;
+      const patientEmail = patientUser.email?.toLowerCase();
+
+      const billingMatchesId = billingPatientId && billingPatientId === requesterPatientId;
+      const billingMatchesContact = billing.patient?.contactNumber && patientContact && billing.patient.contactNumber === patientContact;
+      const billingMatchesEmail = billing.patient?.email && patientEmail && billing.patient.email.toLowerCase() === patientEmail;
+
+      if (billingPatientId && !billingMatchesId && !billingMatchesContact && !billingMatchesEmail) {
         return res.status(403).json({
           success: false,
           message: "Forbidden: You can only create payment orders for your own billing records.",
@@ -152,7 +160,14 @@ export const verifyPayment = async (req, res) => {
 
     if (patientUser) {
       const requesterPatientId = (patientUser._id || patientUser.id)?.toString();
-      if (!billingPatientId || billingPatientId !== requesterPatientId) {
+      const patientContact = patientUser.contactNumber;
+      const patientEmail = patientUser.email?.toLowerCase();
+
+      const billingMatchesId = billingPatientId && billingPatientId === requesterPatientId;
+      const billingMatchesContact = billing.patient?.contactNumber && patientContact && billing.patient.contactNumber === patientContact;
+      const billingMatchesEmail = billing.patient?.email && patientEmail && billing.patient.email.toLowerCase() === patientEmail;
+
+      if (billingPatientId && !billingMatchesId && !billingMatchesContact && !billingMatchesEmail) {
         return res.status(403).json({
           success: false,
           message: "Forbidden: You can only verify payments for your own billing records.",
@@ -204,11 +219,23 @@ export const verifyPayment = async (req, res) => {
     // Mark billing as paid
     billing.paymentStatus = "paid";
     billing.paymentMethod = "razorpay";
+    billing.paymentDate = new Date();
     billing.razorpayPaymentId = razorpayPaymentId;
     if (razorpayOrderId) billing.razorpayOrderId = razorpayOrderId;
     if (razorpaySignature) billing.razorpaySignature = razorpaySignature;
 
     await billing.save();
+
+    // Two-way synchronization with Diagnostic Services
+    try {
+      await diagnosticSyncService.onBillingPaymentReceived(billing, {
+        userId: req.patient?.id || req.user?._id || req.user?.id,
+        userName: req.patient?.name || req.user?.name || "Patient Online",
+        role: req.patient ? "patient" : req.user?.role || "online_payment",
+      });
+    } catch (syncErr) {
+      console.error("Diagnostic billing payment sync error:", syncErr.message);
+    }
 
     const updatedBilling = await Billing.findById(billingId)
       .populate("patient", "name email contactNumber")
@@ -272,10 +299,21 @@ export const rzpWebhookHandler = async (req, res) => {
         if (billing && billing.paymentStatus !== "paid") {
           billing.paymentStatus = "paid";
           billing.paymentMethod = "razorpay";
+          billing.paymentDate = new Date();
           billing.razorpayPaymentId = payment.id;
           billing.razorpayOrderId = payment.order_id;
           billing.razorpaySignature = signature;
           await billing.save();
+
+          try {
+            await diagnosticSyncService.onBillingPaymentReceived(billing, {
+              userId: billing.patient?._id || billing.patient,
+              userName: "Razorpay Webhook",
+              role: "payment_webhook",
+            });
+          } catch (syncErr) {
+            console.error("Razorpay webhook diagnostic sync error:", syncErr.message);
+          }
         }
       }
     }

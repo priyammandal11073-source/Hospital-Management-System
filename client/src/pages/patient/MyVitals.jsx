@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getMyVitals } from "../../services/api.js";
 import VitalsTracker from "../../components/VitalsTracker.jsx";
+import { PageHeader } from "../../components/ui/index.js";
 
 export default function MyVitals() {
   const [vitals, setVitals] = useState([]);
@@ -25,34 +26,39 @@ export default function MyVitals() {
 
   return (
     <div className="space-y-6 pb-12">
-      <div>
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-          <span>📊 My Health Records & Vitals</span>
-          <span className="text-xs font-bold bg-teal-100 text-teal-800 px-2.5 py-0.5 rounded-full">
+      <PageHeader
+        breadcrumbs={[
+          { label: "My Health", to: "/patient/dashboard" },
+          { label: "Vitals & Biometrics", active: true },
+        ]}
+        title="My Health Records & Vitals"
+        badge={
+          <span className="inline-flex items-center rounded-full liquid-glass-pill px-2.5 py-0.5 text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200/70">
             Self-Monitoring
           </span>
-        </h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Track your blood pressure, blood glucose, weight trends, and pulse history over time.
-        </p>
-      </div>
+        }
+        subtitle="Track your blood pressure, blood glucose, weight trends, and pulse history over time."
+      />
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-800 text-xs font-bold shadow-2xs">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="p-12 text-center text-slate-400 text-xs font-semibold">
-          Loading health vitals history...
+        <div className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-12 text-center shadow-2xs">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-teal-700 border-r-transparent" />
+          <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Loading health vitals history...</p>
         </div>
       ) : (
-        <VitalsTracker
-          vitals={vitals}
-          isPatient={true}
-          onVitalsUpdated={fetchVitals}
-        />
+        <div className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-5 sm:p-6 shadow-2xs">
+          <VitalsTracker
+            vitals={vitals}
+            isPatient={true}
+            onVitalsUpdated={fetchVitals}
+          />
+        </div>
       )}
     </div>
   );

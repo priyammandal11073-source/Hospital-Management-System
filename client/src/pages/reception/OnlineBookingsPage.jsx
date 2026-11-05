@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import { getOnlineBookings, confirmOnlineBooking } from "../../services/api.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import {
+  Badge,
+  Button,
+  Card,
+  PageHeader,
+  EmptyStateCard,
+  PageLoader,
+  ConfirmDialog,
+} from "../../components/ui/index.js";
 
 export default function OnlineBookingsPage() {
   const [bookings, setBookings] = useState([]);
@@ -34,68 +43,79 @@ export default function OnlineBookingsPage() {
       loadBookings();
       if (cancelModal) setCancelModal(null);
     } catch (err) {
-      alert("Error: " + (err.response?.data?.message || err.message));
+      toastError("Error: " + (err.response?.data?.message || err.message));
     } finally {
       setProcessingId(null);
     }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-purple-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-purple-600">Patient Self-Service Portal</span>
-          </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-800">
-            Online Patient Booking Queue
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Review, verify, and confirm self-scheduled appointment requests made through the Nivora Care Patient Portal.
-          </p>
-        </div>
+  const toastError = (msg) => {
+    const d = document.createElement("div");
+    d.className = "fixed top-6 right-6 z-50 bg-rose-500 text-white px-4 py-2 rounded-xl shadow-xl";
+    d.textContent = msg;
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 4000);
+  };
 
-        {/* Status Filter Tabs */}
-        <div className="flex rounded-xl bg-white p-1 shadow-xs ring-1 ring-slate-200/80">
-          {[
-            { id: "pending", label: "Needs Confirmation" },
-            { id: "confirmed", label: "Confirmed" },
-            { id: "cancelled", label: "Rejected / Cancelled" },
-            { id: "all", label: "All Bookings" },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setStatusFilter(tab.id)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
-                statusFilter === tab.id
-                  ? "bg-purple-600 text-white shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+  const statusConfig = {
+    pending: { badge: "pending", label: "Needs Confirmation", color: "amber" },
+    confirmed: { badge: "completed", label: "Confirmed", color: "emerald" },
+    cancelled: { badge: "cancelled", label: "Rejected / Cancelled", color: "slate" },
+    all: { badge: "normal", label: "All Bookings", color: "slate" },
+  };
+
+  return (
+    <div className="space-y-6" style={{ backgroundImage: "radial-gradient(circle, rgba(15, 118, 110, 0.03) 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
+      <PageHeader
+        title="Online Patient Booking Queue"
+        subtitle="Review, verify, and confirm self-scheduled appointment requests made through the Nivora Care Patient Portal."
+        breadcrumbs={<span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-purple-500"></span><span className="text-xs font-bold uppercase tracking-wider text-purple-600">Patient Self-Service Portal</span></span>}
+        actions={[]}
+      />
+
+      <div className="flex items-center gap-3 rounded-xl bg-white p-1 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
+        {[
+          { id: "pending", label: "Needs Confirmation" },
+          { id: "confirmed", label: "Confirmed" },
+          { id: "cancelled", label: "Rejected / Cancelled" },
+          { id: "all", label: "All Bookings" },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setStatusFilter(tab.id)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-bold transition ${
+              statusFilter === tab.id
+                ? "bg-teal-700 text-white shadow-xs"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Bookings Table */}
-      <div className="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200/80">
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError("")} className="font-bold">✕</button>
+        </div>
+      )}
+
+      <div className="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         {isLoading ? (
           <div className="py-20 text-center text-xs font-medium text-slate-400 animate-pulse">
             Loading online bookings...
           </div>
         ) : bookings.length === 0 ? (
-          <div className="py-16 text-center">
-            <span className="text-4xl">🌐</span>
-            <p className="mt-2 text-sm font-bold text-slate-700">No bookings in this category</p>
-            <p className="text-xs text-slate-400 mt-1">
-              {statusFilter === "pending"
+          <EmptyStateCard
+            icon="🌐"
+            title="No bookings in this category"
+            description={
+              statusFilter === "pending"
                 ? "All self-service patient booking requests have been reviewed!"
-                : "No matching appointment requests found."}
-            </p>
-          </div>
+                : "No matching appointment requests found."
+            }
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-600">
@@ -138,35 +158,29 @@ export default function OnlineBookingsPage() {
                       {app.reasonForVisit}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                          app.status === "confirmed"
-                            ? "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300"
-                            : app.status === "cancelled"
-                            ? "bg-slate-100 text-slate-600"
-                            : "bg-amber-100 text-amber-800 ring-1 ring-amber-300 animate-pulse"
-                        }`}
-                      >
+                      <Badge status={statusConfig[app.status]?.badge || "normal"}>
                         {app.status}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       {app.status === "pending" ? (
                         <div className="flex items-center justify-end gap-2">
-                          <button
+                          <Button                             variant="outline"
+                            size="sm"
                             disabled={processingId === app._id}
                             onClick={() => handleAction(app._id, "confirm")}
-                            className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition disabled:opacity-50"
+                            leftIcon={<span>✓</span>}
                           >
-                            ✓ Confirm
-                          </button>
-                          <button
+                            {processingId === app._id ? "Confirming…" : "Confirm"}
+                          </Button>
+                          <Button                             variant="outline"
+                            size="sm"
                             disabled={processingId === app._id}
                             onClick={() => setCancelModal(app)}
-                            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition"
+                            className="border-rose-200 text-rose-700 hover:bg-rose-50"
                           >
                             Reject
-                          </button>
+                          </Button>
                         </div>
                       ) : (
                         <span className="text-xs text-slate-400 italic">Processed</span>
@@ -180,23 +194,33 @@ export default function OnlineBookingsPage() {
         )}
       </div>
 
-      {/* Reject / Cancel Reason Modal */}
+      {cancelModal && (
+        <ConfirmDialog
+          isOpen={Boolean(cancelModal)}
+          onCancel={() => setCancelModal(null)}
+          title="Reject Online Booking Request"
+          message={`Please provide a reason. The patient (${cancelModal.patient?.name}) will receive this update on their portal.`}
+          confirmText={processingId === cancelModal._id ? "Rejecting…" : "Confirm Rejection"}
+          cancelText="Back"
+          variant="warning"
+          loading={processingId === cancelModal._id}
+          onConfirm={() => handleAction(cancelModal._id, "cancel", cancelReason)}
+        />
+      )}
+
       {cancelModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs">
           <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
-            <h3 className="text-base font-bold text-slate-800">Reject Online Booking Request</h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Please provide a reason. The patient ({cancelModal.patient?.name}) will receive this update on their portal.
-            </p>
-
+            <h3 className="text-base font-black text-slate-800 border-b border-slate-100 pb-3">
+              Reason for Rejection
+            </h3>
             <textarea
               rows={3}
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               placeholder="e.g. Doctor is in emergency surgery; please choose another slot."
-              className="mt-4 w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 focus:border-rose-500 focus:outline-none"
+              className="mt-4 w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-800 focus:border-teal-600 focus:outline-none"
             />
-
             <div className="mt-5 flex items-center justify-end gap-2">
               <button
                 onClick={() => setCancelModal(null)}
@@ -207,9 +231,9 @@ export default function OnlineBookingsPage() {
               <button
                 disabled={processingId === cancelModal._id}
                 onClick={() => handleAction(cancelModal._id, "cancel", cancelReason)}
-                className="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white hover:bg-rose-700 disabled:opacity-50"
+                className="rounded-xl bg-rose-600 px-5 py-2 text-xs font-bold text-white hover:bg-rose-700 disabled:opacity-50"
               >
-                {processingId === cancelModal._id ? "Rejecting..." : "Confirm Rejection"}
+                {processingId === cancelModal._id ? "Rejecting…" : "Confirm Rejection"}
               </button>
             </div>
           </div>

@@ -4,6 +4,16 @@ import {
   processPharmacyReturn,
   getPharmacyInventory,
 } from "../../services/api.js";
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+  Input,
+  EmptyStateCard,
+  PageLoader,
+  Modal,
+} from "../../components/ui/index.js";
 
 export default function PharmacyReturnsPage() {
   const [returns, setReturns] = useState([]);
@@ -68,32 +78,27 @@ export default function PharmacyReturnsPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-rose-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Disposal & Reconciliations</span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Pharmacy Returns & Damage Control</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Process patient medicine returns, vendor credit claims for near-expiry stocks, and disposal of damaged items.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 shadow-sm transition"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Initiate Return / Credit</span>
-        </button>
+    <div className="space-y-6 bg-[#f7f6f3]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs">
+        <PageHeader
+          title="Pharmacy Returns & Damage Control"
+          subtitle="Process patient medicine returns, vendor credit claims for near-expiry stocks, and disposal of damaged items."
+          breadcrumbs={
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-rose-500"></span>
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Disposal & Reconciliations</span>
+            </span>
+          }
+          actions={[
+            <Button key="initiate" size="sm" onClick={() => setShowModal(true)} leftIcon={<span>↩️</span>}>
+              Initiate Return / Credit
+            </Button>,
+          ]}
+        />
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 bg-white p-3 rounded-xl border border-slate-200 shadow-2xs">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 rounded-2xl bg-white p-3 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         {[
           { id: "all", label: "All Returns" },
           { id: "patient_return", label: "Patient Medication Returns" },
@@ -105,7 +110,7 @@ export default function PharmacyReturnsPage() {
             onClick={() => setFilterType(f.id)}
             className={`rounded-lg px-3 py-1.5 text-xs font-bold transition whitespace-nowrap ${
               filterType === f.id
-                ? "bg-slate-900 text-white shadow-xs"
+                ? "bg-slate-900 text-slate-100 shadow-xs"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
@@ -116,16 +121,22 @@ export default function PharmacyReturnsPage() {
 
       {/* Table */}
       <div className="rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          <h2 className="text-sm font-bold text-slate-900">Returns & Credit History</h2>
+          <Badge status="normal">{filteredReturns.length} items</Badge>
+        </div>
+
         {isLoading ? (
           <div className="py-20 text-center text-slate-500">
             <div className="h-8 w-8 mx-auto border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-3 text-xs font-semibold">Loading returns and credit archives...</p>
+            <p className="mt-3 text-xs font-semibold">Loading returns and credit archives…</p>
           </div>
         ) : filteredReturns.length === 0 ? (
-          <div className="py-16 text-center text-slate-500">
-            <p className="text-sm font-bold text-slate-700">No returns recorded</p>
-            <p className="text-xs text-slate-400 mt-1">Returned medication and supplier credit claims appear here.</p>
-          </div>
+          <EmptyStateCard
+            icon="📦"
+            title="No returns recorded"
+            description="Returned medication and supplier credit claims appear here."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -152,9 +163,7 @@ export default function PharmacyReturnsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-700 uppercase">
-                        {ret.returnType?.replace("_", " ")}
-                      </span>
+                      <Badge status="normal">{ret.returnType?.replace("_", " ")}</Badge>
                     </td>
                     <td className="px-4 py-3 font-bold text-slate-900">
                       {ret.medicine?.name || ret.medicineName || "Medicine Item"}
@@ -181,118 +190,117 @@ export default function PharmacyReturnsPage() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-slate-900">Process Return / Credit Note</h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 font-bold">✕</button>
+        <Modal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          title="Process Return / Credit Note"
+          className="max-w-md"
+        >
+          <form onSubmit={handleSubmit} className="mt-4 space-y-3.5 text-xs">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Return Category</label>
+              <select
+                value={form.returnType}
+                onChange={(e) => setForm({ ...form, returnType: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 p-2.5 font-semibold focus:border-teal-600 focus:outline-none"
+              >
+                <option value="patient_return">Patient Return (Unused / Cancelled)</option>
+                <option value="supplier_return">Return to Supplier (Near Expiry / Defect)</option>
+                <option value="damage_writeoff">Breakage / Damage Write-Off</option>
+              </select>
             </div>
-            <form onSubmit={handleSubmit} className="mt-4 space-y-3.5 text-xs">
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Medicine Formulation</label>
+              <select
+                value={form.medicineName}
+                onChange={(e) => setForm({ ...form, medicineName: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 p-2.5 font-semibold focus:border-teal-600 focus:outline-none"
+              >
+                {medicines.map((m) => (
+                  <option key={m._id} value={m.name}>{m.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Return Category</label>
-                <select
-                  value={form.returnType}
-                  onChange={(e) => setForm({ ...form, returnType: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 p-2.5 font-semibold"
-                >
-                  <option value="patient_return">Patient Return (Unused / Cancelled)</option>
-                  <option value="supplier_return">Return to Supplier (Near Expiry / Defect)</option>
-                  <option value="damage_writeoff">Breakage / Damage Write-Off</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Medicine Formulation</label>
-                <select
-                  value={form.medicineName}
-                  onChange={(e) => setForm({ ...form, medicineName: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 p-2.5 font-semibold"
-                >
-                  {medicines.map((m) => (
-                    <option key={m._id} value={m.name}>{m.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Batch Number</label>
-                  <input
-                    type="text"
-                    value={form.batchNumber}
-                    onChange={(e) => setForm({ ...form, batchNumber: e.target.value })}
-                    required
-                    className="w-full rounded-xl border border-slate-200 p-2.5 font-mono font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Units Returned</label>
-                  <input
-                    type="number"
-                    value={form.quantity}
-                    onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })}
-                    required
-                    className="w-full rounded-xl border border-slate-200 p-2.5"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Refund / Credit (₹)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={form.refundAmount}
-                    onChange={(e) => setForm({ ...form, refundAmount: parseFloat(e.target.value) || 0 })}
-                    className="w-full rounded-xl border border-slate-200 p-2.5 font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Stock Disposition</label>
-                  <select
-                    value={form.disposition}
-                    onChange={(e) => setForm({ ...form, disposition: e.target.value })}
-                    className="w-full rounded-xl border border-slate-200 p-2.5"
-                  >
-                    <option value="restock">Restock to Inventory</option>
-                    <option value="quarantine">Quarantine & Quarantine Bin</option>
-                    <option value="destroy">Destroy / Waste Disposal</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Reason / Clinical Authorization</label>
-                <textarea
-                  rows="2"
-                  value={form.reason}
-                  onChange={(e) => setForm({ ...form, reason: e.target.value })}
+                <label className="block font-bold text-slate-700 mb-1">Batch Number</label>
+                <Input
+                  type="text"
+                  value={form.batchNumber}
+                  onChange={(e) => setForm({ ...form, batchNumber: e.target.value })}
                   required
-                  placeholder="Explain why the return was accepted..."
-                  className="w-full rounded-xl border border-slate-200 p-2.5"
+                  id="return-batch"
                 />
               </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="rounded-xl border border-slate-200 px-4 py-2 font-bold text-slate-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="rounded-xl bg-amber-500 px-5 py-2 font-bold text-slate-950 hover:bg-amber-400"
-                >
-                  {isSubmitting ? "Processing..." : "Authorize Return"}
-                </button>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Units Returned</label>
+                <Input
+                  type="number"
+                  value={form.quantity}
+                  onChange={(e) => setForm({ ...form, quantity: parseInt(e.target.value) || 1 })}
+                  required
+                  id="return-qty"
+                />
               </div>
-            </form>
-          </div>
-        </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Refund / Credit (₹)</label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={form.refundAmount}
+                  onChange={(e) => setForm({ ...form, refundAmount: parseFloat(e.target.value) || 0 })}
+                  id="return-refund"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Stock Disposition</label>
+                <select
+                  value={form.disposition}
+                  onChange={(e) => setForm({ ...form, disposition: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 p-2.5 focus:border-teal-600 focus:outline-none"
+                >
+                  <option value="restock">Restock to Inventory</option>
+                  <option value="quarantine">Quarantine & Quarantine Bin</option>
+                  <option value="destroy">Destroy / Waste Disposal</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Reason / Clinical Authorization</label>
+              <textarea
+                rows="2"
+                value={form.reason}
+                onChange={(e) => setForm({ ...form, reason: e.target.value })}
+                required
+                placeholder="Explain why the return was accepted…"
+                className="w-full rounded-xl border border-slate-200 p-2.5 focus:border-teal-600 focus:outline-none"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="rounded-xl border border-slate-200 px-4 py-2 font-bold text-slate-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-xl bg-amber-600 px-5 py-2 font-bold text-white hover:bg-amber-700 disabled:opacity-50"
+              >
+                {isSubmitting ? "Processing…" : "Authorize Return"}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </div>
   );

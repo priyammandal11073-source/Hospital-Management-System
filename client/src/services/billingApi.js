@@ -18,8 +18,16 @@ export const createBilling = async (billingData) => {
   return response.data;
 };
 
-export const updatePaymentStatus = async (id, statusData) => {
-  const response = await httpClient.patch(`/api/billing/${id}/payment`, statusData);
+export const updatePaymentStatus = async (id, statusData, paymentMethod, transactionRef) => {
+  let payload = statusData;
+  if (typeof statusData === "string") {
+    payload = {
+      paymentStatus: statusData,
+      paymentMethod: paymentMethod || "cash",
+      ...(transactionRef ? { razorpayPaymentId: transactionRef } : {}),
+    };
+  }
+  const response = await httpClient.patch(`/api/billing/${id}/payment`, payload);
   return response.data;
 };
 

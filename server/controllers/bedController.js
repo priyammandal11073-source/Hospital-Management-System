@@ -50,7 +50,8 @@ export const getAllBeds = asyncHandler(async (req, res) => {
   const beds = await Bed.find(filter)
     .populate("currentAdmission.patient", "name age gender contactNumber email abhaId bloodGroup address")
     .populate("currentAdmission.attendingDoctor", "name specialization department contactNumber email")
-    .sort({ ward: 1, bedNumber: 1 });
+    .sort({ ward: 1, bedNumber: 1 })
+    .lean();
 
   return res.status(200).json({ beds });
 });
@@ -62,7 +63,8 @@ export const getBedSummary = asyncHandler(async (req, res) => {
   const beds = await Bed.find({})
     .populate("currentAdmission.patient", "name age gender contactNumber email abhaId bloodGroup address")
     .populate("currentAdmission.attendingDoctor", "name specialization department contactNumber email")
-    .sort({ ward: 1, bedNumber: 1 });
+    .sort({ ward: 1, bedNumber: 1 })
+    .lean();
   
   const total = beds.length;
   const occupied = beds.filter((b) => b.status === "occupied").length;

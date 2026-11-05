@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPatient, updatePatient, checkDuplicatePatient } from "../services/api.js";
+import { Input, Button, Badge, Card } from "../components/ui/index.js";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -29,7 +30,6 @@ function PatientForm({ patient, onCancel, onSuccess }) {
   const [duplicates, setDuplicates] = useState([]);
   const [isCheckingDuplicates, setIsCheckingDuplicates] = useState(false);
 
-  // Duplicate patient search (only when registering new patient)
   useEffect(() => {
     if (patient) return;
     const phone = formData.contactNumber.trim();
@@ -110,16 +110,8 @@ function PatientForm({ patient, onCancel, onSuccess }) {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
-      {/* Duplicate Patient Alert */}
       {duplicates.length > 0 && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 shadow-xs">
-          <div className="flex items-center gap-2 font-bold text-amber-900">
-            <span className="text-base">⚠️</span>
-            <span>Potential Duplicate Patient Record Found</span>
-          </div>
-          <p className="mt-1 text-[11px] text-amber-800">
-            One or more existing patients match the entered contact, email, or name. Avoid creating duplicate records.
-          </p>
+        <Card title="Potential Duplicate Patient Record Found" subtitle="One or more existing patients match the entered contact, email, or name. Avoid creating duplicate records." className="border-amber-300/60 bg-amber-50">
           <ul className="mt-2 divide-y divide-amber-200/60 rounded-lg bg-white/70 p-2 text-xs">
             {duplicates.map((d) => (
               <li key={d._id} className="py-1.5 flex items-center justify-between">
@@ -135,14 +127,14 @@ function PatientForm({ patient, onCancel, onSuccess }) {
               </li>
             ))}
           </ul>
-        </div>
+        </Card>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-          Name *
-          <input
-            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+        <div className="flex flex-col">
+          <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Name *</label>
+          <Input
+            label=" "
             name="name"
             onChange={handleChange}
             placeholder="e.g. Rahul Sharma"
@@ -151,45 +143,46 @@ function PatientForm({ patient, onCancel, onSuccess }) {
             autoComplete="name"
             enterKeyHint="next"
             value={formData.name}
+            error={!formData.name && "Required"}
           />
-        </label>
-        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-          Age *
-          <input
-            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Age *</label>
+          <Input
+            type="number"
             min="0"
             name="age"
             onChange={handleChange}
             required
-            type="number"
             inputMode="numeric"
             enterKeyHint="next"
             value={formData.age}
+            error={!formData.age && "Required"}
           />
-        </label>
-        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-          Gender *
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Gender *</label>
           <select
-            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-semibold text-slate-900 focus:border-teal-600 focus:outline-hidden"
             name="gender"
             onChange={handleChange}
             required
             value={formData.gender}
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-semibold text-slate-900 focus:border-teal-600 focus:outline-none"
           >
             <option value="">Select gender</option>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
           </select>
-        </label>
-        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-          Contact number *
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Contact number *</label>
           <div className="relative mt-1 flex rounded-xl shadow-2xs">
             <span className="inline-flex min-h-[44px] items-center rounded-l-xl border border-r-0 border-slate-300 bg-slate-100 px-3.5 text-xs font-bold text-slate-600">
               +91
             </span>
             <input
-              className="w-full min-h-[44px] rounded-r-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+              className="w-full min-h-[44px] rounded-r-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-none"
               name="contactNumber"
               onChange={handleChange}
               placeholder="98765 43210"
@@ -201,28 +194,27 @@ function PatientForm({ patient, onCancel, onSuccess }) {
               value={formData.contactNumber}
             />
           </div>
-        </label>
-        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-          Email
-          <input
-            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
-            name="email"
-            onChange={handleChange}
-            placeholder="rahul.sharma@example.com"
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Email</label>
+          <Input
             type="email"
             inputMode="email"
             autoComplete="email"
             enterKeyHint="next"
+            name="email"
+            onChange={handleChange}
+            placeholder="rahul.sharma@example.com"
             value={formData.email}
           />
-        </label>
-        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-          Blood group
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Blood group</label>
           <select
-            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-semibold text-slate-900 focus:border-teal-600 focus:outline-hidden"
             name="bloodGroup"
             onChange={handleChange}
             value={formData.bloodGroup}
+            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-semibold text-slate-900 focus:border-teal-600 focus:outline-none"
           >
             <option value="">Select blood group</option>
             {bloodGroups.map((bloodGroup) => (
@@ -231,24 +223,23 @@ function PatientForm({ patient, onCancel, onSuccess }) {
               </option>
             ))}
           </select>
-        </label>
-        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider sm:col-span-2">
-          ABHA number (Ayushman Bharat, optional)
-          <input
-            className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+        </div>
+        <div className="flex flex-col sm:col-span-2">
+          <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">ABHA number (Ayushman Bharat, optional)</label>
+          <Input
             name="abhaId"
             onChange={handleChange}
             placeholder="e.g. 14-8891-2345-6789 or username@abdm"
             enterKeyHint="next"
             value={formData.abhaId}
           />
-        </label>
+        </div>
       </div>
 
-      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-        Address
+      <div className="flex flex-col">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Address</label>
         <textarea
-          className="mt-1 w-full min-h-[72px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+          className="mt-1 w-full min-h-[72px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-none"
           name="address"
           onChange={handleChange}
           placeholder="e.g. 123 M.G. Road, Indiranagar, Bengaluru, Karnataka - 560038"
@@ -256,57 +247,59 @@ function PatientForm({ patient, onCancel, onSuccess }) {
           autoComplete="street-address"
           value={formData.address}
         />
-      </label>
+      </div>
 
-      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-        Allergies
-        <input
-          className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+      <div className="flex flex-col">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Allergies</label>
+        <Input
           name="allergies"
           onChange={handleChange}
           placeholder="e.g. Penicillin, Peanuts"
           enterKeyHint="next"
           value={formData.allergies}
         />
-      </label>
+      </div>
 
-      <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-        Medical history
-        <input
-          className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm sm:text-xs font-medium text-slate-900 placeholder-slate-400 focus:border-teal-600 focus:outline-hidden"
+      <div className="flex flex-col">
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Medical history</label>
+        <Input
           name="medicalHistory"
           onChange={handleChange}
           placeholder="e.g. Asthma, Diabetes"
           enterKeyHint="done"
           value={formData.medicalHistory}
         />
-      </label>
+      </div>
 
-      {error && (
-        <p className="rounded-xl bg-red-50 border border-red-200 p-3.5 text-xs font-bold text-red-700" role="alert">
-          {error}
-        </p>
+      {isCheckingDuplicates && (
+        <p className="text-xs text-slate-500">Checking for duplicate records…</p>
       )}
 
-      {/* Sticky Mobile / Adaptive Desktop Submit Footer */}
+      {error && (
+        <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 text-xs font-bold text-rose-700" role="alert">
+          {error}
+        </div>
+      )}
+
       <div
         style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom, 12px))" }}
         className="sticky bottom-0 -mx-5 -mb-7 sm:mx-0 sm:mb-0 p-4 sm:p-0 bg-white/95 backdrop-blur-xs border-t border-slate-200/80 sm:border-t-0 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-3 z-10"
       >
-        <button
-          className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+        <Button
+          variant="outline"
           onClick={onCancel}
           type="button"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
         >
           Cancel
-        </button>
-        <button
-          className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer active:scale-[0.98]"
+        </Button>
+        <Button
           disabled={isSubmitting}
           type="submit"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition-colors shadow-2xs cursor-pointer active:scale-[0.98]"
         >
-          {isSubmitting ? "Saving..." : patient ? "Update patient" : "Add patient"}
-        </button>
+          {isSubmitting ? "Saving…" : patient ? "Update patient" : "Add patient"}
+        </Button>
       </div>
     </form>
   );

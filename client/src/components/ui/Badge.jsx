@@ -43,8 +43,8 @@ const Badge = ({ status, dot = true, className = "", children, ...props }) => {
       dot: "bg-slate-500",
     },
     active: {
-      badge: "bg-sky-50 text-sky-800 border-sky-200/80 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/60",
-      dot: "bg-sky-500",
+      badge: "bg-teal-50 text-teal-800 border-teal-200/80 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800/60",
+      dot: "bg-teal-600",
     },
     quarantined: {
       badge: "bg-rose-50 text-rose-800 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/60",
@@ -59,20 +59,20 @@ const Badge = ({ status, dot = true, className = "", children, ...props }) => {
       dot: "bg-slate-400",
     },
     in_progress: {
-      badge: "bg-blue-50 text-blue-800 border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/60",
-      dot: "bg-blue-500",
+      badge: "bg-teal-50 text-teal-800 border-teal-200/80 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800/60",
+      dot: "bg-teal-600",
     },
     sample_collected: {
       badge: "bg-sky-50 text-sky-800 border-sky-200/80 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/60",
       dot: "bg-sky-500",
     },
     result_entered: {
-      badge: "bg-indigo-50 text-indigo-800 border-indigo-200/80 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800/60",
-      dot: "bg-indigo-500",
+      badge: "bg-sky-50 text-sky-800 border-sky-200/80 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800/60",
+      dot: "bg-sky-600",
     },
     under_review: {
-      badge: "bg-purple-50 text-purple-800 border-purple-200/80 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/60",
-      dot: "bg-purple-500",
+      badge: "bg-violet-50 text-violet-800 border-violet-200/80 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800/60",
+      dot: "bg-violet-600",
     },
     amended: {
       badge: "bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60",
@@ -83,8 +83,8 @@ const Badge = ({ status, dot = true, className = "", children, ...props }) => {
       dot: "bg-emerald-500",
     },
     admitted: {
-      badge: "bg-indigo-50 text-indigo-800 border-indigo-200/80 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800/60",
-      dot: "bg-indigo-500",
+      badge: "bg-teal-50 text-teal-800 border-teal-200/80 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800/60",
+      dot: "bg-teal-600",
     },
     discharged: {
       badge: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",

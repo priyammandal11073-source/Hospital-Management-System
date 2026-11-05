@@ -4,8 +4,8 @@ const Card = ({ title, subtitle, children, className = "", headerAction, isClick
   return (
     <div
       className={`
-        liquid-glass-card rounded-2xl p-4 sm:p-6
-        ${isClickable ? "cursor-pointer active:scale-[0.98]" : ""}
+        liquid-glass-card rounded-2xl p-4 sm:p-6 border-0 shadow-sm tile-popout tile-wobble
+        ${isClickable ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600/50 focus-visible:ring-offset-2 active:scale-[0.99]" : ""}
         ${className}
       `}
       onClick={onClick}
@@ -15,7 +15,7 @@ const Card = ({ title, subtitle, children, className = "", headerAction, isClick
       {...props}
     >
       {(title || subtitle || headerAction) && (
-        <div className="flex items-center justify-between mb-4 border-b border-slate-100/80 pb-3">
+        <div className="flex items-center justify-between mb-4 pb-2">
           <div>
             {title && (
               <h3 className="text-sm sm:text-base font-semibold text-slate-900 tracking-tight">

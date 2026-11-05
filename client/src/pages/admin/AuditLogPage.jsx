@@ -86,7 +86,7 @@ export default function AuditLogPage() {
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight mt-1 flex items-center gap-2.5">
             <span>System Audit Trail & Security Logs</span>
-            <span className="rounded-full bg-slate-900 px-2.5 py-0.5 text-xs font-mono font-bold text-white">
+            <span className="rounded-full bg-slate-900 px-2.5 py-0.5 text-xs font-mono font-bold text-slate-100">
               Immutable
             </span>
           </h1>
@@ -122,7 +122,7 @@ export default function AuditLogPage() {
           />
           <button
             type="submit"
-            className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white hover:bg-slate-800 transition"
+            className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-slate-100 hover:bg-slate-800 transition"
           >
             Search
           </button>

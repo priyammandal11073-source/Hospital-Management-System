@@ -251,12 +251,20 @@ export const getDoctorDashboard = asyncHandler(async (req, res) => {
         consultationQueue: enrichedQueue,
       },
     });
+});
 
 /**
  * 2. GET /api/doctor-workspace/consultation-bundle/:appointmentId
  * Full clinical bundle for Consultation Workspace (Patient chart, allergies, vitals, meds, notes, labs)
  */
-export const getConsultationBundle = asyncHandler(async (req, res) => { await requireDb();
+export const getConsultationBundle = asyncHandler(async (req, res) => {
+  await requireDb();
+  const { appointmentId } = req.params;
+  if (!mongoose.isValidObjectId(appointmentId)) {
+    throw new AppError("Invalid appointment ID", 400);
+  }
+
+
     const appointment = await Appointment.findById(appointmentId)
       .populate("patient")
       .populate("doctor", "name specialization department consultationFee email phone")
@@ -327,6 +335,25 @@ export const getConsultationBundle = asyncHandler(async (req, res) => { await re
       }
     });
 
+    return res.status(200).json({
+      success: true,
+      data: {
+        appointment,
+        patient: appointment.patient,
+        latestVitals: vitalsHistory[0] || null,
+        vitalsHistory,
+        currentMedications,
+        activePrescriptions,
+        labReports,
+        clinicalNotes,
+        previousAppointments,
+        diagnosticOrders,
+        diagnosticReports,
+      },
+    });
+});
+
+/**
  * 3. POST /api/doctor-workspace/conclude-consultation
  * Concludes consultation: Updates appointment, creates clinical note, issues prescription,
  * orders lab investigations, and files specialist referral.
@@ -1006,7 +1033,7 @@ export const getCriticalLabResults = async (req, res) => {
       testDate: diag.criticalDetails?.flaggedAt || diag.updatedAt || diag.createdAt,
       report: diag.report,
       isDiagnosticOrder: true,
-    });
+    }));
 
     const combinedReports = [...formattedDiagAlerts, ...labReports];
 

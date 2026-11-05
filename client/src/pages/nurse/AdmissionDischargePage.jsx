@@ -217,7 +217,7 @@ export default function AdmissionDischargePage() {
       {selectedPatient ? (
         <>
           {/* Patient Overview Card */}
-          <div className="bg-slate-900 text-white p-5 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-slate-900 text-slate-100 p-5 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center text-xl font-bold">
                 {selectedPatient.patientName.charAt(0)}
@@ -458,7 +458,7 @@ export default function AdmissionDischargePage() {
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+                        className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-slate-100 text-sm font-semibold rounded-xl shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
                       >
                         {submitting ? "Signing & Saving..." : "Sign & Complete Admission Assessment"}
                       </button>
@@ -628,7 +628,7 @@ export default function AdmissionDischargePage() {
                       <button
                         type="submit"
                         disabled={submitting}
-                        className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+                        className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-slate-100 text-sm font-semibold rounded-xl shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
                       >
                         {submitting ? "Signing & Finalizing..." : "Sign & Finalize Nursing Discharge"}
                       </button>

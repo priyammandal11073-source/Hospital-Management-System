@@ -39,22 +39,19 @@ export function SidebarCollapseButton({
   onToggle,
   className = "",
   size = "md",
+  ...rest
 }) {
-  const sizeClasses =
-    size === "sm"
-      ? "h-6 w-6"
-      : "h-7 w-7";
-
   return (
     <button
       type="button"
       onClick={onToggle}
-      className={`inline-flex items-center justify-center ${sizeClasses} bg-transparent hover:bg-transparent border-0 shadow-none text-slate-400 hover:text-slate-800 active:text-slate-950 transition-[transform,color] duration-120 ease-out active:scale-[0.90] cursor-pointer flex-shrink-0 touch-target ${className}`}
+      {...rest}
+      className={`relative inline-flex items-center justify-center h-4 w-4 p-0 m-0 bg-transparent hover:bg-transparent border-0 shadow-none text-slate-500 hover:text-slate-800 active:text-slate-950 transition-[transform,color] duration-120 ease-out active:scale-[0.92] cursor-pointer flex-shrink-0 select-none before:absolute before:-inset-2 before:content-[''] ${className}`}
       title={collapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
       aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       aria-expanded={!collapsed}
     >
-      <AppleSidebarToggleIcon collapsed={collapsed} />
+      <AppleSidebarToggleIcon collapsed={collapsed} className="h-4 w-4" />
     </button>
   );
 }

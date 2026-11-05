@@ -146,7 +146,7 @@ export default function EquipmentMaintenancePage() {
         </div>
         <button
           onClick={() => setShowCreateOrderModal(true)}
-          className="inline-flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-purple-700 transition"
+          className="inline-flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-xs font-bold text-slate-100 shadow-sm hover:bg-purple-700 transition"
         >
           <span>+</span>
           <span>Open Maintenance Order</span>
@@ -195,7 +195,7 @@ export default function EquipmentMaintenancePage() {
         <button
           onClick={() => setActiveTab("equipment")}
           className={`rounded-lg px-4 py-1.5 font-bold transition ${
-            activeTab === "equipment" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+            activeTab === "equipment" ? "bg-slate-900 text-slate-100" : "text-slate-600 hover:bg-slate-100"
           }`}
         >
           Biomedical Equipment Registry ({equipment.length})
@@ -203,7 +203,7 @@ export default function EquipmentMaintenancePage() {
         <button
           onClick={() => setActiveTab("orders")}
           className={`rounded-lg px-4 py-1.5 font-bold transition ${
-            activeTab === "orders" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+            activeTab === "orders" ? "bg-slate-900 text-slate-100" : "text-slate-600 hover:bg-slate-100"
           }`}
         >
           Maintenance Work Orders ({orders.length})
@@ -443,7 +443,7 @@ export default function EquipmentMaintenancePage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-white hover:bg-purple-700"
+                  className="rounded-xl bg-purple-600 px-4 py-2 text-xs font-bold text-slate-100 hover:bg-purple-700"
                 >
                   Create Work Order
                 </button>

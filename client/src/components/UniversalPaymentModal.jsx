@@ -22,6 +22,7 @@ export default function UniversalPaymentModal({
   isPatient = false,
   title = "Settle Hospital Bill",
 }) {
+  const isPatientUser = isPatient || (typeof window !== "undefined" && Boolean(localStorage.getItem("patient_token")));
   const [selectedMethod, setSelectedMethod] = useState("");
   const [showUpiModal, setShowUpiModal] = useState(false);
   const [showInsuranceModal, setShowInsuranceModal] = useState(false);
@@ -285,7 +286,7 @@ export default function UniversalPaymentModal({
             <UpiPaymentBox
               billing={billing}
               onPaymentSuccess={handleSubModalSuccess}
-              isPatient={isPatient}
+              isPatient={isPatientUser}
             />
           </div>
         </div>
@@ -305,7 +306,7 @@ export default function UniversalPaymentModal({
             <InsurancePaymentBox
               billing={billing}
               onPaymentSuccess={handleSubModalSuccess}
-              isPatient={isPatient}
+              isPatient={isPatientUser}
             />
           </div>
         </div>
@@ -325,7 +326,7 @@ export default function UniversalPaymentModal({
             <CardPaymentBox
               billing={billing}
               onPaymentSuccess={handleSubModalSuccess}
-              isPatient={isPatient}
+              isPatient={isPatientUser}
             />
           </div>
         </div>

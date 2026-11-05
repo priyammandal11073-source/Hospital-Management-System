@@ -56,15 +56,13 @@ export default function ConfirmDialog({
     return () => window.removeEventListener("keydown", handleEsc);
   }, [isOpen, loading, onCancel]);
 
-  // Body scroll lock
+  // Preserve any scroll lock owned by a parent sheet or modal.
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (!isOpen) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
     };
   }, [isOpen]);
 
@@ -72,18 +70,18 @@ export default function ConfirmDialog({
 
   const variantStyles = {
     danger: {
-      button: "bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white shadow-2xs",
-      iconBg: "bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-400",
+      button: "bg-rose-700 hover:bg-rose-800 active:bg-rose-900 text-white shadow-2xs",
+      iconBg: "bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-400",
       icon: AlertCircleIcon,
     },
     warning: {
-      button: "bg-amber-600 hover:bg-amber-500 active:bg-amber-700 text-white shadow-2xs",
-      iconBg: "bg-amber-50 border-amber-200 text-amber-600 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400",
+      button: "bg-amber-700 hover:bg-amber-800 active:bg-amber-900 text-white shadow-2xs",
+      iconBg: "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-950/40 dark:border-amber-800 dark:text-amber-400",
       icon: AlertTriangleIcon,
     },
     primary: {
-      button: "bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white shadow-2xs",
-      iconBg: "bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-400",
+      button: "bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white shadow-2xs",
+      iconBg: "bg-teal-50 border-teal-200 text-teal-700 dark:bg-teal-950/40 dark:border-teal-800 dark:text-teal-400",
       icon: InfoIcon,
     },
   };
@@ -91,10 +89,9 @@ export default function ConfirmDialog({
   const style = variantStyles[variant] || variantStyles.danger;
   const IconComponent = style.icon;
 
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
+  return (      <div
+        role="dialog"
+        aria-modal="true"
       aria-labelledby={titleId}
       onClick={(e) => {
         if (e.target === e.currentTarget && !loading && onCancel) {
@@ -104,7 +101,7 @@ export default function ConfirmDialog({
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/35 backdrop-blur-md animate-backdrop-fade"
     >
       <div
-        className="w-full max-w-md bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-2xl shadow-xl p-6 text-slate-800 animate-pop-in"
+        className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-slate-800 shadow-xl animate-pop-in"
       >
         <div className="flex items-start gap-4">
           <div

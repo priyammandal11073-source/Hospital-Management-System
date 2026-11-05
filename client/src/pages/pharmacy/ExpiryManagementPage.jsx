@@ -1,10 +1,21 @@
 import { useState, useEffect } from "react";
 import { getPharmacyAlerts, recordStockAdjustment } from "../../services/api.js";
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+  EmptyStateCard,
+  PageLoader,
+  ConfirmDialog,
+} from "../../components/ui/index.js";
 
 export default function ExpiryManagementPage() {
   const [alerts, setAlerts] = useState({ expiredBatches: [], expiringBatches: [] });
   const [activeTab, setActiveTab] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [quarantineModal, setQuarantineModal] = useState(null);
+  const [isQuarantining, setIsQuarantining] = useState(false);
 
   const fetchAlerts = async () => {
     setIsLoading(true);
@@ -23,11 +34,11 @@ export default function ExpiryManagementPage() {
   }, []);
 
   const handleQuarantine = async (batch) => {
-    const confirmQuarantine = window.confirm(
-      `Quarantine and write off Batch ${batch.batchNumber} (${batch.currentStock} units)? This will remove stock from active dispensing.`
-    );
-    if (!confirmQuarantine) return;
+    setQuarantineModal(batch);
+  };
 
+  const doQuarantine = async (batch) => {
+    setIsQuarantining(true);
     try {
       await recordStockAdjustment({
         medicineName: batch.medicine?.name || "Medicine Item",
@@ -36,10 +47,12 @@ export default function ExpiryManagementPage() {
         quantity: -Math.abs(batch.currentStock || 1),
         reason: "Quarantined and written off due to expiry",
       });
-      alert(`Batch ${batch.batchNumber} quarantined successfully!`);
+      setQuarantineModal(null);
       fetchAlerts();
     } catch (err) {
       alert("Quarantine action failed: " + (err.response?.data?.message || err.message));
+    } finally {
+      setIsQuarantining(false);
     }
   };
 
@@ -61,42 +74,34 @@ export default function ExpiryManagementPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Patient Safety & Quality</span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Expiry Management & Quarantine Radar</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Advance warning system for near-expiry formulations, strict disposal protocols, and supplier credit returns.
-          </p>
-        </div>
+    <div className="space-y-6 bg-[#f7f6f3]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs">
+        <PageHeader
+          title="Expiry Management & Quarantine Radar"
+          subtitle="Advance warning system for near-expiry formulations, strict disposal protocols, and supplier credit returns."
+          breadcrumbs={
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Patient Safety & Quality</span>
+            </span>
+          }
+        />
       </div>
 
       {/* Summary KPI Highlights */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-4 shadow-2xs">
-          <p className="text-xs font-bold text-rose-700 uppercase">Expired (Quarantine)</p>
-          <p className="mt-1 text-2xl font-black text-rose-900">{expiredList.length}</p>
-          <p className="text-[10px] text-rose-700 mt-1">Blocked from dispensing</p>
-        </div>
-        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 shadow-2xs">
-          <p className="text-xs font-bold text-amber-800 uppercase">Expiring &lt; 30 Days</p>
-          <p className="mt-1 text-2xl font-black text-amber-900">{expiring30.length}</p>
-          <p className="text-[10px] text-amber-800 mt-1">Immediate FIFO priority</p>
-        </div>
-        <div className="rounded-xl border border-yellow-200 bg-yellow-50/70 p-4 shadow-2xs">
-          <p className="text-xs font-bold text-yellow-800 uppercase">Expiring 31-60 Days</p>
-          <p className="mt-1 text-2xl font-black text-yellow-900">{expiring60.length}</p>
-          <p className="text-[10px] text-yellow-800 mt-1">Monitor dispensing velocity</p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-bold text-slate-400 uppercase">Expiring 61-90 Days</p>
-          <p className="mt-1 text-2xl font-black text-slate-900">{expiring90.length}</p>
-          <p className="text-[10px] text-slate-400 mt-1">Vendor credit window</p>
-        </div>
+        <Card title="Expired (Quarantine)" subtitle="Blocked from dispensing">
+          <div className="text-2xl font-black text-rose-900">{expiredList.length}</div>
+        </Card>
+        <Card title="Expiring < 30 Days" subtitle="Immediate FIFO priority">
+          <div className="text-2xl font-black text-amber-900">{expiring30.length}</div>
+        </Card>
+        <Card title="Expiring 31-60 Days" subtitle="Monitor dispensing velocity">
+          <div className="text-2xl font-black text-yellow-900">{expiring60.length}</div>
+        </Card>
+        <Card title="Expiring 61-90 Days" subtitle="Vendor credit window">
+          <div className="text-2xl font-black text-slate-900">{expiring90.length}</div>
+        </Card>
       </div>
 
       {/* Critical Alert Banner if any expired */}
@@ -126,7 +131,7 @@ export default function ExpiryManagementPage() {
         {isLoading ? (
           <div className="py-20 text-center text-slate-500">
             <div className="h-8 w-8 mx-auto border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-3 text-xs font-semibold">Running expiry radar scan...</p>
+            <p className="mt-3 text-xs font-semibold">Running expiry radar scan…</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -155,21 +160,19 @@ export default function ExpiryManagementPage() {
                       {new Date(b.expiryDate).toLocaleDateString("en-IN")}
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="rounded-full bg-rose-200 px-2 py-0.5 text-[10px] font-black text-rose-900">
-                        EXPIRED
-                      </span>
+                      <Badge status="cancelled">Expired</Badge>
                     </td>
                     <td className="px-4 py-3.5 font-mono font-bold text-rose-900">
                       {b.currentStock} units
                     </td>
                     <td className="px-4 py-3.5 text-right">
-                      <button
-                        type="button"
+                      <Button                         variant="danger"
+                        size="sm"
+                        disabled={isQuarantining}
                         onClick={() => handleQuarantine(b)}
-                        className="rounded-lg bg-rose-600 hover:bg-rose-700 px-3 py-1.5 text-xs font-bold text-white shadow-xs"
                       >
                         Quarantine & Write-Off
-                      </button>
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -191,11 +194,9 @@ export default function ExpiryManagementPage() {
                         {new Date(b.expiryDate).toLocaleDateString("en-IN")}
                       </td>
                       <td className="px-4 py-3.5">
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                          isUrgent ? "bg-amber-200 text-amber-900" : "bg-yellow-100 text-yellow-800"
-                        }`}>
+                        <Badge status={isUrgent ? "urgent" : "normal"}>
                           {days} Days Left
-                        </span>
+                        </Badge>
                       </td>
                       <td className="px-4 py-3.5 font-mono font-bold text-slate-800">
                         {b.currentStock} units
@@ -213,6 +214,21 @@ export default function ExpiryManagementPage() {
           </div>
         )}
       </div>
+
+      {/* Quarantine Confirmation Dialog */}
+      {quarantineModal && (
+        <ConfirmDialog
+          isOpen={Boolean(quarantineModal)}
+          onCancel={() => setQuarantineModal(null)}
+          title="Quarantine & Write-Off Batch"
+          message={`Quarantine and write off Batch ${quarantineModal.batchNumber} (${quarantineModal.currentStock} units)? This will remove stock from active dispensing.`}
+          confirmText={isQuarantining ? "Quarantining…" : "Quarantine & Write-Off"}
+          cancelText="Cancel"
+          variant="danger"
+          loading={isQuarantining}
+          onConfirm={() => doQuarantine(quarantineModal)}
+        />
+      )}
     </div>
   );
 }

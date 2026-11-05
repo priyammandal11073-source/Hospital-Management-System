@@ -18,7 +18,11 @@ const httpClient = axios.create({
 // so both sessions can coexist in the same browser.
 httpClient.interceptors.request.use((config) => {
   const url = config.url || "";
-  const isPatientRoute = url.includes("/patient-auth") || url.includes("/patient-portal");
+  const isPatientPortalPage = typeof window !== "undefined" && (
+    window.location.pathname.startsWith("/patient") ||
+    window.location.pathname.startsWith("/pay")
+  );
+  const isPatientRoute = isPatientPortalPage || url.includes("/patient-auth") || url.includes("/patient-portal");
   const token = isPatientRoute
     ? localStorage.getItem("patient_token") || localStorage.getItem("hms_token")
     : localStorage.getItem("hms_token") || localStorage.getItem("patient_token");
@@ -30,21 +34,27 @@ httpClient.interceptors.request.use((config) => {
   return config;
 });
 
-const cleanRepeatedDr = (value) => {
+const cleanRepeatedDr = (value, depth = 0) => {
+  if (depth > 5 || value === null || value === undefined) return value;
   if (typeof value === "string") {
-    return value.replace(/(?:^|\b)(?:dr\.?\s*){2,}/gi, "Dr. ");
+    if (value.length > 2 && value.length < 120 && /dr/i.test(value)) {
+      return value.replace(/(?:^|\b)(?:dr\.?\s*){2,}/gi, "Dr. ");
+    }
+    return value;
   }
   if (Array.isArray(value)) {
-    return value.map(cleanRepeatedDr);
+    for (let i = 0; i < value.length; i++) {
+      value[i] = cleanRepeatedDr(value[i], depth + 1);
+    }
+    return value;
   }
-  if (value !== null && typeof value === "object") {
+  if (typeof value === "object") {
     if (typeof Blob !== "undefined" && value instanceof Blob) return value;
     if (typeof ArrayBuffer !== "undefined" && value instanceof ArrayBuffer) return value;
-    const cleaned = {};
     for (const key of Object.keys(value)) {
-      cleaned[key] = cleanRepeatedDr(value[key]);
+      value[key] = cleanRepeatedDr(value[key], depth + 1);
     }
-    return cleaned;
+    return value;
   }
   return value;
 };

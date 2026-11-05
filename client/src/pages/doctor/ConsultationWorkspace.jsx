@@ -307,7 +307,7 @@ export default function ConsultationWorkspace() {
           <p className="text-sm font-bold text-rose-700">{error || "Consultation record not available"}</p>
           <button
             onClick={() => navigate("/appointments")}
-            className="px-4 py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-700"
+            className="px-4 py-2 bg-slate-800 text-slate-100 text-xs font-semibold rounded-lg hover:bg-slate-700"
           >
             Return to Consultations Queue
           </button>
@@ -362,7 +362,7 @@ export default function ConsultationWorkspace() {
         <div className="lg:col-span-2 space-y-4">
           <form onSubmit={handleConclude} className="space-y-4">
             {/* 2.1 SOAP: Subjective & Objective Examination */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+            <div className="liquid-glass-card rounded-2xl p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">1</span>
@@ -383,7 +383,7 @@ export default function ConsultationWorkspace() {
                     value={chiefComplaint}
                     onChange={(e) => setChiefComplaint(e.target.value)}
                     placeholder="e.g. Fever for 3 days, dry cough, body ache..."
-                    className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
+                    className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 p-2.5 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none placeholder-slate-400"
                   />
                 </div>
 
@@ -396,7 +396,7 @@ export default function ConsultationWorkspace() {
                     value={clinicalHistory}
                     onChange={(e) => setClinicalHistory(e.target.value)}
                     placeholder="e.g. No history of DM/HTN. Had similar episode 6 months ago..."
-                    className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
+                    className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 p-2.5 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none placeholder-slate-400"
                   />
                 </div>
               </div>
@@ -410,13 +410,13 @@ export default function ConsultationWorkspace() {
                   value={examination}
                   onChange={(e) => setExamination(e.target.value)}
                   placeholder="e.g. Chest: bilateral clear breath sounds. Abdomen soft, non-tender. CVS: S1 S2 normal..."
-                  className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
+                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 p-2.5 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none placeholder-slate-400"
                 />
               </div>
             </div>
 
             {/* 2.2 Assessment & Diagnosis */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+            <div className="liquid-glass-card rounded-2xl p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">2</span>
@@ -437,7 +437,7 @@ export default function ConsultationWorkspace() {
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
                   placeholder="e.g. Acute Upper Respiratory Infection"
-                  className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 font-semibold text-slate-900 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
+                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 p-2.5 font-semibold text-slate-900 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none placeholder-slate-400"
                 />
 
                 {/* Quick diagnoses picker */}
@@ -465,13 +465,13 @@ export default function ConsultationWorkspace() {
                   value={differentialDiagnosis}
                   onChange={(e) => setDifferentialDiagnosis(e.target.value)}
                   placeholder="e.g. Rule out Influenza, Allergic Rhinitis"
-                  className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
+                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 p-2.5 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none placeholder-slate-400"
                 />
               </div>
             </div>
 
             {/* 2.3 Prescription Builder with Safety Check */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+            <div className="liquid-glass-card rounded-2xl p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">3</span>
@@ -483,7 +483,7 @@ export default function ConsultationWorkspace() {
               </div>
 
               {/* Medication Input Row */}
-              <div className="bg-slate-50 p-3.5 rounded-md border border-slate-200 space-y-3">
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                   <div className="sm:col-span-2">
                     <label className="block text-[11px] font-semibold text-slate-700 mb-1">Medicine Name</label>
@@ -492,7 +492,7 @@ export default function ConsultationWorkspace() {
                       value={newMed.name}
                       onChange={(e) => setNewMed({ ...newMed, name: e.target.value })}
                       placeholder="e.g. Paracetamol"
-                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                      className="w-full text-xs rounded-xl border border-slate-300 p-2 bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none"
                     />
                   </div>
                   <div>
@@ -502,7 +502,7 @@ export default function ConsultationWorkspace() {
                       value={newMed.strength}
                       onChange={(e) => setNewMed({ ...newMed, strength: e.target.value })}
                       placeholder="e.g. 650mg"
-                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                      className="w-full text-xs rounded-xl border border-slate-300 p-2 bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none"
                     />
                   </div>
                   <div>
@@ -510,7 +510,7 @@ export default function ConsultationWorkspace() {
                     <select
                       value={newMed.frequency}
                       onChange={(e) => setNewMed({ ...newMed, frequency: e.target.value })}
-                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                      className="w-full text-xs rounded-xl border border-slate-300 p-2 bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none"
                     >
                       <option value="1-0-1">1-0-1 (Twice daily)</option>
                       <option value="1-0-0">1-0-0 (Morning)</option>
@@ -525,7 +525,7 @@ export default function ConsultationWorkspace() {
                     <select
                       value={newMed.timing}
                       onChange={(e) => setNewMed({ ...newMed, timing: e.target.value })}
-                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                      className="w-full text-xs rounded-xl border border-slate-300 p-2 bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none"
                     >
                       <option value="After food">After food</option>
                       <option value="Before food">Before food</option>
@@ -541,7 +541,7 @@ export default function ConsultationWorkspace() {
                       value={newMed.duration}
                       onChange={(e) => setNewMed({ ...newMed, duration: e.target.value })}
                       placeholder="e.g. 5 days"
-                      className="w-full text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none"
+                      className="w-full text-xs rounded-xl border border-slate-300 p-2 bg-white focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none"
                     />
                   </div>
                 </div>
@@ -565,7 +565,7 @@ export default function ConsultationWorkspace() {
                   <button
                     type="button"
                     onClick={handleAddMedication}
-                    className="px-3.5 py-1.5 rounded-md bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold transition flex items-center gap-1 shadow-2xs cursor-pointer touch-target"
+                    className="px-3.5 py-1.5 rounded-md bg-blue-700 hover:bg-blue-800 text-slate-100 text-xs font-semibold transition flex items-center gap-1 shadow-2xs cursor-pointer touch-target"
                   >
                     <span>+ Add Medication</span>
                   </button>
@@ -635,7 +635,7 @@ export default function ConsultationWorkspace() {
             </div>
 
             {/* 2.4 Diagnostic Lab & Radiology Orders */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+            <div className="liquid-glass-card rounded-2xl p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">4</span>
@@ -657,7 +657,7 @@ export default function ConsultationWorkspace() {
                         onClick={() => setDiagModalityFilter(mod)}
                         className={`px-2.5 py-1 rounded text-xs font-semibold transition whitespace-nowrap cursor-pointer ${
                           diagModalityFilter === mod
-                            ? "bg-blue-700 text-white shadow-2xs"
+                            ? "bg-blue-700 text-slate-100 shadow-2xs"
                             : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         }`}
                       >
@@ -670,7 +670,7 @@ export default function ConsultationWorkspace() {
                     value={diagSearchQuery}
                     onChange={(e) => setDiagSearchQuery(e.target.value)}
                     placeholder="Search diagnostic catalog..."
-                    className="text-xs rounded-md border border-slate-300 px-3 py-1.5 bg-white w-full sm:w-64 focus:border-blue-600 outline-none"
+                    className="text-xs rounded-xl border border-slate-300 px-3 py-1.5 bg-white w-full sm:w-64 focus:border-slate-900 outline-none"
                   />
                 </div>
 
@@ -748,12 +748,12 @@ export default function ConsultationWorkspace() {
                   value={customLab.testName}
                   onChange={(e) => setCustomLab({ ...customLab, testName: e.target.value })}
                   placeholder="Other diagnostic test name (e.g. Serum Ferritin, Thyroid Profile)"
-                  className="flex-1 text-xs rounded-md border border-slate-300 p-2 bg-white focus:border-blue-600 outline-none"
+                  className="flex-1 text-xs rounded-xl border border-slate-300 p-2 bg-white focus:border-slate-900 outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddCustomLab}
-                  className="px-3.5 py-2 rounded-md bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold transition shadow-2xs cursor-pointer touch-target"
+                  className="px-3.5 py-2 rounded-md bg-slate-800 hover:bg-slate-900 text-slate-100 text-xs font-semibold transition shadow-2xs cursor-pointer touch-target"
                 >
                   + Add Custom
                 </button>
@@ -783,7 +783,7 @@ export default function ConsultationWorkspace() {
             </div>
 
             {/* 2.5 Specialist Cross-Department Referral (Optional) */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+            <div className="liquid-glass-card rounded-2xl p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">5</span>
@@ -856,7 +856,7 @@ export default function ConsultationWorkspace() {
             </div>
 
             {/* 2.6 Treatment Plan, Follow-up & Discharge Instructions */}
-            <div className="bg-white rounded-lg border border-slate-200 p-4 sm:p-5 shadow-2xs space-y-4">
+            <div className="liquid-glass-card rounded-2xl p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                 <div className="flex items-center gap-2">
                   <span className="h-5 w-5 rounded bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">6</span>
@@ -875,7 +875,7 @@ export default function ConsultationWorkspace() {
                   value={treatmentPlan}
                   onChange={(e) => setTreatmentPlan(e.target.value)}
                   placeholder="e.g. Adequate hydration, warm saline gargles, review with CBC report..."
-                  className="w-full text-xs sm:text-sm rounded-md border border-slate-300 p-2.5 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none placeholder-slate-400"
+                  className="w-full text-xs sm:text-sm rounded-xl border border-slate-300 p-2.5 focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none placeholder-slate-400"
                 />
               </div>
 
@@ -925,7 +925,7 @@ export default function ConsultationWorkspace() {
             </div>
 
             {/* Action Bar */}
-            <div className="bg-white rounded-xl border border-slate-200/90 p-4 shadow-xs flex items-center justify-between">
+            <div className="liquid-glass-card rounded-2xl p-4 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => navigate("/appointments")}
@@ -938,7 +938,7 @@ export default function ConsultationWorkspace() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs sm:text-sm font-semibold shadow-xs transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] flex items-center gap-2 disabled:opacity-50 cursor-pointer touch-target"
+                  className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-slate-100 text-xs sm:text-sm font-semibold shadow-xs transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] flex items-center gap-2 disabled:opacity-50 cursor-pointer touch-target"
                 >
                   {submitting ? (
                     <>
@@ -959,7 +959,7 @@ export default function ConsultationWorkspace() {
         {/* ================= RIGHT COLUMN: 360° PATIENT CONTEXT SIDEBAR ================= */}
         <div className="space-y-4">
           {/* Latest Recorded Vitals */}
-          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs space-y-3">
+          <div className="liquid-glass-card rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
                 Triage Vital Signs
@@ -1006,7 +1006,7 @@ export default function ConsultationWorkspace() {
           </div>
 
           {/* Current Active Medications */}
-          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs space-y-3">
+          <div className="liquid-glass-card rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
                 Current Active Medications ({currentMeds.length})
@@ -1028,7 +1028,7 @@ export default function ConsultationWorkspace() {
           </div>
 
           {/* Past Notes / Consultations */}
-          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs space-y-3">
+          <div className="liquid-glass-card rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
                 Previous Consultations ({notesHistory.length})
@@ -1056,7 +1056,7 @@ export default function ConsultationWorkspace() {
           </div>
 
           {/* Recent Lab Investigations */}
-          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs space-y-3">
+          <div className="liquid-glass-card rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
                 Recent Lab Reports ({labReports.length})
@@ -1085,7 +1085,7 @@ export default function ConsultationWorkspace() {
           </div>
 
           {/* Diagnostic Imaging & Pathology Studies */}
-          <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs space-y-3">
+          <div className="liquid-glass-card rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-200 pb-2">
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
                 Diagnostic Studies ({bundle?.diagnosticOrders?.length || 0})
@@ -1138,7 +1138,7 @@ export default function ConsultationWorkspace() {
       {/* ================= ALLERGY WARNING OVERRIDE MODAL ================= */}
       {allergyWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-lg shadow-xl border border-rose-200 p-6 space-y-4">
+          <div className="w-full max-w-md liquid-glass-card rounded-2xl p-6 space-y-4">
             <div className="flex items-center gap-3 text-rose-700">
               <svg className="h-7 w-7 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -1188,7 +1188,7 @@ export default function ConsultationWorkspace() {
                   });
                   setAllergyWarning(null);
                 }}
-                className="px-4 py-2 rounded-md bg-rose-700 hover:bg-rose-800 text-white text-xs font-semibold transition cursor-pointer touch-target"
+                className="px-4 py-2 rounded-md bg-rose-700 hover:bg-rose-800 text-slate-100 text-xs font-semibold transition cursor-pointer touch-target"
               >
                 Acknowledge & Prescribe Anyway
               </button>
@@ -1200,7 +1200,7 @@ export default function ConsultationWorkspace() {
       {/* ================= SUCCESS CONFIRMATION MODAL ================= */}
       {successModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-white rounded-lg shadow-xl border border-slate-200 p-6 text-center space-y-4">
+          <div className="w-full max-w-md liquid-glass-card rounded-2xl p-6 text-center space-y-4">
             <div className="h-12 w-12 rounded-full bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center mx-auto text-xl font-bold">
               ✓
             </div>
@@ -1213,7 +1213,7 @@ export default function ConsultationWorkspace() {
               <button
                 type="button"
                 onClick={() => navigate("/prescriptions")}
-                className="w-full py-2 rounded-md bg-blue-700 hover:bg-blue-800 text-white text-xs font-semibold transition shadow-2xs cursor-pointer touch-target"
+                className="w-full py-2 rounded-md bg-blue-700 hover:bg-blue-800 text-slate-100 text-xs font-semibold transition shadow-2xs cursor-pointer touch-target"
               >
                 View Generated Prescription (Rx)
               </button>

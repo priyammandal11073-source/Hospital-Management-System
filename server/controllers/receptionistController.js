@@ -113,12 +113,13 @@ export const getReceptionistTelemetry = async (req, res) => {
       Billing.find({
         paymentStatus: "paid",
         createdAt: { $gte: todayStart, $lte: todayEnd },
-      }).select("totalAmount"),
+      }).select("totalAmount").lean(),
       Appointment.find()
         .populate("patient", "name contactNumber age gender abhaId")
         .populate("doctor", "name specialization department")
         .sort({ appointmentDate: -1 })
-        .limit(8),
+        .limit(8)
+        .lean(),
       Appointment.find({
         appointmentDate: { $gte: todayStart, $lte: todayEnd },
         status: { $in: ["checked_in", "waiting", "in_consultation"] },
@@ -126,7 +127,8 @@ export const getReceptionistTelemetry = async (req, res) => {
         .populate("patient", "name contactNumber age gender")
         .populate("doctor", "name specialization department")
         .sort({ checkedInAt: 1 })
-        .limit(6),
+        .limit(6)
+        .lean(),
     ]);
 
     const todayCollections = todayPaidBills.reduce((acc, b) => acc + (b.totalAmount || 0), 0);

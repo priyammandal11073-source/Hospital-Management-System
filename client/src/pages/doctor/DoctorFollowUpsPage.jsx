@@ -52,7 +52,7 @@ export default function DoctorFollowUpsPage() {
               onClick={() => setDaysFilter(d)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                 daysFilter === d
-                  ? "bg-teal-700 text-white"
+                  ? "bg-slate-900 text-white"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
@@ -121,7 +121,7 @@ export default function DoctorFollowUpsPage() {
                         <button
                           type="button"
                           onClick={() => navigate(`/doctor/consultation/${apt._id}`)}
-                          className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] shadow-xs"
+                          className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-[11px] shadow-xs"
                         >
                           Consult
                         </button>

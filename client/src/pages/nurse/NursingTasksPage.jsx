@@ -158,7 +158,7 @@ export default function NursingTasksPage() {
             onClick={() => setStatusFilter(f)}
             className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
               statusFilter === f
-                ? "bg-slate-900 text-white shadow-2xs"
+                ? "bg-slate-900 text-slate-100 shadow-2xs"
                 : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-100"
             }`}
           >

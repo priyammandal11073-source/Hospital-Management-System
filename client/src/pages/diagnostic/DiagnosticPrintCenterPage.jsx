@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   getDiagnosticReports,
   getPrintHistory,
@@ -10,16 +10,22 @@ import ReprintModal from "../../components/diagnostic/ReprintModal.jsx";
 import RadiologyFilmGeneratorModal from "../../components/diagnostic/RadiologyFilmGeneratorModal.jsx";
 import FormalReportModal from "../../components/diagnostic/FormalReportModal.jsx";
 import { printClinicalReport } from "../../utils/printReport.js";
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+  Input,
+  EmptyStateCard,
+  PageLoader,
+  DataTable,
+} from "../../components/ui/index.js";
 
 export default function DiagnosticPrintCenterPage() {
-  const navigate = useNavigate();
-
-  // Active sub-tab
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("all");
 
-  // Data states
   const [reports, setReports] = useState([]);
   const [printLogs, setPrintLogs] = useState([]);
   const [stats, setStats] = useState({
@@ -31,7 +37,6 @@ export default function DiagnosticPrintCenterPage() {
   });
   const [loading, setLoading] = useState(true);
 
-  // Modals
   const [previewReportModal, setPreviewReportModal] = useState(null);
   const [selectedReportForReprint, setSelectedReportForReprint] = useState(null);
   const [filmModalData, setFilmModalData] = useState(null);
@@ -123,7 +128,6 @@ export default function DiagnosticPrintCenterPage() {
     }
   };
 
-  // Filtered reports
   const filteredReports = reports.filter((r) => {
     if (activeTab === "pathology" && r.department !== "Pathology") return false;
     if (activeTab === "radiology" && r.department !== "Radiology") return false;
@@ -139,128 +143,94 @@ export default function DiagnosticPrintCenterPage() {
     return true;
   });
 
+  const statItems = [
+    {
+      title: "Ready to Print",
+      subtitle: "Approved & Finalized",
+      value: stats.readyToPrint,
+      icon: "✓",
+      colorClass: "bg-emerald-50 text-emerald-600 border border-emerald-200",
+    },
+    {
+      title: "Films Ready",
+      subtitle: "Radiology & PACS",
+      value: stats.filmsReady,
+      icon: "🩻",
+      colorClass: "bg-cyan-50 text-cyan-600 border border-cyan-200",
+    },
+    {
+      title: "Printed Today",
+      subtitle: "Dispatched Hardcopies",
+      value: stats.printedToday,
+      icon: "🖨️",
+      colorClass: "bg-blue-50 text-blue-600 border border-blue-200",
+    },
+    {
+      title: "Reprints",
+      subtitle: "Authorized Duplicates",
+      value: stats.reprintsCount,
+      icon: "🔄",
+      colorClass: "bg-amber-50 text-amber-600 border border-amber-200",
+    },
+    {
+      title: "Print Audit Logs",
+      subtitle: "ISO 15189 Compliant",
+      value: stats.totalLogs,
+      icon: "📜",
+      colorClass: "bg-purple-50 text-purple-600 border border-purple-200",
+      colSpan: true,
+    },
+  ];
+
+  if (loading) {
+    return <PageLoader message="Loading print center…" />;
+  }
+
   return (
     <div className="space-y-6">
-      {/* ================= HEADER ================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600">
-            <span>🖨️</span>
-            <span>Diagnostic Services Central Operations</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight mt-0.5">
-            Diagnostic Print Center & Film Bureau
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Centralized dispatch for pathology clinical sheets, calibrated radiology laser films, reprint authorizations, and audit tracking
-          </p>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex items-center gap-2">
-          <Link
-            to="/diagnostic/reports"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
-          >
-            <span>📁</span>
-            <span>Reports Archive</span>
-          </Link>
-          <button
-            type="button"
-            onClick={fetchData}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition"
-          >
-            <span>↻</span>
-            <span>Refresh Queue</span>
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Diagnostic Print Center & Film Bureau"
+        subtitle="Centralized dispatch for pathology clinical sheets, calibrated radiology laser films, reprint authorizations, and audit tracking"
+        actions={[
+          <Link key="archive" to="/diagnostic/reports" className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-2xs"><span>📁</span><span>Reports Archive</span></Link>,
+          <Button key="refresh" size="sm" onClick={fetchData} leftIcon={<span>↻</span>}>Refresh Queue</Button>,
+        ]}
+      />
 
       {notification && (
-        <div className="rounded-xl bg-indigo-50 border border-indigo-200 p-3 text-xs font-semibold text-indigo-800 flex items-center justify-between animate-fadeIn">
-          <span>{notification}</span>
-          <button onClick={() => setNotification("")} className="text-indigo-600 hover:underline">Dismiss</button>
-        </div>
+        <Card title="Notification" subtitle={notification} className="border-indigo-200 bg-indigo-50">
+          <div className="flex items-center justify-end pt-2 border-t border-slate-100">
+            <button onClick={() => setNotification("")} className="text-indigo-600 hover:underline text-xs font-bold">Dismiss</button>
+          </div>
+        </Card>
       )}
 
-      {/* ================= TELEMETRY STATS CARDS ================= */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Ready to Print</span>
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 font-bold text-xs">
-              ✓
-            </span>
-          </div>
-          <p className="mt-2 text-2xl font-black text-slate-800">{stats.readyToPrint}</p>
-          <span className="text-[11px] text-emerald-600 font-semibold">Approved & Finalized</span>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Films Ready</span>
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-50 text-cyan-600 font-bold text-xs">
-              🩻
-            </span>
-          </div>
-          <p className="mt-2 text-2xl font-black text-slate-800">{stats.filmsReady}</p>
-          <span className="text-[11px] text-cyan-600 font-semibold">Radiology & PACS</span>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Printed Today</span>
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600 font-bold text-xs">
-              🖨️
-            </span>
-          </div>
-          <p className="mt-2 text-2xl font-black text-slate-800">{stats.printedToday}</p>
-          <span className="text-[11px] text-blue-600 font-semibold">Dispatched Hardcopies</span>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Reprints</span>
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600 font-bold text-xs">
-              🔄
-            </span>
-          </div>
-          <p className="mt-2 text-2xl font-black text-slate-800">{stats.reprintsCount}</p>
-          <span className="text-[11px] text-amber-600 font-semibold">Authorized Duplicates</span>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs col-span-2 lg:col-span-1">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Print Audit Logs</span>
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50 text-purple-600 font-bold text-xs">
-              📜
-            </span>
-          </div>
-          <p className="mt-2 text-2xl font-black text-slate-800">{stats.totalLogs}</p>
-          <span className="text-[11px] text-purple-600 font-semibold">ISO 15189 Compliant</span>
-        </div>
+        {statItems.map((stat, idx) => (
+          <Card key={idx} title={stat.title} subtitle={stat.subtitle} className={stat.colorClass} colSpan={stat.colSpan ? "col-span-2 lg:col-span-1" : undefined}>
+            <div className="flex items-start justify-between gap-2">
+              <span className="mt-2 text-2xl font-black text-slate-800">{stat.value}</span>
+              <span className={`flex h-7 w-7 items-center justify-center rounded-lg ${stat.colorClass.replace("bg-", "bg-").replace("/80", "/80")}`}>{stat.icon}</span>
+            </div>
+            <span className="text-[11px] text-slate-500">{stat.subtitle}</span>
+          </Card>
+        ))}
       </div>
 
-      {/* ================= TAB NAVIGATION & FILTERS ================= */}
       <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs space-y-3">
-        {/* Navigation Tabs */}
         <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3">
           {[
-            { id: "all", label: "All Print Jobs", icon: "📄" },
-            { id: "pathology", label: "Pathology Reports", icon: "🔬" },
-            { id: "radiology", label: "Radiology Reports", icon: "🩻" },
-            { id: "films", label: "Radiology Films", icon: "🎞️" },
-            { id: "history", label: "Print History & Audit Trail", icon: "📜" },
+            { id: "all", label: "📄 All Print Jobs" },
+            { id: "pathology", label: "🔬 Pathology Reports" },
+            { id: "radiology", label: "🩻 Radiology Reports" },
+            { id: "films", label: "🎞️ Radiology Films" },
+            { id: "history", label: "📜 Print History & Audit Trail" },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${
-                activeTab === tab.id
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-              }`}
+              className={`inline-flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold transition ${activeTab === tab.id ? "bg-indigo-600 text-white shadow-sm" : "bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900"}`}
             >
               <span>{tab.icon}</span>
               <span>{tab.label}</span>
@@ -268,18 +238,10 @@ export default function DiagnosticPrintCenterPage() {
           ))}
         </div>
 
-        {/* Search & Modality Selector */}
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex-1 min-w-[240px]">
-            <input
-              type="text"
-              placeholder="Search by Patient Name, ID, Report Number, Examination..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition"
-            />
+            <Input placeholder="Search by Patient Name, ID, Report Number, Examination…" value={search} onChange={(e) => setSearch(e.target.value)} id="print-center-search" />
           </div>
-
           <div className="flex items-center gap-2">
             <label className="text-xs font-bold text-slate-500">Department:</label>
             <select
@@ -295,25 +257,9 @@ export default function DiagnosticPrintCenterPage() {
         </div>
       </div>
 
-      {/* ================= CONTENT TABLES ================= */}
       {activeTab === "history" ? (
-        /* PRINT HISTORY & AUDIT TRAIL TABLE (SECTION 48) */
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <span>📜</span> Diagnostic Document Print & Reprint Ledger
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Full chronological tracking of all hardcopy outputs, copies, operators, and justification reasons
-              </p>
-            </div>
-            <span className="rounded-lg bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-[11px] font-bold text-indigo-700">
-              {printLogs.length} Logged Dispatches
-            </span>
-          </div>
-
-          <div className="overflow-x-auto">
+        <Card title="Diagnostic Document Print & Reprint Ledger" subtitle="Full chronological tracking of all hardcopy outputs, copies, operators, and justification reasons">
+          <div className="mt-4 overflow-x-auto">
             <table className="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
               <thead className="bg-slate-100 text-slate-700 font-bold">
                 <tr>
@@ -330,61 +276,27 @@ export default function DiagnosticPrintCenterPage() {
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {printLogs.length === 0 ? (
-                  <tr>
-                    <td colSpan="9" className="p-8 text-center text-slate-400">
-                      No print logs recorded yet.
-                    </td>
-                  </tr>
+                  <tr><td colSpan="9" className="p-8 text-center text-slate-400">No print logs recorded yet.</td></tr>
                 ) : (
                   printLogs.map((log) => (
                     <tr key={log._id || log.printId} className="hover:bg-slate-50/80">
                       <td className="px-3.5 py-2.5 font-mono font-bold text-indigo-600">{log.printId}</td>
-                      <td className="px-3.5 py-2.5 text-slate-500 whitespace-nowrap">
-                        {new Date(log.createdAt).toLocaleString("en-IN")}
-                      </td>
-                      <td className="px-3.5 py-2.5">
-                        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold ${
-                          log.documentType.includes("RADIOLOGY")
-                            ? "bg-cyan-50 text-cyan-700 border border-cyan-200"
-                            : "bg-indigo-50 text-indigo-700 border border-indigo-200"
-                        }`}>
-                          {log.documentType}
-                        </span>
-                      </td>
-                      <td className="px-3.5 py-2.5 font-mono text-slate-800">{log.reportNumber || log.studyId || "-"}</td>
+                      <td className="px-3.5 py-2.5 text-slate-500 whitespace-nowrap">{new Date(log.createdAt).toLocaleString("en-IN")}</td>
+                      <td className="px-3.5 py-2.5"><span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold ${log.documentType.includes("RADIOLOGY") ? "bg-cyan-50 text-cyan-700 border border-cyan-200" : "bg-indigo-50 text-indigo-700 border border-indigo-200"}`}>{log.documentType}</span></td>
+                      <td className="px-3.5 py-2.5 font-mono font-bold text-slate-800">{log.reportNumber || log.studyId || "-"}</td>
                       <td className="px-3.5 py-2.5 font-medium text-slate-900">{log.patientName}</td>
-                      <td className="px-3.5 py-2.5 text-slate-600">
-                        {log.printedByName} <span className="text-[10px] text-slate-400">({log.userRole})</span>
-                      </td>
+                      <td className="px-3.5 py-2.5 text-slate-600">{log.printedByName} <span className="text-[10px] text-slate-400">({log.userRole})</span></td>
                       <td className="px-3.5 py-2.5 font-bold text-slate-800">{log.copies || 1}</td>
-                      <td className="px-3.5 py-2.5 text-slate-600 max-w-[180px] truncate" title={log.reason}>
-                        {log.isReprint ? <span className="font-bold text-amber-700">[REPRINT] </span> : null}
-                        {log.reason}
-                      </td>
-                      <td className="px-3.5 py-2.5 text-center">
-                        <span className="inline-flex items-center rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">
-                          SUCCESS
-                        </span>
-                      </td>
+                      <td className="px-3.5 py-2.5 text-slate-600 max-w-[180px] truncate" title={log.reason}>{log.isReprint ? <span className="font-bold text-amber-700">[REPRINT] </span> : null}{log.reason}</td>
+                      <td className="px-3.5 py-2.5 text-center"><span className="inline-flex items-center rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700">SUCCESS</span></td>
                     </tr>
-                  ))
-                )}
+                  )))}
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       ) : (
-        /* REPORTS & FILMS DISPATCH WORKLIST */
-        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-              <span>📋</span> Reports & Medical Films Ready for Dispatch
-            </h2>
-            <span className="text-xs text-slate-400">
-              Showing {filteredReports.length} documents
-            </span>
-          </div>
-
+        <Card title="Reports & Medical Films Ready for Dispatch" subtitle={`Showing ${filteredReports.length} documents`}>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
               <thead className="bg-slate-100 text-slate-700 font-bold">
@@ -400,164 +312,41 @@ export default function DiagnosticPrintCenterPage() {
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {filteredReports.length === 0 ? (
-                  <tr>
-                    <td colSpan="7" className="p-8 text-center text-slate-400">
-                      No matching finalized diagnostic records found.
-                    </td>
-                  </tr>
+                  <tr><td colSpan="7" className="p-8 text-center text-slate-400">No matching finalized diagnostic records found.</td></tr>
                 ) : (
                   filteredReports.map((report) => (
                     <tr key={report._id} className="hover:bg-slate-50/80">
-                      <td className="px-3.5 py-2.5">
-                        <p className="font-mono font-bold text-indigo-600">{report.reportNumber}</p>
-                        <span className="text-[10px] text-slate-400">
-                          {new Date(report.reportDate || report.createdAt).toLocaleDateString("en-IN")}
-                        </span>
-                      </td>
-
-                      <td className="px-3.5 py-2.5">
-                        <p className="font-bold text-slate-800">{report.patientName}</p>
-                        <p className="text-[10px] text-slate-500">
-                          ID: <span className="font-mono">{report.patientAbhaId || "P-1002"}</span> • {report.patientAge || "N/A"}Y/{report.patientGender || "N/A"}
-                        </p>
-                      </td>
-
-                      <td className="px-3.5 py-2.5">
-                        <p className="font-semibold text-slate-900">{report.testName}</p>
-                        <span className="inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-mono text-slate-600 mt-0.5">
-                          {report.modality || report.category || "Standard"}
-                        </span>
-                      </td>
-
-                      <td className="px-3.5 py-2.5">
-                        <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold ${
-                          report.department === "Radiology"
-                            ? "bg-cyan-50 text-cyan-700 border border-cyan-200"
-                            : "bg-purple-50 text-purple-700 border border-purple-200"
-                        }`}>
-                          {report.department}
-                        </span>
-                      </td>
-
-                      <td className="px-3.5 py-2.5">
-                        <p className="text-slate-800 font-medium">{report.specialistName || "Verified Specialist"}</p>
-                        <span className="text-[9px] text-emerald-600 font-semibold flex items-center gap-1">
-                          ✓ Digitally Certified
-                        </span>
-                      </td>
-
-                      <td className="px-3.5 py-2.5 text-center">
-                        <span className="font-bold text-slate-800">{report.printCount || 0}</span>
-                        {report.reprintCount > 0 && (
-                          <span className="block text-[10px] text-amber-600 font-semibold">
-                            ({report.reprintCount} reprints)
-                          </span>
-                        )}
-                      </td>
-
-                      <td className="px-3.5 py-2.5 text-right">
+                      <td className="px-3.5 py-2.5 font-mono font-bold text-indigo-600 whitespace-nowrap">{report.reportNumber}<span className="text-[10px] text-slate-400 block">{new Date(report.reportDate || report.createdAt).toLocaleDateString("en-IN")}</span></td>
+                      <td className="px-3.5 py-2.5"><div className="font-bold text-slate-800">{report.patientName}</div><p className="text-[10px] text-slate-400">ID: <span className="font-mono">{report.patientAbhaId || "P-1002"}</span> • {report.patientAge || "N/A"}Y/{report.patientGender || "N/A"}</p></td>
+                      <td className="px-3.5 py-2.5"><div className="font-semibold text-slate-800">{report.testName}</div><span className="inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[9px] font-mono text-slate-600 mt-0.5">{report.modality || report.category || "Standard"}</span></td>
+                      <td className="px-3.5 py-2.5"><span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold ${report.department === "Radiology" ? "bg-cyan-50 text-cyan-700 border border-cyan-200" : "bg-purple-50 text-purple-700 border border-purple-200"}`}>{report.department}</span></td>
+                      <td className="px-3.5 py-2.5"><div className="font-bold text-slate-800">{report.specialistName || "Verified Specialist"}</div><span className="text-[9px] text-emerald-600 font-semibold flex items-center gap-1">✓ Digitally Certified</span></td>
+                      <td className="px-3.5 py-2.5 text-center"><div className="font-bold text-slate-800">{report.printCount || 0}</div>{report.reprintCount > 0 && <span className="block text-[10px] text-amber-600 font-semibold">({report.reprintCount} reprints)</span>}</td>
+                      <td className="px-3.5 py-2.5 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1.5">
-                          {/* Preview Report Modal Button */}
-                          <button
-                            type="button"
-                            onClick={() => setPreviewReportModal(report)}
-                            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
-                            title="Preview formal clinical report"
-                          >
-                            👁️ View
-                          </button>
-
-                          {/* Print Report */}
-                          <button
-                            type="button"
-                            onClick={() => handlePrintReport(report)}
-                            className="rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-slate-800 transition cursor-pointer"
-                            title="Print clinical document"
-                          >
-                            🖨️ Print
-                          </button>
-
-                          {/* Download PDF */}
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadPdf(report)}
-                            className="rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 transition cursor-pointer"
-                            title="Download vector PDF"
-                          >
-                            📥 PDF
-                          </button>
-
-                          {/* Film Generator (Radiology Only) */}
+                          <button type="button" onClick={() => setPreviewReportModal(report)} className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer" title="Preview formal clinical report">👁️ View</button>
+                          <button type="button" onClick={() => handlePrintReport(report)} className="rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:bg-slate-800 transition cursor-pointer" title="Print clinical document">🖨️ Print</button>
+                          <button type="button" onClick={() => handleDownloadPdf(report)} className="rounded-lg border border-indigo-200 bg-indigo-50 px-2 py-1 text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 transition cursor-pointer" title="Download vector PDF">📥 PDF</button>
                           {report.department === "Radiology" && (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setFilmModalData({
-                                  report,
-                                  study: report.order,
-                                  images: report.fileAttachments || [],
-                                })
-                              }
-                              className="rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:from-cyan-500 hover:to-blue-500 transition"
-                              title="Generate laser film sheet"
-                            >
-                              🎞️ Film
-                            </button>
+                            <button type="button" onClick={() => setFilmModalData({ report, study: report.order, images: report.fileAttachments || [] })} className="rounded-lg bg-gradient-to-r from-cyan-600 to-blue-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-xs hover:from-cyan-500 hover:to-blue-500 transition cursor-pointer" title="Generate laser film sheet">🎞️ Film</button>
                           )}
-
-                          {/* Reprint Modal Trigger */}
-                          <button
-                            type="button"
-                            onClick={() => setSelectedReportForReprint(report)}
-                            className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition"
-                            title="Authorized reprint"
-                          >
-                            🔄
-                          </button>
+                          <button type="button" onClick={() => setSelectedReportForReprint(report)} className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer" title="Authorized reprint">🔄</button>
                         </div>
                       </td>
                     </tr>
-                  ))
-                )}
+                  )))}
               </tbody>
             </table>
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* ================= FORMAL REPORT PREVIEW MODAL ================= */}
       {previewReportModal && (
-        <FormalReportModal
-          isOpen={Boolean(previewReportModal)}
-          onClose={() => setPreviewReportModal(null)}
-          report={previewReportModal}
-          onPrintSuccess={() => {
-            fetchData();
-            setNotification("Report print registered in audit log.");
-          }}
-        />
+        <FormalReportModal isOpen={Boolean(previewReportModal)} onClose={() => setPreviewReportModal(null)} report={previewReportModal} onPrintSuccess={() => { fetchData(); setNotification("Report print registered in audit log."); }} />
       )}
-
-      {/* ================= REPRINT MODAL ================= */}
-      <ReprintModal
-        isOpen={Boolean(selectedReportForReprint)}
-        onClose={() => setSelectedReportForReprint(null)}
-        report={selectedReportForReprint}
-        onReprintSuccess={() => {
-          fetchData();
-          setNotification("Reprint authorized and logged to compliance audit trail.");
-        }}
-      />
-
-      {/* ================= RADIOLOGY FILM MODAL ================= */}
+      <ReprintModal isOpen={Boolean(selectedReportForReprint)} onClose={() => setSelectedReportForReprint(null)} report={selectedReportForReprint} onReprintSuccess={() => { fetchData(); setNotification("Reprint authorized and logged to compliance audit trail."); }} />
       {filmModalData && (
-        <RadiologyFilmGeneratorModal
-          isOpen={Boolean(filmModalData)}
-          onClose={() => setFilmModalData(null)}
-          study={filmModalData.study}
-          report={filmModalData.report}
-          availableImages={filmModalData.images}
-        />
+        <RadiologyFilmGeneratorModal isOpen={Boolean(filmModalData)} onClose={() => setFilmModalData(null)} study={filmModalData.study} report={filmModalData.report} availableImages={filmModalData.images} />
       )}
     </div>
   );

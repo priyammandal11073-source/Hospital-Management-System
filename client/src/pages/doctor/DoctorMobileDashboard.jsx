@@ -140,7 +140,7 @@ const DoctorMobileDashboard = () => {
   return (
     <section className="space-y-4 pb-20">
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-slate-200 p-4">
+      <div className="sticky top-0 z-20 bg-white border-b border-slate-200 p-4 rounded-2xl shadow-xs">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-slate-800">Dr. Dashboard</h1>
@@ -182,7 +182,7 @@ const DoctorMobileDashboard = () => {
       </div>
 
       {/* Quick Actions Grid */}
-      <div className="px-4 grid grid-cols-4 gap-2">
+      <div className="px-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
         {quickActions.map(qa => (
           <button
             type="button"
@@ -225,7 +225,7 @@ const DoctorMobileDashboard = () => {
             <div className="rounded-xl bg-slate-50 p-4 text-center text-sm text-slate-500">No appointments today</div>
           ) : (
             todayAppts.slice(0, 5).map(a => (
-              <div key={a._id} className="rounded-xl bg-white border border-slate-200 p-3 flex items-center justify-between gap-2 shadow-2xs">
+              <div key={a._id} className="rounded-xl liquid-glass-card p-3 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
                   <div className="rounded-lg bg-blue-50 p-2 text-xl select-none">🩺</div>
                   <div>
@@ -268,7 +268,7 @@ const DoctorMobileDashboard = () => {
           <h2 className="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">📹 Active Teleconsults <span className="rounded-full bg-rose-50 text-rose-700 px-2 py-0.5 text-[10px] font-bold">{upcomingTele.length}</span></h2>
           <div className="space-y-2">
             {upcomingTele.map(t => (
-              <div key={t._id} className="rounded-xl bg-teal-50 border border-teal-200 p-3 flex items-center justify-between gap-2 shadow-2xs">
+              <div key={t._id} className="rounded-xl liquid-glass-card p-3 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
                   <div className="rounded-lg bg-teal-100 p-2 text-xl select-none">📹</div>
                   <div>
@@ -324,7 +324,7 @@ const DoctorMobileDashboard = () => {
           <h2 className="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">🔄 Refill Requests <span className="rounded-full bg-orange-50 text-orange-700 px-2 py-0.5 text-[10px] font-bold">{refillRequests.length}</span></h2>
           <div className="space-y-2">
             {refillRequests.map(r => (
-              <div key={r.id} className="rounded-xl bg-white border border-slate-200 p-3 flex items-center justify-between gap-2 shadow-2xs">
+              <div key={r.id} className="rounded-xl liquid-glass-card p-3 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-3">
                   <div className="rounded-lg bg-orange-50 p-2 text-xl select-none">💊</div>
                   <div>
@@ -359,7 +359,7 @@ const DoctorMobileDashboard = () => {
         <h2 className="text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">📅 On-Call Schedule</h2>
         <div className="space-y-2">
           {onCallSchedule.map(s => (
-            <div key={s.day} className={`rounded-xl p-3 ${s.active ? "bg-indigo-50 border-indigo-200" : "bg-white border-slate-200"} border shadow-2xs`}>
+            <div key={s.day} className={`rounded-xl p-3 border ${s.active ? "border-teal-200 bg-teal-50" : "liquid-glass-card"}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className={`text-2xl select-none ${s.active ? "animate-pulse" : ""}`}>🏥</span>

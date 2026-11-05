@@ -4,6 +4,16 @@ import {
   getPharmacyInventory,
   addOrUpdateMedicine,
 } from "../../services/api.js";
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+  Input,
+  EmptyStateCard,
+  PageLoader,
+  Modal,
+} from "../../components/ui/index.js";
 
 export default function MedicineInventoryPage() {
   const [medicines, setMedicines] = useState([]);
@@ -116,59 +126,50 @@ export default function MedicineInventoryPage() {
   const totalValuation = medicines.reduce((sum, m) => sum + (m.currentStock || 0) * (m.unitPrice || 0), 0);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Formulary Database</span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Medicine Inventory & Formulary</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Centralized pharmaceutical master catalog with real-time stock balances, reorder points, and unit pricing.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleOpenAdd}
-            className="min-h-[44px] inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 shadow-sm transition"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-            </svg>
-            <span>Add Medicine</span>
-          </button>
-        </div>
+    <div className="space-y-6 bg-[#f7f6f3]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs">
+        <PageHeader
+          title="Medicine Inventory & Formulary"
+          subtitle="Centralized pharmaceutical master catalog with real-time stock balances, reorder points, and unit pricing."
+          breadcrumbs={
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-blue-500"></span>
+              <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Formulary Database</span>
+            </span>
+          }
+          actions={[
+            <Button key="add" size="sm" onClick={handleOpenAdd} leftIcon={<span>+</span>}>
+              Add Medicine
+            </Button>,
+          ]}
+        />
       </div>
+
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={fetchInventory} className="font-bold">Retry</button>
+        </div>
+      )}
 
       {/* Summary KPI Highlights */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-bold text-slate-400 uppercase">Formulary Items</p>
-          <p className="mt-1 text-2xl font-black text-slate-900">{medicines.length}</p>
-          <p className="text-[10px] text-slate-400 mt-1">Active items</p>
-        </div>
-        <div className="rounded-xl border border-rose-200 bg-rose-50/60 p-4 shadow-2xs">
-          <p className="text-xs font-bold text-rose-700 uppercase">Low Stock Alert</p>
-          <p className="mt-1 text-2xl font-black text-rose-900">{lowStockCount}</p>
-          <p className="text-[10px] text-rose-700 mt-1">At or below reorder level</p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-bold text-slate-400 uppercase">Inventory Value</p>
-          <p className="mt-1 text-2xl font-black text-slate-900">₹{Math.round(totalValuation).toLocaleString("en-IN")}</p>
-          <p className="text-[10px] text-slate-400 mt-1">Total physical stock value</p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs">
-          <p className="text-xs font-bold text-slate-400 uppercase">Categories</p>
-          <p className="mt-1 text-2xl font-black text-slate-900">{categories.length - 1}</p>
-          <p className="text-[10px] text-slate-400 mt-1">Therapeutic classes</p>
-        </div>
+        <Card title="Formulary Items" subtitle="Active items">
+          <div className="text-2xl font-black text-slate-900">{medicines.length}</div>
+        </Card>
+        <Card title="Low Stock Alert" subtitle="At or below reorder level">
+          <div className="text-2xl font-black text-rose-900">{lowStockCount}</div>
+        </Card>
+        <Card title="Inventory Value" subtitle="Total physical stock value">
+          <div className="text-2xl font-black text-slate-900">₹{Math.round(totalValuation).toLocaleString("en-IN")}</div>
+        </Card>
+        <Card title="Categories" subtitle="Therapeutic classes">
+          <div className="text-2xl font-black text-slate-900">{categories.length - 1}</div>
+        </Card>
       </div>
 
       {/* Filters & Search */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {categories.slice(0, 6).map((cat) => (
             <button
@@ -176,7 +177,7 @@ export default function MedicineInventoryPage() {
               onClick={() => setSelectedCategory(cat)}
               className={`min-h-[44px] rounded-xl px-3.5 py-2 text-xs font-bold capitalize transition whitespace-nowrap inline-flex items-center justify-center ${
                 selectedCategory === cat
-                  ? "bg-slate-900 text-white shadow-xs"
+                  ? "bg-slate-900 text-slate-100 shadow-xs"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
@@ -186,16 +187,14 @@ export default function MedicineInventoryPage() {
         </div>
 
         <div className="relative min-w-[240px]">
-          <input
+          <Input
             type="text"
+            placeholder="Search brand, generic, category…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search brand, generic, category..."
-            className="w-full min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-xs focus:border-amber-500 focus:bg-white focus:outline-none"
+            className="w-full min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-xs focus:border-amber-500 focus:bg-white focus:outline-none"
+            id="inventory-search"
           />
-          <svg className="absolute left-3 top-3.5 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
         </div>
       </div>
 
@@ -204,13 +203,16 @@ export default function MedicineInventoryPage() {
         {isLoading ? (
           <div className="py-20 text-center text-slate-500">
             <div className="h-8 w-8 mx-auto border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-3 text-xs font-semibold">Loading medication database...</p>
+            <p className="mt-3 text-xs font-semibold">Loading medication database…</p>
           </div>
         ) : filteredMedicines.length === 0 ? (
-          <div className="py-16 text-center text-slate-500">
-            <p className="text-sm font-bold text-slate-700">No medicines found</p>
-            <p className="text-xs text-slate-400 mt-1">Try another search or add a new drug formulation.</p>
-          </div>
+          <EmptyStateCard
+            icon="💊"
+            title="No medicines found"
+            description="Try another search or add a new drug formulation."
+            actionText="Add Medicine"
+            onActionClick={handleOpenAdd}
+          />
         ) : (
           <div>
             {/* Mobile Stacked Cards View */}
@@ -375,145 +377,135 @@ export default function MedicineInventoryPage() {
 
       {/* Add / Edit Medicine Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl modal-viewport overflow-y-auto animate-in fade-in duration-150">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-slate-900">
-                {editingMedicine ? `Edit: ${editingMedicine.name}` : "Add Medicine to Formulary"}
-              </h3>
+        <Modal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          title={editingMedicine ? `Edit: ${editingMedicine.name}` : "Add Medicine to Formulary"}
+          className="max-w-lg"
+        >
+          <form onSubmit={handleSubmit} className="mt-4 space-y-3.5 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Brand / Trade Name</label>
+                <Input
+                  type="text"
+                  placeholder="e.g. Augmentin 625"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  id="med-name"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Generic / Chemical Name</label>
+                <Input
+                  type="text"
+                  placeholder="e.g. Amoxicillin + Clavulanate"
+                  value={formData.genericName}
+                  onChange={(e) => setFormData({ ...formData, genericName: e.target.value })}
+                  required
+                  id="med-generic"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Category</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full min-h-[44px] rounded-xl border border-slate-200 p-2.5 focus:border-amber-500 focus:outline-none"
+                >
+                  <option value="Antibiotics">Antibiotics</option>
+                  <option value="Analgesics">Analgesics</option>
+                  <option value="Antacids">Antacids</option>
+                  <option value="Antidiabetics">Antidiabetics</option>
+                  <option value="Antihypertensives">Antihypertensives</option>
+                  <option value="Respiratory">Respiratory</option>
+                  <option value="Injectables">Injectables</option>
+                  <option value="Vaccines">Vaccines</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Dosage Form</label>
+                <select
+                  value={formData.dosageForm}
+                  onChange={(e) => setFormData({ ...formData, dosageForm: e.target.value })}
+                  className="w-full min-h-[44px] rounded-xl border border-slate-200 p-2.5 focus:border-amber-500 focus:outline-none"
+                >
+                  <option value="Tablet">Tablet</option>
+                  <option value="Capsule">Capsule</option>
+                  <option value="Syrup">Syrup</option>
+                  <option value="Injection">Injection</option>
+                  <option value="Ointment">Ointment</option>
+                  <option value="Drops">Drops</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Strength</label>
+                <Input
+                  type="text"
+                  placeholder="e.g. 500mg"
+                  value={formData.strength}
+                  onChange={(e) => setFormData({ ...formData, strength: e.target.value })}
+                  id="med-strength"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Unit Price (₹)</label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={formData.unitPrice}
+                  onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) || 0 })}
+                  required
+                  id="med-price"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Current Stock</label>
+                <Input
+                  type="number"
+                  value={formData.currentStock}
+                  onChange={(e) => setFormData({ ...formData, currentStock: parseInt(e.target.value) || 0 })}
+                  required
+                  id="med-stock"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Reorder Level</label>
+                <Input
+                  type="number"
+                  value={formData.reorderLevel}
+                  onChange={(e) => setFormData({ ...formData, reorderLevel: parseInt(e.target.value) || 0 })}
+                  required
+                  id="med-reorder"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-3 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold p-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-200 px-5 py-2.5 font-bold text-slate-600 hover:bg-slate-100 transition"
               >
-                ✕
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto min-h-[44px] rounded-xl bg-amber-600 px-6 py-2.5 font-bold text-white hover:bg-amber-700 shadow-sm transition disabled:opacity-50"
+              >
+                {isSubmitting ? "Saving…" : editingMedicine ? "Update Formulary" : "Save Medicine"}
               </button>
             </div>
-
-            <form onSubmit={handleSubmit} className="mt-4 space-y-3.5 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Brand / Trade Name</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                    placeholder="e.g. Augmentin 625"
-                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Generic / Chemical Name</label>
-                  <input
-                    type="text"
-                    value={formData.genericName}
-                    onChange={(e) => setFormData({ ...formData, genericName: e.target.value })}
-                    required
-                    placeholder="e.g. Amoxicillin + Clavulanate"
-                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
-                  >
-                    <option value="Antibiotics">Antibiotics</option>
-                    <option value="Analgesics">Analgesics</option>
-                    <option value="Antacids">Antacids</option>
-                    <option value="Antidiabetics">Antidiabetics</option>
-                    <option value="Antihypertensives">Antihypertensives</option>
-                    <option value="Respiratory">Respiratory</option>
-                    <option value="Injectables">Injectables</option>
-                    <option value="Vaccines">Vaccines</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Dosage Form</label>
-                  <select
-                    value={formData.dosageForm}
-                    onChange={(e) => setFormData({ ...formData, dosageForm: e.target.value })}
-                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
-                  >
-                    <option value="Tablet">Tablet</option>
-                    <option value="Capsule">Capsule</option>
-                    <option value="Syrup">Syrup</option>
-                    <option value="Injection">Injection</option>
-                    <option value="Ointment">Ointment</option>
-                    <option value="Drops">Drops</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Strength</label>
-                  <input
-                    type="text"
-                    value={formData.strength}
-                    onChange={(e) => setFormData({ ...formData, strength: e.target.value })}
-                    placeholder="e.g. 500mg"
-                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Unit Price (₹)</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={formData.unitPrice}
-                    onChange={(e) => setFormData({ ...formData, unitPrice: parseFloat(e.target.value) || 0 })}
-                    required
-                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Current Stock</label>
-                  <input
-                    type="number"
-                    value={formData.currentStock}
-                    onChange={(e) => setFormData({ ...formData, currentStock: parseInt(e.target.value) || 0 })}
-                    required
-                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">Reorder Level</label>
-                  <input
-                    type="number"
-                    value={formData.reorderLevel}
-                    onChange={(e) => setFormData({ ...formData, reorderLevel: parseInt(e.target.value) || 0 })}
-                    required
-                    className="w-full min-h-[44px] rounded-xl border border-slate-200 px-3.5 py-2.5 focus:border-amber-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2.5 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-200 px-5 py-2.5 font-bold text-slate-600 hover:bg-slate-100 transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full sm:w-auto min-h-[44px] rounded-xl bg-amber-500 px-6 py-2.5 font-bold text-slate-950 hover:bg-amber-400 shadow-sm transition"
-                >
-                  {isSubmitting ? "Saving..." : editingMedicine ? "Update Formulary" : "Save Medicine"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+          </form>
+        </Modal>
       )}
     </div>
   );

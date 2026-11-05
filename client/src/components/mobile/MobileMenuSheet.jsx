@@ -100,10 +100,11 @@ export default function MobileMenuSheet({
       <div
         role="dialog"
         aria-modal={isOpen}
+        inert={!isOpen}
         data-mobile-sheet="true"
         aria-label="Portal Navigation Menu"
-        className={`fixed bottom-0 inset-x-0 z-50 w-full max-h-[92vh] flex flex-col rounded-t-[32px] liquid-glass-elevated shadow-2xl overflow-hidden animate-sheet-up ${
-          isOpen ? "" : "translate-y-full"
+        className={`fixed bottom-0 inset-x-0 z-50 w-full max-h-[92vh] flex flex-col rounded-t-[32px] liquid-glass-elevated shadow-2xl overflow-hidden transition-[transform,visibility] duration-[220ms] ease-out ${
+          isOpen ? "translate-y-0 visible" : "translate-y-full invisible"
         }`}
       >
         {/* Drag Handle Bar */}

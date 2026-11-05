@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyReferrals } from "../../services/api.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import { PageHeader } from "../../components/ui/index.js";
 
 function MyReferrals() {
   const [referrals, setReferrals] = useState([]);
@@ -28,91 +29,91 @@ function MyReferrals() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Clinical Referrals</h1>
-            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-500/20">
-              Inter-Department Care
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-slate-500">
-            Specialist doctor referrals recommended by your attending physicians for focused care.
-          </p>
-        </div>
-
-        <Link
-          to="/patient/doctors"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-2xs transition"
-        >
-          🔍 Browse Specialist Directory
-        </Link>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "My Health", to: "/patient/dashboard" },
+          { label: "Doctor Referrals", active: true },
+        ]}
+        title="Specialist Doctor Referrals"
+        badge={
+          <span className="inline-flex items-center rounded-full liquid-glass-pill px-2.5 py-0.5 text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200/70">
+            Internal Consults
+          </span>
+        }
+        subtitle="Referrals made by your primary care physician to specialized departments and consultants."
+        actions={
+          <Link
+            to="/patient/doctors"
+            className="inline-flex items-center gap-1.5 rounded-xl liquid-glass-pill border border-slate-200/80 bg-white/80 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-2xs transition"
+          >
+            <span>👨‍⚕️ View Doctor Directory</span>
+          </Link>
+        }
+      />
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">
+        <div className="rounded-xl border border-rose-200/80 bg-rose-50 p-4 text-xs font-bold text-rose-800 shadow-2xs">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-3 border-blue-600 border-r-transparent"></div>
-          <p className="mt-3 text-sm font-semibold text-slate-600">Loading your referral authorizations...</p>
+        <div className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-12 text-center shadow-2xs">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-teal-700 border-r-transparent" />
+          <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Loading specialist referrals...</p>
         </div>
       ) : referrals.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl">
+        <div className="rounded-2xl liquid-glass-card border border-dashed border-slate-300/80 bg-white/80 p-12 text-center shadow-2xs">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl liquid-glass-subtle text-2xl text-slate-700 mb-3">
             🔄
           </div>
-          <h3 className="mt-3 text-base font-bold text-slate-800">No active specialist referrals</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            When a doctor refers you to a higher specialist or cross-consultation, the details will appear here.
+          <h3 className="text-sm font-bold text-slate-800">No active referrals</h3>
+          <p className="mt-1 text-xs text-slate-500">
+            When a doctor refers you to a higher specialist or different department, the referral details will appear here.
           </p>
         </div>
       ) : (
         <div className="grid gap-4">
-          {referrals.map((r) => {
-            const isUrgent = (r.priority || "").toLowerCase() === "urgent" || (r.urgency || "").toLowerCase() === "urgent";
+          {referrals.map((r, idx) => {
+            const dateStr = r.createdAt
+              ? new Date(r.createdAt).toLocaleDateString("en-IN", {
+                  weekday: "short",
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+              : "Recent";
 
             return (
               <div
-                key={r._id}
-                className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition hover:shadow-md hover:border-blue-200 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                key={r._id || idx}
+                className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-5 shadow-2xs transition hover:border-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div className="flex items-start gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-700 font-extrabold text-base ring-1 ring-indigo-500/20 flex-shrink-0">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl liquid-glass-subtle text-teal-800 border border-slate-200/80 font-bold text-sm shadow-2xs flex-shrink-0">
                     🔄
                   </div>
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide border ${
-                          isUrgent
-                            ? "bg-rose-100 text-rose-800 border-rose-200"
-                            : "bg-blue-100 text-blue-800 border-blue-200"
-                        }`}
-                      >
-                        {r.priority || r.urgency || "Routine"}
+                      <span className="rounded-full liquid-glass-pill bg-teal-50 border border-teal-200/70 text-teal-800 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                        Referred to {r.referredToDepartment || "Specialist"}
                       </span>
-                      <span className="text-xs font-semibold text-slate-400">
-                        Referred on {new Date(r.createdAt || r.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                      <span className="text-xs font-semibold text-slate-500 font-mono">
+                        Date: {dateStr}
                       </span>
                     </div>
 
                     <h3 className="text-base font-bold text-slate-900 mt-1">
-                      Referral to {r.toSpecialty || r.specialization || "Specialist"}
-                      {r.toDoctor?.name && ` (${formatDoctorName(r.toDoctor.name)})`}
+                      Target Specialist: {r.referredToDoctor ? formatDoctorName(r.referredToDoctor.name, "Doctor") : "Department Consultant"}
                     </h3>
-
-                    <p className="text-xs text-slate-600 mt-1">
-                      Referred by: <strong className="text-slate-800">{formatDoctorName(r.fromDoctor?.name || r.referringDoctor, "Attending Physician")}</strong>
-                      {r.department && ` (${r.department})`}
+                    <p className="text-xs font-medium text-slate-600">
+                      Referring Physician: <strong className="text-slate-800">{formatDoctorName(r.referringDoctor?.name, "Doctor")}</strong>
                     </p>
 
-                    {(r.reason || r.clinicalNotes) && (
-                      <div className="mt-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-slate-700">
-                        <span className="font-semibold text-slate-800">Reason:</span> {r.reason || r.clinicalNotes}
+                    {r.clinicalSummary && (
+                      <div className="mt-2 text-xs bg-slate-50/70 p-2.5 rounded-xl border border-slate-100 text-slate-700">
+                        <span className="font-semibold text-slate-800">Clinical Indication:</span>{" "}
+                        {r.clinicalSummary}
                       </div>
                     )}
                   </div>
@@ -120,10 +121,10 @@ function MyReferrals() {
 
                 <div className="flex items-center gap-3 self-end md:self-center flex-shrink-0">
                   <Link
-                    to={`/patient/appointments/book?specialization=${encodeURIComponent(r.toSpecialty || r.specialization || "")}`}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700 shadow-2xs transition"
+                    to={`/patient/appointments/book?doctor=${r.referredToDoctor?._id || ""}`}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold px-4 py-2 text-xs shadow-sm shadow-teal-950/10 transition active:scale-95"
                   >
-                    📅 Book Specialist Visit
+                    <span>Book Specialist Slot →</span>
                   </Link>
                 </div>
               </div>

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import UpiPaymentBox from "../components/UpiPaymentBox.jsx";
 import InsurancePaymentBox from "../components/InsurancePaymentBox.jsx";
+import RazorpayPaymentBox from "../components/RazorpayPaymentBox.jsx";
 import PaymentMethodSelect from "../components/PaymentMethodSelect.jsx";
 import { getBillingById, createRazorpayOrder, verifyRazorpayPayment, payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
 import { formatDoctorName } from "../utils/doctorName.js";
@@ -31,12 +32,15 @@ function PaymentPage() {
   // Modals for instant actions
   const [showUpiModal, setShowUpiModal] = useState(false);
   const [showInsuranceModal, setShowInsuranceModal] = useState(false);
+  const [showRazorpayModal, setShowRazorpayModal] = useState(false);
 
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Detect if user is a patient
+  // Detect session
   const isPatient = Boolean(localStorage.getItem("patient_token"));
+  const isStaff = Boolean(localStorage.getItem("hms_token"));
+  const isAuthenticated = isPatient || isStaff;
 
   useEffect(() => {
     let active = true;
@@ -142,17 +146,19 @@ function PaymentPage() {
         rzp.on("payment.failed", function (resp) {
           setErrorMsg(resp.error?.description || "Razorpay Payment Failed.");
           setIsRazorpayProcessing(false);
+          setShowRazorpayModal(true);
         });
 
         rzp.open();
       } else {
-        setErrorMsg("Unable to load Razorpay SDK. Please check connection.");
+        // Fallback to interactive Razorpay / Cards / NetBanking modal
         setIsRazorpayProcessing(false);
+        setShowRazorpayModal(true);
       }
     } catch (err) {
-      console.error("Razorpay launch error:", err);
-      setErrorMsg(err.message || "Failed to launch Razorpay checkout.");
+      console.warn("Direct Razorpay checkout notice, engaging interactive payment modal:", err);
       setIsRazorpayProcessing(false);
+      setShowRazorpayModal(true);
     }
   };
 
@@ -161,6 +167,13 @@ function PaymentPage() {
     setPaymentMethod(method);
     setErrorMsg("");
     setSuccessMsg("");
+
+    if (!isAuthenticated) {
+      navigate(`/patient/login?redirect=/pay/${billingId}`, {
+        state: { message: "Please log in to your patient account to authorize this payment." },
+      });
+      return;
+    }
 
     if (method === "razorpay") {
       handleLaunchRazorpayDirectly();
@@ -373,6 +386,36 @@ function PaymentPage() {
         {/* ── Direct Action Payment Tiles ── */}
         {!isPaid ? (
           <section className="rounded-2xl bg-white shadow-md p-6 space-y-4">
+            {!isAuthenticated && (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🔐</span>
+                      <h3 className="text-sm font-bold text-amber-950">Patient Authentication Required</h3>
+                    </div>
+                    <p className="text-xs text-amber-800">
+                      To ensure security and authorize payment for this invoice, please log in with your patient credentials.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Link
+                      to={`/patient/login?redirect=/pay/${billingId}`}
+                      className="rounded-xl bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-800 transition shadow-xs"
+                    >
+                      Log In to Pay
+                    </Link>
+                    <Link
+                      to={`/patient/register?redirect=/pay/${billingId}`}
+                      className="rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100/50 transition"
+                    >
+                      Register
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <h2 className="text-base font-bold text-slate-900">Select Hospital Payment Method</h2>
 
             <PaymentMethodSelect
@@ -406,6 +449,30 @@ function PaymentPage() {
               </p>
             )}
           </section>
+        )}
+
+        {/* ── MODAL: RAZORPAY / CARDS / NETBANKING FALLBACK ── */}
+        {showRazorpayModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200 relative">
+              <button
+                type="button"
+                onClick={() => setShowRazorpayModal(false)}
+                className="absolute top-4 right-4 z-20 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition cursor-pointer"
+              >
+                ✕
+              </button>
+              <RazorpayPaymentBox
+                billing={billing}
+                onPaymentSuccess={(updated) => {
+                  handlePaymentSuccess(updated);
+                  setShowRazorpayModal(false);
+                }}
+                isPatient={isPatient}
+                autoOpen={true}
+              />
+            </div>
+          </div>
         )}
 
         {/* ── MODAL: INSTANT UPI QR CODE & APPS ── */}

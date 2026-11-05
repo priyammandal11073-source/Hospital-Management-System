@@ -13,6 +13,15 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { exportToCsv } from "../utils/csvExport.js";
 import ActionMenu from "../components/ui/ActionMenu.jsx";
 import { formatDoctorName } from "../utils/doctorName.js";
+import {
+  Badge,
+  Button,
+  Card,
+  PageHeader,
+  EmptyStateCard,
+  PageLoader,
+  Modal,
+} from "../components/ui/index.js";
 
 const paymentStatuses = ["pending", "paid", "partially_paid"];
 const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque"];
@@ -66,7 +75,6 @@ function Billing() {
   const [upiUtr, setUpiUtr] = useState("");
   const [isUpdatingPayment, setIsUpdatingPayment] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
-  // SMS payment link state
   const [smsBilling, setSmsBilling] = useState(null);
   const [smsPhone, setSmsPhone] = useState("");
   const [isSendingSms, setIsSendingSms] = useState(false);
@@ -81,8 +89,6 @@ function Billing() {
 
       try {
         const listData = await getBillings(filters);
-        // The list API populates the patient. Fetch each detail only to obtain its
-        // populated appointment date until the backend list endpoint includes it.
         const detailedBillings = await Promise.all(
           listData.billings.map(async (billing) => {
             if (typeof billing.appointment !== "string") return billing;
@@ -161,54 +167,57 @@ function Billing() {
 
   return (
     <section>
-      <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-800">Billing</h1>
-          <p className="mt-1 text-sm text-slate-600">Create invoices and track patient payments.</p>
-        </div>
-        {canManageBilling ? (
-          <button
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
-            onClick={() => setIsFormOpen(true)}
-            type="button"
+      <PageHeader
+        title="Billing"
+        subtitle="Create invoices and track patient payments."
+        actions={[
+          canManageBilling ? (
+            <Button key="create" size="sm" onClick={() => setIsFormOpen(true)} leftIcon={<span>+</span>}>
+              Create bill
+            </Button>
+          ) : (
+            <Badge key="view" status="active">
+              👁️ View-only access
+            </Badge>
+          ),
+          <Button
+            key="export"
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              exportToCsv({
+                filename: `billing-invoices.csv`,
+                headers: ["Invoice #", "Patient", "Department", "Date", "Total", "Paid", "Status", "Method"],
+                rows: billings.map((b) => [
+                  b.invoiceNumber || String(b._id).slice(-6).toUpperCase(),
+                  b.patient?.name || "Walk-in",
+                  b.department || "—",
+                  new Date(b.createdAt || b.billDate || Date.now()).toLocaleString("en-IN"),
+                  Number(b.totalAmount || 0).toFixed(2),
+                  Number(b.paidAmount || 0).toFixed(2),
+                  (b.paymentStatus || "").replace(/_/g, " "),
+                  b.paymentMethod || "—",
+                ]),
+              })
+            }
+            disabled={billings.length === 0}
           >
-            + Create bill
-          </button>
-        ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-50 border border-teal-200 px-3 py-1.5 text-xs font-semibold text-teal-700">
-            👁️ View-only access (Nursing staff)
-          </span>
-        )}
-        <button
-          type="button"
-          className="rounded-md border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-          onClick={() =>
-            exportToCsv({
-              filename: `billing-invoices.csv`,
-              headers: ["Invoice #", "Patient", "Department", "Date", "Total", "Paid", "Status", "Method"],
-              rows: billings.map((b) => [
-                b.invoiceNumber || String(b._id).slice(-6).toUpperCase(),
-                b.patient?.name || "Walk-in",
-                b.department || "—",
-                new Date(b.createdAt || b.billDate || Date.now()).toLocaleString("en-IN"),
-                Number(b.totalAmount || 0).toFixed(2),
-                Number(b.paidAmount || 0).toFixed(2),
-                (b.paymentStatus || "").replace(/_/g, " "),
-                b.paymentMethod || "—",
-              ]),
-            })
-          }
-          disabled={billings.length === 0}
-        >
-          ⬇ Export CSV
-        </button>
-      </div>
+            ⬇ Export CSV
+          </Button>,
+        ]}
+      />
 
-      <div className="mb-5 grid gap-3 md:grid-cols-3">
-        <label className="text-sm font-medium text-slate-700">
-          Payment status
+      {error && (
+        <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700" role="alert">
+          {error}
+        </div>
+      )}
+
+      <div className="mb-5 grid gap-3 md:grid-cols-3 rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
+        <div className="flex flex-col">
+          <label className="text-xs font-bold text-slate-700 mb-1">Payment status</label>
           <select
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-teal-600 focus:outline-none"
             name="paymentStatus"
             onChange={handleFilterChange}
             value={filters.paymentStatus}
@@ -220,53 +229,44 @@ function Billing() {
               </option>
             ))}
           </select>
-        </label>
-        <label className="text-sm font-medium text-slate-700">
-          From date
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs font-bold text-slate-700 mb-1">From date</label>
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-teal-600 focus:outline-none"
             name="startDate"
             onChange={handleFilterChange}
             type="date"
             value={filters.startDate}
           />
-        </label>
-        <label className="text-sm font-medium text-slate-700">
-          To date
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs font-bold text-slate-700 mb-1">To date</label>
           <input
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-teal-600 focus:outline-none"
             name="endDate"
             onChange={handleFilterChange}
             type="date"
             value={filters.endDate}
           />
-        </label>
+        </div>
       </div>
 
-      {error && (
-        <p className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700" role="alert">
-          {error}
-        </p>
-      )}
-
       {isLoading ? (
-        <div className="rounded-2xl bg-white p-8 text-center text-slate-600 text-xs shadow-xs ring-1 ring-slate-200/80">
-          <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-r-transparent mb-2"></div>
-          <p>Loading billing records...</p>
-        </div>
+        <Card title="Loading billing records…" subtitle="Please wait while we fetch the latest invoice data.">
+          <PageLoader message="Loading billing records…" />
+        </Card>
       ) : billings.length === 0 ? (
-        <div className="rounded-2xl bg-white p-8 text-center text-slate-600 text-xs shadow-xs ring-1 ring-slate-200/80">
-          No billing records found.
-        </div>
+        <EmptyStateCard
+          icon="🧾"
+          title="No billing records found"
+          description="Create a new bill or adjust your filters to see existing invoices."
+        />
       ) : (
         <>
-          {/* Mobile Stacked Card View (< md) */}
           <div className="block md:hidden space-y-3">
             {billings.map((billing) => (
-              <div
-                key={billing._id}
-                className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs space-y-3"
-              >
+              <div key={billing._id} className="rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs space-y-3 liquid-glass-card">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-700 font-black text-xs ring-1 ring-amber-500/20 flex-shrink-0">
@@ -281,13 +281,9 @@ function Billing() {
                       </p>
                     </div>
                   </div>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ring-1 ${
-                      paymentStatusClasses[billing.paymentStatus]
-                    }`}
-                  >
+                  <Badge status={billing.paymentStatus}>
                     {paymentStatusLabels[billing.paymentStatus] || billing.paymentStatus}
-                  </span>
+                  </Badge>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
@@ -311,7 +307,6 @@ function Billing() {
                   )}
                 </div>
 
-                {/* Mobile Touch-Friendly Action Buttons */}
                 <div className="pt-1">
                   <ActionMenu
                     triggerLabel="Actions"
@@ -391,8 +386,7 @@ function Billing() {
             ))}
           </div>
 
-          {/* Desktop Table View (>= md) */}
-          <div className="hidden md:block overflow-x-auto rounded-xl bg-white shadow-xs ring-1 ring-slate-200/80">
+          <div className="hidden md:block overflow-x-auto rounded-xl bg-white shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50 text-left text-xs font-semibold text-slate-500">
                 <tr>
@@ -431,14 +425,9 @@ function Billing() {
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
-                          paymentStatusClasses[billing.paymentStatus]
-                        }`}
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full mr-1.5 bg-current opacity-75"></span>
+                      <Badge status={billing.paymentStatus}>
                         {paymentStatusLabels[billing.paymentStatus] || billing.paymentStatus}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="whitespace-nowrap px-4 py-3.5 text-xs text-slate-500 font-mono">
                       {formatDate(billing.paymentDate)}
@@ -525,26 +514,14 @@ function Billing() {
       )}
 
       {isFormOpen && (
-        <div
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 p-2.5 sm:p-4 backdrop-blur-md animate-backdrop-fade"
-          role="dialog"
+        <Modal
+          isOpen={isFormOpen}
+          onClose={() => setIsFormOpen(false)}
+          title="Generate Patient Bill"
+          className="max-w-2xl"
         >
-          <div className="modal-viewport w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-4 sm:p-6 shadow-xl border border-slate-200/80 animate-pop-in">
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-slate-800">Generate Patient Bill</h2>
-              <button
-                aria-label="Close form"
-                className="rounded-lg p-1.5 text-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition touch-target flex items-center justify-center cursor-pointer"
-                onClick={() => setIsFormOpen(false)}
-                type="button"
-              >
-                ✕
-              </button>
-            </div>
-            <BillingForm onCancel={() => setIsFormOpen(false)} onSuccess={handleBillingSuccess} />
-          </div>
-        </div>
+          <BillingForm onCancel={() => setIsFormOpen(false)} onSuccess={handleBillingSuccess} />
+        </Modal>
       )}
 
       {paymentBilling && (
@@ -560,18 +537,14 @@ function Billing() {
         />
       )}
 
-      {/* ── SMS Payment Link Modal ── */}
       {smsBilling && (
-        <div
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/35 backdrop-blur-md p-4 animate-backdrop-fade"
-          role="dialog"
+        <Modal
+          isOpen={Boolean(smsBilling)}
+          onClose={() => { setSmsBilling(null); setSmsResult(""); }}
+          title="📲 Send Payment Link via SMS"
+          className="max-w-md"
         >
-          <form
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200/80 space-y-4 animate-pop-in"
-            onSubmit={handleSendSms}
-          >
-            <h2 className="text-xl font-semibold text-slate-800">📲 Send Payment Link via SMS</h2>
+          <form onSubmit={handleSendSms} className="space-y-4">
             <p className="text-sm text-slate-600">
               Send a secure payment link to the patient's phone. They can pay online without visiting the hospital.
             </p>
@@ -581,42 +554,42 @@ function Billing() {
               <p className="text-xs text-violet-700 mt-0.5">Invoice #{smsBilling._id?.toString().slice(-6).toUpperCase()} · ₹{smsBilling.totalAmount?.toFixed(2)}</p>
             </div>
 
-            <label className="block text-sm font-medium text-slate-700">
-              Patient phone number
+            <div className="flex flex-col">
+              <label className="text-xs font-bold text-slate-700 mb-1">Patient phone number</label>
               <input
                 type="tel"
-                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono"
+                className="w-full rounded-xl border border-slate-300 px-3.5 py-2 font-mono text-xs focus:border-teal-600 focus:outline-none"
                 placeholder="10-digit mobile number"
                 value={smsPhone}
                 onChange={(e) => setSmsPhone(e.target.value)}
               />
               <span className="text-xs text-slate-400 mt-0.5 block">Pre-filled from patient record. Edit if needed.</span>
-            </label>
+            </div>
 
             {smsResult && (
-              <p className={`text-sm font-medium ${
-                smsResult.startsWith("✅") ? "text-emerald-700" : "text-red-600"
-              }`}>{smsResult}</p>
+              <p className={`text-xs font-medium ${smsResult.startsWith("✅") ? "text-emerald-700" : "text-red-600"}`}>
+                {smsResult}
+              </p>
             )}
 
             <div className="flex justify-end gap-3 pt-2">
               <button
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                onClick={() => { setSmsBilling(null); setSmsResult(""); }}
                 type="button"
+                onClick={() => { setSmsBilling(null); setSmsResult(""); }}
+                className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
               >
                 Close
               </button>
               <button
-                className="rounded-md bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
                 disabled={isSendingSms}
                 type="submit"
+                className="rounded-xl bg-violet-600 px-4 py-2 text-xs font-bold text-white hover:bg-violet-700 disabled:opacity-50 transition"
               >
                 {isSendingSms ? "Sending…" : "Send SMS"}
               </button>
             </div>
           </form>
-        </div>
+        </Modal>
       )}
 
       {selectedInvoice && (

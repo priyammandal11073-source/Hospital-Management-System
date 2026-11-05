@@ -2,6 +2,14 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { getAppointments, getDoctors, getDoctorAvailability } from "../../services/api.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import {
+  Badge,
+  Button,
+  Card,
+  PageHeader,
+  EmptyStateCard,
+  PageLoader,
+} from "../../components/ui/index.js";
 
 const STANDARD_SLOTS = [
   "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM",
@@ -10,13 +18,13 @@ const STANDARD_SLOTS = [
   "04:00 PM", "04:30 PM", "05:00 PM"
 ];
 
-const STATUS_COLORS = {
-  confirmed: { bg: "bg-blue-100", text: "text-blue-800", border: "border-blue-200" },
-  completed: { bg: "bg-emerald-100", text: "text-emerald-800", border: "border-emerald-200" },
-  pending: { bg: "bg-amber-100", text: "text-amber-800", border: "border-amber-200" },
-  in_progress: { bg: "bg-purple-100", text: "text-purple-800", border: "border-purple-200" },
-  cancelled: { bg: "bg-rose-100", text: "text-rose-800", border: "border-rose-200" },
-  waiting: { bg: "bg-sky-100", text: "text-sky-800", border: "border-sky-200" },
+const STATUS_CONFIG = {
+  confirmed: { badge: "confirmed", label: "Confirmed" },
+  completed: { badge: "completed", label: "Completed" },
+  pending: { badge: "pending", label: "Pending" },
+  in_progress: { badge: "in_progress", label: "In Progress" },
+  cancelled: { badge: "cancelled", label: "Cancelled" },
+  waiting: { badge: "waiting", label: "Waiting" },
 };
 
 export default function OPDCalendarPage() {
@@ -64,7 +72,6 @@ export default function OPDCalendarPage() {
 
   const selectedDoctor = doctors.find((d) => d._id === selectedDoctorId);
 
-  // Appointments for this doctor on selected date
   const filteredAppointments = useMemo(() => {
     return appointments.filter((a) => {
       const aDocId = a.doctor?._id || a.doctor;
@@ -86,39 +93,29 @@ export default function OPDCalendarPage() {
   }, [doctorAvailability, filteredAppointments]);
 
   return (
-    <div className="space-y-6 animate-pop-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-amber-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-600">Central Clinic Schedule</span>
-          </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-800">
-            OPD Appointment Calendar & Doctor Availability
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Visual timetable of doctor working days, occupied OPD slots, open booking availability, and conflict prevention.
-          </p>
-        </div>
+    <div className="space-y-6 animate-pop-in" style={{ backgroundImage: "radial-gradient(circle, rgba(15, 118, 110, 0.03) 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
+      <PageHeader
+        title="OPD Appointment Calendar & Doctor Availability"
+        subtitle="Visual timetable of doctor working days, occupied OPD slots, open booking availability, and conflict prevention."
+        breadcrumbs={<span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-amber-500"></span><span className="text-xs font-bold uppercase tracking-wider text-amber-600">Central Clinic Schedule</span></span>}
+        actions={[
+          <Link
+            to="/appointments"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700 shadow-sm transition active:scale-[0.97] touch-target self-start sm:self-auto"
+          >
+            <span>➕</span>
+            <span>Book Specialist Visit</span>
+          </Link>,
+        ]}
+      />
 
-        <Link
-          to="/appointments"
-          className="flex items-center gap-1.5 rounded-xl bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700 shadow-sm transition self-start sm:self-auto active:scale-97"
-        >
-          <span>➕</span>
-          <span>Book Specialist Visit</span>
-        </Link>
-      </div>
-
-      {/* Control Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         <div>
           <label className="text-xs font-bold text-slate-700 block mb-1">Select Doctor / Specialist:</label>
           <select
             value={selectedDoctorId}
             onChange={(e) => setSelectedDoctorId(e.target.value)}
-            className="w-full rounded-xl liquid-glass-subtle border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition duration-150"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition duration-150"
           >
             {doctors.map((doc) => (
               <option key={doc._id} value={doc._id}>
@@ -134,7 +131,7 @@ export default function OPDCalendarPage() {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full rounded-xl liquid-glass-subtle border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition duration-150"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 font-medium focus:border-teal-600 focus:outline-none focus:ring-2 focus:ring-teal-600/20 transition duration-150"
           />
         </div>
 
@@ -144,7 +141,7 @@ export default function OPDCalendarPage() {
             <button
               onClick={() => setViewMode("daily")}
               className={`flex-1 rounded-lg py-1 text-xs font-bold transition ${
-                viewMode === "daily" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                viewMode === "daily" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
               }`}
             >
               Day View
@@ -152,7 +149,7 @@ export default function OPDCalendarPage() {
             <button
               onClick={() => setViewMode("weekly")}
               className={`flex-1 rounded-lg py-1 text-xs font-bold transition ${
-                viewMode === "weekly" ? "bg-white text-slate-800 shadow-xs" : "text-slate-500 hover:text-slate-800"
+                viewMode === "weekly" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-800"
               }`}
             >
               Week View
@@ -161,24 +158,8 @@ export default function OPDCalendarPage() {
         </div>
       </div>
 
-      {/* Doctor Summary Banner */}
       {selectedDoctor && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4 liquid-glass-card">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-100 text-amber-800 text-xl font-black">
-              Dr
-            </div>
-            <div>
-              <h2 className="text-base font-black text-slate-800">{formatDoctorName(selectedDoctor.name)}</h2>
-              <p className="text-xs text-slate-500">
-                {selectedDoctor.specialization} • Department of {selectedDoctor.department}
-              </p>
-              <p className="text-[11px] text-amber-700 font-semibold mt-0.5">
-                Fee: ₹{selectedDoctor.consultationFee || 500} • OPD Working Days: {selectedDoctor.workingDays?.join(", ") || "Mon - Fri"}
-              </p>
-            </div>
-          </div>
-
+        <Card title={formatDoctorName(selectedDoctor.name)} subtitle={`${selectedDoctor.specialization} • Department of ${selectedDoctor.department}`}>
           <div className="flex items-center gap-4 text-center">
             <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2 flex-1">
               <span className="text-lg font-black text-emerald-800">
@@ -186,11 +167,11 @@ export default function OPDCalendarPage() {
               </span>
               <p className="text-[10px] uppercase font-bold text-emerald-700">Open Slots</p>
             </div>
-            <div className="rounded-xl bg-blue-50 border border-blue-200 px-4 py-2 flex-1">
-              <span className="text-lg font-black text-blue-800">
+            <div className="rounded-xl bg-slate-50 border border-slate-200 px-4 py-2 flex-1">
+              <span className="text-lg font-black text-slate-800">
                 {filteredAppointments.length}
               </span>
-              <p className="text-[10px] uppercase font-bold text-blue-700">Booked</p>
+              <p className="text-[10px] uppercase font-bold text-slate-700">Booked</p>
             </div>
             <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-2 flex-1">
               <span className="text-lg font-black text-amber-800">
@@ -199,10 +180,12 @@ export default function OPDCalendarPage() {
               <p className="text-[10px] uppercase font-bold text-amber-700">Available</p>
             </div>
           </div>
-        </div>
+          <div className="mt-3 text-xs text-slate-500">
+            Fee: ₹{selectedDoctor.consultationFee || 500} • OPD Working Days: {selectedDoctor.workingDays?.join(", ") || "Mon - Fri"}
+          </div>
+        </Card>
       )}
 
-      {/* Slot Grid */}
       <div className="rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center justify-between">
           <span>OPD Slot Availability — {new Date(selectedDate).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</span>
@@ -213,14 +196,12 @@ export default function OPDCalendarPage() {
         </h3>
 
         {isLoading ? (
-          <div className="py-16 text-center text-xs font-medium text-slate-400 animate-pulse">
-            Loading slot schedule...
-          </div>
+          <PageLoader message="Loading slot schedule..." />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
             {availableSlots.map((slot) => {
               const isOccupied = slot.isOccupied;
-              const statusColor = isOccupied ? STATUS_COLORS[slot.appointment?.status] || { bg: "bg-rose-100", text: "text-rose-800", border: "border-rose-200" } : null;
+              const statusConfig = isOccupied ? STATUS_CONFIG[slot.appointment?.status] || STATUS_CONFIG.cancelled : null;
 
               return (
                 <div
@@ -246,11 +227,9 @@ export default function OPDCalendarPage() {
                         {slot.appointment.patient?.name || "Patient"}
                       </p>
                       <div className="flex items-center gap-1.5 mt-1">
-                        <span
-                          className={`rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${statusColor.bg} ${statusColor.text} ${statusColor.border}`}
-                        >
-                          {slot.appointment.status.replace("_", " ")}
-                        </span>
+                        <Badge status={statusConfig.badge}>
+                          {statusConfig.label}
+                        </Badge>
                         <Link
                           to={`/appointments?doctor=${selectedDoctorId}&slot=${encodeURIComponent(slot.time)}&date=${selectedDate}`}
                           className="ml-auto inline-block rounded-md bg-sky-600 px-2 py-0.5 text-[10px] font-bold text-white hover:bg-sky-700 transition active:scale-97"

@@ -5,12 +5,22 @@ import {
   updateAppointmentStatus,
 } from "../../services/api.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import {
+  Badge,
+  Button,
+  Card,
+  PageHeader,
+  EmptyStateCard,
+  PageLoader,
+  ConfirmDialog,
+} from "../../components/ui/index.js";
 
 export default function AppointmentRemindersPage() {
   const [reminders, setReminders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [actioningId, setActioningId] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(null);
 
   const loadReminders = async () => {
     setIsLoading(true);
@@ -32,65 +42,83 @@ export default function AppointmentRemindersPage() {
     setActioningId(app._id);
     try {
       const res = await sendAppointmentReminder(app._id);
-      alert(`${res.message}`);
+      toastSuccess(res.message);
       loadReminders();
     } catch (err) {
-      alert("Failed to send reminder: " + (err.response?.data?.message || err.message));
+      toastError("Failed to send reminder: " + (err.response?.data?.message || err.message));
     } finally {
       setActioningId(null);
     }
   };
 
-  const handleMarkConfirmed = async (appId) => {
+  const handleMarkConfirmed = (appId) => {
+    setConfirmModal(appId);
+  };
+
+  const doMarkConfirmed = async (appId) => {
     setActioningId(appId);
     try {
       await updateAppointmentStatus(appId, "confirmed");
       loadReminders();
     } catch (err) {
-      alert("Failed to confirm: " + (err.response?.data?.message || err.message));
+      toastError("Failed to confirm: " + (err.response?.data?.message || err.message));
     } finally {
       setActioningId(null);
+      setConfirmModal(null);
     }
   };
 
+  const toastSuccess = (msg) => {
+    const d = document.createElement("div");
+    d.className = "fixed top-6 right-6 z-50 bg-emerald-500 text-white px-4 py-2 rounded-xl shadow-xl";
+    d.textContent = msg;
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 4000);
+  };
+
+  const toastError = (msg) => {
+    const d = document.createElement("div");
+    d.className = "fixed top-6 right-6 z-50 bg-rose-500 text-white px-4 py-2 rounded-xl shadow-xl";
+    d.textContent = msg;
+    document.body.appendChild(d);
+    setTimeout(() => d.remove(), 4000);
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-blue-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Patient Outreach</span>
-          </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-800">
-            Appointment Confirmation & Reminders Desk
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Pre-visit appointment verification for tomorrow's scheduled clinics. Reduces no-shows and confirms patient attendance.
-          </p>
+    <div className="space-y-6" style={{ backgroundImage: "radial-gradient(circle, rgba(15, 118, 110, 0.03) 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
+      <PageHeader
+        title="Appointment Confirmation & Reminders Desk"
+        subtitle="Pre-visit appointment verification for tomorrow's scheduled clinics. Reduces no-shows and confirms patient attendance."
+        breadcrumbs={<span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-blue-500"></span><span className="text-xs font-bold uppercase tracking-wider text-blue-600">Patient Outreach</span></span>}
+        actions={[
+          <Button             variant="outline"
+            size="sm"
+            onClick={loadReminders}
+            leftIcon={<span>🔄</span>}
+          >
+            Refresh List
+          </Button>,
+        ]}
+      />
+
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError("")} className="font-bold">✕</button>
         </div>
+      )}
 
-        <button
-          onClick={loadReminders}
-          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs transition self-start sm:self-auto"
-        >
-          <span>🔄</span>
-          <span>Refresh List</span>
-        </button>
-      </div>
-
-      {/* Reminders Table */}
-      <div className="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200/80">
+      <div className="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         {isLoading ? (
           <div className="py-20 text-center text-xs font-medium text-slate-400 animate-pulse">
-            Loading upcoming clinics requiring reminder outreach...
+            Loading upcoming clinics requiring reminder outreach…
           </div>
         ) : reminders.length === 0 ? (
-          <div className="py-16 text-center">
-            <span className="text-4xl">📬</span>
-            <p className="mt-2 text-sm font-bold text-slate-700">No pending reminders for tomorrow</p>
-            <p className="text-xs text-slate-400 mt-1">All scheduled patients have been confirmed or notified.</p>
-          </div>
+          <EmptyStateCard
+            icon="📬"
+            title="No pending reminders for tomorrow"
+            description="All scheduled patients have been confirmed or notified."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-600">
@@ -124,15 +152,9 @@ export default function AppointmentRemindersPage() {
                       {app.reasonForVisit}
                     </td>
                     <td className="py-3.5 px-4">
-                      <span
-                        className={`inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold ${
-                          app.status === "confirmed"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}
-                      >
+                      <Badge status={app.status === "confirmed" ? "completed" : "pending"}>
                         {app.status}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -141,22 +163,24 @@ export default function AppointmentRemindersPage() {
                             ✓ Reminder Sent
                           </span>
                         ) : (
-                          <button
+                          <Button                             variant="outline"
+                            size="sm"
                             disabled={actioningId === app._id}
                             onClick={() => handleSendReminder(app)}
-                            className="rounded-lg bg-blue-50 border border-blue-200 text-blue-700 px-3 py-1.5 text-xs font-bold hover:bg-blue-100 transition disabled:opacity-50 cursor-pointer"
+                            leftIcon={<span>📩</span>}
                           >
-                            📩 Send Reminder
-                          </button>
+                            {actioningId === app._id ? "Sending…" : "Send Reminder"}
+                          </Button>
                         )}
                         {app.status !== "confirmed" && (
-                          <button
+                          <Button                             variant="outline"
+                            size="sm"
                             disabled={actioningId === app._id}
                             onClick={() => handleMarkConfirmed(app._id)}
-                            className="rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-xs font-bold hover:bg-emerald-700 transition disabled:opacity-50"
+                            leftIcon={<span>✓</span>}
                           >
-                            ✓ Confirmed
-                          </button>
+                            {actioningId === app._id ? "Confirming…" : "Confirm"}
+                          </Button>
                         )}
                       </div>
                     </td>
@@ -167,6 +191,20 @@ export default function AppointmentRemindersPage() {
           </div>
         )}
       </div>
+
+      {confirmModal && (
+        <ConfirmDialog
+          isOpen={Boolean(confirmModal)}
+          onCancel={() => setConfirmModal(null)}
+          title="Confirm Appointment"
+          message="Mark this appointment as confirmed and notify the patient?"
+          confirmText={actioningId === confirmModal ? "Confirming…" : "Confirm Appointment"}
+          cancelText="Cancel"
+          variant="primary"
+          loading={actioningId === confirmModal}
+          onConfirm={() => doMarkConfirmed(confirmModal)}
+        />
+      )}
     </div>
   );
 }

@@ -137,7 +137,7 @@ export default function CriticalLabResultsPage() {
                     {rep.doctorReviewStatus !== "reviewed" ? (
                       <button
                         onClick={() => setSelectedReport(rep)}
-                        className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition shadow-xs"
+                        className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-slate-100 text-xs font-bold transition shadow-xs"
                       >
                         Acknowledge & Sign Review
                       </button>
@@ -247,11 +247,11 @@ export default function CriticalLabResultsPage() {
       {selectedReport && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+            <div className="bg-slate-900 text-slate-100 px-6 py-4 flex items-center justify-between">
               <h3 className="text-sm font-bold">Acknowledge Critical Result: {selectedReport.testName}</h3>
               <button
                 onClick={() => setSelectedReport(null)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-slate-400 hover:text-slate-100 text-sm"
               >
                 ✕
               </button>
@@ -289,7 +289,7 @@ export default function CriticalLabResultsPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold transition flex items-center gap-2 shadow-xs disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-slate-100 font-bold transition flex items-center gap-2 shadow-xs disabled:opacity-50"
                 >
                   {submitting ? "Signing..." : "Sign & Acknowledge Review"}
                 </button>

@@ -904,7 +904,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
   return (
     <div className="space-y-6">
       {/* Doctor Hero & Identity Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-white/85 backdrop-blur-xl border border-slate-200/80 p-6 sm:p-8 text-slate-900 shadow-xs">
+      <div className="relative overflow-hidden rounded-2xl liquid-glass-card p-6 sm:p-8 text-slate-900">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
           <div>
             <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2.5 py-1 text-xs font-medium shadow-2xs">
@@ -1017,7 +1017,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
       )}
 
       {/* 10 Clinical KPI Metrics Row */}
-      <div className="grid gap-3.5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-3.5">
         <MetricCard
           label="Today's Consults"
           value={metrics.todayConsultations}
@@ -1111,7 +1111,7 @@ function DoctorDashboard({ user, refreshKey, onTriggerRefresh }) {
       </div>
 
       {/* Today's Shift & Availability Strip */}
-      <div className="rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="liquid-glass-card rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 text-teal-700 font-bold text-xl ring-1 ring-teal-500/20">
             ⏰
@@ -2227,7 +2227,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
       )}
 
       {/* Station Header Banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/80 p-6 sm:p-8 text-slate-900 shadow-xs">
+      <div className="relative overflow-hidden rounded-2xl liquid-glass-card p-6 sm:p-8 text-slate-900">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 rounded-lg bg-teal-50 text-teal-800 border border-teal-200/80 px-2.5 py-1 text-xs font-medium shadow-2xs">
@@ -2275,7 +2275,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
       </div>
 
       {/* 6 Core Metric Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         <MetricCard
           label="My Patients"
           value={metrics.myPatients}
@@ -2333,7 +2333,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
       </div>
 
       {/* SECTION 1: CRITICAL PATIENT MONITORING */}
-      <section className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200">
+      <section className="liquid-glass-card rounded-2xl p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4 mb-4">
           <div>
             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -2464,7 +2464,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
       {/* SECTION 2: MEDICATIONS DUE (eMAR) & SECTION 3: PENDING TASKS */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* MEDICATIONS DUE QUEUE */}
-        <section className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 space-y-4">
+        <section className="liquid-glass-card rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -2549,7 +2549,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
         </section>
 
         {/* PENDING NURSING TASKS */}
-        <section className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200 space-y-4">
+        <section className="liquid-glass-card rounded-2xl p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
@@ -2618,7 +2618,7 @@ function NurseDashboard({ user, refreshKey, onTriggerRefresh }) {
       </div>
 
       {/* SECTION 4: RECENT DOCTOR ORDERS */}
-      <section className="bg-white rounded-2xl p-6 shadow-xs border border-slate-200">
+      <section className="liquid-glass-card rounded-2xl p-6 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
           <div>
             <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">

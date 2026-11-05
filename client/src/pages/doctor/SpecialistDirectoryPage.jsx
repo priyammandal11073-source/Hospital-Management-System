@@ -57,7 +57,7 @@ export default function SpecialistDirectoryPage() {
 
         <button
           onClick={() => navigate("/doctor/referrals")}
-          className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition shadow-xs self-start sm:self-auto"
+          className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs self-start sm:self-auto"
         >
           View Referrals Desk
         </button>
@@ -113,12 +113,12 @@ export default function SpecialistDirectoryPage() {
               className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4 hover:border-slate-300 transition"
             >
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-sm">
+                <div className="h-12 w-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-800 font-bold text-base border border-slate-200">
                   {doc.name ? doc.name.charAt(0).toUpperCase() : "D"}
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-slate-900">{formatDoctorName(doc.name)}</h3>
-                  <p className="text-xs text-blue-600 font-semibold">{doc.specialization}</p>
+                  <p className="text-xs text-slate-700 font-semibold">{doc.specialization}</p>
                   <span className="inline-block px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[10px] font-bold mt-1">
                     {doc.department}
                   </span>
@@ -138,7 +138,7 @@ export default function SpecialistDirectoryPage() {
                 <button
                   type="button"
                   onClick={() => navigate("/doctor/referrals")}
-                  className="px-3 py-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs transition border border-purple-200"
+                  className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition border border-slate-900"
                 >
                   Refer Patient
                 </button>

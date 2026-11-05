@@ -1,6 +1,15 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { getBatches } from "../../services/api.js";
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+  Input,
+  EmptyStateCard,
+  PageLoader,
+} from "../../components/ui/index.js";
 
 export default function BatchManagementPage() {
   const [searchParams] = useSearchParams();
@@ -46,22 +55,22 @@ export default function BatchManagementPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-purple-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-purple-600">Batch & Lot Control</span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Medicine Batch Management</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Trace individual manufacturer batch numbers, manufacturing/expiry dates, purchase rates, and lot balances.
-          </p>
-        </div>
+    <div className="space-y-6 bg-[#f7f6f3]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs">
+        <PageHeader
+          title="Medicine Batch Management"
+          subtitle="Trace individual manufacturer batch numbers, manufacturing/expiry dates, purchase rates, and lot balances."
+          breadcrumbs={
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-purple-500"></span>
+              <span className="text-xs font-bold uppercase tracking-wider text-purple-600">Batch & Lot Control</span>
+            </span>
+          }
+        />
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {[
             { id: "all", label: "All Lots" },
@@ -74,7 +83,7 @@ export default function BatchManagementPage() {
               onClick={() => setStatusFilter(f.id)}
               className={`rounded-lg px-3 py-1.5 text-xs font-bold transition whitespace-nowrap ${
                 statusFilter === f.id
-                  ? "bg-slate-900 text-white shadow-xs"
+                  ? "bg-slate-900 text-slate-100 shadow-xs"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
@@ -84,16 +93,14 @@ export default function BatchManagementPage() {
         </div>
 
         <div className="relative min-w-[240px]">
-          <input
+          <Input
             type="text"
+            placeholder="Search batch #, drug, vendor…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search batch #, drug, vendor..."
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-xs focus:border-amber-500 focus:bg-white focus:outline-none"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-xs focus:border-teal-600 focus:bg-white focus:outline-none"
+            id="batch-search"
           />
-          <svg className="absolute left-2.5 top-2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
         </div>
       </div>
 
@@ -102,13 +109,14 @@ export default function BatchManagementPage() {
         {isLoading ? (
           <div className="py-20 text-center text-slate-500">
             <div className="h-8 w-8 mx-auto border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-3 text-xs font-semibold">Loading batch numbers and expiries...</p>
+            <p className="mt-3 text-xs font-semibold">Loading batch numbers and expiries…</p>
           </div>
         ) : filteredBatches.length === 0 ? (
-          <div className="py-16 text-center text-slate-500">
-            <p className="text-sm font-bold text-slate-700">No batches match the criteria</p>
-            <p className="text-xs text-slate-400 mt-1">Batches are automatically created during Goods Receipt (GRN).</p>
-          </div>
+          <EmptyStateCard
+            icon="📦"
+            title="No batches match the criteria"
+            description="Batches are automatically created during Goods Receipt (GRN)."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -157,21 +165,13 @@ export default function BatchManagementPage() {
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">
                         {isExpired ? (
-                          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-black text-rose-800">
-                            Expired
-                          </span>
+                          <Badge status="cancelled">Expired</Badge>
                         ) : isDepleted ? (
-                          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600">
-                            Depleted
-                          </span>
+                          <Badge status="normal">Depleted</Badge>
                         ) : daysLeft < 60 ? (
-                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
-                            Expiring Soon
-                          </span>
+                          <Badge status="urgent">Expiring Soon</Badge>
                         ) : (
-                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                            Active (Valid)
-                          </span>
+                          <Badge status="completed">Active (Valid)</Badge>
                         )}
                       </td>
                     </tr>

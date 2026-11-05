@@ -70,7 +70,8 @@ export const getNurseDashboardMetrics = asyncHandler(async (req, res) => {
     // Fetch occupied beds
     const occupiedBeds = await Bed.find({ status: "occupied", "currentAdmission.patient": { $exists: true, $ne: null } })
       .populate("currentAdmission.patient", "name age gender bloodGroup contactNumber abhaId allergies medicalHistory")
-      .populate("currentAdmission.attendingDoctor", "name specialization department contactNumber");
+      .populate("currentAdmission.attendingDoctor", "name specialization department contactNumber")
+      .lean();
 
     const admittedPatients = occupiedBeds.map((b) => ({
       bed: b,
@@ -105,16 +106,19 @@ export const getNurseDashboardMetrics = asyncHandler(async (req, res) => {
       Prescription.find({ patient: { $in: patientIds } })
         .populate("patient", "name age gender")
         .populate("doctor", "name specialization")
-        .sort({ createdAt: -1 }),
+        .sort({ createdAt: -1 })
+        .lean(),
       NursingTask.find({ status: { $in: ["Pending", "In Progress"] } })
         .populate("patient", "name age gender")
         .sort({ dueTime: 1 })
-        .limit(10),
+        .limit(10)
+        .lean(),
       NursingTask.countDocuments({ status: { $in: ["Pending", "In Progress"] } }),
       DoctorOrder.find()
         .populate("patient", "name age gender")
         .sort({ createdAt: -1 })
-        .limit(10),
+        .limit(10)
+        .lean(),
       DoctorOrder.countDocuments({ status: { $in: ["New", "Acknowledged", "In Progress"] } }),
     ]);
 

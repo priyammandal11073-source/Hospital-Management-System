@@ -371,7 +371,7 @@ function Beds() {
             <button
               type="button"
               onClick={() => setIsCreateOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-900 hover:bg-slate-800 text-white shadow-xs transition active:scale-[0.97] cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-100 shadow-xs transition active:scale-[0.97] cursor-pointer"
             >
               <span>+ Add new bed</span>
             </button>
@@ -469,7 +469,7 @@ function Beds() {
               onClick={() => setSelectedWard(ward)}
               className={`whitespace-nowrap px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-all active:scale-[0.97] flex items-center gap-2 cursor-pointer ${
                 isSelected
-                  ? "bg-slate-900 text-white font-bold shadow-xs"
+                  ? "bg-slate-900 text-slate-100 font-bold shadow-xs"
                   : "liquid-glass-pill text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -478,7 +478,7 @@ function Beds() {
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono tabular-nums ${
                     isSelected
-                      ? "bg-white/20 text-white"
+                      ? "bg-white/20 text-slate-100"
                       : "bg-slate-200/70 text-slate-600"
                   }`}
                 >
@@ -501,7 +501,7 @@ function Beds() {
               onClick={() => setSelectedStatus(f.id)}
               className={`px-3 py-1.5 text-xs font-medium rounded-xl transition-all active:scale-[0.97] whitespace-nowrap cursor-pointer ${
                 selectedStatus === f.id
-                  ? "bg-slate-900 text-white font-bold shadow-xs"
+                  ? "bg-slate-900 text-slate-100 font-bold shadow-xs"
                   : "liquid-glass-pill text-slate-600 hover:text-slate-900"
               }`}
             >
@@ -940,7 +940,7 @@ function Beds() {
                       setInspectingBed(null);
                       setDischargingBed(target);
                     }}
-                    className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 text-white hover:bg-slate-800 cursor-pointer"
+                    className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 text-slate-100 hover:bg-slate-800 cursor-pointer"
                   >
                     Discharge & Bill →
                   </button>
@@ -954,7 +954,7 @@ function Beds() {
                     setInspectingBed(null);
                     setAllocatingBed(target);
                   }}
-                  className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 text-white hover:bg-slate-800 cursor-pointer"
+                  className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 text-slate-100 hover:bg-slate-800 cursor-pointer"
                 >
                   + Admit Patient
                 </button>
@@ -966,7 +966,7 @@ function Beds() {
                     handleStatusChange(inspectingBed._id, "available");
                     setInspectingBed(null);
                   }}
-                  className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 text-white hover:bg-slate-800 cursor-pointer"
+                  className="px-3.5 py-1.5 text-xs font-semibold rounded-xl bg-slate-900 text-slate-100 hover:bg-slate-800 cursor-pointer"
                 >
                   ✓ Ready for Admission
                 </button>

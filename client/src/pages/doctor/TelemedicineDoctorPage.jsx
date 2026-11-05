@@ -105,7 +105,7 @@ const TelemedicineDoctorPage = () => {
             return (
               <div
                 key={appointment._id}
-                className={`rounded-2xl bg-white p-4 ring-1 ${live ? "ring-emerald-300" : "ring-slate-200"} shadow-2xs flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
+                className="rounded-2xl liquid-glass-card p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -141,7 +141,7 @@ const TelemedicineDoctorPage = () => {
                         href={roomLink}
                         target="_blank"
                         rel="noreferrer"
-                        className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition"
+                        className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 transition"
                       >
                         ▶ Join Session
                       </a>
@@ -159,7 +159,7 @@ const TelemedicineDoctorPage = () => {
                       type="button"
                       disabled={busyId === appointment._id}
                       onClick={() => handleStart(appointment)}
-                      className="rounded-xl bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-800 transition disabled:opacity-50 cursor-pointer"
+                      className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 transition disabled:opacity-50 cursor-pointer"
                     >
                       Start Session
                     </button>

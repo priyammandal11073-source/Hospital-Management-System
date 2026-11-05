@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyActiveMedicines } from "../../services/api.js";
+import { PageHeader } from "../../components/ui/index.js";
 
 function MyMedicines() {
   const [medicines, setMedicines] = useState([]);
@@ -47,35 +48,36 @@ function MyMedicines() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Medications & Dosage Guide</h1>
-            <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700 ring-1 ring-teal-500/20">
-              Active Prescriptions
-            </span>
-          </div>
-          <p className="mt-1 text-sm text-slate-500">
-            Clear, plain-language breakdown of all your prescribed medications, daily routines, and doctor instructions.
-          </p>
-        </div>
-
-        <Link
-          to="/patient/prescriptions"
-          className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-2xs transition"
-        >
-          📄 View Original Digital Prescriptions
-        </Link>
-      </div>
+      <PageHeader
+        breadcrumbs={[
+          { label: "My Health", to: "/patient/dashboard" },
+          { label: "Medications & Dosage", active: true },
+        ]}
+        title="My Medications & Dosage Guide"
+        badge={
+          <span className="inline-flex items-center rounded-full liquid-glass-pill px-2.5 py-0.5 text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200/70">
+            Active Prescriptions
+          </span>
+        }
+        subtitle="Clear, plain-language breakdown of all your prescribed medications, daily routines, and doctor instructions."
+        actions={
+          <Link
+            to="/patient/prescriptions"
+            className="inline-flex items-center gap-1.5 rounded-xl liquid-glass-pill border border-slate-200/80 bg-white/80 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-2xs transition"
+          >
+            📄 View Original Prescriptions
+          </Link>
+        }
+      />
 
       {/* Safety Pill Advice */}
-      <div className="rounded-2xl bg-amber-50 border border-amber-200/80 p-4 sm:p-5 flex items-start gap-3.5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-100 text-amber-800 text-lg flex-shrink-0">
+      <div className="rounded-2xl liquid-glass-card border border-teal-200/80 bg-teal-50/50 p-4 sm:p-5 shadow-2xs flex items-start gap-3.5">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl liquid-glass-subtle text-teal-900 text-lg flex-shrink-0">
           💡
         </div>
-        <div className="text-xs sm:text-sm text-amber-900 leading-relaxed">
-          <p className="font-bold text-amber-950">Medication Safety Guidelines:</p>
-          <ul className="mt-1 list-disc list-inside space-y-0.5 text-amber-800">
+        <div className="text-xs sm:text-sm text-teal-950 leading-relaxed">
+          <p className="font-bold text-teal-950">Medication Safety Guidelines:</p>
+          <ul className="mt-1 list-disc list-inside space-y-0.5 text-teal-900 text-xs">
             <li>Always complete the prescribed antibiotic course unless advised otherwise by your physician.</li>
             <li>Take medicines with a full glass of water. If you experience allergic reactions or severe dizziness, contact the 24/7 helpline immediately.</li>
           </ul>
@@ -83,7 +85,7 @@ function MyMedicines() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-3">
+      <div className="flex items-center gap-2 border-b border-slate-200/80 pb-3">
         {[
           { key: "all", label: `All Medicines (${medicines.length})` },
           { key: "active", label: `Active Routine (${medicines.filter((m) => m.isActive).length})` },
@@ -92,10 +94,10 @@ function MyMedicines() {
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+            className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${
               filter === tab.key
-                ? "bg-teal-700 text-white shadow-xs"
-                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                ? "bg-teal-700 text-white shadow-xs font-bold"
+                : "bg-white/80 text-slate-600 border border-slate-200/80 hover:bg-slate-50"
             }`}
           >
             {tab.label}
@@ -104,23 +106,23 @@ function MyMedicines() {
       </div>
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">
+        <div className="rounded-xl border border-rose-200/80 bg-rose-50 p-4 text-xs font-bold text-rose-800 shadow-2xs">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-3 border-teal-600 border-r-transparent"></div>
-          <p className="mt-3 text-sm font-semibold text-slate-600">Loading your dosage schedules...</p>
+        <div className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-12 text-center shadow-2xs">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-teal-700 border-r-transparent" />
+          <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Loading your dosage schedules...</p>
         </div>
       ) : filteredMedicines.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-2xl">
+        <div className="rounded-2xl liquid-glass-card border border-dashed border-slate-300/80 bg-white/80 p-12 text-center shadow-2xs">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl liquid-glass-subtle text-slate-700 text-2xl mb-3">
             💊
           </div>
-          <h3 className="mt-3 text-base font-bold text-slate-800">No medications found</h3>
-          <p className="mt-1 text-sm text-slate-500">
+          <h3 className="text-sm font-bold text-slate-800">No medications found</h3>
+          <p className="mt-1 text-xs text-slate-500">
             You do not currently have any active medicine routines under this category.
           </p>
         </div>
@@ -133,25 +135,25 @@ function MyMedicines() {
             return (
               <div
                 key={m.id || idx}
-                className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs transition hover:shadow-md hover:border-teal-200 flex flex-col justify-between"
+                className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-5 shadow-2xs transition hover:border-slate-300 flex flex-col justify-between"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-50 text-teal-700 font-bold text-lg ring-1 ring-teal-500/20">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-xl liquid-glass-subtle text-teal-800 border border-slate-200/80 font-bold text-lg shadow-2xs">
                         💊
                       </div>
                       <div>
                         <h3 className="text-base font-bold text-slate-900">{m.name}</h3>
-                        <p className="text-xs font-semibold text-teal-700">
+                        <p className="text-xs font-semibold text-teal-800">
                           {m.dosage} • {m.form || "Tablet/Capsule"}
                         </p>
                       </div>
                     </div>
 
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                        m.isActive ? "bg-teal-100 text-teal-800" : "bg-slate-100 text-slate-600"
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold liquid-glass-pill ${
+                        m.isActive ? "bg-teal-50 text-teal-800 border-teal-200/70" : "bg-slate-50 text-slate-600 border-slate-200/70"
                       }`}
                     >
                       {m.isActive ? "Active Now" : "Course Finished"}
@@ -159,8 +161,8 @@ function MyMedicines() {
                   </div>
 
                   {/* Frequency / Time schedule */}
-                  <div className="mt-4 rounded-xl bg-slate-50 p-3 border border-slate-100">
-                    <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  <div className="mt-4 rounded-xl bg-slate-50/70 p-3 border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                       Daily Routine / Timing:
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">

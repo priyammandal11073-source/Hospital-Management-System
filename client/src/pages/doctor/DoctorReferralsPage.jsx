@@ -125,7 +125,7 @@ export default function DoctorReferralsPage() {
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-xs self-start sm:self-auto"
+          className="px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-slate-100 text-xs font-bold transition flex items-center gap-2 shadow-xs self-start sm:self-auto"
         >
           <span>+ Initiate Specialist Referral</span>
         </button>
@@ -227,7 +227,7 @@ export default function DoctorReferralsPage() {
                     <button
                       type="button"
                       onClick={() => handleStatusUpdate(ref._id, "Accepted")}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition"
+                      className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-slate-100 text-xs font-bold transition"
                     >
                       Accept Referral
                     </button>
@@ -246,7 +246,7 @@ export default function DoctorReferralsPage() {
                     <button
                       type="button"
                       onClick={() => handleStatusUpdate(ref._id, "Completed")}
-                      className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold transition"
+                      className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-slate-100 text-xs font-bold transition"
                     >
                       Mark Opinion Completed
                     </button>
@@ -262,11 +262,11 @@ export default function DoctorReferralsPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+            <div className="bg-slate-900 text-slate-100 px-6 py-4 flex items-center justify-between">
               <h3 className="text-sm font-bold">Initiate Specialist Referral</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-slate-400 hover:text-slate-100 text-sm"
               >
                 ✕
               </button>
@@ -364,7 +364,7 @@ export default function DoctorReferralsPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold transition flex items-center gap-2 shadow-xs disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-slate-100 font-bold transition flex items-center gap-2 shadow-xs disabled:opacity-50"
                 >
                   {submitting ? "Sending..." : "Submit Referral Request"}
                 </button>

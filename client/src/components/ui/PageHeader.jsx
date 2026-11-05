@@ -11,13 +11,14 @@ export default function PageHeader({
   badge,
   breadcrumbs,
   actions,
+  action,
   className = "",
 }) {
   return (
     <div className={`mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${className}`}>
       <div className="flex items-start gap-3.5">
         {icon && (
-          <div className="w-10 h-10 rounded-xl liquid-glass-subtle flex items-center justify-center text-slate-800 shrink-0 shadow-2xs mt-0.5">
+          <div className="w-10 h-10 rounded-xl liquid-glass-subtle flex items-center justify-center text-teal-800 shrink-0 shadow-2xs mt-0.5">
             {icon}
           </div>
         )}
@@ -28,20 +29,20 @@ export default function PageHeader({
             </div>
           )}
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-xl md:text-2xl font-bold font-display text-slate-900 dark:text-white tracking-tight">
+            <h1 className="text-xl md:text-2xl font-semibold font-display text-slate-900 dark:text-white tracking-tight">
               {title}
             </h1>
             {badge && <div>{badge}</div>}
           </div>
           {subtitle && (
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{subtitle}</p>
+            <p className="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">{subtitle}</p>
           )}
         </div>
       </div>
 
-      {actions && (
+      {(actions || action) && (
         <div className="flex items-center gap-2.5 flex-wrap shrink-0">
-          {actions}
+          {actions || action}
         </div>
       )}
     </div>

@@ -11,6 +11,15 @@ import {
 import HospitalLogo from "../../components/HospitalLogo.jsx";
 import ReprintModal from "../../components/diagnostic/ReprintModal.jsx";
 import { printClinicalReport } from "../../utils/printReport.js";
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+  Input,
+  Modal,
+  ConfirmDialog,
+} from "../../components/ui/index.js";
 
 export default function PathologyReportGeneratorPage() {
   const { recordId } = useParams();
@@ -21,14 +30,12 @@ export default function PathologyReportGeneratorPage() {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  // Editor states
   const [results, setResults] = useState([]);
   const [summaryConclusion, setSummaryConclusion] = useState("");
   const [specialistNotes, setSpecialistNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
-  // Modals
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isReprintModalOpen, setIsReprintModalOpen] = useState(false);
   const [isAmendModalOpen, setIsAmendModalOpen] = useState(false);
@@ -45,7 +52,6 @@ export default function PathologyReportGeneratorPage() {
         if (reportObj?.testResults?.length > 0) {
           setResults(reportObj.testResults);
         } else if (res.data.order?.test?.referenceRanges) {
-          // Pre-populate parameters from catalog test
           setResults(
             res.data.order.test.referenceRanges.map((r) => ({
               parameter: r.parameter,
@@ -78,7 +84,6 @@ export default function PathologyReportGeneratorPage() {
     const updated = [...results];
     updated[idx][field] = value;
 
-    // Auto flag evaluation if numeric
     if (field === "result") {
       const num = parseFloat(value);
       if (!isNaN(num)) {
@@ -222,14 +227,7 @@ export default function PathologyReportGeneratorPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
-          <p className="text-xs font-semibold text-slate-500">Loading pathology investigation record...</p>
-        </div>
-      </div>
-    );
+    return <PageLoader message="Loading pathology investigation record…" />;
   }
 
   if (error || !record) {
@@ -242,7 +240,7 @@ export default function PathologyReportGeneratorPage() {
         <p className="mt-1 text-xs text-slate-500">{error || "The requested pathology record does not exist."}</p>
         <Link
           to="/diagnostic/requests"
-          className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white hover:bg-indigo-700 transition"
+          className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-slate-100 hover:bg-indigo-700 transition"
         >
           ← Return to Diagnostic Requests
         </Link>
@@ -256,206 +254,94 @@ export default function PathologyReportGeneratorPage() {
 
   return (
     <div className="space-y-6">
-      {/* ================= TOP ACTION TOOLBAR (HIDDEN ON PRINT) ================= */}
-      <div className="no-print flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/diagnostic/requests"
-              className="text-xs font-semibold text-slate-500 hover:text-indigo-600 transition"
-            >
-              ← Diagnostic Requests
+      <PageHeader
+        title={order?.testName || report?.testName || "Pathology Investigation"}
+        subtitle={`Order: ${order?.orderNumber} • Report: ${report?.reportNumber || "Pending Generation"} • Patient: ${patient?.name}`}
+        breadcrumbs={
+          <span className="flex items-center gap-1.5">
+            <Link to="/diagnostic/requests" className="text-xs font-semibold text-slate-500 hover:text-indigo-600 transition">
+              Diagnostic Requests
             </Link>
             <span className="text-slate-300">/</span>
             <span className="text-xs font-bold text-indigo-600">Pathology Report Generator</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight mt-1 flex items-center gap-2">
-            {order?.testName || report?.testName || "Pathology Investigation"}
-            <span className={`rounded-md px-2 py-0.5 text-xs font-bold ${
-              report?.isAmended
-                ? "bg-amber-100 text-amber-800 border border-amber-300"
-                : report?.status === "Finalized"
-                ? "bg-emerald-100 text-emerald-800 border border-emerald-300"
-                : "bg-blue-100 text-blue-800 border border-blue-300"
-            }`}>
-              {report?.isAmended ? `AMENDED (v${report.version})` : report?.status || "Draft"}
-            </span>
-          </h1>
-          <p className="text-xs text-slate-500">
-            Order: {order?.orderNumber} • Report: {report?.reportNumber || "Pending Generation"} • Patient: {patient?.name}
-          </p>
-        </div>
+          </span>
+        }
+        actions={[
+          <Button key="preview" size="sm" onClick={() => setIsPreviewMode(!isPreviewMode)}>
+            {isPreviewMode ? "Exit Preview" : "Preview Report"}
+          </Button>,
+          report?._id && (
+            <Button key="download" variant="outline" size="sm" disabled={isDownloadingPdf} onClick={handleDownloadPdf}>
+              {isDownloadingPdf ? "Compiling…" : "Download PDF"}
+            </Button>
+          ),
+          <Button key="print" size="sm" onClick={handlePrint}>
+            Print Report
+          </Button>,
+          report?._id && report?.isSharedWithPatient !== true && isFinalized && (
+            <Button key="publish" size="sm" onClick={handlePublish} disabled={isSaving}>
+              Publish
+            </Button>
+          ),
+          report?._id && (
+            <Button key="reprint" variant="outline" size="sm" onClick={() => setIsReprintModalOpen(true)}>
+              Reprint
+            </Button>
+          ),
+          isFinalized && (
+            <Button key="amend" variant="outline" size="sm" onClick={() => setIsAmendModalOpen(true)}>
+              Amend (v{(report.version || 1) + 1})
+            </Button>
+          ),
+          !isFinalized && report?._id && (
+            <Button key="approve" size="sm" disabled={isSaving} onClick={handleApproveAndSign}>
+              Approve & Sign
+            </Button>
+          ),
+        ]}
+      />
 
-        {/* Operational Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Preview Toggle */}
-          <button
-            type="button"
-            onClick={() => setIsPreviewMode(!isPreviewMode)}
-            className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs font-semibold transition ${
-              isPreviewMode
-                ? "bg-indigo-50 text-indigo-700 border-indigo-300 shadow-xs"
-                : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50"
-            }`}
-          >
-            <span>👁️</span>
-            <span>{isPreviewMode ? "Exit Preview" : "Preview Report"}</span>
-          </button>
-
-          {/* Download PDF */}
-          {report?._id && (
-            <button
-              type="button"
-              onClick={handleDownloadPdf}
-              disabled={isDownloadingPdf}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition shadow-xs"
-            >
-              <span>📥</span>
-              <span>{isDownloadingPdf ? "Compiling..." : "Download PDF"}</span>
-            </button>
-          )}
-
-          {/* Print Report */}
-          <button
-            type="button"
-            onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition"
-          >
-            <span>🖨️</span>
-            <span>Print Report</span>
-          </button>
-
-          {/* Publish to Portals */}
-          {isFinalized && !report?.isSharedWithPatient && (
-            <button
-              type="button"
-              onClick={handlePublish}
-              disabled={isSaving}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition"
-            >
-              <span>📢</span>
-              <span>Publish</span>
-            </button>
-          )}
-
-          {/* Reprint (if already printed) */}
-          {report?._id && (
-            <button
-              type="button"
-              onClick={() => setIsReprintModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
-            >
-              <span>🔄</span>
-              <span>Reprint</span>
-            </button>
-          )}
-
-          {/* Amend Button (for finalized reports) */}
-          {isFinalized && (
-            <button
-              type="button"
-              onClick={() => setIsAmendModalOpen(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-800 hover:bg-amber-100 transition"
-            >
-              <span>✏️</span>
-              <span>Amend (v{(report.version || 1) + 1})</span>
-            </button>
-          )}
-
-          {/* Approve & Sign (if pending review) */}
-          {!isFinalized && report?._id && (
-            <button
-              type="button"
-              onClick={handleApproveAndSign}
-              disabled={isSaving}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 px-4 py-1.5 text-xs font-bold text-white shadow-md hover:from-indigo-700 hover:to-blue-700 transition"
-            >
-              <span>✍️</span>
-              <span>Approve & Sign</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Notifications */}
       {successMessage && (
-        <div className="no-print rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs font-bold text-emerald-800 flex items-center justify-between">
-          <span>{successMessage}</span>
-          <button onClick={() => setSuccessMessage("")} className="text-emerald-600 hover:underline">Dismiss</button>
+        <Card title="Success" subtitle={successMessage} className="border-emerald-200 bg-emerald-50">
+          <div className="flex items-center justify-end pt-2 border-t border-slate-100">
+            <button onClick={() => setSuccessMessage("")} className="text-emerald-600 hover:underline text-xs font-bold">
+              Dismiss
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {!isPreviewMode && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card title="Patient Demographics" subtitle={patient?.name}>
+            <div className="mt-2 space-y-1 text-xs text-slate-500">
+              <p>Age / Gender: <strong className="text-slate-700">{patient?.age || "N/A"} Y / {patient?.gender || "N/A"}</strong></p>
+              <p>ABHA / ID: <span className="font-mono text-indigo-600 font-semibold">{patient?.abhaId || "N/A"}</span></p>
+              <p>Ref Doctor: <span className="font-semibold text-slate-700">{order?.doctorName || "Dr. Medical Specialist"}</span></p>
+            </div>
+          </Card>
+
+          <Card title="Phlebotomy Accession" subtitle={sample?.sampleId || `SPL-${recordId.slice(-6)}`}>
+            <div className="mt-2 space-y-1 text-xs text-slate-500">
+              <p>Sample Type: <strong className="text-slate-900">{sample?.sampleType || order?.test?.sampleType || "Venous Blood"}</strong></p>
+              <p>Collected: <span className="text-slate-500">{sample?.collectionTime ? new Date(sample.collectionTime).toLocaleString("en-IN") : "Recorded"}</span></p>
+              <p>Tube / Container: <span className="text-slate-700 font-medium">{sample?.containerType || "Lavender (EDTA)"}</span></p>
+            </div>
+          </Card>
+
+          <Card title="Investigation Details" subtitle={order?.testName || report?.testName}>
+            <div className="mt-2 space-y-1 text-xs text-slate-500">
+              <p>Category: <span className="text-slate-700 font-medium">{order?.category || report?.category || "Hematology"}</span></p>
+              <p>Priority: <span className="font-bold text-rose-600">{order?.priority || "Routine"}</span></p>
+              <p>TAT: <span className="text-slate-500">{order?.test?.turnaroundTime || "2 - 4 hours"}</span></p>
+            </div>
+          </Card>
         </div>
       )}
 
-      {/* ================= CLINICAL METADATA CARDS (HIDDEN ON PRINT) ================= */}
       {!isPreviewMode && (
-        <div className="no-print grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Patient Card */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-              <span>👤</span> Patient Demographics
-            </h3>
-            <p className="text-sm font-bold text-slate-800">{patient?.name}</p>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Age: <strong className="text-slate-700">{patient?.age || "N/A"} Y</strong> • Gender: <strong className="text-slate-700">{patient?.gender || "N/A"}</strong>
-            </p>
-            <p className="text-xs text-slate-500 mt-0.5">
-              ABHA / ID: <span className="font-mono text-indigo-600 font-semibold">{patient?.abhaId || "N/A"}</span>
-            </p>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Ref Doctor: <span className="font-semibold text-slate-700">{order?.doctorName || "Dr. Medical Specialist"}</span>
-            </p>
-          </div>
-
-          {/* Sample Information Card */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-              <span>🧪</span> Phlebotomy Accession
-            </h3>
-            <p className="text-xs text-slate-600">
-              Sample ID: <strong className="font-mono text-slate-900">{sample?.sampleId || `SPL-${recordId.slice(-6)}`}</strong>
-            </p>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Sample Type: <strong className="text-slate-900">{sample?.sampleType || order?.test?.sampleType || "Venous Blood"}</strong>
-            </p>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Collected: <span className="text-slate-500">{sample?.collectionTime ? new Date(sample.collectionTime).toLocaleString("en-IN") : "Recorded"}</span>
-            </p>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Tube / Container: <span className="text-slate-700 font-medium">{sample?.containerType || "Lavender (EDTA)"}</span>
-            </p>
-          </div>
-
-          {/* Investigation Details */}
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-              <span>📋</span> Investigation Details
-            </h3>
-            <p className="text-xs text-slate-600">
-              Test Name: <strong className="text-slate-900">{order?.testName || report?.testName}</strong>
-            </p>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Category: <span className="text-slate-700 font-medium">{order?.category || report?.category || "Hematology"}</span>
-            </p>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Priority: <span className="font-bold text-rose-600">{order?.priority || "Routine"}</span>
-            </p>
-            <p className="text-xs text-slate-600 mt-0.5">
-              TAT: <span className="text-slate-500">{order?.test?.turnaroundTime || "2 - 4 hours"}</span>
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ================= RESULTS TABLE & EDITOR (HIDDEN ON PRINT IF IN PREVIEW) ================= */}
-      {!isPreviewMode && (
-        <div className="no-print rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-              <span>🔬</span> Laboratory Observation Values & Flagging
-            </h2>
-            <span className="text-xs text-slate-400">Values evaluated against biological reference ranges</span>
-          </div>
-
-          <div className="overflow-x-auto">
+        <Card title="Laboratory Observation Values & Flagging" subtitle="Values evaluated against biological reference ranges">
+          <div className="mt-4 overflow-x-auto">
             <table className="w-full text-left text-xs border border-slate-200 rounded-xl overflow-hidden">
               <thead className="bg-slate-100 text-slate-700 font-bold">
                 <tr>
@@ -495,15 +381,17 @@ export default function PathologyReportGeneratorPage() {
                     </td>
                   </tr>
                 ))}
+                {results.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="px-4 py-4 text-center text-slate-400 text-xs">No results entered yet.</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
 
-          {/* Specialist Interpretation / Comments */}
           <div className="space-y-2 pt-2">
-            <label className="block text-xs font-bold text-slate-700">
-              Specialist Clinical Interpretation & Comments
-            </label>
+            <label className="block text-xs font-bold text-slate-700">Specialist Clinical Interpretation & Comments</label>
             <textarea
               rows={3}
               disabled={isFinalized}
@@ -513,48 +401,32 @@ export default function PathologyReportGeneratorPage() {
               className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-800 outline-none focus:border-indigo-500 focus:bg-white disabled:bg-slate-100"
             />
           </div>
-        </div>
+        </Card>
       )}
 
-      {/* ================= PRINT-FRIENDLY CLINICAL REPORT CANVAS =================
-          Shown in preview mode and is the ONLY element visible during window.print()
-      ========================================================================= */}
       <div className={`clinical-print-sheet mx-auto max-w-3xl rounded-2xl bg-white border border-slate-200 p-6 sm:p-8 shadow-sm ${
         isPreviewMode ? "block" : "hidden print:block"
       }`}>
-        {/* Hospital Header */}
         <div className="border-b-2 border-indigo-900 pb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
             <HospitalLogo variant="full" />
             <div>
-              <p className="text-xs font-bold text-emerald-700">
-                CENTRAL DIAGNOSTIC & LABORATORY MEDICINE
-              </p>
-              <p className="text-[10px] text-slate-500">
-                NABH & NABL Accredited • ISO 15189 Compliant • ABDM Integrated
-              </p>
-              <p className="text-[9px] text-slate-400">
-                Healthcare Boulevard, Medical Enclave • Helpline: 108 • lab@nivoracare.com
-              </p>
+              <p className="text-xs font-bold text-emerald-700">CENTRAL DIAGNOSTIC & LABORATORY MEDICINE</p>
+              <p className="text-[10px] text-slate-500">NABH & NABL Accredited • ISO 15189 Compliant • ABDM Integrated</p>
+              <p className="text-[9px] text-slate-400">Healthcare Boulevard, Medical Enclave • Helpline: 108 • lab@nivoracare.com</p>
             </div>
           </div>
-
           <div className="text-right">
             <span className={`inline-block rounded px-2 py-0.5 text-[10px] font-bold ${
               report?.isAmended ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"
             }`}>
               {report?.isAmended ? `AMENDED REPORT (v${report.version})` : "FINAL REPORT"}
             </span>
-            <p className="text-xs font-mono font-bold text-slate-800 mt-1">
-              ID: {report?.reportNumber || `REP-${order?.orderNumber?.slice(-6)}`}
-            </p>
-            <p className="text-[10px] text-slate-500">
-              Date: {new Date().toLocaleDateString("en-IN")}
-            </p>
+            <p className="text-xs font-mono font-bold text-slate-800 mt-1">ID: {report?.reportNumber || `REP-${order?.orderNumber?.slice(-6)}`}</p>
+            <p className="text-[10px] text-slate-500">Date: {new Date().toLocaleDateString("en-IN")}</p>
           </div>
         </div>
 
-        {/* Patient & Accession Summary Table */}
         <div className="my-4 rounded-xl border border-slate-200 bg-slate-50/60 p-3 grid grid-cols-2 text-xs gap-y-1 gap-x-4">
           <div>
             <span className="text-slate-500">Patient: </span>
@@ -590,19 +462,13 @@ export default function PathologyReportGeneratorPage() {
           </div>
         </div>
 
-        {/* Investigation Header */}
         <div className="mb-3 pt-1">
-          <h2 className="text-sm font-black text-indigo-950 uppercase tracking-wide">
-            INVESTIGATION: {order?.testName || report?.testName}
-          </h2>
-          <p className="text-[10px] text-slate-500">
-            Department: Pathology / {order?.category || report?.category || "General Pathology"}
-          </p>
+          <h2 className="text-sm font-black text-indigo-950 uppercase tracking-wide">INVESTIGATION: {order?.testName || report?.testName}</h2>
+          <p className="text-[10px] text-slate-500">Department: Pathology / {order?.category || report?.category || "General Pathology"}</p>
         </div>
 
-        {/* Printable Results Table */}
         <table className="w-full text-left text-xs border border-slate-300">
-          <thead className="bg-slate-800 text-white font-bold">
+          <thead className="bg-slate-800 text-slate-100 font-bold">
             <tr>
               <th className="px-3 py-2">Test Parameter</th>
               <th className="px-3 py-2">Observed Value</th>
@@ -614,8 +480,8 @@ export default function PathologyReportGeneratorPage() {
           <tbody className="divide-y divide-slate-200 font-sans">
             {results.map((r, idx) => (
               <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/50"}>
-                <td className="px-3 py-1.5 font-medium text-slate-900">{r.parameter}</td>
-                <td className="px-3 py-1.5 font-bold font-mono text-slate-900">{r.result || "Normal"}</td>
+                <td className="px-3 py-1.5 font-medium text-slate-800">{r.parameter}</td>
+                <td className="px-3 py-1.5 font-bold font-mono text-slate-800">{r.result || "Normal"}</td>
                 <td className="px-3 py-1.5 text-slate-500">{r.unit || "-"}</td>
                 <td className="px-3 py-1.5 text-slate-600 font-mono">{r.referenceRange || "Standard"}</td>
                 <td className="px-3 py-1.5 text-center">
@@ -634,7 +500,6 @@ export default function PathologyReportGeneratorPage() {
           </tbody>
         </table>
 
-        {/* Comments Box */}
         <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
           <p className="font-bold text-slate-800">CLINICAL INTERPRETATION & PATHOLOGY NOTES:</p>
           <p className="text-slate-700 mt-1 leading-relaxed">
@@ -642,23 +507,17 @@ export default function PathologyReportGeneratorPage() {
           </p>
         </div>
 
-        {/* Digital Signature Footer */}
         <div className="mt-6 pt-4 border-t-2 border-slate-200 flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
-            <div className="h-12 w-12 bg-slate-900 text-white rounded flex items-center justify-center font-mono text-[9px] font-bold text-center leading-tight p-1">
+            <div className="h-12 w-12 bg-slate-900 text-slate-100 rounded flex items-center justify-center font-mono text-[9px] font-bold text-center leading-tight p-1">
               QR<br/>VERIFIED
             </div>
             <div>
               <p className="font-bold text-indigo-900">ELECTRONICALLY VERIFIED REPORT</p>
-              <p className="text-[10px] text-slate-500">
-                Signature Digest: {report?.digitalSignature?.signatureHash?.slice(0, 32) || "e3b0c44298fc1c149afbf4c8996fb924"}...
-              </p>
-              <p className="text-[10px] text-slate-400">
-                Authenticated: {new Date().toLocaleString("en-IN")}
-              </p>
+              <p className="text-[10px] text-slate-500">Signature Digest: {report?.digitalSignature?.signatureHash?.slice(0, 32) || "e3b0c44298fc1c149afbf4c8996fb924"}...</p>
+              <p className="text-[10px] text-slate-400">Authenticated: {new Date().toLocaleString("en-IN")}</p>
             </div>
           </div>
-
           <div className="text-right">
             <p className="font-bold text-slate-900">{report?.specialistName || "Dr. Rajeshwar Sen, MD"}</p>
             <p className="text-[10px] text-slate-600 font-semibold">Consultant Pathologist & Lab Director</p>
@@ -671,61 +530,50 @@ export default function PathologyReportGeneratorPage() {
         </div>
       </div>
 
-      {/* ================= AMENDMENT MODAL (SECTION 50) ================= */}
       {isAmendModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-200">
-            <h3 className="text-base font-bold text-slate-800">
-              Create Clinical Amendment (v{(report?.version || 1) + 1})
-            </h3>
-            <p className="text-xs text-slate-500 mt-1">
-              Finalized diagnostic reports cannot be silently edited. Please specify a mandatory clinical or analytical reason.
-            </p>
-
-            <form onSubmit={handleAmendSubmit} className="mt-4 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Amendment Reason *
-                </label>
-                <textarea
-                  rows={3}
-                  value={amendmentReason}
-                  onChange={(e) => setAmendmentReason(e.target.value)}
-                  placeholder="e.g. Revised reference range after clinical consultation with ordering physician..."
-                  required
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 outline-none focus:border-indigo-500 focus:bg-white"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={() => setIsAmendModalOpen(false)}
-                  className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="rounded-xl bg-amber-600 px-5 py-2 text-xs font-bold text-white shadow hover:bg-amber-700 disabled:opacity-50"
-                >
-                  {isSaving ? "Amending..." : `Confirm Amendment (v${(report?.version || 1) + 1})`}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <Modal
+          isOpen={isAmendModalOpen}
+          onClose={() => setIsAmendModalOpen(false)}
+          title="Create Clinical Amendment"
+          subtitle={`Amend to version ${(report?.version || 1) + 1}`}
+          className="max-w-lg"
+        >
+          <p className="text-xs text-slate-500 mt-1 mb-4">
+            Finalized diagnostic reports cannot be silently edited. Please specify a mandatory clinical or analytical reason.
+          </p>
+          <form onSubmit={handleAmendSubmit} className="space-y-3">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Amendment Reason *</label>
+              <textarea
+                rows={3}
+                value={amendmentReason}
+                onChange={(e) => setAmendmentReason(e.target.value)}
+                placeholder="e.g. Revised reference range after clinical consultation with ordering physician..."
+                required
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 outline-none focus:border-indigo-500 focus:bg-white"
+              />
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setIsAmendModalOpen(false)}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <Button variant="outline" size="sm" disabled={isSaving} type="submit">
+                {isSaving ? "Amending…" : `Confirm Amendment (v${(report?.version || 1) + 1})`}
+              </Button>
+            </div>
+          </form>
+        </Modal>
       )}
 
-      {/* ================= REPRINT MODAL (SECTION 49) ================= */}
       <ReprintModal
         isOpen={isReprintModalOpen}
         onClose={() => setIsReprintModalOpen(false)}
         report={report}
-        onReprintSuccess={() => {
-          setSuccessMessage("Reprint logged and processed.");
-        }}
+        onReprintSuccess={() => setSuccessMessage("Reprint logged and processed.")}
       />
     </div>
   );

@@ -35,17 +35,18 @@ const Input = ({
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${inputId}-error` : undefined}
         className={`
-          w-full rounded-xl border border-slate-300/80 bg-white/85 backdrop-blur-md px-3.5 py-2 min-h-[38px]
-          text-xs sm:text-sm text-slate-900 placeholder-slate-400
-          focus:outline-none focus:ring-2 focus:ring-sky-500/40 focus:ring-offset-2 focus:border-sky-500
-          disabled:bg-slate-50 disabled:text-slate-500 disabled:border-slate-200/50
+          w-full rounded-xl border border-control bg-white px-3.5 py-2 min-h-11
+          text-xs sm:text-sm text-slate-900 placeholder:text-slate-600
+          focus:outline-none focus:ring-2 focus:ring-teal-700 focus:ring-offset-2 focus:border-teal-700
+          disabled:bg-slate-100 disabled:text-slate-700 disabled:border-slate-400 disabled:opacity-100
+          read-only:bg-slate-100
           transition-[border-color,box-shadow,background-color] duration-150 ease-out
-          ${error ? "border-rose-500 focus:ring-rose-500/40 focus:border-rose-500" : ""}
+          ${error ? "border-rose-700 focus:ring-rose-700 focus:border-rose-700" : ""}
           ${className}
         `}
         {...props}
       />
-      {error && <p id={`${inputId}-error`} className="mt-1 text-xs text-rose-600 animate-pop-in">{error}</p>}
+      {error && <p id={`${inputId}-error`} role="alert" className="mt-1 text-xs font-medium text-rose-700 animate-pop-in">{error}</p>}
     </div>
   );
 };

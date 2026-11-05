@@ -13,34 +13,32 @@ export default function PatientBanner({
     ? [patient.allergies]
     : [];
 
-  const mrn = patient?.patientId || patient?.mrn || (patient?._id ? `NCR-${patient._id.slice(-6).toUpperCase()}` : "NCR-000000");
+  const mrn = patient?.patientId || patient?.mrn || patient?.uhid || (patient?._id ? `NCR-${patient._id.slice(-6).toUpperCase()}` : "NCR-000000");
   const isAdmitted = patient?.isAdmitted;
 
   return (
     <div className={`glass-card rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden ${className}`}>
-      <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 p-4 sm:p-5 text-white flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Patient Identity Block */}
-        <div className="flex items-start sm:items-center gap-3.5">
+        <div className="flex min-w-0 items-start sm:items-center gap-3.5">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-700 border border-blue-200/80 font-bold text-lg flex-shrink-0">
             {patient?.name ? patient.name.charAt(0).toUpperCase() : "P"}
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block sm:inline">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-100 block sm:inline">
                 PATIENT
               </span>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+              <h2 className="text-base sm:text-lg font-bold text-slate-100 leading-tight break-words">
                 {patient?.name || "Unassigned Patient"}
-              </h2>
-              <span className="font-mono text-xs px-2 py-0.5 rounded-lg bg-slate-100/90 text-slate-700 border border-slate-200/80 font-medium shadow-2xs">
-                MRN: {mrn}
-              </span>
+              </h2><span className="font-mono text-xs px-2 py-0.5 rounded-lg bg-white/10 text-slate-300 border border-slate-300/50 font-medium shadow-2xs break-all">
+                MRN: {mrn}</span>
               <Badge status={isAdmitted ? "admitted" : "outpatient"}>
                 {isAdmitted ? "Inpatient (Admitted)" : "OPD Walk-in"}
               </Badge>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-600 mt-1.5">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-300 mt-1.5 [overflow-wrap:anywhere]">
               <span>
                 <strong>Age:</strong> {patient?.age ? `${patient.age} Y` : "—"}
               </span>
@@ -49,18 +47,16 @@ export default function PatientBanner({
               </span>
               <span>
                 <strong>Blood Group:</strong>{" "}
-                <span className="font-bold text-rose-700">{patient?.bloodGroup || "—"}</span>
+                <span className="font-bold text-rose-400">{patient?.bloodGroup || "—"}</span>
               </span>
               <span>
-                <strong>Phone:</strong>{" "}
-                <span className="font-mono text-slate-800">
-                  {patient?.phone || patient?.contactNumber || "—"}
-                </span>
+                <strong>Phone:</strong>{" "}<span className="font-mono text-slate-300">
+                  {patient?.phone || patient?.contactNumber || "—"}</span>
               </span>
               {patient?.abhaId && (
                 <span>
                   <strong>ABHA:</strong>{" "}
-                  <span className="font-mono text-sky-700">{patient.abhaId}</span>
+                  <span className="font-mono font-semibold text-slate-300 break-all">{patient.abhaId}</span>
                 </span>
               )}
             </div>
@@ -69,7 +65,7 @@ export default function PatientBanner({
 
         {/* Quick Actions */}
         {actions && (
-          <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+          <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-white/20">
             {actions}
           </div>
         )}
@@ -77,12 +73,12 @@ export default function PatientBanner({
 
       {/* Critical Clinical Alerts Strip */}
       {allergies.length > 0 && (
-        <div className="bg-rose-50/70 border-t border-rose-200/80 px-4 py-2 flex items-center gap-2 text-xs font-medium text-rose-900">
+        <div className="bg-rose-50 border-t border-rose-200 px-4 py-2 flex items-center gap-2 text-xs font-medium text-rose-900">
           <span className="h-1.5 w-1.5 rounded-full bg-rose-500 flex-shrink-0" />
           <span className="font-semibold uppercase tracking-wider text-[10px] text-rose-800">
             Allergy Alert:
           </span>
-          <span className="truncate text-rose-950 font-medium">{allergies.join(", ")}</span>
+          <span className="min-w-0 text-rose-950 font-medium [overflow-wrap:anywhere]">{allergies.join(", ")}</span>
         </div>
       )}
     </div>

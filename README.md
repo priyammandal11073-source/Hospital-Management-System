@@ -18,7 +18,7 @@
 
 <br/>
 
-> A mission-critical, end-to-end full-stack healthcare operating system that connects **7 specialized portals** — Administration, Doctors, Nursing, Reception, Pharmacy, Diagnostic Services (Pathology &amp; Radiology), and Patient Self-Service — into one event-driven, role-isolated platform.
+> A mission-critical, end-to-end full-stack healthcare operating system that connects **8 specialized portals** — Administration, Doctors, Nursing, Reception, Pharmacy, Diagnostic Services (Pathology &amp; Radiology), Emergency Care Desk, and Patient Self-Service — into one event-driven, role-isolated platform. Featuring an **Emil Kowalski Borderless Design System**, popout/wobble micro-interactions, high-performance telemetry caching, and a **Universal Multi-Channel Payment Gateway** (Razorpay, NPCI UPI, Cards, NetBanking, Insurance, and Cash).
 
 <br/>
 
@@ -738,21 +738,22 @@ Both packages are covered by **Vitest**, and a **GitHub Actions** pipeline runs 
 
 ### Running tests locally
 ```bash
-# Server — 65 automated tests across 5 Vitest suites (HTTP integration tests,
+# Server — 97 automated tests across 6 Vitest suites (HTTP integration tests,
 # auth middleware, role-based protection, OTP service, Zod request validators,
-# offline demo fallbacks, and error handling pipeline).
+# MongoDB connection reliability, and error handling pipeline).
 cd server && npm test
 
-# Client — 15 automated tests across 3 Vitest suites (portal-selection,
-# doctor title prefix formatting, print service, and credentials-flow).
+# Client — 48 automated tests across 7 Vitest suites (portal design tokens,
+# contrast tokens, mobile bottom navigation, doctor name formatting,
+# print services, environment configurations, and login credentials flow).
 cd client && npm test
 ```
 
 ### Full Verification Commands
 ```bash
-npm run test:all    # Runs both server (65 tests) and client (15 tests)
+npm run test:all    # Runs both server (97 tests) and client (48 tests) — 145/145 PASS
 npm run lint:all    # ESLint flat checks across server and client
-npm run build --prefix client  # Validates React 19 production bundle
+npm run build --prefix client  # Validates React 19 production bundle (979 modules)
 ```
 
 ### Linting

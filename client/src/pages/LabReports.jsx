@@ -239,7 +239,7 @@ export default function LabReports() {
           />
           <button
             type="submit"
-            className="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3 py-1.5 rounded-xl"
+            className="bg-slate-800 hover:bg-slate-900 text-slate-100 font-bold px-3 py-1.5 rounded-xl"
           >
             Search
           </button>
@@ -603,7 +603,7 @@ export default function LabReports() {
       {previewReport && (
         <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="printable-report-modal w-full max-w-2xl rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-4 bg-slate-900 text-white flex items-center justify-between no-print">
+            <div className="p-4 bg-slate-900 text-slate-100 flex items-center justify-between no-print">
               <h3 className="font-bold text-sm">Diagnostic Report Preview</h3>
               <div className="flex items-center gap-2">
                 <button

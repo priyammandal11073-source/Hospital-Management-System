@@ -78,6 +78,17 @@
 - **Card Fallback on Small Screens**: When adding or revising data tables, always provide a touch-friendly stacked card view on mobile (`block md:hidden`) alongside the desktop table (`hidden md:table` or `hidden md:block`).
 - **Mobile Keyboard Ergonomics**: On form inputs, provide appropriate `inputMode` (`"numeric"`, `"tel"`, `"email"`), `autoComplete`, and `enterKeyHint` (`"next"`, `"done"`).
 
+### 3.4 UI Performance & Borderless Design Rules
+- **Emil Kowalski Borderless Styling**: Avoid noisy heavy borders around boxes and tiles; rely on subtle tone-on-tone elevation (`shadow-2xs`, `shadow-sm`) and liquid glass backdrops.
+- **Micro-Interactions Without Recalculation Jank**: Use `.tile-popout` / `[data-popout="true"]` for hover lifts and `.tile-wobble` for click physics. **NEVER** write broad pseudo-class selectors like `:not(:has(table)):not(:has(form))` or wildcard selectors on universal tags that trigger Chromium/WebKit Recalculate Style stalls.
+- **High Contrast Ratios (WCAG AAA)**: Always maintain minimum 4.5:1 for body copy and >7:1 for headings/active navigation links. Never pair muted light-surface tokens (`text-slate-400`) against dark surfaces.
+
+### 3.5 Payment Gateway & Billing Integration Rules
+- **Payment Route Authorization**: Use `protectStaffOrPatient` for routes accessed by both clinical/desk staff and self-service patients (`/api/razorpay/create-order`, `/api/razorpay/verify-payment`, `PATCH /api/billing/:id/payment`).
+- **Signature Verification**: Always verify Razorpay HMAC SHA-256 signatures server-side using `RAZORPAY_KEY_SECRET`.
+- **Diagnostic Synchronization**: Whenever an invoice payment is captured or verified, invoke `diagnosticSyncService.onBillingPaymentReceived(billing)` so lab and radiology workbenches are immediately notified.
+- **Token Isolation**: The client HTTP interceptor must prioritize `patient_token` on `/patient/...` and `/pay/...` routes to prevent session collisions on shared terminals.
+
 ---
 
 ## 4. Verification & Testing Requirements
@@ -86,13 +97,13 @@
   ```bash
   npm test --prefix server
   ```
-  Ensure all 65+ Vitest tests pass with 0 failures.
+  Ensure all **97 Vitest tests across 6 test files** pass with 0 failures.
 - Whenever client code is modified:
   ```bash
   npm test --prefix client
   npm run build --prefix client
   ```
-  Ensure all unit tests pass AND Vite compiles static bundles without syntax or duplicate export errors.
+  Ensure all **48 unit tests across 7 files** pass AND Vite compiles static bundles without syntax or duplicate export errors (~6.88s build time).
 
 ---
 

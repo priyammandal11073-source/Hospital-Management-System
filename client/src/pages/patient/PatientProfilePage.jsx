@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getMyProfile, updateMyProfile } from "../../services/api.js";
+import { PageHeader } from "../../components/ui/index.js";
 
 function PatientProfilePage() {
   const [profile, setProfile] = useState(null);
@@ -68,33 +69,35 @@ function PatientProfilePage() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-3 border-blue-600 border-r-transparent"></div>
-        <p className="mt-3 text-sm font-semibold text-slate-600">Loading your patient profile...</p>
+      <div className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-12 text-center shadow-2xs">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-teal-700 border-r-transparent" />
+        <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Loading your patient profile...</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div>
-        <div className="flex items-center gap-2">
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Health Identity & Profile</h1>
-          <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-500/20">
+      <PageHeader
+        breadcrumbs={[
+          { label: "My Health", to: "/patient/dashboard" },
+          { label: "Health Identity & Profile", active: true },
+        ]}
+        title="My Health Identity & Profile"
+        badge={
+          <span className="inline-flex items-center rounded-full liquid-glass-pill px-2.5 py-0.5 text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200/70">
             Verified Patient
           </span>
-        </div>
-        <p className="mt-1 text-sm text-slate-500">
-          Manage your personal details, emergency contacts, and Ayushman Bharat ABHA credentials.
-        </p>
-      </div>
+        }
+        subtitle="Manage your personal details, emergency contacts, and Ayushman Bharat ABHA credentials."
+      />
 
       {message.text && (
         <div
-          className={`rounded-2xl p-4 text-sm font-semibold border ${
+          className={`rounded-2xl p-4 text-xs font-semibold border ${
             message.type === "success"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-              : "bg-red-50 text-red-800 border-red-200"
+              ? "bg-emerald-50 text-emerald-800 border-emerald-200/70"
+              : "bg-rose-50 text-rose-800 border-rose-200/70"
           }`}
         >
           {message.text}
@@ -102,61 +105,64 @@ function PatientProfilePage() {
       )}
 
       {/* ABHA & Health ID Card */}
-      <div className="rounded-3xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-6 text-white shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/90 p-5 sm:p-6 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 text-3xl font-black backdrop-blur-xs border border-white/20">
-              {profile?.name ? profile.name.charAt(0) : "P"}
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl liquid-glass-subtle text-2xl font-bold text-slate-900 border border-slate-200/80 shadow-2xs">
+              {profile?.name ? profile.name.charAt(0).toUpperCase() : "P"}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-blue-400/20 px-2.5 py-0.5 text-[11px] font-bold text-blue-200 uppercase tracking-wider">
+                <span className="rounded-full liquid-glass-pill bg-teal-50 border border-teal-200/70 px-2.5 py-0.5 text-[10px] font-bold text-teal-800 uppercase tracking-wider">
                   Ayushman Bharat ABDM
                 </span>
-                <span className="text-xs text-emerald-400 font-semibold">● Active</span>
+                <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Active
+                </span>
               </div>
-              <h2 className="text-xl font-black mt-1">{profile?.name}</h2>
-              <p className="font-mono text-sm text-blue-200 mt-0.5">
-                ABHA ID: <span className="font-bold text-white">{profile?.abhaId || "14-8891-2345-6789"}</span>
+              <h2 className="text-lg font-bold text-slate-900 mt-1">{profile?.name}</h2>
+              <p className="font-mono text-xs text-slate-500 mt-0.5">
+                ABHA ID: <span className="font-bold text-slate-800">{profile?.abhaId || "14-8891-2345-6789"}</span>
               </p>
             </div>
           </div>
 
-          <div className="text-right text-xs text-blue-200 space-y-1">
-            <p>Nivora Care UHID: <strong className="text-white font-mono">{profile?._id?.toString().slice(-8).toUpperCase()}</strong></p>
-            <p>Blood Group: <strong className="text-rose-300 font-bold">{profile?.bloodGroup || "O+"}</strong></p>
-            <p>Age / Gender: <strong className="text-white">{profile?.age} Yrs / {profile?.gender}</strong></p>
+          <div className="text-right text-xs text-slate-600 space-y-1 sm:border-l sm:border-slate-200/80 sm:pl-6">
+            <p>Nivora Care UHID: <strong className="text-teal-800 font-mono font-bold">NC-{profile?._id?.toString().slice(-6).toUpperCase()}</strong></p>
+            <p>Blood Group: <strong className="text-rose-700 font-bold">{profile?.bloodGroup || "O+"}</strong></p>
+            <p>Age / Gender: <strong className="text-slate-800">{profile?.age} Yrs / {profile?.gender}</strong></p>
           </div>
         </div>
       </div>
 
       {/* Clinical Baseline Information (Read-only for clinical safety) */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-        <h3 className="text-base font-bold text-slate-900">Clinical Baseline Information</h3>
+      <div className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-5 sm:p-6 shadow-2xs">
+        <h3 className="text-sm font-bold text-slate-900">Clinical Baseline Information</h3>
         <p className="text-xs text-slate-500 mt-0.5">
           Medical history records verified by hospital medical administration.
         </p>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Date of Birth</p>
-            <p className="font-bold text-slate-800 text-sm mt-0.5">
+        <div className="mt-4 grid gap-3.5 sm:grid-cols-3">
+          <div className="rounded-xl bg-slate-50/70 p-3.5 border border-slate-100">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Date of Birth</p>
+            <p className="font-bold text-slate-800 text-xs mt-0.5 font-mono">
               {profile?.dob
                 ? new Date(profile.dob).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
                 : "Not recorded"}
             </p>
           </div>
 
-          <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Known Allergies</p>
-            <p className="font-bold text-rose-700 text-sm mt-0.5">
+          <div className="rounded-xl bg-slate-50/70 p-3.5 border border-slate-100">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Known Allergies</p>
+            <p className="font-bold text-rose-700 text-xs mt-0.5">
               {profile?.allergies?.length ? profile.allergies.join(", ") : "No known drug allergies (NKDA)"}
             </p>
           </div>
 
-          <div className="rounded-xl bg-slate-50 p-3.5 border border-slate-100">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Chronic Conditions</p>
-            <p className="font-bold text-slate-800 text-sm mt-0.5">
+          <div className="rounded-xl bg-slate-50/70 p-3.5 border border-slate-100">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Chronic Conditions</p>
+            <p className="font-bold text-slate-800 text-xs mt-0.5">
               {profile?.chronicConditions?.length ? profile.chronicConditions.join(", ") : "None reported"}
             </p>
           </div>
@@ -164,9 +170,9 @@ function PatientProfilePage() {
       </div>
 
       {/* Editable Contact & Emergency Details Form */}
-      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs space-y-5">
+      <form onSubmit={handleSubmit} className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-5 sm:p-6 shadow-2xs space-y-5">
         <div>
-          <h3 className="text-base font-bold text-slate-900">Update Contact & Emergency Information</h3>
+          <h3 className="text-sm font-bold text-slate-900">Update Contact & Emergency Information</h3>
           <p className="text-xs text-slate-500 mt-0.5">
             Keep your phone number and emergency contact person updated to receive SMS appointment tokens and emergency notifications.
           </p>
@@ -174,7 +180,7 @@ function PatientProfilePage() {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
               Primary Phone Number
             </label>
             <input
@@ -182,20 +188,20 @@ function PatientProfilePage() {
               required
               value={formData.contactNumber}
               onChange={(e) => setFormData({ ...formData, contactNumber: e.target.value })}
-              className="mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs font-medium text-slate-800 focus:border-teal-700 focus:outline-hidden focus:ring-1 focus:ring-teal-700"
               placeholder="e.g. 9876543210"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
               Residential Address
             </label>
             <input
               type="text"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-              className="mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-semibold text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1.5 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs font-medium text-slate-800 focus:border-teal-700 focus:outline-hidden focus:ring-1 focus:ring-teal-700"
               placeholder="City, State, PIN"
             />
           </div>
@@ -206,14 +212,14 @@ function PatientProfilePage() {
             Emergency Contact Information
           </h4>
 
-          <div className="mt-3 grid gap-4 sm:grid-cols-3">
+          <div className="mt-3 grid gap-3.5 sm:grid-cols-3">
             <div>
               <label className="block text-xs font-medium text-slate-600">Contact Person Name</label>
               <input
                 type="text"
                 value={formData.emergencyContactName}
                 onChange={(e) => setFormData({ ...formData, emergencyContactName: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-800 focus:border-teal-700 focus:outline-hidden"
                 placeholder="e.g. Spouse / Parent"
               />
             </div>
@@ -224,7 +230,7 @@ function PatientProfilePage() {
                 type="text"
                 value={formData.emergencyContactRelation}
                 onChange={(e) => setFormData({ ...formData, emergencyContactRelation: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-800 focus:border-teal-700 focus:outline-hidden"
                 placeholder="e.g. Mother, Brother"
               />
             </div>
@@ -235,7 +241,7 @@ function PatientProfilePage() {
                 type="text"
                 value={formData.emergencyContactPhone}
                 onChange={(e) => setFormData({ ...formData, emergencyContactPhone: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
+                className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-xs text-slate-800 focus:border-teal-700 focus:outline-hidden font-mono"
                 placeholder="+91 99999 88888"
               />
             </div>
@@ -246,7 +252,7 @@ function PatientProfilePage() {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-blue-700 shadow-sm transition disabled:opacity-50"
+            className="rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold px-5 py-2 text-xs shadow-sm shadow-teal-950/10 transition active:scale-95 disabled:opacity-50"
           >
             {saving ? "Saving Changes..." : "Save Profile Details"}
           </button>

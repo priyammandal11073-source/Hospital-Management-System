@@ -2,6 +2,15 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getPrescriptionQueue } from "../../services/api.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+  Input,
+  EmptyStateCard,
+  PageLoader,
+} from "../../components/ui/index.js";
 
 export default function PrescriptionHistoryPage() {
   const [history, setHistory] = useState([]);
@@ -16,7 +25,6 @@ export default function PrescriptionHistoryPage() {
   const loadHistory = async () => {
     setIsLoading(true);
     try {
-      // getPrescriptionQueue returns all prescriptions
       const data = await getPrescriptionQueue();
       setHistory(data.prescriptions || []);
     } catch (err) {
@@ -42,28 +50,29 @@ export default function PrescriptionHistoryPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Audit & Records</span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Prescription Dispensing History</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Archived log of fulfilled, on-hold, and active prescriptions with receipt reprints and audit trails.
-          </p>
-        </div>
-        <Link
-          to="/pharmacy/queue"
-          className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 shadow-sm transition"
-        >
-          <span>Active Queue →</span>
-        </Link>
+    <div className="space-y-6 bg-[#f7f6f3]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs">
+        <PageHeader
+          title="Prescription Dispensing History"
+          subtitle="Archived log of fulfilled, on-hold, and active prescriptions with receipt reprints and audit trails."
+          breadcrumbs={
+            <span className="flex items-center gap-1.5">
+              <span className="h-2.5 w-2.5 rounded-full bg-emerald-500"></span>
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Audit & Records</span>
+            </span>
+          }
+          actions={[
+            <Link key="queue" to="/pharmacy/queue">
+              <Button size="sm" leftIcon={<span>→</span>}>
+                Active Queue
+              </Button>
+            </Link>,
+          ]}
+        />
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {[
             { id: "all", label: "All History" },
@@ -76,7 +85,7 @@ export default function PrescriptionHistoryPage() {
               onClick={() => setStatusFilter(f.id)}
               className={`rounded-lg px-3 py-1.5 text-xs font-bold transition whitespace-nowrap ${
                 statusFilter === f.id
-                  ? "bg-slate-900 text-white shadow-xs"
+                  ? "bg-slate-900 text-slate-100 shadow-xs"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
@@ -86,16 +95,14 @@ export default function PrescriptionHistoryPage() {
         </div>
 
         <div className="relative min-w-[240px]">
-          <input
+          <Input
             type="text"
+            placeholder="Search patient, receipt #, doctor…"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search patient, receipt #, doctor..."
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-xs focus:border-amber-500 focus:bg-white focus:outline-none"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-xs focus:border-teal-600 focus:bg-white focus:outline-none"
+            id="history-search"
           />
-          <svg className="absolute left-2.5 top-2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
         </div>
       </div>
 
@@ -104,13 +111,14 @@ export default function PrescriptionHistoryPage() {
         {isLoading ? (
           <div className="py-20 text-center text-slate-500">
             <div className="h-8 w-8 mx-auto border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="mt-3 text-xs font-semibold">Loading historical dispensary records...</p>
+            <p className="mt-3 text-xs font-semibold">Loading historical dispensary records…</p>
           </div>
         ) : filteredHistory.length === 0 ? (
-          <div className="py-16 text-center text-slate-500">
-            <p className="text-sm font-bold text-slate-700">No records found</p>
-            <p className="text-xs text-slate-400 mt-1">Try changing filter criteria or search keyword.</p>
-          </div>
+          <EmptyStateCard
+            icon="📋"
+            title="No records found"
+            description="Try changing filter criteria or search keyword."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -164,17 +172,11 @@ export default function PrescriptionHistoryPage() {
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         {isDispensed ? (
-                          <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                            ✓ Dispensed
-                          </span>
+                          <Badge status="completed">✓ Dispensed</Badge>
                         ) : isHold ? (
-                          <span className="inline-flex items-center rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-800">
-                            ⚠ On Hold
-                          </span>
+                          <Badge status="cancelled">⚠ On Hold</Badge>
                         ) : (
-                          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800">
-                            Pending
-                          </span>
+                          <Badge status="pending">Pending</Badge>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right whitespace-nowrap">

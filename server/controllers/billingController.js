@@ -230,6 +230,23 @@ export const updatePaymentStatus = asyncHandler(async (req, res) => {
     throw new AppError("Invalid billing ID", 400);
   }
 
+  await requireDb();
+
+  const isAuthorizedStaff = req.user && ["admin", "receptionist", "nurse", "pharmacist", "doctor", "emergency"].includes(req.user.role);
+  const patientId = (req.patient?.id || req.patient?._id)?.toString();
+
+  const billingDoc = await Billing.findById(req.params.id);
+  if (!billingDoc) {
+    throw new AppError("Billing record not found", 404);
+  }
+
+  const billingPatientId = billingDoc.patient?._id ? billingDoc.patient._id.toString() : billingDoc.patient?.toString();
+  const isOwnerPatient = Boolean(patientId && billingPatientId && billingPatientId === patientId);
+
+  if (!isAuthorizedStaff && !isOwnerPatient) {
+    throw new AppError("Forbidden: You do not have permission to update this billing record", 403);
+  }
+
   if (!paymentStatus || !paymentStatuses.includes(paymentStatus)) {
     throw new AppError("Invalid payment status", 400);
   }

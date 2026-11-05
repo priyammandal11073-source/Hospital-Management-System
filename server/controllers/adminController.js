@@ -40,9 +40,19 @@ export const logAuditEvent = async ({ user, action, module, recordId, details, r
   }
 };
 
+// In-memory cache for high-frequency telemetry requests (5-second TTL)
+let cachedTelemetry = null;
+let cachedTelemetryTimestamp = 0;
+const TELEMETRY_CACHE_TTL_MS = 5000;
+
 // ── 1. EXECUTIVE DASHBOARD TELEMETRY ────────────────────────────────────────
 // GET /api/admin/telemetry
 export const getAdminTelemetry = asyncHandler(async (req, res) => {
+  // Return cached snapshot if fresh (< 5 seconds old) and refresh not forced
+  if (cachedTelemetry && Date.now() - cachedTelemetryTimestamp < TELEMETRY_CACHE_TTL_MS && !req.query.force) {
+    return res.status(200).json(cachedTelemetry);
+  }
+
   await requireDb();
 
     const now = new Date();
@@ -54,11 +64,7 @@ export const getAdminTelemetry = asyncHandler(async (req, res) => {
       activeDoctors,
       activeNurses,
       todayConsultations,
-      occupiedBeds,
-      availableBeds,
-      totalBeds,
-      cleaningBeds,
-      maintenanceBeds,
+      bedStats,
       pendingBills,
       todayPaidBills,
       pendingLabs,
@@ -68,15 +74,7 @@ export const getAdminTelemetry = asyncHandler(async (req, res) => {
       recentAppointments,
       todayAppointments,
       pendingPatientBookings,
-      diagnosticTestsToday,
-      pendingDiagnostics,
-      criticalDiagnosticAlerts,
-      icuTotal,
-      icuOccupied,
-      generalTotal,
-      generalOccupied,
-      emergencyTotal,
-      emergencyOccupied,
+      diagnosticStats,
       otProceduresToday,
     ] = await Promise.all([
       Patient.countDocuments(),
@@ -86,11 +84,20 @@ export const getAdminTelemetry = asyncHandler(async (req, res) => {
         appointmentDate: { $gte: todayStart, $lte: todayEnd },
         status: { $ne: "cancelled" },
       }),
-      Bed.countDocuments({ status: "occupied" }),
-      Bed.countDocuments({ status: "available" }),
-      Bed.countDocuments(),
-      Bed.countDocuments({ status: "cleaning" }),
-      Bed.countDocuments({ status: "maintenance" }),
+      // Consolidated single Bed aggregation replacing 11 separate count round-trips
+      Bed.aggregate([
+        {
+          $group: {
+            _id: {
+              status: "$status",
+              isIcu: { $regexMatch: { input: "$ward", regex: /icu|critical/i } },
+              isGeneral: { $regexMatch: { input: "$ward", regex: /general/i } },
+              isEmergency: { $regexMatch: { input: "$ward", regex: /emergency|trauma/i } },
+            },
+            count: { $sum: 1 },
+          },
+        },
+      ]),
       Billing.countDocuments({ paymentStatus: { $in: ["pending", "partially_paid"] } }),
       Billing.aggregate([
         { $match: { paymentStatus: "paid", createdAt: { $gte: todayStart, $lte: todayEnd } } },
@@ -121,20 +128,70 @@ export const getAdminTelemetry = asyncHandler(async (req, res) => {
         .limit(8)
         .lean(),
       Appointment.countDocuments({ status: "pending" }),
-      DiagnosticOrder.countDocuments({ createdAt: { $gte: todayStart, $lte: todayEnd } }),
-      DiagnosticOrder.countDocuments({ status: { $in: ["Requested", "Scheduled", "Patient Ready", "Sample Collected", "In Progress"] } }),
-      DiagnosticOrder.countDocuments({ isCritical: true, "criticalDetails.escalationStatus": { $ne: "Resolved" } }),
-      Bed.countDocuments({ ward: { $regex: /icu|critical/i } }),
-      Bed.countDocuments({ ward: { $regex: /icu|critical/i }, status: "occupied" }),
-      Bed.countDocuments({ ward: { $regex: /general/i } }),
-      Bed.countDocuments({ ward: { $regex: /general/i }, status: "occupied" }),
-      Bed.countDocuments({ ward: { $regex: /emergency|trauma/i } }),
-      Bed.countDocuments({ ward: { $regex: /emergency|trauma/i }, status: "occupied" }),
+      // Consolidated DiagnosticOrder aggregation replacing 3 separate count queries
+      DiagnosticOrder.aggregate([
+        {
+          $facet: {
+            today: [
+              { $match: { createdAt: { $gte: todayStart, $lte: todayEnd } } },
+              { $count: "count" },
+            ],
+            pending: [
+              { $match: { status: { $in: ["Requested", "Scheduled", "Patient Ready", "Sample Collected", "In Progress"] } } },
+              { $count: "count" },
+            ],
+            critical: [
+              { $match: { isCritical: true, "criticalDetails.escalationStatus": { $ne: "Resolved" } } },
+              { $count: "count" },
+            ],
+          },
+        },
+      ]),
       ProcedureSchedule.countDocuments({
         scheduledDate: { $gte: todayStart, $lte: todayEnd },
         status: { $in: ["scheduled", "preparing", "in_progress"] },
       }),
     ]);
+
+    // Parse consolidated bed statistics
+    let totalBeds = 0;
+    let occupiedBeds = 0;
+    let availableBeds = 0;
+    let cleaningBeds = 0;
+    let maintenanceBeds = 0;
+    let icuTotal = 0;
+    let icuOccupied = 0;
+    let generalTotal = 0;
+    let generalOccupied = 0;
+    let emergencyTotal = 0;
+    let emergencyOccupied = 0;
+
+    for (const group of bedStats || []) {
+      const { status, isIcu, isGeneral, isEmergency } = group._id || {};
+      const cnt = group.count || 0;
+      totalBeds += cnt;
+      if (status === "occupied") occupiedBeds += cnt;
+      if (status === "available") availableBeds += cnt;
+      if (status === "cleaning") cleaningBeds += cnt;
+      if (status === "maintenance") maintenanceBeds += cnt;
+
+      if (isIcu) {
+        icuTotal += cnt;
+        if (status === "occupied") icuOccupied += cnt;
+      }
+      if (isGeneral) {
+        generalTotal += cnt;
+        if (status === "occupied") generalOccupied += cnt;
+      }
+      if (isEmergency) {
+        emergencyTotal += cnt;
+        if (status === "occupied") emergencyOccupied += cnt;
+      }
+    }
+
+    const diagnosticTestsToday = diagnosticStats?.[0]?.today?.[0]?.count || 0;
+    const pendingDiagnostics = diagnosticStats?.[0]?.pending?.[0]?.count || 0;
+    const criticalDiagnosticAlerts = diagnosticStats?.[0]?.critical?.[0]?.count || 0;
 
     // Today's revenue (single aggregation round-trip) & occupancy rates
     const todayRevenue = todayPaidBills?.[0]?.total || 0;
@@ -143,7 +200,7 @@ export const getAdminTelemetry = asyncHandler(async (req, res) => {
     const generalOccupancyRate = generalTotal > 0 ? Math.round((generalOccupied / generalTotal) * 100) : 0;
     const emergencyOccupancyRate = emergencyTotal > 0 ? Math.round((emergencyOccupied / emergencyTotal) * 100) : 0;
 
-    return res.status(200).json({
+    const result = {
       success: true,
       totalPatients,
       activeDoctors,
@@ -205,7 +262,12 @@ export const getAdminTelemetry = asyncHandler(async (req, res) => {
         recentAppointments,
         recentActivity: recentAuditLogs,
       },
-    });
+    };
+
+    cachedTelemetry = result;
+    cachedTelemetryTimestamp = Date.now();
+
+    return res.status(200).json(result);
 });
 
 // ── 2. GLOBAL SEARCH ────────────────────────────────────────────────────────

@@ -1,225 +1,186 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import {
   getCriticalDiagnosticResults,
   acknowledgeCriticalDiagnosticResult,
 } from "../../services/api.js";
+import { toast } from "../../utils/toast.js";
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+  Input,
+  Modal,
+  EmptyStateCard,
+  PageLoader,
+} from "../../components/ui/index.js";
 
 export default function CriticalResultsPage() {
-  const [criticalResults, setCriticalResults] = useState([]);
+  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [acknowledgingId, setAcknowledgingId] = useState(null);
-  const [callModalOrder, setCallModalOrder] = useState(null);
-  const [callerName, setCallerName] = useState("Central Diagnostic Call Desk");
-  const [callNotes, setCallNotes] = useState("");
+  const [confirmingId, setConfirmingId] = useState(null);
+  const [doctorName, setDoctorName] = useState("");
+  const [callerNotes, setCallerNotes] = useState("");
+  const [search, setSearch] = useState("");
 
-  const fetchCriticalResults = async () => {
+  const fetchResults = async () => {
     try {
       setLoading(true);
       const res = await getCriticalDiagnosticResults();
       if (res.success) {
-        setCriticalResults(res.data || []);
+        setResults(res.data || []);
       }
     } catch (err) {
-      console.error("Failed to load critical alerts", err);
+      setError(err.response?.data?.message || err.message || "Failed to load critical results");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCriticalResults();
+    fetchResults();
   }, []);
 
-  const handleAcknowledge = async (orderId, doctorNotes = "") => {
+  const handleAcknowledge = async (resultId) => {
     try {
-      setAcknowledgingId(orderId);
-      await acknowledgeCriticalDiagnosticResult(orderId, {
-        doctorNotes: doctorNotes || "Emergency notification received and clinical intervention initiated.",
+      setAcknowledgingId(resultId);
+      await acknowledgeCriticalDiagnosticResult(resultId, {
+        doctorName,
+        callerNotes,
       });
-      alert("Critical finding successfully acknowledged and closed!");
-      setCallModalOrder(null);
-      fetchCriticalResults();
+      setConfirmingId(null);
+      setDoctorName("");
+      setCallerNotes("");
+      fetchResults();
     } catch (err) {
-      alert("Failed to acknowledge: " + (err.response?.data?.message || err.message));
+      toastError(`Failed to acknowledge result: ${err.response?.data?.message || err.message}`);
     } finally {
       setAcknowledgingId(null);
     }
   };
 
+  const toastError = (msg) => {
+    const el = document.createElement("div");
+    el.className = "fixed top-6 right-6 z-50 bg-rose-500 text-white px-4 py-2 rounded-xl shadow-xl";
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 4000);
+  };
+
+  const severityColors = {
+    critical: "bg-rose-600 text-white animate-pulse",
+    urgent: "bg-amber-600 text-white",
+    normal: "bg-slate-100 text-slate-700",
+  };
+
+  if (loading) {
+    return <PageLoader message="Loading critical results radar…" />;
+  }
+
+  if (error) {
+    return (
+      <Card title="Critical Results Load Error" subtitle={error} className="border-rose-200 bg-rose-50">
+        <div className="flex items-center justify-end pt-2 border-t border-slate-100">
+          <Button variant="outline" size="sm" onClick={fetchResults}>Retry</Button>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="rounded-3xl border border-rose-300 bg-gradient-to-r from-rose-900 via-rose-950 to-slate-900 p-6 sm:p-8 text-white shadow-xl">
-        <div className="flex items-center gap-3">
-          <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-600 text-2xl shadow-lg animate-pulse">
-            🚨
-          </span>
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-rose-500/20 border border-rose-400/30 px-3 py-1 text-xs font-semibold text-rose-300 mb-1">
-              <span>Immediate Patient Safety Action Protocol • NABH Standard COP.6</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              Emergency Critical Results Notification Desk
-            </h1>
-            <p className="text-xs sm:text-sm text-rose-200 mt-1 max-w-2xl">
-              Laboratory tests with life-threatening biological parameters or emergency radiologic diagnoses requiring mandatory clinician notification within 30 minutes.
-            </p>
-          </div>
+      <PageHeader
+        title="Critical Results & Quarantine Radar"
+        subtitle="Critical pathology / radiology alerts requiring immediate clinician notification under NABH safety protocols"
+      />
+
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-[240px]">
+          <Input placeholder="Search by patient name, test, report #…" value={search} onChange={(e) => setSearch(e.target.value)} id="critical-search" />
         </div>
       </div>
 
-      {/* Critical Findings List */}
-      <div className="space-y-4">
-        {loading ? (
-          <div className="py-16 text-center text-slate-400 text-xs font-semibold">
-            Connecting to Critical Findings Alert Network...
-          </div>
-        ) : criticalResults.length === 0 ? (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-8 text-center">
-            <span className="text-3xl block mb-2">🛡️</span>
-            <h3 className="text-sm font-bold text-emerald-900">Zero Pending Critical Alerts</h3>
-            <p className="text-xs text-emerald-700 mt-1">
-              All life-threatening findings have been communicated, acknowledged, and addressed by clinical teams.
-            </p>
-          </div>
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden">
+        {results.length === 0 ? (
+          <EmptyStateCard icon="🩺" title="No critical results requiring acknowledgment." description="All critical results have been acknowledged and acknowledged by attending clinicians." />
         ) : (
-          criticalResults.map((item) => {
-            const isAcknowledged = item.criticalDetails?.acknowledged;
-            return (
-              <div
-                key={item._id}
-                className={`rounded-2xl border p-5 transition shadow-sm ${
-                  isAcknowledged
-                    ? "border-slate-200 bg-white opacity-85"
-                    : "border-rose-300 bg-gradient-to-r from-rose-50/80 via-white to-white ring-1 ring-rose-300"
-                }`}
-              >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-rose-800">{item.orderNumber}</span>
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-600 text-white animate-pulse">
-                        CRITICAL ALERT
-                      </span>
-                      <span className="text-xs font-semibold text-slate-500">
-                        Detected: {new Date(item.criticalDetails?.flaggedAt || item.updatedAt).toLocaleTimeString()}
-                      </span>
-                    </div>
-
-                    <h3 className="text-base font-extrabold text-slate-900">{item.testName}</h3>
-
-                    <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-950 font-medium">
-                      <span className="font-bold text-rose-800 block mb-0.5">Critical Finding Note:</span>
-                      <p>{item.criticalDetails?.criticalFindings || "Severely abnormal biological parameter requiring immediate review."}</p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-4 text-xs text-slate-600 pt-1">
-                      <span><strong>Patient:</strong> {item.patientName}</span>
-                      <span><strong>Referring Doctor:</strong> {item.doctorName || "Emergency Physician"}</span>
-                      <span><strong>Department:</strong> {item.department}</span>
-                    </div>
-                  </div>
-
-                  {/* Actions Column */}
-                  <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                    {isAcknowledged ? (
-                      <div className="rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-2 text-right">
-                        <span className="text-xs font-bold text-emerald-800 flex items-center gap-1">
-                          ✓ Acknowledged
-                        </span>
-                        <p className="text-[10px] text-slate-500 mt-0.5">
-                          At {new Date(item.criticalDetails.acknowledgedAt).toLocaleTimeString()}
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => setCallModalOrder(item)}
-                          className="w-full sm:w-auto rounded-xl bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 text-xs font-bold transition cursor-pointer shadow-sm"
-                        >
-                          📞 Log Emergency Call
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAcknowledge(item._id)}
-                          disabled={acknowledgingId === item._id}
-                          className="w-full sm:w-auto rounded-xl bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 text-xs font-bold transition cursor-pointer shadow-md shadow-rose-600/25"
-                        >
-                          {acknowledgingId === item._id ? "Processing..." : "Mark Acknowledged ✓"}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <tr>
+                  <th className="px-3.5 pl-5">Result #</th>
+                  <th className="px-3.5">Patient Details</th>
+                  <th className="px-3.5">Test / Study</th>
+                  <th className="px-3.5">Severity</th>
+                  <th className="px-3.5">Value</th>
+                  <th className="px-3.5">Reference</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                {results.map((r) => (
+                  <tr key={r._id} className="hover:bg-slate-50/70 transition">
+                    <td className="px-3.5 pl-5 font-mono font-bold text-slate-800 whitespace-nowrap">{r.resultNumber}</td>
+                    <td className="px-3.5">
+                      <div className="font-bold text-slate-800">{r.patientName}</div>
+                      <p className="text-[11px] text-slate-500">{r.patientAge || "Adult"}Y / {r.patientGender || "N/A"}</p>
+                    </td>
+                    <td className="px-3.5">
+                      <div className="font-bold text-slate-800">{r.testName}</div>
+                      <p className="text-[11px] text-slate-500">{r.category}</p>
+                    </td>
+                    <td className="px-3.5">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${severityColors[r.severity]}`}>{r.severity}</span>
+                    </td>
+                    <td className="px-3.5">
+                      <div className="font-bold text-slate-800">{r.value}</div>
+                      <p className="text-[11px] text-slate-500">Ref: {r.referenceRange || "N/A"}</p>
+                    </td>
+                    <td className="px-3.5 pr-5 text-right whitespace-nowrap space-x-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfirmingId(r._id);
+                        }}
+                        className="rounded-lg bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 text-[11px] font-bold cursor-pointer"
+                        title="Acknowledge critical result"
+                      >
+                        Acknowledge
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
-      {/* ================= EMERGENCY CALL LOG MODAL ================= */}
-      {callModalOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
-              <h3 className="text-sm font-bold text-slate-900">Log Doctor Phone Notification</h3>
-              <button
-                type="button"
-                onClick={() => setCallModalOrder(null)}
-                className="text-slate-400 hover:text-slate-600 cursor-pointer"
-              >
-                ✕
-              </button>
+      {confirmingId && (
+        <Modal
+          isOpen={Boolean(confirmingId)}
+          onClose={() => setConfirmingId(null)}
+          title="Acknowledge Critical Result"
+          subtitle={`Acknowledge result #${confirmingId} as reviewed by attending clinician`}
+          className="max-w-md"
+        >
+          <form className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Attending Clinician Name *</label>
+              <Input value={doctorName} onChange={(e) => setDoctorName(e.target.value)} placeholder="Enter attending clinician name" id="clinician-name" required />
             </div>
-
-            <div className="rounded-xl border border-rose-100 bg-rose-50/50 p-3 mb-4 text-xs">
-              <p className="font-bold text-rose-900">{callModalOrder.testName} (Order: {callModalOrder.orderNumber})</p>
-              <p className="text-slate-600 mt-0.5">Patient: {callModalOrder.patientName}</p>
-              <p className="text-slate-600">Doctor to Notify: <strong>{callModalOrder.doctorName || "Attending Consultant"}</strong></p>
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Caller Notes</label>
+              <textarea rows={3} value={callerNotes} onChange={(e) => setCallerNotes(e.target.value)} placeholder="e.g. Notified Dr. Smith at 02:30 AM, patient informed, repeat sample scheduled" className="w-full rounded-xl border border-slate-200 p-2.5 text-xs text-slate-800 outline-none focus:border-indigo-500 focus:bg-white" />
             </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Caller Name / Designation</label>
-                <input
-                  type="text"
-                  value={callerName}
-                  onChange={(e) => setCallerName(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Call Communication Notes & Read-Back</label>
-                <textarea
-                  rows={3}
-                  placeholder="e.g. Spoke with Dr. Sharma at 14:15. Critical Hb value of 6.2 g/dL communicated and read back verified."
-                  value={callNotes}
-                  onChange={(e) => setCallNotes(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2 text-xs text-slate-800 outline-none"
-                />
-              </div>
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button type="button" onClick={() => setConfirmingId(null)} className="rounded-xl border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50">Cancel</button>
+              <Button size="sm" disabled={acknowledgingId === confirmingId} type="submit">Acknowledge</Button>
             </div>
-
-            <div className="pt-4 border-t border-slate-100 mt-4 flex items-center justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setCallModalOrder(null)}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAcknowledge(callModalOrder._id, callNotes)}
-                className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 text-xs font-bold shadow-sm"
-              >
-                Save Log & Close Alert →
-              </button>
-            </div>
-          </div>
-        </div>
+          </form>
+        </Modal>
       )}
     </div>
   );

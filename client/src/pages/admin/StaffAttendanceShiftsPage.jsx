@@ -129,7 +129,7 @@ export default function StaffAttendanceShiftsPage() {
         <button
           onClick={() => setActiveTab("attendance")}
           className={`rounded-lg px-4 py-1.5 font-bold transition ${
-            activeTab === "attendance" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+            activeTab === "attendance" ? "bg-slate-900 text-slate-100" : "text-slate-600 hover:bg-slate-100"
           }`}
         >
           Daily Attendance Sheet ({attendanceRecords.length})
@@ -137,7 +137,7 @@ export default function StaffAttendanceShiftsPage() {
         <button
           onClick={() => setActiveTab("leaves")}
           className={`rounded-lg px-4 py-1.5 font-bold transition ${
-            activeTab === "leaves" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"
+            activeTab === "leaves" ? "bg-slate-900 text-slate-100" : "text-slate-600 hover:bg-slate-100"
           }`}
         >
           Leave Applications ({leaveRequests.length})
@@ -217,7 +217,7 @@ export default function StaffAttendanceShiftsPage() {
                 key={st}
                 onClick={() => setLeaveStatusFilter(st)}
                 className={`rounded-lg px-3 py-1 font-semibold capitalize transition ${
-                  leaveStatusFilter === st ? "bg-purple-600 text-white" : "bg-white border border-slate-200 text-slate-600"
+                  leaveStatusFilter === st ? "bg-purple-600 text-slate-100" : "bg-white border border-slate-200 text-slate-600"
                 }`}
               >
                 {st}
@@ -271,13 +271,13 @@ export default function StaffAttendanceShiftsPage() {
                             <>
                               <button
                                 onClick={() => handleReviewLeave(leave._id, "approved")}
-                                className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[10px] font-bold text-white hover:bg-emerald-700 transition"
+                                className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[10px] font-bold text-slate-100 hover:bg-emerald-700 transition"
                               >
                                 Approve
                               </button>
                               <button
                                 onClick={() => handleReviewLeave(leave._id, "rejected")}
-                                className="rounded-lg bg-rose-600 px-2.5 py-1 text-[10px] font-bold text-white hover:bg-rose-700 transition"
+                                className="rounded-lg bg-rose-600 px-2.5 py-1 text-[10px] font-bold text-slate-100 hover:bg-rose-700 transition"
                               >
                                 Reject
                               </button>

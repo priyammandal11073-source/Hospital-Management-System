@@ -2,6 +2,12 @@ import { useState, useEffect } from "react";
 import { getPharmacyTelemetry } from "../../services/api.js";
 import { usePrintModal } from "../../context/PrintModalContext.jsx";
 import { generateGeneralHospitalReportHtml } from "../../utils/printTemplates.js";
+import {
+  PageHeader,
+  Card,
+  Button,
+  PageLoader,
+} from "../../components/ui/index.js";
 
 export default function PharmacyAnalyticsPage() {
   const { openPrintPreview } = usePrintModal();
@@ -70,7 +76,7 @@ export default function PharmacyAnalyticsPage() {
   };
 
   const handleExportCSV = () => {
-    const csvContent = "data:text/csv;charset=utf-8," + 
+    const csvContent = "data:text/csv;charset=utf-8," +
       "Metric,Value,Target,Status\n" +
       "Prescriptions Today,42,50,Normal\n" +
       "Fulfillment Rate,88%,95%,Good\n" +
@@ -87,73 +93,45 @@ export default function PharmacyAnalyticsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-teal-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-teal-600">Executive Intelligence</span>
-          </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Pharmacy Analytics & Performance Reports</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Dispensing throughput velocity, inventory turnover ratios, expiry risk models, and pharmacy department revenues.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleExportCSV}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
-          >
-            <svg className="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            <span>Export CSV Audit</span>
-          </button>
-          <button
-            onClick={handlePrintDayEndReport}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 shadow-sm transition"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            <span>Print Day-End Report</span>
-          </button>
-        </div>
+    <div className="space-y-6 bg-[#f7f6f3]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs">
+        <PageHeader
+          title="Pharmacy Analytics & Performance Reports"
+          subtitle="Dispensing throughput velocity, inventory turnover ratios, expiry risk models, and pharmacy department revenues."
+          actions={[
+            <Button key="export" size="sm" variant="outline" onClick={handleExportCSV} leftIcon={<span>📊</span>}>
+              Export CSV Audit
+            </Button>,
+            <Button key="print" size="sm" onClick={handlePrintDayEndReport} leftIcon={<span>🖨️</span>}>
+              Print Day-End Report
+            </Button>,
+          ]}
+        />
       </div>
+
+      {isLoading && <PageLoader message="Compiling pharmacy analytics…" />}
 
       {/* Analytics KPI Highlights */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <p className="text-xs font-bold text-slate-400 uppercase">Avg Dispense Turnaround</p>
-          <p className="mt-1 text-3xl font-black text-slate-900">4.2 min</p>
-          <p className="text-[11px] font-semibold text-emerald-600 mt-2">↓ 18% faster than benchmark</p>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <p className="text-xs font-bold text-slate-400 uppercase">Prescription Fill Rate</p>
-          <p className="mt-1 text-3xl font-black text-slate-900">97.4%</p>
-          <p className="text-[11px] font-semibold text-emerald-600 mt-2">↑ High formulary availability</p>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <p className="text-xs font-bold text-slate-400 uppercase">Inventory Turns / Year</p>
-          <p className="mt-1 text-3xl font-black text-slate-900">8.6x</p>
-          <p className="text-[11px] font-semibold text-blue-600 mt-2">Optimal capital velocity</p>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <p className="text-xs font-bold text-slate-400 uppercase">Expiry Loss Ratio</p>
-          <p className="mt-1 text-3xl font-black text-emerald-600">&lt; 0.4%</p>
-          <p className="text-[11px] font-semibold text-slate-400 mt-2">Protected by FIFO radar</p>
-        </div>
+        <Card title="Avg Dispense Turnaround" subtitle="↓ 18% faster than benchmark">
+          <div className="text-3xl font-black text-slate-900">4.2 min</div>
+        </Card>
+        <Card title="Prescription Fill Rate" subtitle="↑ High formulary availability">
+          <div className="text-3xl font-black text-slate-900">97.4%</div>
+        </Card>
+        <Card title="Inventory Turns / Year" subtitle="Optimal capital velocity">
+          <div className="text-3xl font-black text-slate-900">8.6x</div>
+        </Card>
+        <Card title="Expiry Loss Ratio" subtitle="Protected by FIFO radar">
+          <div className="text-3xl font-black text-emerald-600">&lt; 0.4%</div>
+        </Card>
       </div>
 
       {/* Visual Analytics Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category-Wise Volume & Revenue */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <h2 className="text-sm font-bold text-slate-900 mb-4">Therapeutic Class Share & Sales Volume</h2>
-          <div className="space-y-4">
+        <Card title="Therapeutic Class Share & Sales Volume">
+          <div className="mt-4 space-y-4">
             {[
               { name: "Antibiotics & Anti-infectives", percent: 34, revenue: "₹28,400", color: "bg-amber-500" },
               { name: "Cardiovascular & Antihypertensives", percent: 22, revenue: "₹19,200", color: "bg-blue-500" },
@@ -172,12 +150,11 @@ export default function PharmacyAnalyticsPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
 
         {/* Hourly Queue & Workload Distribution */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <h2 className="text-sm font-bold text-slate-900 mb-4">OPD Peak Dispensing Velocity (By Hour)</h2>
-          <div className="space-y-4">
+        <Card title="OPD Peak Dispensing Velocity (By Hour)">
+          <div className="mt-4 space-y-4">
             {[
               { time: "09:00 AM - 11:00 AM (Morning OPD Surge)", count: 24, percent: 85, badge: "Peak Load" },
               { time: "11:00 AM - 01:00 PM (Ward Discharge Orders)", count: 18, percent: 65, badge: "High Load" },
@@ -198,7 +175,7 @@ export default function PharmacyAnalyticsPage() {
               </div>
             ))}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

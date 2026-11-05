@@ -8,6 +8,14 @@ import {
   getDoctors,
 } from "../../services/api.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import {
+  Badge,
+  Button,
+  Card,
+  PageHeader,
+  EmptyStateCard,
+  PageLoader,
+} from "../../components/ui/index.js";
 
 export default function EmergencyDeskPage() {
   const [emergencyBeds, setEmergencyBeds] = useState([]);
@@ -17,7 +25,6 @@ export default function EmergencyDeskPage() {
   const [successMsg, setSuccessMsg] = useState("");
   const [error, setError] = useState("");
 
-  // Express Registration Form
   const [form, setForm] = useState({
     name: "",
     age: "",
@@ -57,7 +64,11 @@ export default function EmergencyDeskPage() {
   const handleExpressTriage = async (e) => {
     e.preventDefault();
     if (!form.name || !form.age) {
-      alert("Patient Name and Age are required for emergency intake.");
+      const d = document.createElement("div");
+      d.className = "fixed top-6 right-6 z-50 bg-rose-500 text-white px-4 py-2 rounded-xl shadow-xl";
+      d.textContent = "Patient Name and Age are required for emergency intake.";
+      document.body.appendChild(d);
+      setTimeout(() => d.remove(), 4000);
       return;
     }
 
@@ -66,7 +77,6 @@ export default function EmergencyDeskPage() {
     setSuccessMsg("");
 
     try {
-      // 1. Create Patient Record
       const patRes = await createPatient({
         name: form.name.trim(),
         age: Number(form.age),
@@ -80,7 +90,6 @@ export default function EmergencyDeskPage() {
       });
       const patientId = patRes.patient?._id;
 
-      // 2. If bed selected, admit immediately
       if (form.selectedBedId && form.selectedDoctorId) {
         await allocateBed(form.selectedBedId, {
           patient: patientId,
@@ -111,30 +120,19 @@ export default function EmergencyDeskPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Alert Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-white/85 backdrop-blur-xl border border-rose-200/80 p-6 sm:p-8 text-slate-900 shadow-xs">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 rounded-lg bg-rose-50 text-rose-800 border border-rose-200/80 px-2.5 py-1 text-xs font-semibold shadow-2xs">
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-              <span>24/7 Trauma & Emergency Center</span>
-              <span className="opacity-40">•</span>
-              <span>Express Triage Desk</span>
-            </div>
-            <h1 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-              Emergency Front Desk Operations
-            </h1>
-            <p className="mt-2 text-sm text-slate-600 leading-relaxed">
-              Rapid intake console for acute trauma, ambulance arrivals, and resuscitation bed allocation.
-            </p>
-          </div>
+    <div className="space-y-6" style={{ backgroundImage: "radial-gradient(circle, rgba(15, 118, 110, 0.03) 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
+      <PageHeader
+        title="Emergency Front Desk Operations"
+        subtitle="Rapid intake console for acute trauma, ambulance arrivals, and resuscitation bed allocation."
+        breadcrumbs={<span className="flex items-center gap-2 rounded-lg bg-rose-50 text-rose-800 border border-rose-200/80 px-2.5 py-1 text-xs font-semibold shadow-2xs"><span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse"></span><span>24/7 Trauma & Emergency Center</span><span className="opacity-40">•</span><span>Express Triage Desk</span></span>}
+        actions={[]}
+      />
 
-          <div className="text-center rounded-xl bg-slate-50/80 border border-slate-200/80 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Available Trauma Bays</p>
-            <p className="text-3xl font-bold text-slate-900 mt-1 tabular-nums">{emergencyBeds.length}</p>
-            <p className="text-[11px] text-slate-500 mt-0.5">Ready for immediate triage</p>
-          </div>
+      <div className="flex items-center justify-between text-center rounded-xl bg-slate-50/80 border border-slate-200/80 p-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Available Trauma Bays</p>
+          <p className="text-3xl font-bold text-slate-900 mt-1 tabular-nums">{emergencyBeds.length}</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Ready for immediate triage</p>
         </div>
       </div>
 
@@ -146,15 +144,14 @@ export default function EmergencyDeskPage() {
       )}
 
       {error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-bold text-red-800 flex items-center gap-2">
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-bold text-rose-800 flex items-center gap-2">
           <span>⚠️</span>
           <span>{error}</span>
         </div>
       )}
 
-      {/* Express Intake Form */}
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80">
+        <div className="lg:col-span-2 rounded-2xl bg-white p-6 shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
           <h2 className="text-base font-black text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
             <span className="text-xl">🚨</span>
             <span>Express Emergency Intake Form</span>
@@ -164,7 +161,7 @@ export default function EmergencyDeskPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2">
                 <label className="text-xs font-bold text-slate-700 block mb-1">
-                  Patient Full Name (or "Unknown Male/Female"): <span className="text-red-500">*</span>
+                  Patient Full Name (or "Unknown Male/Female"): <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -172,12 +169,12 @@ export default function EmergencyDeskPage() {
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   placeholder="e.g. John Doe / Trauma Victim #4"
-                  className="w-full rounded-xl border border-slate-200 p-2.5 text-xs text-slate-800 font-semibold focus:border-red-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 p-2.5 text-xs text-slate-800 font-semibold focus:border-teal-600 focus:outline-none"
                 />
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">
-                  Estimated Age: <span className="text-red-500">*</span>
+                  Estimated Age: <span className="text-rose-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -187,7 +184,7 @@ export default function EmergencyDeskPage() {
                   value={form.age}
                   onChange={(e) => setForm({ ...form, age: e.target.value })}
                   placeholder="e.g. 35"
-                  className="w-full rounded-xl border border-slate-200 p-2.5 text-xs text-slate-800 font-semibold focus:border-red-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 p-2.5 text-xs text-slate-800 font-semibold focus:border-teal-600 focus:outline-none"
                 />
               </div>
             </div>
@@ -198,7 +195,7 @@ export default function EmergencyDeskPage() {
                 <select
                   value={form.gender}
                   onChange={(e) => setForm({ ...form, gender: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 font-semibold focus:border-red-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs text-slate-800 font-semibold focus:border-teal-600 focus:outline-none"
                 >
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
@@ -210,7 +207,7 @@ export default function EmergencyDeskPage() {
                 <select
                   value={form.triageLevel}
                   onChange={(e) => setForm({ ...form, triageLevel: e.target.value })}
-                  className="w-full rounded-xl border border-red-200 bg-red-50/50 p-2.5 text-xs font-black text-red-800 focus:outline-none"
+                  className={`w-full rounded-xl p-2.5 text-xs font-black focus:outline-none focus:border-teal-600 ${form.triageLevel.startsWith("Red") ? "border-rose-200 bg-rose-50/50 text-rose-800" : "border-slate-300 bg-white text-slate-800"}`}
                 >
                   <option value="Red - Resuscitation">🔴 Red - Resuscitation (Immediate)</option>
                   <option value="Orange - Emergent">🟠 Orange - Emergent (&lt; 15 mins)</option>
@@ -222,7 +219,7 @@ export default function EmergencyDeskPage() {
                 <select
                   value={form.selectedBedId}
                   onChange={(e) => setForm({ ...form, selectedBedId: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 font-bold focus:border-red-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs text-slate-800 font-bold focus:border-teal-600 focus:outline-none"
                 >
                   {emergencyBeds.map((bed) => (
                     <option key={bed._id} value={bed._id}>
@@ -240,7 +237,7 @@ export default function EmergencyDeskPage() {
                 <select
                   value={form.selectedDoctorId}
                   onChange={(e) => setForm({ ...form, selectedDoctorId: e.target.value })}
-                  className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-800 font-medium focus:border-red-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs text-slate-800 font-medium focus:border-teal-600 focus:outline-none"
                 >
                   {doctors.map((d) => (
                     <option key={d._id} value={d._id}>
@@ -256,7 +253,7 @@ export default function EmergencyDeskPage() {
                   value={form.emergencyContactName}
                   onChange={(e) => setForm({ ...form, emergencyContactName: e.target.value })}
                   placeholder="e.g. Paramedic Dave / Relative"
-                  className="w-full rounded-xl border border-slate-200 p-2.5 text-xs text-slate-800 focus:border-red-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-300 p-2.5 text-xs text-slate-800 focus:border-teal-600 focus:outline-none"
                 />
               </div>
             </div>
@@ -268,30 +265,28 @@ export default function EmergencyDeskPage() {
                 value={form.chiefComplaint}
                 onChange={(e) => setForm({ ...form, chiefComplaint: e.target.value })}
                 placeholder="e.g. RTA victim, blunt chest trauma, unconscious, vitals unstable..."
-                className="w-full rounded-xl border border-slate-200 p-2.5 text-xs text-slate-800 focus:border-red-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-300 p-2.5 text-xs text-slate-800 focus:border-teal-600 focus:outline-none"
               />
             </div>
 
             <div className="flex justify-end pt-2">
-              <button
-                type="submit"
+              <Button                 type="submit"
                 disabled={isSubmitting}
-                className="rounded-xl bg-red-600 px-6 py-2.5 text-xs font-black text-white hover:bg-red-700 shadow-md transition disabled:opacity-50"
+                variant="danger"
+                size="lg"
               >
-                {isSubmitting ? "Allocating Bay..." : "⚡ Admit to Trauma Bay Now"}
-              </button>
+                {isSubmitting ? "Allocating Bay…" : "⚡ Admit to Trauma Bay Now"}
+              </Button>
             </div>
           </form>
         </div>
 
-        {/* Emergency Resources Panel */}
         <div className="space-y-4">
-          <div className="rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Emergency Helplines</h3>
+          <Card title="Emergency Helplines" subtitle="Critical contact numbers">
             <div className="mt-3 space-y-2 text-xs">
               <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="font-bold text-slate-800">Hospital Emergency:</span>
-                <span className="font-mono font-bold text-red-600">108 / 112</span>
+                <span className="font-mono font-bold text-rose-600">108 / 112</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-100">
                 <span className="font-bold text-slate-800">Trauma ICU Extension:</span>
@@ -302,17 +297,16 @@ export default function EmergencyDeskPage() {
                 <span className="font-mono font-bold text-slate-700">EXT 115</span>
               </div>
             </div>
-          </div>
+          </Card>
 
-          <div className="rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200/80">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Trauma Bay Status</h3>
+          <Card title="Trauma Bay Status" subtitle="Current availability of emergency bays">
             <ul className="mt-3 divide-y divide-slate-100 text-xs">
               {emergencyBeds.map((b) => (
                 <li key={b._id} className="flex items-center justify-between py-2">
                   <span className="font-mono font-bold text-slate-800">{b.bedNumber}</span>
-                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 ring-1 ring-emerald-300">
+                  <Badge status="available">
                     Ready
-                  </span>
+                  </Badge>
                 </li>
               ))}
               {emergencyBeds.length === 0 && (
@@ -321,7 +315,7 @@ export default function EmergencyDeskPage() {
                 </li>
               )}
             </ul>
-          </div>
+          </Card>
         </div>
       </div>
     </div>

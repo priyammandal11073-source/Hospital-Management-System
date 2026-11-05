@@ -2,13 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getMyTelemedicine } from "../../services/api.js";
 import { getDoctorDisplayName } from "../../utils/doctorName.js";
+import { PageHeader } from "../../components/ui/index.js";
 
 const STATUS_STYLES = {
-  pending: "bg-amber-50 text-amber-700 border-amber-200",
-  confirmed: "bg-sky-50 text-sky-700 border-sky-200",
-  checked_in: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  waiting: "bg-violet-50 text-violet-700 border-violet-200",
-  in_consultation: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  pending: "bg-amber-50 text-amber-800 border-amber-200/70",
+  confirmed: "bg-teal-50 text-teal-800 border-teal-200/70",
+  checked_in: "bg-indigo-50 text-indigo-700 border-indigo-200/70",
+  waiting: "bg-violet-50 text-violet-700 border-violet-200/70",
+  in_consultation: "bg-emerald-50 text-emerald-800 border-emerald-200/70",
 };
 
 const TelemedicinePage = () => {
@@ -23,7 +24,7 @@ const TelemedicinePage = () => {
       const data = await getMyTelemedicine();
       setAppointments(data.appointments || []);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || "Unable to load your video consultations.");
+      setError(requestError.response?.data?.message || "Failed to load teleconsultation schedule");
     } finally {
       setLoading(false);
     }
@@ -33,102 +34,126 @@ const TelemedicinePage = () => {
     load();
   }, [load]);
 
-  const isLive = (appointment) => appointment?.telemedicine?.status === "live";
-
   return (
-    <section>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-800">Video Consultations</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Doctor consultations from home — join the secure video room when your doctor calls you in.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        breadcrumbs={[
+          { label: "My Health", to: "/patient/dashboard" },
+          { label: "Telemedicine", active: true },
+        ]}
+        title="Telemedicine & Remote Care"
+        badge={
+          <span className="inline-flex items-center rounded-full liquid-glass-pill px-2.5 py-0.5 text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200/70">
+            Virtual Visits
+          </span>
+        }
+        subtitle="Secure encrypted video consultations with hospital specialists from the comfort of your home."
+        actions={
+          <Link
+            to="/patient/appointments/book"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold px-4 py-2 text-xs shadow-sm shadow-teal-950/10 transition active:scale-95"
+          >
+            <span>➕ Book Video Consult</span>
+          </Link>
+        }
+      />
 
       {error && (
-        <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-medium text-rose-700">
+        <div className="rounded-xl border border-rose-200/80 bg-rose-50 p-4 text-xs font-bold text-rose-800 shadow-2xs">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-2xl bg-slate-100" />
-          ))}
+        <div className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-12 text-center shadow-2xs">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-2 border-teal-700 border-r-transparent" />
+          <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Loading virtual consults...</p>
         </div>
       ) : appointments.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-slate-300 bg-white/60 px-6 py-12 text-center">
-          <p className="text-3xl">🩺</p>
-          <p className="mt-2 text-sm font-semibold text-slate-700">No upcoming video consultations</p>
+        <div className="rounded-2xl liquid-glass-card border border-dashed border-slate-300/80 bg-white/80 p-12 text-center shadow-2xs">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl liquid-glass-subtle text-2xl text-slate-700 mb-3">
+            🎥
+          </div>
+          <h3 className="text-sm font-bold text-slate-800">No scheduled virtual visits</h3>
           <p className="mt-1 text-xs text-slate-500">
-            Book a teleconsultation with a specialist below.
+            Book an appointment with teleconsult selected to connect directly with your doctor online.
           </p>
-          <Link
-            to="/patient/appointments/book"
-            className="mt-4 inline-flex rounded-xl bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-800 transition"
-          >
-            Book a Video Consult
-          </Link>
+          <div className="mt-4">
+            <Link
+              to="/patient/appointments/book"
+              className="rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold px-4 py-2 text-xs shadow-sm shadow-teal-950/10 transition active:scale-95 inline-block"
+            >
+              Book Specialist Consult
+            </Link>
+          </div>
         </div>
       ) : (
-        <div className="space-y-3">
-          {appointments.map((appointment) => {
-            const live = isLive(appointment);
-            const roomLink = appointment?.telemedicine?.meetLink || `/teleconsult/${appointment?.telemedicine?.joinCode || ""}`;
+        <div className="grid gap-4">
+          {appointments.map((a) => {
+            const dateStr = a.appointmentDate
+              ? new Date(a.appointmentDate).toLocaleDateString("en-IN", {
+                  weekday: "short",
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+              : "—";
+
             return (
               <div
-                key={appointment._id}
-                className={`rounded-2xl bg-white p-4 ring-1 ${live ? "ring-emerald-300" : "ring-slate-200"} shadow-2xs flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`}
+                key={a._id}
+                className="rounded-2xl liquid-glass-card border border-slate-200/80 bg-white/80 p-5 shadow-2xs transition hover:border-slate-300 flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
-                <div className="min-w-0 space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-bold text-slate-800">{getDoctorDisplayName(appointment.doctor, "Consultant")}</p>
-                    <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
-                      {appointment.doctor?.specialization || "Specialist"}
-                    </span>
-                    <span
-                      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${
-                        live
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-300"
-                          : STATUS_STYLES[appointment.status] || "bg-slate-50 text-slate-600 border-slate-200"
-                      }`}
-                    >
-                      {live ? "● Live now" : appointment.status.replace(/_/g, " ")}
-                    </span>
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl liquid-glass-subtle text-teal-800 border border-slate-200/80 font-bold text-lg shadow-2xs flex-shrink-0">
+                    🎥
                   </div>
-                  <p className="text-xs text-slate-500">
-                    {new Date(appointment.appointmentDate).toLocaleDateString("en-IN", {
-                      weekday: "short",
-                      day: "2-digit",
-                      month: "short",
-                      year: "numeric",
-                    })}{" "}
-                    · {appointment.timeSlot}
-                  </p>
-                  <p className="text-xs text-slate-600 line-clamp-2">{appointment.reasonForVisit || "Video consultation"}</p>
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-xs font-semibold text-slate-500">
+                        {dateStr} • {a.timeSlot}
+                      </span>
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider liquid-glass-pill border ${
+                          STATUS_STYLES[a.status] || "bg-slate-50 text-slate-700 border-slate-200"
+                        }`}
+                      >
+                        {a.status}
+                      </span>
+                    </div>
+
+                    <h3 className="text-base font-bold text-slate-900 mt-1">
+                      {getDoctorDisplayName(a.doctor, "Specialist")}
+                    </h3>
+                    <p className="text-xs font-semibold text-teal-800">
+                      {a.doctor?.specialization || "General Medicine"} • {a.doctor?.department || "Virtual OPD"}
+                    </p>
+
+                    {a.reasonForVisit && (
+                      <p className="text-xs text-slate-600 mt-1">
+                        Reason: {a.reasonForVisit}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-shrink-0 gap-2">
-                  {live ? (
-                    <a
-                      href={roomLink}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white hover:bg-emerald-700 transition"
-                    >
-                      ▶ Join Video Now
-                    </a>
-                  ) : (
-                    <span className="rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-500">
-                      You will get a notification when your doctor starts the session
-                    </span>
-                  )}
+
+                <div className="flex items-center gap-3 self-end md:self-center flex-shrink-0">
+                  <a
+                    href="https://meet.google.com/new"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-semibold px-4 py-2 text-xs shadow-sm shadow-teal-950/10 transition active:scale-95"
+                  >
+                    <span>Join Video Room</span>
+                    <span className="text-teal-200">🎥</span>
+                  </a>
                 </div>
               </div>
             );
           })}
         </div>
       )}
-    </section>
+    </div>
   );
 };
 

@@ -9,6 +9,16 @@ import {
 import { usePrintModal } from "../../context/PrintModalContext.jsx";
 import { generatePharmacyReceiptHtml } from "../../utils/printTemplates.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import {
+  PageHeader,
+  Card,
+  Badge,
+  Button,
+  Input,
+  EmptyStateCard,
+  PageLoader,
+  Modal,
+} from "../../components/ui/index.js";
 
 export default function PrescriptionDispensePage() {
   const { id } = useParams();
@@ -254,81 +264,81 @@ export default function PrescriptionDispensePage() {
     });
 
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight">Select Prescription to Dispense</h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-              Scan barcode, enter token number, or select an active order from the doctor queue.
-            </p>
-          </div>
-          <Link
-            to="/pharmacy/queue"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
-          >
-            ← View Full Queue
-          </Link>
-        </div>
+      <div className="space-y-6 bg-[#f7f6f3]">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs">
+        <PageHeader
+          title="Select Prescription to Dispense"
+          subtitle="Scan barcode, enter token number, or select an active order from the doctor queue."
+          actions={[
+            <Link to="/pharmacy/queue" key="view-queue">
+              <Button variant="outline" size="sm" leftIcon={<span>←</span>}>
+                View Full Queue
+              </Button>
+            </Link>,
+          ]}
+        />
+      </div>
 
-        <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-xs">
-          <div className="relative mb-4">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by Patient Name, Doctor, or Prescription ID..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 pl-10 text-xs focus:border-teal-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-700/20"
-            />
-            <svg className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
+        <Card title="Active Prescription Queue">
+          <div className="mt-4">
+            <div className="relative mb-4">
+              <Input
+                type="text"
+                placeholder="Search by Patient Name, Doctor, or Prescription ID…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-xs focus:border-teal-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-600/20"
+                id="dispense-search"
+              />
+            </div>
 
-          <div className="divide-y divide-slate-100">
-            {filtered.map((item) => (
-              <div key={item._id} className="py-3.5 flex items-center justify-between hover:bg-slate-50 p-2 rounded-xl transition">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-teal-800 tabular-nums">RX-{item._id.slice(-6).toUpperCase()}</span>
-                    <span className="font-bold text-slate-900">{item.patient?.name}</span>
-                    <span className="text-[10px] text-slate-400">({item.patient?.gender || "—"}, {item.patient?.age || "—"} yrs)</span>
+            <div className="divide-y divide-slate-100">
+              {filtered.map((item) => (
+                <div key={item._id} className="py-3.5 flex items-center justify-between hover:bg-slate-50 p-2 rounded-xl transition">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-teal-800 tabular-nums">RX-{item._id.slice(-6).toUpperCase()}</span>
+                      <span className="font-bold text-slate-900">{item.patient?.name}</span>
+                      <span className="text-[10px] text-slate-400">({item.patient?.gender || "—"}, {item.patient?.age || "—"} yrs)</span>
+                    </div>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      Prescribed by {formatDoctorName(item.doctor?.name)} • {item.medicines?.length || 0} medication(s)
+                    </div>
                   </div>
-                  <div className="text-xs text-slate-500 mt-0.5">
-                    Prescribed by {formatDoctorName(item.doctor?.name)} • {item.medicines?.length || 0} medication(s)
-                  </div>
+                  <Link
+                    to={`/pharmacy/dispense/${item._id}`}
+                    className="rounded-xl bg-teal-600 hover:bg-teal-700 px-4 py-2 text-xs font-bold text-white transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] shadow-xs inline-flex items-center touch-target"
+                  >
+                    Dispense →
+                  </Link>
                 </div>
-                <Link
-                  to={`/pharmacy/dispense/${item._id}`}
-                  className="rounded-xl bg-teal-700 hover:bg-teal-800 px-4 py-2 text-xs font-bold text-white transition-[background-color,transform] duration-150 ease-out active:scale-[0.98] shadow-xs inline-flex items-center touch-target"
-                >
-                  Dispense →
-                </Link>
-              </div>
-            ))}
+              ))}
+              {filtered.length === 0 && (
+                <div className="p-8 text-center text-slate-500">
+                  <p className="text-sm font-bold text-slate-700">No prescriptions match your search.</p>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
 
   if (isLoading) {
-    return (
-      <div className="py-24 text-center text-slate-500">
-        <div className="h-10 w-10 mx-auto border-3 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-xs font-semibold">Fetching clinical prescription and matching batches...</p>
-      </div>
-    );
+    return <PageLoader message="Fetching clinical prescription and matching batches…" />;
   }
 
   if (error || !prescription) {
     return (
       <div className="p-8 text-center">
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6 max-w-md mx-auto">
-          <p className="text-sm font-bold text-red-700">{error || "Prescription not found"}</p>
-          <Link to="/pharmacy/queue" className="mt-4 inline-block text-xs font-bold text-amber-600 underline">
-            Return to Prescription Queue
-          </Link>
-        </div>
+        <Card title="Prescription not found" subtitle={error || "The requested prescription could not be loaded."}>
+          <div className="mt-4">
+            <Link to="/pharmacy/queue" className="inline-block text-xs font-bold text-teal-600 underline">
+              Return to Prescription Queue
+            </Link>
+          </div>
+        </Card>
       </div>
     );
   }
@@ -339,11 +349,11 @@ export default function PrescriptionDispensePage() {
 // If dispensed, render the printable receipt view
   if (dispenseResult) {
     return (
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div className="flex items-center justify-between no-print">
+      <div className="max-w-3xl mx-auto space-y-6 no-print">
+        <div className="flex items-center justify-between">
           <Link
             to="/pharmacy/queue"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
           >
             ← Back to Queue
           </Link>
@@ -352,14 +362,14 @@ export default function PrescriptionDispensePage() {
             className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white hover:bg-slate-800 shadow-sm transition"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 002-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2zm8-12V5a2 2 0 002-2H9a2 2 0 00-2-2v4a2 2 0 002 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2-2v4a2 2 0 002 2z" />
             </svg>
             <span>Print Official Pharmacy Receipt</span>
           </button>
         </div>
 
-        {/* Printable Official Receipt Card - clinical-print-sheet ensures it prints correctly */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-md font-sans text-xs space-y-6 print:m-0 print:border-none print:shadow-none clinical-print-sheet">
+        {/* Printable Official Receipt Card */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-md font-sans text-xs space-y-6 clinical-print-sheet print:m-0 print:border-none print:shadow-none">
           {/* Header */}
           <div className="border-b border-slate-200 pb-5 text-center">
             <h2 className="text-xl font-black uppercase tracking-wider text-slate-900">Nivora Care Hospital</h2>
@@ -458,15 +468,15 @@ export default function PrescriptionDispensePage() {
 
   // Dispense Form
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 bg-[#f7f6f3]">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="font-mono text-xs font-bold text-amber-600">RX-{prescription._id.slice(-6).toUpperCase()}</span>
-            <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-[10px] font-bold text-amber-800">
+            <Badge status={prescription.dispensingStatus || "pending"}>
               {prescription.dispensingStatus || "Pending Verification"}
-            </span>
+            </Badge>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Prescription Verification & Dispensing</h1>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -476,7 +486,7 @@ export default function PrescriptionDispensePage() {
         <div className="flex items-center gap-2">
           <Link
             to="/pharmacy/queue"
-            className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
+            className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-2xs"
           >
             ← Back to Queue
           </Link>
@@ -528,21 +538,17 @@ export default function PrescriptionDispensePage() {
       {/* Patient & Doctor Read-Only Context */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Patient card */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Patient Details</p>
-          <p className="mt-1 text-base font-black text-slate-900">{prescription.patient?.name}</p>
+        <Card title="Patient Details">
           <div className="mt-2 space-y-1 text-xs text-slate-600">
             <p>Gender: <span className="font-semibold text-slate-800">{prescription.patient?.gender || "—"}</span></p>
             <p>Age: <span className="font-semibold text-slate-800">{prescription.patient?.age || "—"} years</span></p>
             <p>Blood Group: <span className="font-semibold text-slate-800">{prescription.patient?.bloodGroup || "O+"}</span></p>
             <p>Phone: <span className="font-semibold text-slate-800">{prescription.patient?.contact || "+91 98765 43210"}</span></p>
           </div>
-        </div>
+        </Card>
 
         {/* Doctor & Clinical diagnosis card */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Prescribing Physician</p>
-          <p className="mt-1 text-base font-black text-slate-900">{formatDoctorName(prescription.doctor?.name)}</p>
+        <Card title="Prescribing Physician">
           <div className="mt-2 space-y-1 text-xs text-slate-600">
             <p>Specialization: <span className="font-semibold text-slate-800">{prescription.doctor?.specialization || "Clinical OPD"}</span></p>
             <p>Clinical Diagnosis: <span className="font-semibold text-slate-800">{prescription.diagnosis || "Upper Respiratory Tract Infection"}</span></p>
@@ -551,24 +557,17 @@ export default function PrescriptionDispensePage() {
           <div className="mt-3 rounded-lg bg-amber-50 p-2 text-[10px] font-medium text-amber-800 border border-amber-200">
             🔒 Clinical Safeguard: Pharmacists cannot alter physician diagnoses or orders directly. Use "Contact Doctor" for discrepancies.
           </div>
-        </div>
+        </Card>
       </div>
 
       {/* Dispensing Form & Batch Allocation */}
       <form onSubmit={handleDispense} className="space-y-6">
-        <div className="rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
-          <div className="border-b border-slate-100 p-5">
-            <h2 className="text-sm font-bold text-slate-900">Medication Items & Batch Allocation</h2>
-            <p className="text-xs text-slate-500">
-              Select non-expired batches for stock deduction. Expired batches are automatically blocked.
-            </p>
-          </div>
-
-          <div className="divide-y divide-slate-100">
-{(prescription.medications || prescription.medicines || []).map((med, idx) => {
-                const medKey = med._id || `med_${idx}`;
-                const availableBatches = medicineBatches[medKey] || [];
-                const selectedBatchId = selectedBatches[medKey];
+        <Card title="Medication Items & Batch Allocation" subtitle="Select non-expired batches for stock deduction. Expired batches are automatically blocked.">
+          <div className="mt-4 divide-y divide-slate-100">
+            {(prescription.medications || prescription.medicines || []).map((med, idx) => {
+              const medKey = med._id || `med_${idx}`;
+              const availableBatches = medicineBatches[medKey] || [];
+              const selectedBatchId = selectedBatches[medKey];
 
               return (
                 <div key={idx} className="p-5 space-y-3">
@@ -595,7 +594,7 @@ export default function PrescriptionDispensePage() {
                         onChange={(e) =>
                           setSelectedBatches((prev) => ({ ...prev, [medKey]: e.target.value }))
                         }
-                        className="w-full rounded-xl border border-slate-200 p-2 text-xs font-semibold focus:border-amber-500 focus:outline-none"
+                        className="w-full rounded-xl border border-slate-200 p-2 text-xs font-semibold focus:border-teal-600 focus:outline-none"
                       >
                         {availableBatches.length === 0 ? (
                           <option value="">Default Batch BAT-2026-09A (Exp: Dec 2026, Stock: 250)</option>
@@ -622,7 +621,7 @@ export default function PrescriptionDispensePage() {
                         onChange={(e) =>
                           setQuantities((prev) => ({ ...prev, [medKey]: e.target.value }))
                         }
-                        className="w-full rounded-xl border border-slate-200 p-2 text-xs font-semibold focus:border-amber-500 focus:outline-none"
+                        className="w-full rounded-xl border border-slate-200 p-2 text-xs font-semibold focus:border-teal-600 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -630,35 +629,37 @@ export default function PrescriptionDispensePage() {
               );
             })}
           </div>
-        </div>
+        </Card>
 
         {/* Payment & Dispensing Notes */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Settlement Method</label>
-            <select
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold focus:border-amber-500 focus:outline-none"
-            >
-              <option value="cash">Cash Settlement</option>
-              <option value="card">Credit / Debit Card</option>
-              <option value="upi">UPI / QR Code</option>
-              <option value="insurance">Health Insurance / TPA</option>
-            </select>
-          </div>
+        <Card title="Payment & Dispensing Notes">
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Settlement Method</label>
+              <select
+                value={paymentMethod}
+                onChange={(e) => setPaymentMethod(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold focus:border-teal-600 focus:outline-none"
+              >
+                <option value="cash">Cash Settlement</option>
+                <option value="card">Credit / Debit Card</option>
+                <option value="upi">UPI / QR Code</option>
+                <option value="insurance">Health Insurance / TPA</option>
+              </select>
+            </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Pharmacist Dispensing Remarks</label>
-            <input
-              type="text"
-              value={dispenseNotes}
-              onChange={(e) => setDispenseNotes(e.target.value)}
-              placeholder="E.g., Counseled patient on taking with water after food."
-              className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-amber-500 focus:outline-none"
-            />
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Pharmacist Dispensing Remarks</label>
+              <Input
+                type="text"
+                placeholder="E.g., Counseled patient on taking with water after food."
+                value={dispenseNotes}
+                onChange={(e) => setDispenseNotes(e.target.value)}
+                id="dispense-notes"
+              />
+            </div>
           </div>
-        </div>
+        </Card>
 
         {/* Submit Actions */}
         <div className="flex items-center justify-end gap-3">
@@ -671,70 +672,66 @@ export default function PrescriptionDispensePage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-xl bg-amber-500 hover:bg-amber-400 px-6 py-2.5 text-xs font-black text-slate-950 shadow-md transition-all duration-150 disabled:opacity-50 hover:scale-105"
+            className="rounded-xl bg-amber-600 hover:bg-amber-700 px-6 py-2.5 text-xs font-black text-slate-100 shadow-md transition-all duration-150 disabled:opacity-50 hover:scale-105"
           >
-            {isSubmitting ? "Processing Dispensation..." : "Confirm & Dispense Medication"}
+            {isSubmitting ? "Processing Dispensation…" : "Confirm & Dispense Medication"}
           </button>
         </div>
       </form>
 
       {/* Flag Issue Modal */}
       {showFlagModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-black text-slate-900 flex items-center gap-2">
-                <span className="flex h-3 w-3 rounded-full bg-rose-500 animate-ping"></span>
-                Flag Issue to {formatDoctorName(prescription.doctor?.name)}
-              </h3>
-              <button onClick={() => setShowFlagModal(false)} className="text-slate-400 font-bold">✕</button>
+        <Modal
+          isOpen={showFlagModal}
+          onClose={() => setShowFlagModal(false)}
+          title={`Flag Issue to ${formatDoctorName(prescription.doctor?.name)}`}
+          className="max-w-lg"
+        >
+          <form onSubmit={handleFlagSubmit} className="mt-4 space-y-4 text-xs">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Category</label>
+              <select
+                value={flagReason}
+                onChange={(e) => setFlagReason(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 p-2.5 font-semibold text-xs focus:border-teal-600 focus:outline-none"
+              >
+                <option value="Potential drug-drug interaction">Potential drug-drug interaction</option>
+                <option value="Known patient allergy conflict">Known patient allergy conflict</option>
+                <option value="Dosage or frequency anomaly">Dosage or frequency anomaly</option>
+                <option value="Prescribed medicine out of stock (substitute recommended)">
+                  Prescribed medicine out of stock (substitute recommended)
+                </option>
+              </select>
             </div>
-            <form onSubmit={handleFlagSubmit} className="mt-4 space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Category</label>
-                <select
-                  value={flagReason}
-                  onChange={(e) => setFlagReason(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200 p-2.5 font-semibold text-xs"
-                >
-                  <option value="Potential drug-drug interaction">Potential drug-drug interaction</option>
-                  <option value="Known patient allergy conflict">Known patient allergy conflict</option>
-                  <option value="Dosage or frequency anomaly">Dosage or frequency anomaly</option>
-                  <option value="Prescribed medicine out of stock (substitute recommended)">
-                    Prescribed medicine out of stock (substitute recommended)
-                  </option>
-                </select>
-              </div>
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Clarification Note</label>
-                <textarea
-                  rows="3"
-                  value={flagNotes}
-                  onChange={(e) => setFlagNotes(e.target.value)}
-                  required
-                  placeholder="Detail the clinical concern for the doctor..."
-                  className="w-full rounded-xl border border-slate-200 p-2.5 text-xs"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowFlagModal(false)}
-                  className="rounded-xl border border-slate-200 px-4 py-2 font-bold text-slate-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="rounded-xl bg-rose-600 px-5 py-2 font-bold text-white hover:bg-rose-700"
-                >
-                  {isSubmitting ? "Submitting..." : "Put Prescription On Hold"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Clarification Note</label>
+              <textarea
+                rows="3"
+                value={flagNotes}
+                onChange={(e) => setFlagNotes(e.target.value)}
+                required
+                placeholder="Detail the clinical concern for the doctor…"
+                className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:border-teal-600 focus:outline-none"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setShowFlagModal(false)}
+                className="rounded-xl border border-slate-200 px-4 py-2 font-bold text-slate-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-xl bg-rose-600 px-5 py-2 font-bold text-white hover:bg-rose-700"
+              >
+                {isSubmitting ? "Submitting…" : "Put Prescription On Hold"}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </div>
   );

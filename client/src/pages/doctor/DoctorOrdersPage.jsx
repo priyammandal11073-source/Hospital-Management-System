@@ -104,7 +104,7 @@ export default function DoctorOrdersPage() {
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-2 shadow-xs self-start sm:self-auto"
+          className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-slate-100 text-xs font-bold transition flex items-center gap-2 shadow-xs self-start sm:self-auto"
         >
           <span>+ Place New Clinical Order</span>
         </button>
@@ -120,7 +120,7 @@ export default function DoctorOrdersPage() {
               onClick={() => setStatusFilter(st)}
               className={`px-3 py-1.5 rounded-lg font-semibold transition ${
                 statusFilter === st
-                  ? "bg-slate-800 text-white"
+                  ? "bg-slate-800 text-slate-100"
                   : "bg-slate-100 text-slate-600 hover:bg-slate-200"
               }`}
             >
@@ -239,11 +239,11 @@ export default function DoctorOrdersPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs">
           <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+            <div className="bg-slate-900 text-slate-100 px-6 py-4 flex items-center justify-between">
               <h3 className="text-sm font-bold">Issue Clinical Doctor Order</h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-white text-sm"
+                className="text-slate-400 hover:text-slate-100 text-sm"
               >
                 ✕
               </button>
@@ -324,7 +324,7 @@ export default function DoctorOrdersPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition flex items-center gap-2 shadow-xs disabled:opacity-50"
+                  className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-slate-100 font-bold transition flex items-center gap-2 shadow-xs disabled:opacity-50"
                 >
                   {submitting ? "Submitting..." : "Send Directive to Ward"}
                 </button>

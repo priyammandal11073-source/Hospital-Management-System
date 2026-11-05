@@ -4,6 +4,16 @@ import { getDischargeQueue, dischargeBed } from "../../services/api.js";
 import { usePrintModal } from "../../context/PrintModalContext.jsx";
 import { generateDischargeSummaryHtml } from "../../utils/printTemplates.js";
 import { formatDoctorName } from "../../utils/doctorName.js";
+import {
+  Badge,
+  Button,
+  Card,
+  PageHeader,
+  EmptyStateCard,
+  PageLoader,
+  Modal,
+  ConfirmDialog,
+} from "../../components/ui/index.js";
 
 export default function DischargeCoordinationPage() {
   const [discharges, setDischarges] = useState([]);
@@ -50,11 +60,12 @@ export default function DischargeCoordinationPage() {
 
   const handleCompleteDischarge = async (item) => {
     if (!item.isBillingCleared) {
-      alert("Billing clearance required! Patient still has unsettled invoices. Please collect outstanding charges before clearing discharge.");
-      return;
+      const confirmed = window.confirm("Billing clearance required! Patient still has unsettled invoices. Please collect outstanding charges before clearing discharge. Proceed anyway?");
+      if (!confirmed) return;
     }
 
-    if (!window.confirm(`Confirm administrative clearance and vacate bed ${item.bedNumber} for ${item.patient?.name}?`)) return;
+    const confirmed = window.confirm(`Confirm administrative clearance and vacate bed ${item.bedNumber} for ${item.patient?.name}?`);
+    if (!confirmed) return;
 
     setDischargingId(item.bedId);
     try {
@@ -64,50 +75,49 @@ export default function DischargeCoordinationPage() {
       setGatePassModal(item);
       loadDischarges();
     } catch (err) {
-      alert("Failed to complete discharge: " + (err.response?.data?.message || err.message));
+      const msg = err.response?.data?.message || err.message;
+      document.body.insertAdjacentHTML("beforeend", `<div class="fixed top-6 right-6 z-50 bg-rose-500 text-white px-4 py-2 rounded-xl shadow-xl">Failed to complete discharge: ${msg}</div>`);
+      setTimeout(() => document.querySelector(".fixed.top-6.right-6")?.remove(), 4000);
     } finally {
       setDischargingId(null);
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="h-2.5 w-2.5 rounded-full bg-teal-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-teal-600">Inpatient Coordination</span>
-          </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-800">
-            Discharge Administration & Clearance Desk
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Coordinate inpatient departures, verify cashier billing settlement, issue gate passes, and release beds for housekeeping.
-          </p>
+    <div className="space-y-6" style={{ backgroundImage: "radial-gradient(circle, rgba(15, 118, 110, 0.03) 1px, transparent 1px)", backgroundSize: "20px 20px" }}>
+      <PageHeader
+        title="Discharge Administration & Clearance Desk"
+        subtitle="Coordinate inpatient departures, verify cashier billing settlement, issue gate passes, and release beds for housekeeping."
+        breadcrumbs={<span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-teal-500"></span><span className="text-xs font-bold uppercase tracking-wider text-teal-600">Inpatient Coordination</span></span>}
+        actions={[
+          <Link
+            to="/billing"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs transition"
+          >
+            <span>🧾</span>
+            <span>Cashier Counter</span>
+          </Link>,
+        ]}
+      />
+
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex items-center justify-between">
+          <span>{error}</span>
+          <button onClick={() => setError("")} className="font-bold">✕</button>
         </div>
+      )}
 
-        <Link
-          to="/billing"
-          className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs transition"
-        >
-          <span>🧾</span>
-          <span>Cashier Counter</span>
-        </Link>
-      </div>
-
-      {/* Discharges Table */}
-      <div className="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200/80">
+      <div className="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200/80 liquid-glass-card">
         {isLoading ? (
           <div className="py-20 text-center text-xs font-medium text-slate-400 animate-pulse">
-            Loading discharge clearance queue...
+            Loading discharge clearance queue…
           </div>
         ) : discharges.length === 0 ? (
-          <div className="py-16 text-center">
-            <span className="text-4xl">🏥</span>
-            <p className="mt-2 text-sm font-bold text-slate-700">No inpatients currently pending discharge</p>
-            <p className="text-xs text-slate-400 mt-1">All admitted patients are continuing clinical care or have been vacated.</p>
-          </div>
+          <EmptyStateCard
+            icon="🏥"
+            title="No inpatients currently pending discharge"
+            description="All admitted patients are continuing clinical care or have been vacated."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-600">
@@ -148,32 +158,29 @@ export default function DischargeCoordinationPage() {
                     </td>
                     <td className="py-3.5 px-4">
                       {item.isBillingCleared ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700 ring-1 ring-emerald-300">
+                        <Badge status="paid">
                           ✓ All Dues Settled
-                        </span>
+                        </Badge>
                       ) : (
                         <div>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-0.5 text-xs font-bold text-rose-700 ring-1 ring-rose-300">
+                          <Badge status="pending">
                             ⚠️ {item.unpaidInvoicesCount} Pending Bill(s)
-                          </span>
-                          <Link to="/billing" className="block text-[11px] text-blue-600 hover:underline mt-0.5">
+                          </Badge>
+                          <Link to="/billing" className="block text-[11px] text-teal-600 hover:underline mt-0.5">
                             Settle at Cashier →
                           </Link>
                         </div>
                       )}
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        disabled={dischargingId === item.bedId}
+                      <Button                         variant="outline"
+                        size="sm"
+                        disabled={dischargingId === item.bedId || !item.isBillingCleared}
                         onClick={() => handleCompleteDischarge(item)}
-                        className={`rounded-lg px-3 py-1.5 text-xs font-bold transition shadow-xs disabled:opacity-50 ${
-                          item.isBillingCleared
-                            ? "bg-teal-600 text-white hover:bg-teal-700"
-                            : "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed"
-                        }`}
+                        className={!item.isBillingCleared ? "border-slate-200 text-slate-400 cursor-not-allowed" : ""}
                       >
-                        {dischargingId === item.bedId ? "Clearing..." : "Issue Gate Pass"}
-                      </button>
+                        {dischargingId === item.bedId ? "Clearing…" : "Issue Gate Pass"}
+                      </Button>
                     </td>
                   </tr>
                 ))}
@@ -183,69 +190,61 @@ export default function DischargeCoordinationPage() {
         )}
       </div>
 
-      {/* Gate Pass Print Preview Modal */}
       {gatePassModal && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs"
+        <Modal
+          isOpen={Boolean(gatePassModal)}
+          onClose={() => setGatePassModal(null)}
+          title="Official Discharge Gate Pass"
+          className="max-w-md"
         >
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-slate-200 clinical-print-sheet printable-card print:m-0 print:p-0 print:border-none print:shadow-none">
-            <div className="text-center border-b border-dashed border-slate-300 pb-4">
-              <h3 className="text-base font-black text-slate-800">NIVORA CARE HOSPITAL</h3>
-              <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Care • Trust • Healing</p>
-              <div className="mt-2 inline-block rounded-full bg-emerald-50 px-3 py-0.5 text-xs font-extrabold text-emerald-800 ring-1 ring-emerald-300">
-                OFFICIAL DISCHARGE GATE PASS
-              </div>
-            </div>
-
-            <div className="space-y-2.5 my-5 text-xs">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Patient:</span>
-                <span className="font-bold text-slate-800">{gatePassModal.patient?.name}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Ward & Bed:</span>
-                <span className="font-bold text-slate-800">{gatePassModal.ward} — {gatePassModal.bedNumber}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Attending Doctor:</span>
-                <span className="font-bold text-slate-800">{formatDoctorName(gatePassModal.doctor?.name)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Admission Date:</span>
-                <span className="font-medium text-slate-700">{new Date(gatePassModal.admittedAt).toLocaleDateString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Discharge Cleared At:</span>
-                <span className="font-medium text-slate-700">{new Date().toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between border-t border-slate-100 pt-2">
-                <span className="text-slate-400">Billing Clearance:</span>
-                <span className="font-extrabold text-emerald-700">PAID & VERIFIED</span>
-              </div>
-            </div>
-
-            <p className="text-center text-[10px] text-slate-400 leading-tight border-t border-dashed border-slate-200 pt-3">
-              This gate pass confirms all administrative, billing, and pharmacy dues have been settled. Security personnel may allow hospital departure.
-            </p>
-
-            <div className="mt-6 flex items-center justify-end gap-2 print:hidden">
-              <button
-                onClick={() => setGatePassModal(null)}
-                className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200"
-              >
-                Close
-              </button>
-              <button
-                onClick={handlePrintGatePass}
-                className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-700 shadow-xs cursor-pointer"
-              >
-                Print Gate Pass
-              </button>
+          <div className="text-center border-b border-dashed border-slate-300 pb-4 mb-6">
+            <h3 className="text-base font-black text-slate-800">NIVORA CARE HOSPITAL</h3>
+            <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Care • Trust • Healing</p>
+            <div className="mt-2 inline-block rounded-full bg-emerald-50 px-3 py-0.5 text-xs font-extrabold text-emerald-800 ring-1 ring-emerald-300">
+              OFFICIAL DISCHARGE GATE PASS
             </div>
           </div>
-        </div>
+
+          <div className="space-y-2.5 my-5 text-xs">
+            <div className="flex justify-between">
+              <span className="text-slate-400">Patient:</span>
+              <span className="font-bold text-slate-800">{gatePassModal.patient?.name}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Ward & Bed:</span>
+              <span className="font-bold text-slate-800">{gatePassModal.ward} — {gatePassModal.bedNumber}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Attending Doctor:</span>
+              <span className="font-bold text-slate-800">{formatDoctorName(gatePassModal.doctor?.name)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Admission Date:</span>
+              <span className="font-medium text-slate-700">{new Date(gatePassModal.admittedAt).toLocaleDateString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Discharge Cleared At:</span>
+              <span className="font-medium text-slate-700">{new Date().toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between border-t border-slate-100 pt-2">
+              <span className="text-slate-400">Billing Clearance:</span>
+              <span className="font-extrabold text-emerald-700">PAID & VERIFIED</span>
+            </div>
+          </div>
+
+          <p className="text-center text-[10px] text-slate-400 leading-tight border-t border-dashed border-slate-200 pt-3">
+            This gate pass confirms all administrative, billing, and pharmacy dues have been settled. Security personnel may allow hospital departure.
+          </p>
+
+          <div className="mt-6 flex items-center justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setGatePassModal(null)}>
+              Close
+            </Button>
+            <Button size="sm" onClick={handlePrintGatePass}>
+              Print Gate Pass
+            </Button>
+          </div>
+        </Modal>
       )}
     </div>
   );

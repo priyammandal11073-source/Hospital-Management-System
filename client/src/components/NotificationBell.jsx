@@ -112,14 +112,28 @@ export default function NotificationBell({ isPatient = false }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/70 bg-white/70 backdrop-blur-md text-slate-700 hover:bg-white hover:text-sky-700 shadow-sm transition active:scale-[0.97] liquid-glass-button"
+        className="group relative flex h-8.5 w-8.5 items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.97] cursor-pointer"
+        aria-label="View notifications"
         title="Notifications"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
-        <span className="text-lg">🔔</span>
+        <svg
+          className="h-4.5 w-4.5 text-slate-600 group-hover:text-teal-700 transition-colors duration-150"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+          />
+        </svg>
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-rose-600 text-[10px] font-black text-white shadow-md animate-pulse">
+          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-rose-600 text-[9px] font-bold text-white shadow-xs animate-pop-in">
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
@@ -127,9 +141,9 @@ export default function NotificationBell({ isPatient = false }) {
 
       {/* Dropdown Drawer */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/95 backdrop-blur-2xl shadow-2xl border border-white/60 z-50 overflow-hidden animate-dropdown-in animate-action-menu">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/95 backdrop-blur-xl shadow-xl border border-slate-200/50 z-50 overflow-hidden animate-dropdown-in animate-action-menu">
           {/* Header */}
-          <div className="p-4 bg-white/50 border-b border-white/60 flex items-center justify-between">
+          <div className="p-3.5 sm:p-4 bg-slate-50/80 border-b border-slate-200/80 flex items-center justify-between">
             <div>
               <h3 className="text-sm font-black text-slate-900">Notifications</h3>
               <p className="text-[11px] text-slate-500">

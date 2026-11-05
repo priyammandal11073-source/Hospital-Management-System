@@ -7,9 +7,9 @@ export default defineConfig({
     proxy: {
       // Requests beginning with /api are forwarded to the live Render backend
       "/api": {
-        target: process.env.VITE_PROXY_TARGET || "https://nivora-care-hospital.onrender.com",
+        target: process.env.VITE_PROXY_TARGET || "http://127.0.0.1:5000",
         changeOrigin: true,
-        secure: true,
+        secure: false,
       },
     },
   },

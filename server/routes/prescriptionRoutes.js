@@ -19,7 +19,7 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(protect, restrictTo("doctor", "emergency"), validate(createPrescriptionSchema), createPrescription)
+  .post(protect, restrictTo("doctor", "emergency", "admin"), validate(createPrescriptionSchema), createPrescription)
   .get(protect, getAllPrescriptions);
 
 router
