@@ -3,6 +3,7 @@ import crypto from "crypto";
 import env from "../config/env.js";
 import Billing from "../models/Billing.js";
 import { diagnosticSyncService } from "../services/diagnosticSyncService.js";
+import { isBillingAuthorizedStaff } from "../utils/roleHelpers.js";
 
 // Helper to get Razorpay instance
 const getRazorpayInstance = () => {
@@ -51,8 +52,7 @@ export const createOrder = async (req, res) => {
         });
       }
     } else if (staffUser) {
-      const ALLOWED_BILLING_STAFF = ["admin", "receptionist", "pharmacist", "emergency", "doctor"];
-      if (!ALLOWED_BILLING_STAFF.includes(staffUser.role)) {
+      if (!isBillingAuthorizedStaff(staffUser.role)) {
         return res.status(403).json({
           success: false,
           message: "Forbidden: Staff role not authorized for billing operations.",
@@ -174,8 +174,7 @@ export const verifyPayment = async (req, res) => {
         });
       }
     } else if (staffUser) {
-      const ALLOWED_BILLING_STAFF = ["admin", "receptionist", "pharmacist", "emergency", "doctor"];
-      if (!ALLOWED_BILLING_STAFF.includes(staffUser.role)) {
+      if (!isBillingAuthorizedStaff(staffUser.role)) {
         return res.status(403).json({
           success: false,
           message: "Forbidden: Staff role not authorized for billing verification.",

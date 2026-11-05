@@ -35,5 +35,19 @@ describe("PageHeader component", () => {
     expect(screen.getByTestId("custom-crumb")).toBeDefined();
     expect(screen.getByText("Specialist POS")).toBeDefined();
   });
+
+  it("renders a single object breadcrumb without crashing React", () => {
+    render(
+      <MemoryRouter>
+        <PageHeader
+          title="Single Crumb View"
+          breadcrumbs={{ label: "Direct Crumb", to: "/direct" }}
+        />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText("Single Crumb View")).toBeDefined();
+    expect(screen.getByText("Direct Crumb")).toBeDefined();
+  });
 });
 

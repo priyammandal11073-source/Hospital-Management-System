@@ -235,6 +235,8 @@ export const getNavigationForRole = (role, user = null) => {
   // =========================================================================
   if (
     [
+      "diagnostic",
+      "technician",
       "diagnostic_admin",
       "pathologist",
       "radiologist",

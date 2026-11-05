@@ -43,7 +43,7 @@ export const getMyAppointments = async (filters = {}) => {
 };
 
 export const getMyPatients = async () => {
-  const response = await httpClient.get("/api/doctor/patients");
+  const response = await httpClient.get("/api/patients");
   return response.data;
 };
 

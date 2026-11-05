@@ -37,6 +37,7 @@
 | **M-25** | **High-Performance Query Aggregation & Telemetry Caching** | Phase 8 | High | None | Consolidated 11 Bed count queries into a single MongoDB `$group` aggregation pipeline; consolidated Diagnostic queries with `$facet`. Added a 5-second in-memory telemetry cache reducing telemetry latency from 1,944ms to <820ms (and 0ms on cache hits). Added `.lean()` across all read-only list queries. | ✅ **DONE** (97 server tests pass) |
 | **M-26** | **Universal Payment Gateway & Diagnostic Synchronization** | Phase 9 | High | M-13 | Overhauled payment processing: (1) Added `protectStaffOrPatient` to `PATCH /api/billing/:id/payment` allowing owner-patients to settle bills safely. (2) Secured Razorpay order creation and HMAC SHA-256 verification with fallback modal (`<RazorpayPaymentBox>`). (3) Automated two-way diagnostic synchronization on payment. (4) Dynamic NPCI-compliant UPI QR codes & deep-links. (5) Diagnostic cashier workbench in `DiagnosticBillingPage`. (6) Dual token isolation and redirect preservation on patient login/registration. | ✅ **DONE** (All payment flows verified) |
 | **M-27** | **Scalable Architecture, Custom Hooks & Modular Clean Structure** | Phase 11 | High | M-07, M-08 | (1) Reorganized flat components into domain folders (`beds`, `billing`, `forms`, `layout`, `auth`, `clinical`). (2) Extracted business logic into custom hooks (`usePatients`, `useAppointments`, `useBilling`, `useBeds`, `useVitals`, `useDebounce`, `useMediaQuery`, `useNotifications`). (3) Centralized notification & alert state via `NotificationContext`. (4) Removed orphaned dead code. (5) Standardized error normalization via `errorHandler.js`. (6) Added `docs/CODEBASE_STRUCTURE.md`. | ✅ **DONE** (155 tests pass, 0 build errors) |
+| **M-28** | **Comprehensive Full-Stack Debugging & Error Resilience** | Phase 11 | High | M-26, M-27 | (1) Hardened `PageHeader.jsx` breadcrumb parser to safely normalize and render arrays of objects/elements or single objects, eliminating React child errors (`{label, to}`). (2) Fixed `/api/doctor/patients` 404 by routing to `getAllPatients` and updating `patientApi.js` to call `/api/patients`. (3) Fixed `DoctorMobileDashboard.jsx` telemedicine binding to call `getDoctorTeleconsults()`. (4) Expanded billing authorization via `isBillingAuthorizedStaff` to cover accountants, finance admins, and super admins. (5) Registered diagnostic subroles (`"diagnostic"`, `"technician"`) in `Dashboard.jsx` and `navigationConfig.jsx`. | ✅ **DONE** (164 tests pass, 0 build errors) |
 
 ---
 
@@ -63,9 +64,10 @@
 ## 4. Verification & Health Summary
 
 ```
-Server Vitest Tests:     97 passed (97 total across 6 test files)   - 100% PASS (1.45s)
-Client Vitest Tests:     48 passed (48 total across 7 test files)   - 100% PASS (2.16s)
-Client Production Build: 979 modules transformed                    - 0 errors, ~6.88s build time
+Server Vitest Tests:     100 passed (100 total across 7 test files)  - 100% PASS (2.90s)
+Client Vitest Tests:     64 passed (64 total across 10 test files)  - 100% PASS (7.43s)
+Total Passing Tests:     164 passing tests across full-stack
+Client Production Build: 990 modules transformed                    - 0 errors, built in 12.01s
 Runtime Status:          Both Backend and Frontend operational, 60fps frame rate, zero jank
 Payment Gateways:        Razorpay, NPCI UPI, Cards, NetBanking, Insurance, Cash - Fully Verified
 ```

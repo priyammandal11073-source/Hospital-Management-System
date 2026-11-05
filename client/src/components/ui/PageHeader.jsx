@@ -23,44 +23,49 @@ export default function PageHeader({
   const renderBreadcrumbs = () => {
     if (!breadcrumbs) return null;
 
-    if (Array.isArray(breadcrumbs)) {
-      return breadcrumbs.map((crumb, idx) => {
-        const isLast = idx === breadcrumbs.length - 1;
+    if (React.isValidElement(breadcrumbs)) {
+      return breadcrumbs;
+    }
 
-        if (React.isValidElement(crumb)) {
-          return <React.Fragment key={idx}>{crumb}</React.Fragment>;
-        }
+    const list = Array.isArray(breadcrumbs) ? breadcrumbs : [breadcrumbs];
 
-        if (typeof crumb === "object" && crumb !== null && "label" in crumb) {
-          return (
-            <React.Fragment key={crumb.to || crumb.label || idx}>
-              {crumb.to && !crumb.active ? (
-                <Link
-                  to={crumb.to}
-                  className="hover:text-teal-800 transition-colors"
-                >
-                  {crumb.label}
-                </Link>
-              ) : (
-                <span className={crumb.active ? "text-slate-900 font-bold" : "text-slate-500"}>
-                  {crumb.label}
-                </span>
-              )}
-              {!isLast && <span className="text-slate-300 select-none">/</span>}
-            </React.Fragment>
-          );
-        }
+    return list.map((crumb, idx) => {
+      const isLast = idx === list.length - 1;
+
+      if (React.isValidElement(crumb)) {
+        return <React.Fragment key={idx}>{crumb}</React.Fragment>;
+      }
+
+      if (typeof crumb === "object" && crumb !== null) {
+        const label = crumb.label || crumb.title || crumb.name || (crumb.to ? String(crumb.to) : "");
+        if (!label) return null;
 
         return (
-          <React.Fragment key={idx}>
-            <span>{String(crumb)}</span>
+          <React.Fragment key={crumb.to || label || idx}>
+            {crumb.to && !crumb.active ? (
+              <Link
+                to={crumb.to}
+                className="hover:text-teal-800 transition-colors"
+              >
+                {label}
+              </Link>
+            ) : (
+              <span className={crumb.active ? "text-slate-900 font-bold" : "text-slate-500"}>
+                {label}
+              </span>
+            )}
             {!isLast && <span className="text-slate-300 select-none">/</span>}
           </React.Fragment>
         );
-      });
-    }
+      }
 
-    return breadcrumbs;
+      return (
+        <React.Fragment key={idx}>
+          <span>{String(crumb)}</span>
+          {!isLast && <span className="text-slate-300 select-none">/</span>}
+        </React.Fragment>
+      );
+    });
   };
 
   return (

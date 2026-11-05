@@ -1,5 +1,6 @@
 import express from "express";
 import { protect, restrictTo } from "../middleware/authMiddleware.js";
+import { getAllPatients } from "../controllers/patientController.js";
 import {
   getDoctorDashboard,
   getConsultationBundle,
@@ -24,6 +25,9 @@ const router = express.Router();
 // Protect all routes - available to doctors and administrators
 router.use(protect);
 router.use(restrictTo("doctor", "admin"));
+
+// Doctor Assigned Patients
+router.get("/patients", getAllPatients);
 
 // Dashboard & Clinical KPIs
 router.get(["/dashboard", "/worklist", "/telemetry"], getDoctorDashboard);

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMyAppointments, getMyPatients, getMyTelemedicine, startTeleconsult, endTeleconsult } from "../../services/api.js";
+import { getMyAppointments, getMyPatients, getDoctorTeleconsults, startTeleconsult, endTeleconsult } from "../../services/api.js";
 import ActionMenu from "../../components/ui/ActionMenu.jsx";
 
 const DoctorMobileDashboard = () => {
@@ -30,11 +30,11 @@ const DoctorMobileDashboard = () => {
         const [appts, myPatients, tele] = await Promise.all([
           getMyAppointments(),
           getMyPatients(),
-          getMyTelemedicine(),
+          getDoctorTeleconsults(),
         ]);
-        setAppointments(appts.appointments || []);
-        setPatients(myPatients.patients || []);
-        setTeleconsults(tele.teleconsults || []);
+        setAppointments(appts?.appointments || []);
+        setPatients(myPatients?.patients || []);
+        setTeleconsults(tele?.appointments || tele?.teleconsults || []);
       } catch (err) { console.error(err); }
       finally { setIsLoading(false); }
 

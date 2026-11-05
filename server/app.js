@@ -125,6 +125,7 @@ const createApp = () => {
   app.use("/api/appointments", appointmentRoutes);
   app.use("/api/billing", billingRoutes);
   app.use("/api/doctors", doctorRoutes);
+  app.use("/api/doctor", doctorRoutes);
   app.use("/api/patients", patientRoutes);
   app.use("/api/patient-auth", patientAuthRoutes);
   app.use("/api/patient-portal", patientPortalRoutes);

@@ -2880,6 +2880,8 @@ function Dashboard() {
 
     if (
       [
+        "diagnostic",
+        "technician",
         "diagnostic_admin",
         "pathologist",
         "radiologist",

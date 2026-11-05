@@ -22,15 +22,15 @@ router
   .route("/")
   .post(
     protect,
-    restrictTo("admin", "receptionist"),
+    restrictTo("admin", "super_admin", "finance_admin", "accountant", "receptionist"),
     validate(createBillingSchema),
     createBilling
   )
   .get(protect, getAllBillings);
 
 // These routes must be declared before /:id, otherwise "summary", "revenue-summary", or "analytics" is treated as an ID.
-router.get("/summary", protect, restrictTo("admin"), getRevenueSummary);
-router.get("/revenue-summary", protect, restrictTo("admin"), getRevenueSummary);
+router.get("/summary", protect, restrictTo("admin", "super_admin", "finance_admin", "accountant"), getRevenueSummary);
+router.get("/revenue-summary", protect, restrictTo("admin", "super_admin", "finance_admin", "accountant"), getRevenueSummary);
 router.get("/analytics", protect, getRevenueAnalytics);
 
 router
@@ -44,7 +44,7 @@ router.patch(
   updatePaymentStatus
 );
 
-router.post("/:id/send-email", protect, restrictTo("admin", "receptionist"), sendBillingEmail);
-router.post("/:id/send-sms", protect, restrictTo("admin", "receptionist"), sendPaymentLinkSmsHandler);
+router.post("/:id/send-email", protect, restrictTo("admin", "super_admin", "finance_admin", "accountant", "receptionist"), sendBillingEmail);
+router.post("/:id/send-sms", protect, restrictTo("admin", "super_admin", "finance_admin", "accountant", "receptionist"), sendPaymentLinkSmsHandler);
 
 export default router;

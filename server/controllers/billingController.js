@@ -9,6 +9,7 @@ import env from "../config/env.js";
 import asyncHandler from "../middleware/asyncHandler.js";
 import AppError from "../utils/AppError.js";
 import { requireDb } from "../utils/requireDb.js";
+import { isBillingAuthorizedStaff } from "../utils/roleHelpers.js";
 
 const paymentStatuses = ["pending", "paid", "partially_paid", "cancelled", "refunded"];
 const paymentMethods = ["cash", "card", "insurance", "upi", "netbanking", "wallet", "cheque", "razorpay"];
@@ -232,7 +233,7 @@ export const updatePaymentStatus = asyncHandler(async (req, res) => {
 
   await requireDb();
 
-  const isAuthorizedStaff = req.user && ["admin", "receptionist", "nurse", "pharmacist", "doctor", "emergency"].includes(req.user.role);
+  const isAuthorizedStaff = req.user && isBillingAuthorizedStaff(req.user.role);
   const patientId = (req.patient?.id || req.patient?._id)?.toString();
 
   const billingDoc = await Billing.findById(req.params.id);

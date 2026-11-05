@@ -10,6 +10,7 @@ import {
   addDoctorLeave,
   removeDoctorLeave,
 } from "../controllers/doctorController.js";
+import { getAllPatients } from "../controllers/patientController.js";
 import { protect, restrictTo, optionalProtect } from "../middleware/authMiddleware.js";
 import { validate } from "../middleware/validate.js";
 import {
@@ -22,6 +23,9 @@ const router = express.Router();
 
 // Current doctor's own dedicated profile and metrics
 router.get("/me", protect, restrictTo("doctor"), getCurrentDoctorProfile);
+
+// Doctor assigned patient directory
+router.get("/patients", protect, restrictTo("doctor", "admin", "super_admin", "clinical_admin"), getAllPatients);
 
 router
   .route("/")
