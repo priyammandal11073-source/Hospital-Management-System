@@ -109,7 +109,10 @@ export default function DataTable({
                   setCurrentPage(1);
                 }}
                 placeholder={searchPlaceholder}
-                className="w-full liquid-glass-subtle rounded-xl px-3.5 py-2 pl-9 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600/25 focus:ring-offset-1 focus:border-teal-600 transition-[border-color,box-shadow,background-color] duration-150 ease-out"
+                autoCapitalize="none"
+                autoCorrect="off"
+                enterKeyHint="search"
+                className="w-full liquid-glass-subtle rounded-xl px-3.5 py-2 pl-9 text-base sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-600/25 focus:ring-offset-1 focus:border-teal-600 transition-[border-color,box-shadow,background-color] duration-150 ease-out"
               />
               <svg
                 className="w-4 h-4 text-slate-400 absolute left-3 top-3"
@@ -143,7 +146,7 @@ export default function DataTable({
       )}
 
       {/* Table Content */}
-      <div className="overflow-x-auto">
+      <div className="table-responsive-container overflow-x-auto overscroll-contain">
         {loading ? (
           <div className="p-4">
             <SkeletonTable rows={pageSize > 10 ? 10 : pageSize} cols={columns.length || 5} />

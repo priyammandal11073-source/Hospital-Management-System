@@ -1,10 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  getNotifications,
-  markNotificationRead,
-  markAllNotificationsRead,
-} from "../services/api.js";
+import { useNotifications } from "../hooks/index.js";
 
 const TYPE_ICONS = {
   appointment_booked: "📅",
@@ -19,49 +15,19 @@ const TYPE_ICONS = {
 
 export default function NotificationBell({ isPatient = false }) {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [permission, setPermission] = useState(
-    typeof Notification !== "undefined" ? Notification.permission : "default"
-  );
   const dropdownRef = useRef(null);
 
-  const fetchNotifs = async () => {
-    try {
-      const data = await getNotifications();
-      if (data) {
-        if (
-          typeof Notification !== "undefined" &&
-          Notification.permission === "granted" &&
-          data.unreadCount > unreadCount &&
-          data.notifications?.length > 0
-        ) {
-          const newest = data.notifications[0];
-          if (!newest.isRead) {
-            new Notification(newest.title, {
-              body: newest.message,
-              icon: "https://cdn-icons-png.flaticon.com/512/3063/3063822.png",
-            });
-          }
-        }
+  const {
+    notifications,
+    unreadCount,
+    permission,
+    requestPermission,
+    markRead,
+    markAllRead,
+  } = useNotifications();
 
-        setNotifications(data.notifications || []);
-        setUnreadCount(data.unreadCount || 0);
-      }
-    } catch (err) {
-      // silently handle when not logged in
-    }
-  };
-
-  useEffect(() => {
-    fetchNotifs();
-    const interval = setInterval(fetchNotifs, 15000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Close dropdown on outside click
+  // Close dropdown on outside click or tap
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -69,41 +35,19 @@ export default function NotificationBell({ isPatient = false }) {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
   }, []);
 
-  const requestBrowserPermission = async () => {
-    if (typeof Notification !== "undefined") {
-      const res = await Notification.requestPermission();
-      setPermission(res);
-      if (res === "granted") {
-        new Notification("Nivora Care Alerts Enabled", {
-          body: "You will receive real-time appointment and hospital updates!",
-        });
-      }
+  const handleNotificationClick = (id, link) => {
+    markRead(id);
+    if (link) {
+      setIsOpen(false);
+      navigate(link);
     }
-  };
-
-  const handleMarkRead = async (id, link) => {
-    try {
-      await markNotificationRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
-      );
-      setUnreadCount((c) => Math.max(0, c - 1));
-      if (link) {
-        setIsOpen(false);
-        navigate(link);
-      }
-    } catch (err) {}
-  };
-
-  const handleMarkAllRead = async () => {
-    try {
-      await markAllNotificationsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
-    } catch (err) {}
   };
 
   return (
@@ -141,7 +85,7 @@ export default function NotificationBell({ isPatient = false }) {
 
       {/* Dropdown Drawer */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white/95 backdrop-blur-xl shadow-xl border border-slate-200/50 z-50 overflow-hidden animate-dropdown-in animate-action-menu">
+        <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-x-auto sm:right-0 sm:top-auto sm:mt-2 w-auto sm:w-96 max-w-sm ml-auto rounded-2xl bg-white/95 backdrop-blur-xl shadow-xl border border-slate-200/50 z-50 overflow-hidden animate-dropdown-in animate-action-menu">
           {/* Header */}
           <div className="p-3.5 sm:p-4 bg-slate-50/80 border-b border-slate-200/80 flex items-center justify-between">
             <div>
@@ -154,7 +98,7 @@ export default function NotificationBell({ isPatient = false }) {
               {unreadCount > 0 && (
                 <button
                   type="button"
-                  onClick={handleMarkAllRead}
+                  onClick={markAllRead}
                   className="text-xs font-bold text-sky-700 hover:underline"
                 >
                   Mark all read
@@ -169,7 +113,7 @@ export default function NotificationBell({ isPatient = false }) {
               <span className="text-sky-900 font-medium">Get instant desktop alerts</span>
               <button
                 type="button"
-                onClick={requestBrowserPermission}
+                onClick={requestPermission}
                 className="bg-sky-700 hover:bg-sky-800 text-white font-bold px-2.5 py-1 rounded-lg text-[10px] shadow-sm transition active:scale-[0.97]"
               >
                 Enable Push
@@ -190,7 +134,7 @@ export default function NotificationBell({ isPatient = false }) {
                 return (
                   <div
                     key={notif._id}
-                    onClick={() => handleMarkRead(notif._id, notif.link)}
+                    onClick={() => handleNotificationClick(notif._id, notif.link)}
                     className={`p-3.5 flex items-start gap-3 hover:bg-slate-50 cursor-pointer transition duration-150 ${
                       !notif.isRead ? "bg-sky-50/40 font-semibold" : ""
                     }`}

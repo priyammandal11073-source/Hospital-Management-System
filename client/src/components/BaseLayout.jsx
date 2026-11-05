@@ -33,6 +33,7 @@ function BaseLayout({
   const location = useLocation();
   const config = getRoleConfig(role, user, patient);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     try {
       return localStorage.getItem("nivora_sidebar_collapsed") === "true";
@@ -40,6 +41,18 @@ function BaseLayout({
       return false;
     }
   });
+
+  // Watch for active full-screen modals to smoothly fade out the mobile bottom nav
+  useEffect(() => {
+    const checkModal = () => {
+      const hasModal = Boolean(document.querySelector('[role="dialog"]:not([data-mobile-sheet="true"])'));
+      setIsModalOpen(hasModal);
+    };
+    checkModal();
+    const observer = new MutationObserver(checkModal);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["role", "aria-modal"] });
+    return () => observer.disconnect();
+  }, []);
 
   // Sync collapsed state to localStorage
   useEffect(() => {
@@ -218,7 +231,7 @@ function BaseLayout({
               )}
               <div className="flex flex-col justify-center min-w-0 leading-tight">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs sm:text-[13px] font-semibold tracking-tight text-slate-900 truncate">
+                  <span className="text-xs sm:text-[13px] font-semibold tracking-tight text-slate-900 truncate max-w-[110px] sm:max-w-none">
                     {role === "doctor" && displayName
                       ? formatDoctorName(displayName)
                       : config.badge || config.label || (role ? role.toUpperCase() : "Portal")}
@@ -502,11 +515,11 @@ function BaseLayout({
           data-pharmacy-portal={role === "pharmacist" || location.pathname.startsWith("/pharmacy") ? "true" : undefined}
           data-diagnostic-portal={role === "technician" || role === "pathologist" || role === "radiologist" || location.pathname.startsWith("/diagnostic") || location.pathname.startsWith("/radiology") ? "true" : undefined}
         >
-          <div className="p-3 sm:p-5 md:p-6 lg:p-8 pb-[calc(4rem+max(env(safe-area-inset-bottom,0px),8px))] md:pb-6 lg:pb-8 flex-1">
+          <div className="p-3 sm:p-5 md:p-6 lg:p-8 pb-4 md:pb-6 lg:pb-8 flex-1">
             <Outlet />
           </div>
           {/* Global Enterprise Portal Footer inside scrollable main container */}
-          <div className="w-full px-3 sm:px-5 md:px-6 lg:px-8 pb-[calc(4rem+max(env(safe-area-inset-bottom,0px),8px))] md:pb-6 pt-2 flex-shrink-0" data-main-footer>
+          <div className="w-full px-3 sm:px-5 md:px-6 lg:px-8 pb-[calc(4.5rem+max(env(safe-area-inset-bottom,0px),8px))] md:pb-6 pt-2 flex-shrink-0" data-main-footer>
             <Footer />
           </div>
         </main>
@@ -530,6 +543,7 @@ function BaseLayout({
         user={user}
         mobileOpen={mobileOpen}
         onToggleMenu={() => setMobileOpen((prev) => !prev)}
+        isModalOpen={isModalOpen}
       />
 
       {/* ================= HIGHLY OPTIMIZED MOBILE MENU SHEET ================= */}

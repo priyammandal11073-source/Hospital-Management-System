@@ -42,32 +42,32 @@ export default function MobileBottomNav({
               onClick={() => {
                 if (mobileOpen) onToggleMenu();
               }}
-              className={`group flex-1 min-w-[48px] min-h-[48px] flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-colors duration-150 ease-out touch-manipulation select-none cursor-pointer active:scale-[0.98] ${
+              className={`flex-1 min-w-[48px] min-h-[48px] flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-[transform,color] duration-150 ease-out touch-manipulation select-none cursor-pointer active:scale-[0.94] ${
                 active
-                  ? "text-teal-800 font-semibold"
-                  : "text-slate-500 hover:text-teal-800 active:text-teal-800 font-medium"
+                  ? "text-teal-900 font-semibold"
+                  : "text-slate-500 hover:text-teal-800 font-medium"
               }`}
             >
               <div
-                className={`relative flex items-center justify-center h-8 w-11 rounded-full transition-all duration-150 ease-out group-active:scale-95 ${
+                className={`relative flex items-center justify-center h-8 w-11 rounded-full transition-colors duration-150 ease-out ${
                   active
                     ? "bg-teal-700 text-white shadow-xs"
-                    : "text-slate-500 group-hover:bg-teal-50 group-active:bg-teal-100/70"
+                    : "text-slate-500 hover:bg-teal-50/70"
                 }`}
               >
                 <MobileIcon name={tab.iconName} className="h-5 w-5" />
-                {active && (
-                  <span className="absolute -top-0.5 right-1.5 h-1.5 w-1.5 rounded-full bg-slate-900 ring-2 ring-white animate-pop-in" />
+                {tab.badge && (
+                  <span className="absolute -top-0.5 right-1 h-2 w-2 rounded-full bg-rose-600 ring-2 ring-white" />
                 )}
               </div>
-              <span className="text-[10px] tracking-tight truncate max-w-[64px] leading-tight mt-0.5 font-medium">
+              <span className="text-[10px] tracking-tight truncate max-w-[64px] leading-tight mt-0.5">
                 {tab.label}
               </span>
             </NavLink>
           );
         })}
 
-        {/* 5th Tab: Menu Drawer Toggle with Active Indicator */}
+        {/* 5th Tab: Menu Drawer Toggle */}
         <button
           type="button"
           onClick={(e) => {
@@ -77,25 +77,22 @@ export default function MobileBottomNav({
           }}
           aria-expanded={mobileOpen}
           aria-label={mobileOpen ? "Close menu" : "Open all navigation menu"}
-          className={`group flex-1 min-w-[48px] min-h-[48px] flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-colors duration-150 ease-out touch-manipulation select-none cursor-pointer active:scale-[0.98] ${
+          className={`flex-1 min-w-[48px] min-h-[48px] flex flex-col items-center justify-center py-1 px-1 rounded-xl transition-[transform,color] duration-150 ease-out touch-manipulation select-none cursor-pointer active:scale-[0.94] ${
             mobileOpen
-              ? "text-teal-800 font-semibold"
-              : "text-slate-500 hover:text-teal-800 active:text-teal-800 font-medium"
+              ? "text-teal-900 font-semibold"
+              : "text-slate-500 hover:text-teal-800 font-medium"
           }`}
         >
           <div
-            className={`relative flex items-center justify-center h-8 w-11 rounded-full transition-all duration-150 ease-out group-active:scale-95 ${
+            className={`relative flex items-center justify-center h-8 w-11 rounded-full transition-colors duration-150 ease-out ${
               mobileOpen
                 ? "bg-teal-700 text-white font-semibold shadow-xs"
-                : "text-slate-600 group-hover:bg-teal-50 group-active:bg-teal-100/70"
+                : "text-slate-600 hover:bg-teal-50/70"
             }`}
           >
             <MobileIcon name={mobileOpen ? "close" : "menu"} className="h-5 w-5" />
-            {!mobileOpen && (
-              <span className="absolute -top-0.5 right-1 h-2 w-2 rounded-full bg-slate-900 ring-2 ring-white animate-pop-in" />
-            )}
           </div>
-          <span className="text-[10px] tracking-tight truncate max-w-[64px] leading-tight mt-0.5 font-medium">
+          <span className="text-[10px] tracking-tight truncate max-w-[64px] leading-tight mt-0.5">
             {mobileOpen ? "Close" : "Menu"}
           </span>
         </button>

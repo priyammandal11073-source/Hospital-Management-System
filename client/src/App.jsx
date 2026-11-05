@@ -7,6 +7,7 @@ import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import PageLoader from "./components/ui/PageLoader.jsx";
 import Toaster from "./components/ui/Toaster.jsx";
 import { PrintModalProvider } from "./context/PrintModalContext.jsx";
+import { NotificationProvider } from "./context/NotificationContext.jsx";
 import usePageTitle from "./hooks/usePageTitle.js";
 
 // Core Staff & Common Pages (Lazy Loaded)
@@ -156,8 +157,9 @@ function App() {
 
   return (
     <PrintModalProvider>
-      <Suspense fallback={<PageLoader />}>
-      <Routes>
+      <NotificationProvider>
+        <Suspense fallback={<PageLoader />}>
+        <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/patient/login" element={<PatientLogin />} />
         <Route path="/patient/register" element={<PatientRegister />} />
@@ -341,8 +343,9 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
-    <Toaster />
-  </PrintModalProvider>
+      <Toaster />
+      </NotificationProvider>
+    </PrintModalProvider>
   );
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import HospitalLogo from "../HospitalLogo.jsx";
 import { getNavigationForRole } from "../../config/navigationConfig.jsx";
@@ -17,16 +17,46 @@ export default function MobileMenuSheet({
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [dragY, setDragY] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const startYRef = useRef(0);
 
   const navConfig = useMemo(() => getNavigationForRole(role, user), [role, user]);
 
-  // Reset search when menu opens/closes or route changes
+  // Reset drag and search state when sheet closes
   useEffect(() => {
     if (!isOpen) {
       setSearchQuery("");
       setSelectedCategory("all");
+      setDragY(0);
+      setIsDragging(false);
     }
   }, [isOpen]);
+
+  // Touch handlers for direct-manipulation swipe down to dismiss
+  const handleTouchStart = (e) => {
+    startYRef.current = e.touches[0].clientY;
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    const deltaY = e.touches[0].clientY - startYRef.current;
+    if (deltaY > 0) {
+      setDragY(deltaY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    if (dragY > 75) {
+      setDragY(0);
+      onClose();
+    } else {
+      setDragY(0);
+    }
+  };
 
   useEffect(() => {
     onClose();
@@ -103,17 +133,31 @@ export default function MobileMenuSheet({
         inert={!isOpen}
         data-mobile-sheet="true"
         aria-label="Portal Navigation Menu"
-        className={`fixed bottom-0 inset-x-0 z-50 w-full max-h-[92vh] flex flex-col rounded-t-[32px] liquid-glass-elevated shadow-2xl overflow-hidden transition-[transform,visibility] duration-[220ms] ease-out ${
-          isOpen ? "translate-y-0 visible" : "translate-y-full invisible"
+        style={{
+          transform: isOpen ? (dragY > 0 ? `translateY(${dragY}px)` : "translateY(0)") : "translateY(100%)",
+          transition: isDragging ? "none" : "transform 280ms cubic-bezier(0.32, 0.72, 0, 1), visibility 280ms ease-out",
+        }}
+        className={`fixed bottom-0 inset-x-0 z-50 w-full max-h-[90vh] max-h-[90dvh] flex flex-col rounded-t-[32px] liquid-glass-elevated shadow-2xl overflow-hidden ${
+          isOpen ? "visible" : "invisible pointer-events-none"
         }`}
       >
-        {/* Drag Handle Bar */}
-        <div className="pt-3 pb-1 flex-shrink-0 flex justify-center">
-          <div className="w-12 h-1 rounded-full bg-slate-300/80" />
+        {/* Drag Handle Bar — swipe down to dismiss */}
+        <div
+          className="pt-3 pb-1 flex-shrink-0 flex justify-center cursor-grab active:cursor-grabbing touch-none select-none"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div className="w-12 h-1.5 rounded-full bg-slate-300/90" />
         </div>
 
         {/* Sheet Top Header */}
-        <div className="px-5 py-3 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0 bg-transparent">
+        <div
+          className="px-5 py-3 border-b border-slate-200/50 flex items-center justify-between flex-shrink-0 bg-transparent select-none"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
           <Link to={isPatient ? "/patient/dashboard" : "/dashboard"} onClick={onClose}>
             <HospitalLogo variant="full" />
           </Link>
@@ -128,7 +172,10 @@ export default function MobileMenuSheet({
         </div>
 
         {/* Scrollable Content Pane */}
-        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 overscroll-contain">
+        <div
+          className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 space-y-4 overscroll-contain"
+          style={{ paddingBottom: "max(2rem, env(safe-area-inset-bottom, 2rem))" }}
+        >
           {/* User Profile Banner */}
           <div className="liquid-glass-card p-3.5 flex flex-col gap-3 animate-pop-in" style={{ animationDelay: "20ms" }}>
             <div className="flex items-center gap-3">
@@ -264,7 +311,11 @@ export default function MobileMenuSheet({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search tools, wards, reports, navigation..."
-              className="w-full pl-10 pr-9 py-2.5 rounded-xl liquid-glass-subtle text-xs sm:text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
+              enterKeyHint="search"
+              className="w-full pl-10 pr-9 py-2.5 rounded-xl liquid-glass-subtle text-base sm:text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-slate-400 focus:ring-1 focus:ring-slate-300"
             />
             {searchQuery && (
               <button

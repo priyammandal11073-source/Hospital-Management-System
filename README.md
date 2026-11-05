@@ -67,6 +67,7 @@ Nivora Care includes comprehensive, living architectural specifications and deve
 |---|---|
 | [**`PRD.md`**](./PRD.md) | **Product Requirements Document**: User personas, feature capabilities across all 8 portals, non-functional requirements, clinical workflows, and acceptance criteria. |
 | [**`ARCHITECTURE.md`**](./ARCHITECTURE.md) | **System Architecture**: High-level component diagrams, N-tier request pipeline, 43 Mongoose domain models, security authorization flows, and build infrastructure. |
+| [**`docs/CODEBASE_STRUCTURE.md`**](./docs/CODEBASE_STRUCTURE.md) | **Codebase Structure & Conventions**: 4-tier client separation, custom hooks layer, centralized error handling, state management, and 6-step feature addition guide. |
 | [**`DESIGN.md`**](./DESIGN.md) | **Design System**: Editorial clinical aesthetic, Liquid Glass tokens, Fraunces typography, Apple HIG touch targets (44px), safe-area insets, and responsive bottom sheets. |
 | [**`RULES.md`**](./RULES.md) | **AI Coding Rules & Workflows**: Guidelines for future AI development sessions, error handling standards, pre-change checklist, and post-change checklist. |
 | [**`MEMORY.md`**](./MEMORY.md) | **Project Context & Decisions**: Concise architectural decision records (ADRs), critical file paths, Windows line-ending handling, and active technical context. |
