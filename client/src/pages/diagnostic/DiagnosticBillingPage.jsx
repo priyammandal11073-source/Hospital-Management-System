@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { getBillings, downloadDiagnosticReportPdfBlob } from "../../services/api.js";
 import UniversalPaymentModal from "../../components/UniversalPaymentModal.jsx";
 import InvoiceModal from "../../components/InvoiceModal.jsx";
@@ -13,6 +12,13 @@ import {
   PageLoader,
 } from "../../components/ui/index.js";
 
+/**
+ * DiagnosticBillingPage – Diagnostic, Lab & Radiology Cashier
+ * Emil Kowalski Craft Polish:
+ * - Tone-on-tone borderless elevation
+ * - Tactile active press responses on all cashier buttons (scale 0.96)
+ * - Tabular numbers and instant modal settlement
+ */
 export default function DiagnosticBillingPage() {
   const [billings, setBillings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +47,7 @@ export default function DiagnosticBillingPage() {
       const url = window.URL.createObjectURL(new Blob([blob], { type: "application/pdf" }));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `Report_${report.reportNumber}.pdf`);
+      link.setAttribute("download", `Report_${report.reportNumber || report._id}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -61,24 +67,18 @@ export default function DiagnosticBillingPage() {
     if (filters.paymentStatus && b.paymentStatus !== filters.paymentStatus) return false;
     if (!search.trim()) return true;
     const q = search.toLowerCase();
-    return b.patientName?.toLowerCase().includes(q) || b._id?.toLowerCase().includes(q);
+    return b.patientName?.toLowerCase().includes(q) || b.patient?.name?.toLowerCase().includes(q) || b._id?.toLowerCase().includes(q);
   });
 
-  const paymentColors = {
-    paid: "bg-emerald-50 text-emerald-800 border border-emerald-200",
-    pending: "bg-amber-50 text-amber-800 border border-amber-200",
-    partially_paid: "bg-orange-50 text-orange-800 border border-orange-200",
-  };
-
   if (loading) {
-    return <PageLoader message="Loading cashier ledger…" />;
+    return <PageLoader message="Loading diagnostic cashier ledger…" />;
   }
 
   if (error) {
     return (
       <Card title="Billing Load Error" subtitle={error} className="border-rose-200 bg-rose-50">
         <div className="flex items-center justify-end pt-2 border-t border-slate-100">
-          <Button variant="outline" size="sm" onClick={fetchBillings}>Retry</Button>
+          <Button variant="outline" size="sm" onClick={fetchBillings} className="active:scale-[0.96]">Retry</Button>
         </div>
       </Card>
     );
@@ -87,86 +87,111 @@ export default function DiagnosticBillingPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Diagnostic Billing, Cashier & Receipts"
-        subtitle="Collect medication payments, process insurance co-pays, print GST tax invoices, and issue refunds."
+        title="Diagnostic & Pathology Billing"
+        subtitle="Collect test fees, process insurance approvals, print diagnostic receipts, and verify patient dues."
         breadcrumbs={
           <span className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-violet-500"></span>
-            <span className="text-xs font-bold uppercase tracking-wider text-violet-600">Financials & POS</span>
+            <span className="h-2.5 w-2.5 rounded-full bg-teal-600"></span>
+            <span className="text-xs font-bold uppercase tracking-wider text-teal-800">Financials & Lab POS</span>
           </span>
         }
       />
 
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs flex flex-wrap items-center gap-3">
+      {/* Filter and search bar */}
+      <div className="rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200/70 flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-[200px]">
-          <Input placeholder="Search patient, invoice #…" value={search} onChange={(e) => setSearch(e.target.value)} id="billing-search" />
+          <Input
+            placeholder="Search patient, invoice #…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            id="billing-search"
+            className="bg-slate-50/80 rounded-xl border-slate-200"
+          />
         </div>
         <select
           value={filters.paymentStatus}
           onChange={(e) => setFilters((f) => ({ ...f, paymentStatus: e.target.value }))}
-          className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 outline-none cursor-pointer"
+          className="rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-xs font-bold text-slate-700 outline-none cursor-pointer focus:bg-white transition-colors"
         >
           <option value="">All Payment Statuses</option>
           <option value="paid">Paid</option>
           <option value="pending">Pending</option>
           <option value="partially_paid">Partially Paid</option>
         </select>
-        <Button variant="outline" size="sm" onClick={fetchBillings}>
-          Search
+        <Button variant="outline" size="sm" onClick={fetchBillings} className="active:scale-[0.96] text-xs font-bold">
+          Refresh
         </Button>
       </div>
 
-      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden">
+      <div className="rounded-2xl bg-white shadow-xs ring-1 ring-slate-200/80 overflow-hidden">
         {filtered.length === 0 ? (
-          <EmptyStateCard icon="🧾" title="No billing records found." description="Transactions will be recorded upon prescription dispensation." />
+          <EmptyStateCard
+            icon="🧾"
+            title="No billing records found"
+            description="Diagnostic test requests will automatically appear here once ordered."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+              <thead className="bg-slate-50/80 text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200/80">
                 <tr>
-                  <th className="px-4 py-3">Invoice # / Date</th>
-                  <th className="px-4 py-3">Patient</th>
-                  <th className="px-4 py-3">Bill Breakdown</th>
-                  <th className="px-4 py-3">Total Amount</th>
-                  <th className="px-4 py-3">Payment Status</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
+                  <th className="px-5 py-3.5">Invoice # / Date</th>
+                  <th className="px-5 py-3.5">Patient Details</th>
+                  <th className="px-5 py-3.5">Test Breakdown</th>
+                  <th className="px-5 py-3.5">Amount</th>
+                  <th className="px-5 py-3.5">Status</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+              <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filtered.map((b) => (
-                  <tr key={b._id} className="hover:bg-slate-50/70 transition">
-                    <td className="px-4 py-3.5 font-mono font-bold text-slate-800 whitespace-nowrap">{b.invoiceNumber || `INV-${b._id.slice(-6).toUpperCase()}`}<span className="block text-[10px] text-slate-400">{new Date(b.createdAt).toLocaleDateString("en-IN")}</span></td>
-                    <td className="px-4 py-3.5">
-                      <div className="font-bold text-slate-800">{b.patientName || "Unknown patient"}</div>
-                      <p className="text-[11px] text-slate-500">{b.patientAbhaId || "N/A"}</p>
+                  <tr key={b._id} className="hover:bg-slate-50/70 transition-colors duration-150">
+                    <td className="px-5 py-4 font-mono font-bold text-slate-900 whitespace-nowrap">
+                      {b.invoiceNumber || `INV-${b._id.slice(-6).toUpperCase()}`}
+                      <span className="block text-[10px] text-slate-400 font-sans mt-0.5">
+                        {new Date(b.createdAt || Date.now()).toLocaleDateString("en-IN")}
+                      </span>
                     </td>
-                    <td className="px-4 py-3.5 text-slate-600">{b.testName || "Diagnostic Examination"}</td>
-                    <td className="px-4 py-3.5 font-bold text-slate-800 font-mono">₹{(b.amount || b.totalAmount || 0).toFixed(2)}</td>
-                    <td className="px-3.5"><Badge status={b.paymentStatus}>{b.paymentStatus}</Badge></td>
-                    <td className="px-4 py-3.5 text-right whitespace-nowrap space-x-1.5">
-                      {b.paymentStatus !== "paid" && (
+                    <td className="px-5 py-4">
+                      <div className="font-extrabold text-slate-900">{b.patientName || b.patient?.name || "Unknown patient"}</div>
+                      <p className="text-[11px] text-slate-400 font-mono">{b.patientAbhaId || b.patient?.contactNumber || "N/A"}</p>
+                    </td>
+                    <td className="px-5 py-4 text-slate-600 font-medium">{b.testName || "Diagnostic & Pathology Investigation"}</td>
+                    <td className="px-5 py-4 font-black text-slate-900 font-mono text-sm tabular-nums">
+                      ₹{(b.amount || b.totalAmount || 0).toFixed(2)}
+                    </td>
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <Badge status={b.paymentStatus}>{b.paymentStatus || "pending"}</Badge>
+                    </td>
+                    <td className="px-5 py-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
+                        {b.paymentStatus !== "paid" && (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => setSelectedPaymentBilling(b)}
+                            className="text-xs font-bold active:scale-[0.96] shadow-2xs"
+                          >
+                            💳 Settle
+                          </Button>
+                        )}
                         <Button
-                          variant="primary"
+                          variant="outline"
                           size="sm"
-                          onClick={() => setSelectedPaymentBilling(b)}
+                          onClick={() => setSelectedInvoice(b)}
+                          className="text-xs font-bold active:scale-[0.96]"
                         >
-                          💳 Pay & Settle
+                          Invoice
                         </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedInvoice(b)}
-                      >
-                        View
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownloadPdf(b)}
-                      >
-                        PDF
-                      </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadPdf(b)}
+                          className="text-xs font-bold active:scale-[0.96]"
+                        >
+                          PDF
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

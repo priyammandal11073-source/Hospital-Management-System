@@ -1,8 +1,14 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 /**
  * Standardized PageHeader component for Nivora Care HMS.
  * Provides unified title, breadcrumbs/meta, badges, and action button container.
+ * 
+ * Supports breadcrumbs as:
+ * - An array of objects: [{ label: "Home", to: "/" }, { label: "Current", active: true }]
+ * - An array of React nodes or strings
+ * - A single React node or string
  */
 export default function PageHeader({
   title,
@@ -14,6 +20,49 @@ export default function PageHeader({
   action,
   className = "",
 }) {
+  const renderBreadcrumbs = () => {
+    if (!breadcrumbs) return null;
+
+    if (Array.isArray(breadcrumbs)) {
+      return breadcrumbs.map((crumb, idx) => {
+        const isLast = idx === breadcrumbs.length - 1;
+
+        if (React.isValidElement(crumb)) {
+          return <React.Fragment key={idx}>{crumb}</React.Fragment>;
+        }
+
+        if (typeof crumb === "object" && crumb !== null && "label" in crumb) {
+          return (
+            <React.Fragment key={crumb.to || crumb.label || idx}>
+              {crumb.to && !crumb.active ? (
+                <Link
+                  to={crumb.to}
+                  className="hover:text-teal-800 transition-colors"
+                >
+                  {crumb.label}
+                </Link>
+              ) : (
+                <span className={crumb.active ? "text-slate-900 font-bold" : "text-slate-500"}>
+                  {crumb.label}
+                </span>
+              )}
+              {!isLast && <span className="text-slate-300 select-none">/</span>}
+            </React.Fragment>
+          );
+        }
+
+        return (
+          <React.Fragment key={idx}>
+            <span>{String(crumb)}</span>
+            {!isLast && <span className="text-slate-300 select-none">/</span>}
+          </React.Fragment>
+        );
+      });
+    }
+
+    return breadcrumbs;
+  };
+
   return (
     <div className={`mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${className}`}>
       <div className="flex items-start gap-3.5">
@@ -24,8 +73,8 @@ export default function PageHeader({
         )}
         <div>
           {breadcrumbs && (
-            <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5">
-              {breadcrumbs}
+            <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 flex items-center gap-1.5 flex-wrap">
+              {renderBreadcrumbs()}
             </div>
           )}
           <div className="flex items-center gap-2.5 flex-wrap">

@@ -16,6 +16,13 @@ const INSURANCE_PROVIDERS = [
   "Other TPA / Government Scheme",
 ];
 
+/**
+ * InsurancePaymentBox – Emil Kowalski Polish
+ * Features:
+ * - Tone-on-tone elevation with soft ambient ring
+ * - Tactile active press response (scale 0.97)
+ * - Clear TPA pre-authorization workflow
+ */
 function InsurancePaymentBox({ billing, onPaymentSuccess, isPatient }) {
   const [providerName, setProviderName] = useState(INSURANCE_PROVIDERS[0]);
   const [policyNumber, setPolicyNumber] = useState("");
@@ -47,7 +54,6 @@ function InsurancePaymentBox({ billing, onPaymentSuccess, isPatient }) {
     setIsSubmitting(true);
 
     try {
-      // Simulate TPA desk pre-authorization check
       await new Promise((resolve) => setTimeout(resolve, 1200));
 
       const insurancePayload = {
@@ -83,33 +89,33 @@ function InsurancePaymentBox({ billing, onPaymentSuccess, isPatient }) {
   };
 
   return (
-    <div className="rounded-2xl border border-blue-200 bg-blue-50/40 p-5 space-y-5 shadow-xs">
-      <div className="flex items-center justify-between">
+    <div className="rounded-3xl bg-white p-6 sm:p-7 space-y-6 shadow-xs ring-1 ring-slate-900/5">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
           <h3 className="text-sm font-extrabold text-slate-900">Health Insurance & TPA Cashless Desk</h3>
-          <p className="text-xs text-slate-600 font-medium">Submit policy & claim pre-authorization details for invoice settlement</p>
+          <p className="text-xs text-slate-500 font-medium">Submit policy & claim pre-authorization for bill settlement</p>
         </div>
-        <div className="flex items-center gap-1 text-xs font-extrabold text-blue-900 bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-300">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-sky-800 bg-sky-50 px-2.5 py-1 rounded-xl ring-1 ring-sky-600/20">
           <span>🏥 Cashless TPA</span>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
-            {errorMsg}
+          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
+            ⚠️ {errorMsg}
           </div>
         )}
 
         {/* Insurance Company */}
         <div>
-          <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
             Insurance Provider / Health TPA Company *
           </label>
           <select
             value={providerName}
             onChange={(e) => setProviderName(e.target.value)}
-            className="w-full text-xs font-semibold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-blue-600 focus:outline-hidden"
+            className="w-full text-xs font-bold rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
           >
             {INSURANCE_PROVIDERS.map((provider) => (
               <option key={provider} value={provider}>
@@ -122,7 +128,7 @@ function InsurancePaymentBox({ billing, onPaymentSuccess, isPatient }) {
         {/* Policy Number & Claim ID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
               Policy / Health Card Number *
             </label>
             <input
@@ -131,87 +137,87 @@ function InsurancePaymentBox({ billing, onPaymentSuccess, isPatient }) {
               placeholder="e.g. POL-987654321"
               value={policyNumber}
               onChange={(e) => setPolicyNumber(e.target.value)}
-              className="w-full text-xs font-mono font-bold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-blue-600 focus:outline-hidden"
+              className="w-full text-xs font-mono font-bold rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
               Claim ID / Pre-Auth Ref No *
             </label>
             <input
               type="text"
               required
-              placeholder="e.g. CLM-2026-4412"
+              placeholder="e.g. CLM-2026-9876"
               value={claimId}
               onChange={(e) => setClaimId(e.target.value)}
-              className="w-full text-xs font-mono font-bold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-blue-600 focus:outline-hidden"
+              className="w-full text-xs font-mono font-bold rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
             />
           </div>
         </div>
 
-        {/* Insured Member & Mobile */}
+        {/* Insured Member Name & Contact */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
-              Primary Insured Member Name *
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Insured Member Name *
             </label>
             <input
               type="text"
               required
-              placeholder="e.g. Rajesh Kumar"
+              placeholder="Primary policyholder name"
               value={insuredMemberName}
               onChange={(e) => setInsuredMemberName(e.target.value)}
-              className="w-full text-xs font-semibold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-blue-600 focus:outline-hidden"
+              className="w-full text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
-              Policy Holder Mobile Number
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Contact Number
             </label>
             <input
-              type="text"
+              type="tel"
               placeholder="+91 98765 43210"
               value={contactNumber}
               onChange={(e) => setContactNumber(e.target.value)}
-              className="w-full text-xs font-mono font-semibold rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-slate-900 focus:border-blue-600 focus:outline-hidden"
+              className="w-full text-xs font-mono font-bold rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
             />
           </div>
         </div>
 
         {/* Additional Notes */}
         <div>
-          <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
-            Claim Notes / Corporate TPA Authorization Details
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+            Additional Insurance Remarks / Policy Notes
           </label>
           <textarea
             rows={2}
-            placeholder="e.g. Corporate cashless approval letter attached; TPA desk verification requested for OPD coverage."
+            placeholder="e.g. Co-pay percentage, room rent limit or corporate employee ID..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            className="w-full text-xs font-medium rounded-xl border border-slate-300 bg-white p-3 text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:outline-hidden"
+            className="w-full text-xs font-medium rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
           />
         </div>
 
-        {/* Action Button */}
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full py-3.5 px-4 text-xs font-black uppercase tracking-wider rounded-xl bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-800 hover:to-indigo-800 text-white transition-all shadow-md shadow-blue-700/20 disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider rounded-xl bg-teal-700 hover:bg-teal-800 text-white transition active:scale-[0.97] shadow-xs disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
         >
           {isSubmitting ? (
             <>
               <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-r-transparent" />
-              <span>Submitting insurance claim details...</span>
+              <span>Verifying Cashless Pre-Auth with TPA Desk...</span>
             </>
           ) : (
-            <span>🏥 Submit Insurance Claim Details</span>
+            <span>🏥 Submit TPA Cashless Claim</span>
           )}
         </button>
 
-        <p className="text-[11px] text-slate-500 font-medium text-center">
-          Note: Hospital TPA Desk will verify policy coverage against invoice total of ₹{Number(billing.totalAmount).toFixed(2)}.
+        <p className="text-[11px] text-slate-400 text-center font-medium">
+          Once submitted, our hospital billing desk will verify pre-auth with your insurance TPA within 30 minutes.
         </p>
       </form>
     </div>

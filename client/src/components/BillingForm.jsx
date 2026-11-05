@@ -4,6 +4,13 @@ import { Input, Button } from "../components/ui/index.js";
 
 const emptyCharge = { description: "", cost: "" };
 
+/**
+ * BillingForm – Emil Kowalski Polish
+ * Features:
+ * - Tone-on-tone input styling with instant focus rings
+ * - Tactile active press response on all buttons (scale 0.97)
+ * - Clear visual hierarchy and tabular figures for invoice tally
+ */
 function BillingForm({ onCancel, onSuccess }) {
   const [appointments, setAppointments] = useState([]);
   const [appointmentId, setAppointmentId] = useState("");
@@ -101,20 +108,22 @@ function BillingForm({ onCancel, onSuccess }) {
   };
 
   if (isLoadingAppointments) {
-    return <p className="py-8 text-center text-slate-600">Loading completed appointments…</p>;
+    return <p className="py-8 text-center text-slate-500 font-medium text-xs">Loading completed appointments…</p>;
   }
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <div className="flex flex-col">
-        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Completed appointment *</label>
+        <label className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+          Completed Appointment *
+        </label>
         <select
           onChange={(event) => setAppointmentId(event.target.value)}
           required
           value={appointmentId}
-          className="mt-1 w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:border-teal-600 focus:outline-none"
+          className="w-full min-h-[44px] rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
         >
-          <option value="">Select appointment</option>
+          <option value="">Select completed appointment</option>
           {appointments.map((appointment) => (
             <option key={appointment._id} value={appointment._id}>
               {appointment.patient?.name || "Unknown patient"} — {new Date(appointment.appointmentDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} ({appointment.timeSlot})
@@ -124,35 +133,44 @@ function BillingForm({ onCancel, onSuccess }) {
       </div>
 
       {selectedAppointment && (
-        <div className="rounded-xl bg-slate-50 border border-slate-200 p-4 text-xs text-slate-700">
-          <span className="font-bold text-slate-900">Patient: </span>
-          {selectedAppointment.patient?.name || "Unknown patient"}
-          {selectedAppointment.patient?.contactNumber && ` — 📞 ${selectedAppointment.patient.contactNumber}`}
+        <div className="rounded-2xl bg-teal-50/60 border border-teal-200/60 p-4 text-xs text-teal-900 flex items-center justify-between">
+          <div>
+            <span className="font-extrabold text-teal-950">Patient: </span>
+            {selectedAppointment.patient?.name || "Unknown patient"}
+          </div>
+          {selectedAppointment.patient?.contactNumber && (
+            <span className="font-mono font-bold text-teal-800">
+              📞 {selectedAppointment.patient.contactNumber}
+            </span>
+          )}
         </div>
       )}
 
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">Itemized charges</label>
+          <label className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+            Itemized Charges & Services
+          </label>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setCharges((currentCharges) => [...currentCharges, { ...emptyCharge }])}
             type="button"
+            className="active:scale-[0.96] transition-transform duration-150 text-xs"
           >
-            + Add charge
+            + Add Charge
           </Button>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {charges.map((charge, index) => (
             <div className="grid gap-2 grid-cols-1 sm:grid-cols-[1fr_10rem_auto]" key={index}>
               <Input
                 aria-label={`Charge ${index + 1} description`}
-                placeholder="Description"
+                placeholder="Service or consultation description"
                 value={charge.description}
                 onChange={(event) => updateCharge(index, "description", event.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-none"
+                className="w-full min-h-[44px] rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:bg-white focus:outline-none"
               />
               <Input
                 type="number"
@@ -162,7 +180,7 @@ function BillingForm({ onCancel, onSuccess }) {
                 placeholder="Cost (₹)"
                 value={charge.cost}
                 onChange={(event) => updateCharge(index, "cost", event.target.value)}
-                className="w-full min-h-[44px] rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:border-teal-600 focus:outline-none"
+                className="w-full min-h-[44px] rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-sm font-mono focus:border-teal-600 focus:bg-white focus:outline-none"
               />
               <Button
                 variant="danger"
@@ -170,7 +188,7 @@ function BillingForm({ onCancel, onSuccess }) {
                 aria-label={`Remove charge ${index + 1}`}
                 onClick={() => removeCharge(index)}
                 type="button"
-                className="min-h-[44px] rounded-xl border border-rose-200 sm:border-0 px-3.5 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 transition"
+                className="min-h-[44px] rounded-xl border border-rose-200 sm:border-0 px-3.5 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 active:scale-[0.95] transition"
               >
                 Remove
               </Button>
@@ -178,14 +196,17 @@ function BillingForm({ onCancel, onSuccess }) {
           ))}
         </div>
 
-        <p className="mt-4 text-right text-base sm:text-lg font-bold text-slate-900 font-mono">
-          Estimated total: ₹{total.toFixed(2)}
-        </p>
+        <div className="mt-4 rounded-2xl bg-slate-50/90 border border-slate-200/60 p-4 flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Calculated Invoice Total</span>
+          <span className="text-xl font-black text-teal-800 font-mono tabular-nums">
+            ₹{total.toFixed(2)}
+          </span>
+        </div>
       </div>
 
       {error && (
-        <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 text-xs font-bold text-rose-700" role="alert">
-          {error}
+        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs font-bold text-rose-800" role="alert">
+          ⚠️ {error}
         </div>
       )}
 
@@ -194,16 +215,16 @@ function BillingForm({ onCancel, onSuccess }) {
           variant="outline"
           onClick={onCancel}
           type="button"
-          className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-300 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 active:scale-[0.97] transition"
         >
           Cancel
         </Button>
         <Button
           disabled={isSubmitting}
           type="submit"
-          className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-600 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-700 disabled:opacity-50 transition shadow-2xs"
+          className="w-full sm:w-auto min-h-[44px] rounded-xl bg-teal-700 px-6 py-2.5 text-xs font-bold text-white hover:bg-teal-800 disabled:opacity-50 active:scale-[0.97] transition shadow-xs"
         >
-          {isSubmitting ? "Creating…" : "Create bill"}
+          {isSubmitting ? "Generating…" : "Generate Invoice"}
         </Button>
       </div>
     </form>

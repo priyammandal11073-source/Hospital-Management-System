@@ -229,7 +229,7 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient, autoOpen = t
           type="button"
           disabled={isProcessing}
           onClick={handleOfficialCheckout}
-          className="w-full py-4 px-5 text-sm font-black uppercase tracking-wider rounded-xl bg-gradient-to-r from-teal-700 via-teal-800 to-slate-900 hover:from-teal-800 hover:to-slate-950 text-white transition-all shadow-lg shadow-teal-900/20 disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full py-4 px-5 text-sm font-black uppercase tracking-wider rounded-2xl bg-teal-800 hover:bg-teal-900 text-white transition active:scale-[0.97] shadow-xs disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
         >
           {isProcessing ? (
             <>
@@ -250,32 +250,32 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient, autoOpen = t
           </span>
           <span className="flex items-center gap-1 font-medium">
             <span>Secured by</span>
-            <strong className="text-blue-700 font-black">Razorpay</strong>
+            <strong className="text-teal-900 font-black">Razorpay</strong>
           </span>
         </div>
       </div>
 
       {/* ── MODAL FALLBACK (Only opens if SDK fails/is blocked) ── */}
       {showModalFallback && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200">
-            <div className="bg-teal-800 text-white p-5 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 backdrop-blur-md p-4 animate-pop-in">
+          <div className="w-full max-w-md rounded-3xl bg-white shadow-2xl overflow-hidden ring-1 ring-slate-900/10">
+            <div className="bg-teal-900 text-white p-5 flex items-center justify-between">
               <div>
                 <h4 className="text-base font-bold">Nivora Care Hospital</h4>
-                <p className="text-xs text-teal-100 font-medium">Invoice: {invoiceNumber}</p>
+                <p className="text-xs text-teal-200 font-medium">Invoice: {invoiceNumber}</p>
               </div>
               <p className="text-lg font-black font-mono">₹{totalAmount}</p>
             </div>
 
             <div className="p-6 space-y-4 text-xs">
-              <p className="font-semibold text-slate-700">Select Razorpay Payment Method:</p>
+              <p className="font-bold text-slate-700">Select Razorpay Payment Method:</p>
               
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedMethod("card")}
-                  className={`py-2 px-3 rounded-xl border text-center font-bold transition ${
-                    selectedMethod === "card" ? "bg-teal-50 border-teal-600 text-teal-800" : "bg-slate-50 border-slate-200"
+                  className={`py-2 px-3 rounded-xl border text-center font-bold transition active:scale-[0.97] cursor-pointer ${
+                    selectedMethod === "card" ? "bg-teal-50 border-teal-600 text-teal-900" : "bg-slate-50 border-slate-200 text-slate-700"
                   }`}
                 >
                   💳 Credit/Debit Card
@@ -283,8 +283,8 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient, autoOpen = t
                 <button
                   type="button"
                   onClick={() => setSelectedMethod("netbanking")}
-                  className={`py-2 px-3 rounded-xl border text-center font-bold transition ${
-                    selectedMethod === "netbanking" ? "bg-teal-50 border-teal-600 text-teal-800" : "bg-slate-50 border-slate-200"
+                  className={`py-2 px-3 rounded-xl border text-center font-bold transition active:scale-[0.97] cursor-pointer ${
+                    selectedMethod === "netbanking" ? "bg-teal-50 border-teal-600 text-teal-900" : "bg-slate-50 border-slate-200 text-slate-700"
                   }`}
                 >
                   🏦 Net Banking
@@ -292,16 +292,16 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient, autoOpen = t
               </div>
 
               {selectedMethod === "card" && (
-                <div className="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-2 p-3 bg-slate-50/80 rounded-2xl border border-slate-200/80">
                   <label className="block text-[11px] font-bold text-slate-700">Card Number</label>
-                  <input type="text" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-mono bg-white" />
+                  <input type="text" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-mono bg-white font-bold" />
                 </div>
               )}
 
               {selectedMethod === "netbanking" && (
-                <div className="space-y-2 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="space-y-2 p-3 bg-slate-50/80 rounded-2xl border border-slate-200/80">
                   <label className="block text-[11px] font-bold text-slate-700">Select Bank</label>
-                  <select value={selectedBank} onChange={(e) => setSelectedBank(e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-medium bg-white">
+                  <select value={selectedBank} onChange={(e) => setSelectedBank(e.target.value)} className="w-full rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold bg-white">
                     <option value="HDFC Bank">HDFC Bank</option>
                     <option value="ICICI Bank">ICICI Bank</option>
                     <option value="State Bank of India">State Bank of India (SBI)</option>
@@ -315,7 +315,7 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient, autoOpen = t
                   type="button"
                   onClick={() => setShowModalFallback(false)}
                   disabled={modalProcessing}
-                  className="w-1/3 py-2.5 rounded-xl border border-slate-300 font-bold text-slate-600 hover:bg-slate-50 transition"
+                  className="w-1/3 py-2.5 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition active:scale-[0.97] cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -323,9 +323,9 @@ function RazorpayPaymentBox({ billing, onPaymentSuccess, isPatient, autoOpen = t
                   type="button"
                   onClick={handleSimulatedSubmit}
                   disabled={modalProcessing}
-                  className="w-2/3 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-black uppercase tracking-wider transition shadow-md shadow-teal-700/30"
+                  className="w-2/3 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-black uppercase tracking-wider transition active:scale-[0.97] shadow-xs cursor-pointer"
                 >
-                  {modalProcessing ? "Processing..." : `Complete ₹${totalAmount} Payment`}
+                  {modalProcessing ? "Processing..." : `Complete ₹${totalAmount}`}
                 </button>
               </div>
             </div>

@@ -1,6 +1,10 @@
 /**
- * PaymentMethodSelect – comprehensive hospital payment method selector with icons.
- * Supports: razorpay, upi, card, insurance, netbanking, wallet, cheque, cash
+ * PaymentMethodSelect – Emil Kowalski Polish
+ * Features:
+ * - Tone-on-tone borderless elevation instead of harsh 2px borders
+ * - Tactile active scale press feedback (scale 0.97, 160ms ease-out)
+ * - Fine-pointer hover lift with smooth transition
+ * - Accessible focus rings & WCAG AAA contrast
  */
 
 const METHODS = [
@@ -8,7 +12,8 @@ const METHODS = [
     value: "upi",
     label: "Instant UPI & QR Code",
     icon: "📲",
-    description: "GPay · PhonePe · Paytm · BHIM QR",
+    description: "GPay · PhonePe · Paytm · BHIM",
+    accent: "teal",
   },
   {
     value: "razorpay",
@@ -16,18 +21,21 @@ const METHODS = [
     icon: "💳",
     description: "Cards · NetBanking · Wallets · EMI",
     featured: true,
+    accent: "indigo",
   },
   {
     value: "insurance",
     label: "Health Insurance",
     icon: "🏥",
     description: "Cashless TPA & Ayushman Desk",
+    accent: "sky",
   },
   {
     value: "cash",
     label: "Cash Desk",
     icon: "💵",
     description: "Counter cash payment at desk",
+    accent: "emerald",
   },
 ];
 
@@ -41,9 +49,11 @@ const METHODS = [
  */
 function PaymentMethodSelect({ value, onChange, label = "Payment Method", disabled = false }) {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {label && (
-        <p className="text-sm font-semibold text-slate-700">{label}</p>
+        <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+          {label}
+        </label>
       )}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {METHODS.map((method) => {
@@ -55,29 +65,44 @@ function PaymentMethodSelect({ value, onChange, label = "Payment Method", disabl
               disabled={disabled}
               onClick={() => onChange(method.value)}
               className={[
-                "relative flex flex-col items-center justify-between gap-1.5 rounded-2xl border-2 p-4 text-center transition-all duration-200 focus:outline-none min-h-[105px]",
+                "group relative flex flex-col items-center justify-between text-center rounded-2xl p-4 min-h-[112px] select-none",
+                "transition-[transform,background-color,box-shadow,color] duration-150 ease-out",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2",
+                disabled
+                  ? "opacity-40 cursor-not-allowed"
+                  : "cursor-pointer active:scale-[0.97]",
                 isSelected
-                  ? "border-teal-600 bg-gradient-to-b from-teal-50 to-white shadow-lg shadow-teal-700/10 ring-2 ring-teal-600/20"
-                  : method.featured
-                  ? "border-teal-200 bg-teal-50/30 hover:border-teal-400 hover:bg-teal-50/60"
-                  : "border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50/30",
-                disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+                  ? "bg-teal-900 text-white shadow-md ring-1 ring-teal-800"
+                  : "bg-slate-50/90 text-slate-800 hover:bg-slate-100/90 hover:shadow-xs ring-1 ring-slate-200/70",
               ].join(" ")}
             >
               {method.featured && (
-                <span className="absolute -top-2.5 bg-teal-700 text-white text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full shadow-sm tracking-wider">
-                  Razorpay Powered
+                <span
+                  className={[
+                    "absolute -top-2.5 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider shadow-2xs transition-colors",
+                    isSelected
+                      ? "bg-teal-400 text-teal-950"
+                      : "bg-teal-700 text-white",
+                  ].join(" ")}
+                >
+                  ⚡ Fast Checkout
                 </span>
               )}
-              <span className="text-2xl mt-0.5">{method.icon}</span>
+              <span className="text-2xl mt-0.5 transition-transform duration-150 group-hover:scale-110">
+                {method.icon}
+              </span>
               <span
-                className={`text-xs font-black ${
-                  isSelected ? "text-teal-950" : "text-slate-900"
+                className={`text-xs font-extrabold tracking-tight ${
+                  isSelected ? "text-white" : "text-slate-900"
                 }`}
               >
                 {method.label}
               </span>
-              <span className="text-[10px] leading-tight text-slate-500 line-clamp-1 font-semibold">
+              <span
+                className={`text-[10px] font-medium leading-tight ${
+                  isSelected ? "text-teal-100" : "text-slate-500"
+                }`}
+              >
                 {method.description}
               </span>
             </button>

@@ -27,6 +27,13 @@ function formatExpiry(value) {
   return digits;
 }
 
+/**
+ * CardPaymentBox – Emil Kowalski Polish
+ * Features:
+ * - Tone-on-tone elevation with soft ambient ring
+ * - Tactile active press response (scale 0.97)
+ * - Tabular numbers and clear card typography
+ */
 function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
   const [cardHolder, setCardHolder] = useState(billing?.patient?.name || "");
   const [cardNumber, setCardNumber] = useState("");
@@ -64,8 +71,7 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
     setIsProcessing(true);
 
     try {
-      // Simulate bank gateway API delay for realism
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1200));
 
       const cardPayload = {
         paymentMethod: "card",
@@ -101,28 +107,28 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
   };
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-6 shadow-xs">
-      <div className="flex items-center justify-between">
+    <div className="rounded-3xl bg-white p-6 sm:p-7 space-y-6 shadow-xs ring-1 ring-slate-900/5">
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <div>
-          <h3 className="text-sm font-extrabold text-slate-900">Online Card Payment Gateway</h3>
+          <h3 className="text-sm font-extrabold text-slate-900">Online Card Gateway</h3>
           <p className="text-xs text-slate-500 font-medium">Pay securely using any Credit or Debit Card</p>
         </div>
-        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
-          <span>🔒 SSL Secured</span>
+        <div className="flex items-center gap-1.5 text-xs font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-xl ring-1 ring-teal-600/20">
+          <span>🔒 256-bit SSL</span>
         </div>
       </div>
 
       {/* Interactive Virtual Card Preview */}
-      <div className="relative w-full aspect-[1.8/1] max-w-sm mx-auto rounded-2xl bg-gradient-to-tr from-slate-900 via-indigo-950 to-slate-800 p-5 text-white shadow-xl overflow-hidden flex flex-col justify-between border border-slate-700">
+      <div className="relative w-full aspect-[1.8/1] max-w-sm mx-auto rounded-3xl bg-gradient-to-tr from-slate-900 via-teal-950 to-slate-900 p-5 text-white shadow-xl overflow-hidden flex flex-col justify-between ring-1 ring-white/10">
         {/* Hologram / Chip pattern */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-7 w-10 rounded-md bg-amber-400/90 border border-amber-300/60 shadow-inner flex items-center justify-center">
+            <div className="h-7 w-10 rounded-md bg-amber-400/90 shadow-inner flex items-center justify-center">
               <div className="w-full h-[1px] bg-amber-700/40"></div>
             </div>
             <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400">Nivora Pay</span>
           </div>
-          <span className="text-xs font-extrabold uppercase tracking-wider bg-white/10 px-2.5 py-1 rounded-md backdrop-blur-xs text-teal-300">
+          <span className="text-xs font-extrabold uppercase tracking-wider bg-white/10 px-2.5 py-1 rounded-lg backdrop-blur-xs text-teal-300">
             {cardBrand}
           </span>
         </div>
@@ -148,16 +154,16 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
       </div>
 
       {/* Online Card Form */}
-      <form onSubmit={handleSubmit} className="space-y-4 pt-2">
+      <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
-            {errorMsg}
+          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold">
+            ⚠️ {errorMsg}
           </div>
         )}
 
         {/* Cardholder Name */}
         <div>
-          <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
             Cardholder Full Name *
           </label>
           <input
@@ -166,13 +172,13 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
             placeholder="As printed on front of card"
             value={cardHolder}
             onChange={(e) => setCardHolder(e.target.value)}
-            className="w-full text-xs font-semibold rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
+            className="w-full text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50/80 px-3.5 py-2.5 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
           />
         </div>
 
         {/* Card Number */}
         <div>
-          <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
             Card Number *
           </label>
           <div className="relative">
@@ -183,9 +189,9 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
               placeholder="4532 •••• •••• 8912"
               value={cardNumber}
               onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-              className="w-full text-xs font-mono font-bold rounded-xl border border-slate-300 bg-white pl-3.5 pr-12 py-2.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
+              className="w-full text-xs font-mono font-bold rounded-xl border border-slate-200 bg-slate-50/80 pl-3.5 pr-20 py-2.5 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
             />
-            <span className="absolute right-3 top-2.5 text-[11px] font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+            <span className="absolute right-3 top-2.5 text-[10px] font-extrabold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md ring-1 ring-teal-600/20">
               {cardBrand}
             </span>
           </div>
@@ -194,7 +200,7 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
         {/* Expiry, CVV & Zip */}
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
               Expiry *
             </label>
             <input
@@ -204,13 +210,13 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
               placeholder="MM/YY"
               value={expiry}
               onChange={(e) => setExpiry(formatExpiry(e.target.value))}
-              className="w-full text-xs font-mono font-bold text-center rounded-xl border border-slate-300 bg-white py-2.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
+              className="w-full text-xs font-mono font-bold text-center rounded-xl border border-slate-200 bg-slate-50/80 py-2.5 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
-              CVV / CVC *
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              CVV *
             </label>
             <input
               type="password"
@@ -219,13 +225,13 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
               placeholder="•••"
               value={cvv}
               onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
-              className="w-full text-xs font-mono font-bold text-center rounded-xl border border-slate-300 bg-white py-2.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
+              className="w-full text-xs font-mono font-bold text-center rounded-xl border border-slate-200 bg-slate-50/80 py-2.5 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">
-              PIN / Zip
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+              Postal Code
             </label>
             <input
               type="text"
@@ -233,7 +239,7 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
               placeholder="110001"
               value={zipCode}
               onChange={(e) => setZipCode(e.target.value.replace(/\D/g, ""))}
-              className="w-full text-xs font-mono font-bold text-center rounded-xl border border-slate-300 bg-white py-2.5 text-slate-900 focus:border-teal-600 focus:outline-hidden"
+              className="w-full text-xs font-mono font-bold text-center rounded-xl border border-slate-200 bg-slate-50/80 py-2.5 text-slate-900 focus:border-teal-600 focus:bg-white focus:outline-none transition-colors"
             />
           </div>
         </div>
@@ -242,12 +248,12 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
         <button
           type="submit"
           disabled={isProcessing}
-          className="w-full py-3.5 px-4 text-xs font-black uppercase tracking-wider rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white transition-all shadow-md shadow-teal-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider rounded-xl bg-teal-700 hover:bg-teal-800 text-white transition active:scale-[0.97] shadow-xs disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
         >
           {isProcessing ? (
             <>
               <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-r-transparent" />
-              <span>Processing online card payment...</span>
+              <span>Authorizing Card Payment...</span>
             </>
           ) : (
             <span>💳 Pay ₹{Number(billing.totalAmount).toFixed(2)} Online Now</span>
@@ -255,7 +261,7 @@ function CardPaymentBox({ billing, onPaymentSuccess, isPatient }) {
         </button>
 
         {/* Trust Badges */}
-        <div className="pt-2 text-center text-[10px] text-slate-500 font-semibold flex items-center justify-center gap-3 border-t border-slate-100">
+        <div className="pt-2 text-center text-[10px] text-slate-400 font-semibold flex items-center justify-center gap-3 border-t border-slate-100">
           <span>✔ Visa & Mastercard 3D Secure</span>
           <span>•</span>
           <span>✔ 256-bit Encrypted</span>

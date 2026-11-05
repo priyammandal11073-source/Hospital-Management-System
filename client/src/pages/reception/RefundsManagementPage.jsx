@@ -137,10 +137,10 @@ export default function RefundsManagementPage() {
                     <td className="py-3.5 px-4 font-semibold text-slate-800">
                       {inv.patient?.name || "Patient"}
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-slate-800">
+                    <td className="py-3.5 px-4 font-mono font-black text-slate-900 tabular-nums">
                       ₹{inv.totalAmount.toFixed(2)}
                     </td>
-                    <td className="py-3.5 px-4 uppercase font-semibold text-slate-500">
+                    <td className="py-3.5 px-4 uppercase font-semibold text-slate-500 font-mono text-xs">
                       {inv.paymentMethod || "Cash"}
                     </td>
                     <td className="py-3.5 px-4">
@@ -149,7 +149,7 @@ export default function RefundsManagementPage() {
                       </Badge>
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <Button variant="outline" size="sm" onClick={() => openRefund(inv)}>
+                      <Button variant="outline" size="sm" onClick={() => openRefund(inv)} className="text-xs font-bold active:scale-[0.96]">
                         Process Refund
                       </Button>
                     </td>

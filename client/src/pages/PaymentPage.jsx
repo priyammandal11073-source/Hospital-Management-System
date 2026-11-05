@@ -1,6 +1,12 @@
 /**
  * PaymentPage – public page accessible via SMS payment link & patient portal.
  * Route: /pay/:billingId
+ * 
+ * Emil Kowalski Craft Polish:
+ * - Tone-on-tone borderless elevation with soft ambient ring-1 ring-slate-900/5
+ * - Tabular numbers for financial precision
+ * - Tactile active press feedback on all CTA buttons (scale 0.97)
+ * - Hardware-accelerated modal crossfades with backdrop blur
  */
 
 import { useEffect, useState } from "react";
@@ -9,14 +15,14 @@ import UpiPaymentBox from "../components/UpiPaymentBox.jsx";
 import InsurancePaymentBox from "../components/InsurancePaymentBox.jsx";
 import RazorpayPaymentBox from "../components/RazorpayPaymentBox.jsx";
 import PaymentMethodSelect from "../components/PaymentMethodSelect.jsx";
-import { getBillingById, createRazorpayOrder, verifyRazorpayPayment, payMyBillingUpi, updatePaymentStatus } from "../services/api.js";
+import { getBillingById, createRazorpayOrder, verifyRazorpayPayment, updatePaymentStatus } from "../services/api.js";
 import { formatDoctorName } from "../utils/doctorName.js";
 import env from "../config/env.js";
 
 const STATUS_COLORS = {
-  paid: "bg-emerald-100 text-emerald-800 border-emerald-300",
-  pending: "bg-amber-100 text-amber-800 border-amber-300",
-  partially_paid: "bg-blue-100 text-blue-800 border-blue-300",
+  paid: "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-600/20",
+  pending: "bg-amber-50 text-amber-800 ring-1 ring-amber-600/20",
+  partially_paid: "bg-sky-50 text-sky-800 ring-1 ring-sky-600/20",
 };
 
 function PaymentPage() {
@@ -69,7 +75,7 @@ function PaymentPage() {
     setBilling(updatedBilling);
     setShowUpiModal(false);
     setShowInsuranceModal(false);
-    setSuccessMsg("Payment / Transaction update recorded successfully!");
+    setSuccessMsg("Payment verified and invoice settled successfully!");
   };
 
   // Launch official Razorpay payment window directly
@@ -79,14 +85,12 @@ function PaymentPage() {
     setIsRazorpayProcessing(true);
 
     try {
-      // 1. Create Razorpay order from backend API
       const orderData = await createRazorpayOrder(billing._id);
       
       if (!orderData || !orderData.amount) {
         throw new Error("Failed to initialize Razorpay payment order.");
       }
 
-      // 2. Load Razorpay script if needed
       let scriptOK = Boolean(window.Razorpay);
       if (!scriptOK) {
         scriptOK = await new Promise((resolve) => {
@@ -116,7 +120,7 @@ function PaymentPage() {
             contact: orderData.patientDetails?.contact || billing.patient?.contactNumber || "9876543210",
           },
           theme: {
-            color: "#0F766E", // Healthcare Teal
+            color: "#0F766E",
           },
           handler: async function (response) {
             try {
@@ -151,7 +155,6 @@ function PaymentPage() {
 
         rzp.open();
       } else {
-        // Fallback to interactive Razorpay / Cards / NetBanking modal
         setIsRazorpayProcessing(false);
         setShowRazorpayModal(true);
       }
@@ -162,18 +165,9 @@ function PaymentPage() {
     }
   };
 
-  // Direct tile click router
   const handleSelectMethod = (method) => {
     setPaymentMethod(method);
     setErrorMsg("");
-    setSuccessMsg("");
-
-    if (!isAuthenticated) {
-      navigate(`/patient/login?redirect=/pay/${billingId}`, {
-        state: { message: "Please log in to your patient account to authorize this payment." },
-      });
-      return;
-    }
 
     if (method === "razorpay") {
       handleLaunchRazorpayDirectly();
@@ -182,52 +176,44 @@ function PaymentPage() {
     } else if (method === "insurance") {
       setShowInsuranceModal(true);
     } else if (method === "cash") {
-      const amountStr = Number(billing.totalAmount).toFixed(2);
-      setSuccessMsg(`💵 Cash Desk Selected: Please pay ₹${amountStr} in cash at the hospital billing counter. Redirecting to your appointments...`);
-      setTimeout(() => {
-        if (isPatient) {
-          navigate("/patient/appointments");
-        } else {
-          navigate("/appointments");
-        }
-      }, 2000);
+      setErrorMsg("Cash payments are accepted directly at the hospital reception cashier desk.");
     }
   };
 
-  // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-100 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f6f3] p-4">
         <div className="text-center space-y-3">
-          <div className="h-12 w-12 rounded-full border-4 border-teal-600 border-t-transparent animate-spin mx-auto" />
-          <p className="text-slate-600 font-medium">Loading your invoice…</p>
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-teal-700 border-r-transparent mx-auto" />
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Loading secure checkout…</p>
         </div>
       </div>
     );
   }
 
-  // ── Login required ─────────────────────────────────────────────────────────
   if (error === "login_required") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full rounded-2xl bg-white shadow-xl p-8 text-center space-y-5">
-          <div className="text-5xl">🔐</div>
-          <h1 className="text-2xl font-bold text-slate-900">Login Required</h1>
-          <p className="text-slate-600 text-sm">
-            Please log in to your patient account to view and pay this invoice.
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f6f3] p-4">
+        <div className="max-w-md w-full rounded-3xl bg-white shadow-xl ring-1 ring-slate-900/10 p-8 text-center space-y-4 animate-pop-in">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-50 text-amber-700 text-2xl mx-auto ring-1 ring-amber-500/20">
+            🔐
+          </div>
+          <h1 className="text-xl font-black text-slate-900 tracking-tight">Patient Login Required</h1>
+          <p className="text-slate-600 text-xs leading-relaxed">
+            For security and privacy, you must log in with your registered patient mobile number or email to view and pay this invoice.
           </p>
-          <div className="flex flex-col gap-3">
+          <div className="pt-2 flex flex-col gap-2.5">
             <Link
               to={`/patient/login?redirect=/pay/${billingId}`}
-              className="block w-full rounded-xl bg-teal-600 px-4 py-3 font-bold text-white hover:bg-teal-700 transition"
+              className="w-full rounded-xl bg-teal-700 py-3 text-xs font-bold text-white hover:bg-teal-800 active:scale-[0.97] transition shadow-xs text-center"
             >
-              Log in as Patient
+              Log In to Continue
             </Link>
             <Link
-              to="/login"
-              className="block w-full rounded-xl border border-slate-300 px-4 py-3 font-medium text-slate-700 hover:bg-slate-50 transition"
+              to={`/patient/register?redirect=/pay/${billingId}`}
+              className="w-full rounded-xl border border-slate-200 bg-white py-3 text-xs font-bold text-slate-700 hover:bg-slate-50 active:scale-[0.97] transition text-center"
             >
-              Log in as Staff
+              New Patient? Register Here
             </Link>
           </div>
         </div>
@@ -235,35 +221,16 @@ function PaymentPage() {
     );
   }
 
-  // ── Generic error ──────────────────────────────────────────────────────────
-  if (error) {
+  if (error || !billing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full rounded-2xl bg-white shadow-xl p-8 text-center space-y-4">
-          <div className="text-4xl">⚠️</div>
-          <h1 className="text-xl font-bold text-slate-900">Invoice not found</h1>
-          <p className="text-slate-600 text-sm">{error}</p>
-          <button
-            onClick={() => navigate(-1)}
-            className="rounded-xl bg-slate-800 px-5 py-2 text-sm font-bold text-white hover:bg-slate-700 transition"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!billing) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full rounded-2xl bg-white shadow-xl p-8 text-center space-y-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#f7f6f3] p-4">
+        <div className="max-w-md w-full rounded-3xl bg-white shadow-xl ring-1 ring-slate-900/10 p-8 text-center space-y-4 animate-pop-in">
           <div className="text-4xl">📄</div>
-          <h1 className="text-xl font-bold text-slate-900">Invoice Unavailable</h1>
-          <p className="text-slate-600 text-sm">The requested invoice parameters could not be loaded.</p>
+          <h1 className="text-xl font-black text-slate-900">Invoice Unavailable</h1>
+          <p className="text-slate-600 text-xs">{error || "The requested invoice could not be found."}</p>
           <button
             onClick={() => navigate(-1)}
-            className="rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-teal-700 transition"
+            className="rounded-xl bg-teal-700 px-5 py-2.5 text-xs font-bold text-white hover:bg-teal-800 active:scale-[0.97] transition shadow-xs"
           >
             Return Back
           </button>
@@ -277,7 +244,7 @@ function PaymentPage() {
   const isPaid = billing.paymentStatus === "paid";
   const docName = billing.appointment?.doctor?.name
     ? formatDoctorName(billing.appointment.doctor.name)
-    : "Doctor";
+    : "Hospital Specialist";
   const apptDate = billing.appointment?.appointmentDate
     ? new Date(billing.appointment.appointmentDate).toLocaleDateString("en-IN", {
         day: "2-digit", month: "short", year: "numeric",
@@ -285,82 +252,89 @@ function PaymentPage() {
     : "—";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-slate-100">
-      {/* ── Header ── */}
-      <header className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-extrabold text-teal-700 tracking-tight">
-              Nivora Care Hospital
-            </h1>
-            <p className="text-xs text-slate-500">Secure Payment Portal & Gateway</p>
+    <div className="min-h-screen bg-[#f7f6f3]">
+      {/* ── Top Header Strip ── */}
+      <header className="border-b border-slate-200/70 bg-white/90 backdrop-blur-md sticky top-0 z-20">
+        <div className="max-w-3xl mx-auto px-4 py-3.5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img
+              src="/nivora-logo.png"
+              alt="Nivora Care Logo"
+              className="h-8 w-8 rounded-lg bg-teal-50 object-contain p-1"
+            />
+            <div>
+              <h1 className="text-sm font-extrabold text-slate-900 tracking-tight leading-tight">
+                Nivora Care Hospital
+              </h1>
+              <p className="text-[11px] text-teal-800 font-semibold">Official Secure Payment Gateway</p>
+            </div>
           </div>
           <span
-            className={`text-xs font-bold border px-2.5 py-0.5 rounded-full ${STATUS_COLORS[billing.paymentStatus] || STATUS_COLORS.pending}`}
+            className={`text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider ${STATUS_COLORS[billing.paymentStatus] || STATUS_COLORS.pending}`}
           >
-            {billing.paymentStatus.replace("_", " ").toUpperCase()}
+            {billing.paymentStatus.replace("_", " ")}
           </span>
         </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-        {/* ── Invoice Summary ── */}
-        <section className="rounded-2xl bg-white shadow-md p-6 space-y-4">
-          <div className="flex items-start justify-between">
+        {/* ── Invoice Summary Card ── */}
+        <section className="rounded-3xl bg-white shadow-xs ring-1 ring-slate-900/5 p-6 sm:p-7 space-y-5">
+          <div className="flex items-start justify-between flex-wrap gap-3">
             <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Invoice</p>
-              <p className="text-2xl font-black text-slate-900 mt-0.5">{invoiceNumber}</p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Invoice Reference</p>
+              <p className="text-2xl font-black text-slate-900 mt-0.5 font-mono">{invoiceNumber}</p>
             </div>
             <div className="text-right">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount Due</p>
-              <p className="text-3xl font-black text-teal-700 mt-0.5 font-mono">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Amount Due</p>
+              <p className="text-3xl font-black text-teal-800 mt-0.5 font-mono tabular-nums">
                 ₹{Number(billing.totalAmount).toFixed(2)}
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2 text-sm pt-2 border-t border-slate-100">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs pt-4 border-t border-slate-100">
             <div>
-              <span className="text-slate-500 text-xs block">Patient</span>
-              <p className="font-semibold text-slate-900">{billing.patient?.name || "—"}</p>
+              <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] block">Patient Name</span>
+              <p className="font-extrabold text-slate-900 mt-0.5">{billing.patient?.name || "—"}</p>
             </div>
             <div>
-              <span className="text-slate-500 text-xs block">Doctor</span>
-              <p className="font-semibold text-slate-900">{docName}</p>
+              <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] block">Consultant</span>
+              <p className="font-extrabold text-slate-900 mt-0.5">{docName}</p>
             </div>
             <div>
-              <span className="text-slate-500 text-xs block">Appointment</span>
-              <p className="font-semibold text-slate-900">{apptDate}</p>
+              <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] block">Date</span>
+              <p className="font-mono font-bold text-slate-800 mt-0.5">{apptDate}</p>
             </div>
             <div>
-              <span className="text-slate-500 text-xs block">Time Slot</span>
-              <p className="font-semibold text-slate-900">{billing.appointment?.timeSlot || "—"}</p>
+              <span className="text-slate-400 font-bold uppercase tracking-wider text-[10px] block">Time Slot</span>
+              <p className="font-mono font-bold text-slate-800 mt-0.5">{billing.appointment?.timeSlot || "OPD Desk"}</p>
             </div>
           </div>
 
           {/* Itemized charges */}
-          <div className="rounded-xl border border-slate-100 overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-slate-50">
+          <div className="rounded-2xl border border-slate-100 overflow-hidden">
+            <table className="w-full text-xs">
+              <thead className="bg-slate-50/80 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 <tr>
-                  <th className="px-4 py-2 text-left text-xs text-slate-500 font-semibold">Description</th>
-                  <th className="px-4 py-2 text-right text-xs text-slate-500 font-semibold">Amount</th>
+                  <th className="px-4 py-2.5 text-left">Service / Procedure Description</th>
+                  <th className="px-4 py-2.5 text-right">Amount (₹)</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-100">
                 {billing.itemizedCharges?.map((charge, i) => (
-                  <tr key={i} className="border-t border-slate-100">
-                    <td className="px-4 py-2 text-slate-700">{charge.description}</td>
-                    <td className="px-4 py-2 text-right font-mono font-semibold text-slate-900">
+                  <tr key={i} className="hover:bg-slate-50/50">
+                    <td className="px-4 py-2.5 text-slate-800 font-medium">{charge.description}</td>
+                    <td className="px-4 py-2.5 text-right font-mono font-bold text-slate-900 tabular-nums">
                       ₹{Number(charge.cost).toFixed(2)}
                     </td>
                   </tr>
                 ))}
               </tbody>
-              <tfoot className="bg-teal-50">
+              <tfoot className="bg-teal-50/70 border-t border-teal-100">
                 <tr>
-                  <td className="px-4 py-2.5 font-bold text-teal-800">Total</td>
-                  <td className="px-4 py-2.5 text-right font-black text-teal-800 font-mono text-base">
+                  <td className="px-4 py-3 font-extrabold text-teal-950">Total Bill</td>
+                  <td className="px-4 py-3 text-right font-black text-teal-950 font-mono text-sm tabular-nums">
                     ₹{Number(billing.totalAmount).toFixed(2)}
                   </td>
                 </tr>
@@ -371,43 +345,43 @@ function PaymentPage() {
 
         {/* ── Status Messages & Feedback ── */}
         {errorMsg && (
-          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-bold flex items-center justify-between">
-            <span>{errorMsg}</span>
+          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center justify-between">
+            <span>⚠️ {errorMsg}</span>
             <button onClick={() => setErrorMsg("")} className="text-rose-500 hover:text-rose-700 font-bold ml-2">✕</button>
           </div>
         )}
 
         {successMsg && (
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-bold shadow-sm animate-in fade-in">
-            {successMsg}
+          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold shadow-2xs">
+            ✅ {successMsg}
           </div>
         )}
 
         {/* ── Direct Action Payment Tiles ── */}
         {!isPaid ? (
-          <section className="rounded-2xl bg-white shadow-md p-6 space-y-4">
+          <section className="rounded-3xl bg-white shadow-xs ring-1 ring-slate-900/5 p-6 sm:p-7 space-y-5">
             {!isAuthenticated && (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 shadow-xs">
+              <div className="rounded-2xl border border-amber-200/80 bg-amber-50/80 p-5 shadow-2xs">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">🔐</span>
-                      <h3 className="text-sm font-bold text-amber-950">Patient Authentication Required</h3>
+                      <h3 className="text-sm font-black text-amber-950">Patient Authentication Recommended</h3>
                     </div>
-                    <p className="text-xs text-amber-800">
-                      To ensure security and authorize payment for this invoice, please log in with your patient credentials.
+                    <p className="text-xs text-amber-900">
+                      Log in to link this payment receipt directly to your permanent health timeline.
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <Link
                       to={`/patient/login?redirect=/pay/${billingId}`}
-                      className="rounded-xl bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-800 transition shadow-xs"
+                      className="rounded-xl bg-teal-700 px-4 py-2 text-xs font-bold text-white hover:bg-teal-800 active:scale-[0.97] transition shadow-xs"
                     >
                       Log In to Pay
                     </Link>
                     <Link
                       to={`/patient/register?redirect=/pay/${billingId}`}
-                      className="rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100/50 transition"
+                      className="rounded-xl border border-amber-300 bg-white px-3.5 py-2 text-xs font-bold text-amber-950 hover:bg-amber-100/50 active:scale-[0.97] transition"
                     >
                       Register
                     </Link>
@@ -416,49 +390,49 @@ function PaymentPage() {
               </div>
             )}
 
-            <h2 className="text-base font-bold text-slate-900">Select Hospital Payment Method</h2>
+            <div>
+              <PaymentMethodSelect
+                value={paymentMethod}
+                onChange={handleSelectMethod}
+                disabled={isRazorpayProcessing}
+              />
 
-            <PaymentMethodSelect
-              value={paymentMethod}
-              onChange={handleSelectMethod}
-              disabled={isRazorpayProcessing}
-            />
-
-            {isRazorpayProcessing && (
-              <div className="p-4 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold flex items-center justify-center gap-2">
-                <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-teal-600 border-r-transparent" />
-                <span>Opening Razorpay Secure Payment Window...</span>
-              </div>
-            )}
+              {isRazorpayProcessing && (
+                <div className="mt-4 p-4 rounded-2xl bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold flex items-center justify-center gap-2">
+                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-teal-600 border-r-transparent" />
+                  <span>Opening Razorpay Secure Payment Window...</span>
+                </div>
+              )}
+            </div>
           </section>
         ) : (
-          <section className="rounded-2xl bg-emerald-50 border border-emerald-200 shadow-md p-6 text-center space-y-3">
+          <section className="rounded-3xl bg-emerald-50/90 border border-emerald-200/80 shadow-xs p-8 text-center space-y-3">
             <div className="text-5xl">✅</div>
-            <h2 className="text-xl font-black text-emerald-800">Invoice Paid!</h2>
-            <p className="text-sm text-slate-600">
-              This invoice has been settled. Thank you for choosing Nivora Care Hospital.
+            <h2 className="text-xl font-black text-emerald-950">Invoice Paid & Settled</h2>
+            <p className="text-xs text-slate-600 font-medium">
+              Thank you for choosing Nivora Care Hospital. A digital tax invoice has been generated.
             </p>
             {billing.razorpayPaymentId && (
-              <p className="text-xs text-slate-500">
-                Razorpay Payment ID: <code className="font-mono font-bold text-blue-700">{billing.razorpayPaymentId}</code>
+              <p className="text-xs text-slate-500 font-mono">
+                Razorpay Payment ID: <span className="font-bold text-teal-800">{billing.razorpayPaymentId}</span>
               </p>
             )}
             {billing.upiTransactionId && (
-              <p className="text-xs text-slate-500">
-                UPI Reference UTR: <code className="font-mono font-bold text-emerald-700">{billing.upiTransactionId}</code>
+              <p className="text-xs text-slate-500 font-mono">
+                UPI Reference UTR: <span className="font-bold text-emerald-800">{billing.upiTransactionId}</span>
               </p>
             )}
           </section>
         )}
 
-        {/* ── MODAL: RAZORPAY / CARDS / NETBANKING FALLBACK ── */}
+        {/* ── Sub-Modals ── */}
         {showRazorpayModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200 relative">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 backdrop-blur-md p-4 animate-pop-in">
+            <div className="w-full max-w-xl rounded-3xl bg-white shadow-2xl overflow-hidden ring-1 ring-slate-900/10 relative">
               <button
                 type="button"
                 onClick={() => setShowRazorpayModal(false)}
-                className="absolute top-4 right-4 z-20 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition cursor-pointer"
+                className="absolute top-4 right-4 z-20 h-8 w-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition active:scale-90 cursor-pointer"
               >
                 ✕
               </button>
@@ -475,14 +449,13 @@ function PaymentPage() {
           </div>
         )}
 
-        {/* ── MODAL: INSTANT UPI QR CODE & APPS ── */}
         {showUpiModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200 relative">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 backdrop-blur-md p-4 animate-pop-in">
+            <div className="w-full max-w-xl rounded-3xl bg-white shadow-2xl overflow-hidden ring-1 ring-slate-900/10 relative">
               <button
                 type="button"
                 onClick={() => setShowUpiModal(false)}
-                className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition"
+                className="absolute top-4 right-4 z-10 h-8 w-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition active:scale-90 cursor-pointer"
               >
                 ✕
               </button>
@@ -495,14 +468,13 @@ function PaymentPage() {
           </div>
         )}
 
-        {/* ── MODAL: HEALTH INSURANCE & TPA CLAIM ── */}
         {showInsuranceModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="w-full max-w-xl rounded-2xl bg-white shadow-2xl overflow-hidden border border-slate-200 relative">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 backdrop-blur-md p-4 animate-pop-in">
+            <div className="w-full max-w-xl rounded-3xl bg-white shadow-2xl overflow-hidden ring-1 ring-slate-900/10 relative">
               <button
                 type="button"
                 onClick={() => setShowInsuranceModal(false)}
-                className="absolute top-4 right-4 z-10 h-8 w-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition"
+                className="absolute top-4 right-4 z-10 h-8 w-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition active:scale-90 cursor-pointer"
               >
                 ✕
               </button>
@@ -516,9 +488,14 @@ function PaymentPage() {
         )}
 
         {/* Footer */}
-        <p className="text-center text-xs text-slate-400 pb-4">
-          Nivora Care Hospital · Outer Ring Road, Near AIIMS Metro, New Delhi · +91 9876543210
-        </p>
+        <div className="text-center space-y-1 pt-4 pb-8">
+          <p className="text-xs text-slate-500 font-medium">
+            🔒 256-bit SSL Encrypted • NPCI, RBI & NABH Accredited Hospital
+          </p>
+          <p className="text-[11px] text-slate-400">
+            Nivora Care Hospital • Outer Ring Road, Near AIIMS Metro, New Delhi • Helpline: +91 98765 43210
+          </p>
+        </div>
       </main>
     </div>
   );

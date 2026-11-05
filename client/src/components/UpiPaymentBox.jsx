@@ -165,29 +165,29 @@ function UpiPaymentBox({ billing, onPaymentSuccess, isPatient = false }) {
   }
 
   return (
-    <div className="rounded-2xl border-2 border-teal-600/30 bg-gradient-to-b from-teal-50/50 via-white to-slate-50 p-6 shadow-sm">
+    <div className="rounded-3xl bg-white p-6 sm:p-7 shadow-xs ring-1 ring-slate-900/5">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-600 text-white font-black text-xs shadow-xs">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-700 text-white font-black text-xs shadow-xs">
               ₹
             </span>
-            <h3 className="text-base font-bold text-slate-900">
-              Dynamic UPI payment
+            <h3 className="text-base font-extrabold text-slate-900">
+              Dynamic UPI Payment
             </h3>
-            <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+            <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 ring-1 ring-emerald-600/20">
               NPCI Real-Time
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-600">
+          <p className="mt-1 text-xs text-slate-500 font-medium">
             Scan with any UPI app to pay ₹{totalAmount} instantly
           </p>
         </div>
 
         <div className="text-right">
-          <span className="text-xs text-slate-500 block">Payable amount</span>
-          <span className="text-xl font-black text-teal-700 font-mono">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Payable Amount</span>
+          <span className="text-2xl font-black text-teal-800 font-mono tabular-nums">
             ₹{totalAmount}
           </span>
         </div>
@@ -197,26 +197,20 @@ function UpiPaymentBox({ billing, onPaymentSuccess, isPatient = false }) {
       <div className="mt-5 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
         {/* Left Column: Scannable QR Code */}
         <div className="md:col-span-5 flex flex-col items-center">
-          <div className="relative rounded-2xl border-2 border-slate-800 bg-white p-3 shadow-md">
-            {/* Decorative Corner Targets */}
-            <div className="absolute top-1 left-1 h-3 w-3 border-t-2 border-l-2 border-teal-600"></div>
-            <div className="absolute top-1 right-1 h-3 w-3 border-t-2 border-r-2 border-teal-600"></div>
-            <div className="absolute bottom-1 left-1 h-3 w-3 border-b-2 border-l-2 border-teal-600"></div>
-            <div className="absolute bottom-1 right-1 h-3 w-3 border-b-2 border-r-2 border-teal-600"></div>
-
+          <div className="relative rounded-2xl bg-white p-3 shadow-md ring-1 ring-slate-900/10">
             {qrDataUrl ? (
               <img
                 src={qrDataUrl}
                 alt={`UPI QR Code for ${invoiceNumber}`}
-                className="h-44 w-44 object-contain rounded-lg"
+                className="h-44 w-44 object-contain rounded-xl"
               />
             ) : (
-              <div className="flex h-44 w-44 items-center justify-center text-xs text-slate-400">
+              <div className="flex h-44 w-44 items-center justify-center text-xs text-slate-400 font-medium">
                 Generating QR...
               </div>
             )}
-            <div className="mt-1 flex items-center justify-center gap-1.5 text-[10px] font-bold text-slate-600">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div className="mt-2 flex items-center justify-center gap-1.5 text-[11px] font-bold text-slate-700">
+              <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse"></span>
               Scan & Pay ₹{totalAmount}
             </div>
           </div>
@@ -225,13 +219,13 @@ function UpiPaymentBox({ billing, onPaymentSuccess, isPatient = false }) {
           {upiUrl && (
             <a
               href={upiUrl}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-teal-600 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-teal-700 transition"
+              className="mt-3.5 inline-flex items-center gap-1.5 rounded-xl bg-teal-700 px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-teal-800 active:scale-[0.97] transition-all"
               title="Click to launch UPI app on mobile or tablet"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
               </svg>
-              Open UPI app on this device
+              Open UPI App on Device
             </a>
           )}
         </div>
@@ -239,25 +233,25 @@ function UpiPaymentBox({ billing, onPaymentSuccess, isPatient = false }) {
         {/* Right Column: VPA Details & Instant Verification */}
         <div className="md:col-span-7 flex flex-col justify-between space-y-4">
           {/* Hospital UPI VPA Card */}
-          <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs">
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+          <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-4 shadow-2xs">
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
               Payee VPA / UPI ID
             </div>
             <div className="mt-1 flex items-center justify-between gap-2">
-              <span className="font-mono text-sm font-bold text-slate-900 select-all">
+              <span className="font-mono text-sm font-extrabold text-slate-900 select-all">
                 nivoracare@icici
               </span>
               <button
                 type="button"
                 onClick={handleCopyVpa}
-                className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition"
+                className="inline-flex items-center gap-1 rounded-lg bg-white border border-slate-200 px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 active:scale-[0.95] transition cursor-pointer"
               >
-                {copiedVpa ? "✓ Copied" : "Copy UPI ID"}
+                {copiedVpa ? "✓ Copied" : "Copy ID"}
               </button>
             </div>
-            <div className="mt-1.5 flex items-center justify-between text-[11px] text-slate-500">
-              <span>Account Name: <strong>Nivora Care Hospital</strong></span>
-              <span>Ref: <strong>{invoiceNumber}</strong></span>
+            <div className="mt-2 flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-200/60 font-medium">
+              <span>Payee: <strong className="text-slate-800">Nivora Care Hospital</strong></span>
+              <span>Ref: <strong className="font-mono text-slate-800">{invoiceNumber}</strong></span>
             </div>
           </div>
 
